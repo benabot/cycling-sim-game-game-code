@@ -8,7 +8,7 @@ import { TerrainType, TerrainConfig, DescentRules, getTerrainBonus, generateCour
 import { 
   createRider, createTeamRiders, RiderConfig, CardType,
   playCard, playSpecialtyCard, addFatigueCard, recycleCards, needsRecycle,
-  moveRider, getAvailableCards, getHandStats
+  moveRider, getAvailableCards, getHandStats, createMovementCard
 } from './rider.js';
 
 /**
@@ -30,6 +30,7 @@ export const TurnPhase = {
   ROLL_DICE: 'roll_dice',
   SELECT_SPECIALTY: 'select_specialty',
   RESOLVE: 'resolve',
+  END_TURN_EFFECTS: 'end_turn_effects',
   NEXT_PLAYER: 'next_player'
 };
 
@@ -95,8 +96,8 @@ export function createGameState(options = {}) {
     course,
     twoTeams,
     
-    // Riders
-    riders,
+    // Riders (all start at position 0)
+    riders: riders.map(r => ({ ...r, position: 0 })),
     
     // Game state
     phase: GamePhase.PLAYING,
@@ -120,6 +121,9 @@ export function createGameState(options = {}) {
     lastDiceRoll: null,
     lastMovement: null,
     
+    // End of turn effects (for animations)
+    endTurnEffects: [],
+    
     // Log
     gameLog: [],
     
@@ -136,7 +140,7 @@ export function getTerrainAt(state, position) {
   if (position >= state.courseLength) {
     return TerrainType.SPRINT;
   }
-  if (position < 0) {
+  if (position <= 0) {
     return TerrainType.FLAT;
   }
   return state.course[position]?.terrain || TerrainType.FLAT;
@@ -182,8 +186,7 @@ export function startTurn(state) {
   // Recycle cards for riders with empty hands
   let updatedRiders = state.riders.map(rider => {
     if (needsRecycle(rider)) {
-      const recycled = recycleCards(rider);
-      return recycled;
+      return recycleCards(rider);
     }
     return rider;
   });
@@ -198,6 +201,7 @@ export function startTurn(state) {
     selectedCardId: null,
     selectedSpecialtyId: null,
     turnPhase: TurnPhase.SELECT_RIDER,
+    endTurnEffects: [],
     gameLog: [
       ...state.gameLog, 
       turnHeader,
@@ -428,7 +432,6 @@ export function resolveMovement(state) {
     });
   }
   
-  const terrain = getTerrainAt(state, rider.position);
   const movement = calculateMovement(state);
   const newPosition = rider.position + movement;
   
@@ -457,12 +460,12 @@ export function resolveMovement(state) {
   if (state.selectedSpecialtyId) {
     logMessage += ` + Spécialité (+2)`;
   }
-  logMessage += ` + 🎲${state.lastDiceRoll.result} → ${movement} cases (position ${newPosition + 1})`;
+  logMessage += ` + 🎲${state.lastDiceRoll.result} → ${movement} cases (case ${newPosition})`;
   
   let newState = {
     ...state,
     riders: updatedRiders,
-    lastMovement: { type: 'move', distance: movement },
+    lastMovement: { type: 'move', distance: movement, newPosition },
     ridersPlayedThisTurn: [...state.ridersPlayedThisTurn, rider.id],
     gameLog: [...state.gameLog, logMessage]
   };
@@ -483,120 +486,7 @@ export function resolveMovement(state) {
     newState.gameLog = [...newState.gameLog, `🏁 ${rider.name} franchit la ligne!`];
   }
   
-  // Apply wind/aspiration effects (from turn 2 onwards)
-  if (state.currentTurn >= 2 && hasWindPenalty(terrain)) {
-    newState = applyWindAndAspirationEffects(newState, rider.id, newPosition);
-  }
-  
-  // Apply regrouping
-  if (hasAspiration(terrain)) {
-    newState = applyRegrouping(newState);
-  }
-  
   return moveToNextPlayer(newState);
-}
-
-/**
- * Apply wind and aspiration fatigue cards
- */
-function applyWindAndAspirationEffects(state, riderId, riderPosition) {
-  const rider = state.riders.find(r => r.id === riderId);
-  const terrain = getTerrainAt(state, riderPosition);
-  
-  if (!hasWindPenalty(terrain)) return state;
-  
-  // Find riders ahead
-  const ridersAhead = state.riders.filter(r => 
-    r.id !== riderId && 
-    r.position > riderPosition &&
-    !r.hasFinished
-  );
-  
-  // Find closest rider ahead
-  const closestAhead = ridersAhead.length > 0 
-    ? ridersAhead.reduce((closest, r) => 
-        r.position < closest.position ? r : closest
-      )
-    : null;
-  
-  // Find riders behind (in aspiration range)
-  const ridersBehind = state.riders.filter(r =>
-    r.id !== riderId &&
-    r.position === riderPosition - 1 &&
-    !r.hasFinished
-  );
-  
-  let updatedRiders = [...state.riders];
-  let logMessages = [];
-  
-  // Check if taking wind
-  const takingWind = !closestAhead || (closestAhead.position - riderPosition >= 2);
-  
-  if (takingWind) {
-    // Add +1 fatigue card
-    const riderIndex = updatedRiders.findIndex(r => r.id === riderId);
-    updatedRiders[riderIndex] = addFatigueCard(updatedRiders[riderIndex], 1);
-    logMessages.push(`💨 ${rider.name} prend le vent (+1 fatigue)`);
-  } else if (closestAhead && closestAhead.position - riderPosition === 1) {
-    // In aspiration - add +2 fatigue card (better than +1)
-    const riderIndex = updatedRiders.findIndex(r => r.id === riderId);
-    updatedRiders[riderIndex] = addFatigueCard(updatedRiders[riderIndex], 2);
-    logMessages.push(`🌀 ${rider.name} dans l'aspiration (+2 fatigue)`);
-  }
-  
-  // Check if leading aspiration (someone in our wheel)
-  if (ridersBehind.length > 0) {
-    const riderIndex = updatedRiders.findIndex(r => r.id === riderId);
-    updatedRiders[riderIndex] = addFatigueCard(updatedRiders[riderIndex], 1);
-    logMessages.push(`🚂 ${rider.name} mène le groupe (+1 fatigue)`);
-  }
-  
-  return {
-    ...state,
-    riders: updatedRiders,
-    gameLog: [...state.gameLog, ...logMessages]
-  };
-}
-
-/**
- * Apply regrouping at end of movement
- */
-function applyRegrouping(state) {
-  // Sort riders by position (descending)
-  const sortedRiders = [...state.riders].sort((a, b) => b.position - a.position);
-  
-  let updatedRiders = [...state.riders];
-  let regrouped = false;
-  
-  // Check for 1-case gaps and close them
-  for (let i = 0; i < sortedRiders.length - 1; i++) {
-    const ahead = sortedRiders[i];
-    const behind = sortedRiders[i + 1];
-    
-    if (ahead.hasFinished || behind.hasFinished) continue;
-    
-    const gap = ahead.position - behind.position;
-    
-    if (gap === 1) {
-      // Close the gap - move behind rider up
-      const behindIndex = updatedRiders.findIndex(r => r.id === behind.id);
-      updatedRiders[behindIndex] = {
-        ...updatedRiders[behindIndex],
-        position: ahead.position
-      };
-      regrouped = true;
-    }
-  }
-  
-  if (regrouped) {
-    return {
-      ...state,
-      riders: updatedRiders,
-      gameLog: [...state.gameLog, `🔄 Regroupement automatique`]
-    };
-  }
-  
-  return state;
 }
 
 /**
@@ -637,14 +527,211 @@ export function moveToNextPlayer(state) {
     };
   }
   
-  // Both teams have played all riders - end turn
-  return endTurn(state);
+  // Both teams have played all riders - apply end of turn effects
+  return applyEndOfTurnEffects(state);
 }
 
 /**
- * End current turn
+ * Apply end of turn effects (aspiration + wind cards)
  */
-export function endTurn(state) {
+export function applyEndOfTurnEffects(state) {
+  let updatedRiders = [...state.riders];
+  let effects = [];
+  let logMessages = [];
+  
+  // Sort riders by position (descending) for processing
+  const sortedRiderIds = updatedRiders
+    .filter(r => !r.hasFinished)
+    .sort((a, b) => b.position - a.position)
+    .map(r => r.id);
+  
+  // ===== PHASE 1: ASPIRATION (regroupement) =====
+  // Find groups and gaps
+  let regroupingOccurred = true;
+  let iterations = 0;
+  
+  while (regroupingOccurred && iterations < 10) {
+    regroupingOccurred = false;
+    iterations++;
+    
+    // Get positions sorted
+    const positions = updatedRiders
+      .filter(r => !r.hasFinished)
+      .map(r => r.position)
+      .sort((a, b) => b - a);
+    
+    const uniquePositions = [...new Set(positions)].sort((a, b) => b - a);
+    
+    for (let i = 0; i < uniquePositions.length - 1; i++) {
+      const frontPos = uniquePositions[i];
+      const backPos = uniquePositions[i + 1];
+      const gap = frontPos - backPos;
+      
+      // Check terrain - no aspiration in mountain
+      const terrainAtFront = getTerrainAt(state, frontPos);
+      const terrainAtBack = getTerrainAt(state, backPos);
+      
+      if (!hasAspiration(terrainAtFront) || !hasAspiration(terrainAtBack)) {
+        continue;
+      }
+      
+      // If gap is exactly 1, riders behind move up
+      if (gap === 1) {
+        const ridersToMove = updatedRiders.filter(r => 
+          r.position === backPos && !r.hasFinished
+        );
+        
+        if (ridersToMove.length > 0) {
+          ridersToMove.forEach(rider => {
+            const riderIndex = updatedRiders.findIndex(r => r.id === rider.id);
+            updatedRiders[riderIndex] = {
+              ...updatedRiders[riderIndex],
+              position: frontPos
+            };
+            
+            effects.push({
+              type: 'aspiration',
+              riderId: rider.id,
+              riderName: rider.name,
+              fromPosition: backPos,
+              toPosition: frontPos
+            });
+          });
+          
+          regroupingOccurred = true;
+        }
+      }
+    }
+  }
+  
+  if (effects.filter(e => e.type === 'aspiration').length > 0) {
+    const aspirationRiders = effects
+      .filter(e => e.type === 'aspiration')
+      .map(e => e.riderName);
+    logMessages.push(`🌀 Aspiration: ${aspirationRiders.join(', ')} rejoignent le groupe`);
+  }
+  
+  // ===== PHASE 2: WIND CARDS (prise de vent) =====
+  // Only from turn 2 onwards
+  if (state.currentTurn >= 2) {
+    // Recalculate positions after regrouping
+    const finalPositions = updatedRiders
+      .filter(r => !r.hasFinished)
+      .map(r => ({ id: r.id, position: r.position }))
+      .sort((a, b) => b.position - a.position);
+    
+    const uniqueFinalPositions = [...new Set(finalPositions.map(r => r.position))].sort((a, b) => b - a);
+    
+    // Find leaders (riders at front with 2+ gap to next group)
+    const leadersIds = [];
+    const shelteredIds = [];
+    
+    for (let i = 0; i < uniqueFinalPositions.length; i++) {
+      const pos = uniqueFinalPositions[i];
+      const nextPos = uniqueFinalPositions[i + 1];
+      const terrain = getTerrainAt(state, pos);
+      
+      // Skip if in mountain or descent (no wind penalty)
+      if (!hasWindPenalty(terrain)) {
+        continue;
+      }
+      
+      const ridersAtPos = updatedRiders.filter(r => r.position === pos && !r.hasFinished);
+      
+      if (i === 0) {
+        // Front group
+        if (nextPos === undefined || pos - nextPos >= 2) {
+          // Leaders take wind
+          ridersAtPos.forEach(r => leadersIds.push(r.id));
+        } else {
+          // Close to next group - sheltered
+          ridersAtPos.forEach(r => shelteredIds.push(r.id));
+        }
+      } else {
+        // Not front group - check gap with group ahead
+        const prevPos = uniqueFinalPositions[i - 1];
+        if (prevPos - pos >= 2) {
+          // 2+ gap - this group's leader takes wind
+          // Only first rider if alone, or all if it's an isolated group
+          ridersAtPos.forEach(r => leadersIds.push(r.id));
+        } else {
+          // Sheltered
+          ridersAtPos.forEach(r => shelteredIds.push(r.id));
+        }
+      }
+    }
+    
+    // Apply wind cards (+1) to leaders
+    leadersIds.forEach(riderId => {
+      const riderIndex = updatedRiders.findIndex(r => r.id === riderId);
+      if (riderIndex !== -1) {
+        const rider = updatedRiders[riderIndex];
+        const windCard = createMovementCard(1, 'Prise de vent', '#94a3b8');
+        
+        updatedRiders[riderIndex] = {
+          ...rider,
+          hand: [...rider.hand, windCard]
+        };
+        
+        effects.push({
+          type: 'wind',
+          riderId: rider.id,
+          riderName: rider.name,
+          cardValue: 1
+        });
+      }
+    });
+    
+    // Apply bonus cards (+2) to sheltered riders
+    shelteredIds.forEach(riderId => {
+      const riderIndex = updatedRiders.findIndex(r => r.id === riderId);
+      if (riderIndex !== -1) {
+        const rider = updatedRiders[riderIndex];
+        const bonusCard = createMovementCard(2, 'Abri', '#86efac');
+        
+        updatedRiders[riderIndex] = {
+          ...rider,
+          hand: [...rider.hand, bonusCard]
+        };
+        
+        effects.push({
+          type: 'shelter',
+          riderId: rider.id,
+          riderName: rider.name,
+          cardValue: 2
+        });
+      }
+    });
+    
+    if (leadersIds.length > 0) {
+      const windRiders = effects
+        .filter(e => e.type === 'wind')
+        .map(e => e.riderName);
+      logMessages.push(`💨 Prise de vent: ${windRiders.join(', ')} reçoivent une carte +1`);
+    }
+    
+    if (shelteredIds.length > 0) {
+      const shelterRiders = effects
+        .filter(e => e.type === 'shelter')
+        .map(e => e.riderName);
+      logMessages.push(`🛡️ À l'abri: ${shelterRiders.join(', ')} reçoivent une carte +2`);
+    }
+  }
+  
+  // Return state with effects for animation
+  return {
+    ...state,
+    riders: updatedRiders,
+    endTurnEffects: effects,
+    turnPhase: TurnPhase.END_TURN_EFFECTS,
+    gameLog: [...state.gameLog, ...logMessages]
+  };
+}
+
+/**
+ * Acknowledge end of turn effects and proceed
+ */
+export function acknowledgeEndTurnEffects(state) {
   // Reset fallen flags
   const ridersReset = state.riders.map(r => ({
     ...r,
@@ -678,7 +765,7 @@ export function endTurn(state) {
       `\n══════════ 🏆 RÉSULTATS ══════════`,
       ...rankings.slice(0, 10).map((r, i) => {
         const medal = i === 0 ? '🥇' : i === 1 ? '🥈' : i === 2 ? '🥉' : `${i + 1}.`;
-        return `${medal} ${r.name} (${TeamConfig[r.team]?.shortName}) - Position: ${r.position + 1}`;
+        return `${medal} ${r.name} (${TeamConfig[r.team]?.shortName}) - Case: ${r.position}`;
       }),
       ``,
       winningTeam 
@@ -692,6 +779,7 @@ export function endTurn(state) {
       phase: GamePhase.FINISHED,
       rankings,
       winningTeam,
+      endTurnEffects: [],
       gameLog: [...state.gameLog, ...resultsLog]
     };
   }
@@ -700,8 +788,16 @@ export function endTurn(state) {
   return startTurn({
     ...state,
     riders: ridersReset,
-    currentTurn: state.currentTurn + 1
+    currentTurn: state.currentTurn + 1,
+    endTurnEffects: []
   });
+}
+
+/**
+ * Legacy function for compatibility
+ */
+export function endTurn(state) {
+  return acknowledgeEndTurnEffects(state);
 }
 
 /**
@@ -741,6 +837,7 @@ export function getGameStatus(state) {
     lastDiceRoll: state.lastDiceRoll,
     lastMovement: state.lastMovement,
     ridersPlayedThisTurn: state.ridersPlayedThisTurn,
+    endTurnEffects: state.endTurnEffects || [],
     calculatedMovement: state.turnPhase === TurnPhase.RESOLVE || state.turnPhase === TurnPhase.SELECT_SPECIALTY 
       ? calculateMovement(state) 
       : null
