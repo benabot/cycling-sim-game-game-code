@@ -15,6 +15,7 @@ import { isTakingWind, isInPeloton, applyAspiration, getRiderGroups, getGapToLea
 export const GamePhase = {
   SETUP: 'setup',
   PLAYING: 'playing',
+  LAST_TURN: 'last_turn',  // Final turn after first rider crosses finish
   FINISHED: 'finished'
 };
 
@@ -30,6 +31,60 @@ export const TurnPhase = {
 };
 
 /**
+ * Team configuration
+ */
+export const Teams = {
+  TEAM_A: 'team_a',
+  TEAM_B: 'team_b'
+};
+
+export const TeamConfig = {
+  [Teams.TEAM_A]: {
+    name: 'Équipe Rouge',
+    color: '#dc2626',
+    bgColor: '#fecaca',
+    borderColor: '#b91c1c'
+  },
+  [Teams.TEAM_B]: {
+    name: 'Équipe Bleue',
+    color: '#2563eb',
+    bgColor: '#bfdbfe',
+    borderColor: '#1d4ed8'
+  }
+};
+
+/**
+ * Create riders for two teams
+ * @returns {Array} Array of 10 riders (5 per team)
+ */
+export function createTwoTeamsRiders() {
+  const riderTypes = ['climber', 'puncher', 'rouleur', 'sprinter', 'versatile'];
+  const riders = [];
+  
+  // Team A (Red)
+  riderTypes.forEach((type, index) => {
+    riders.push(createRider(
+      `a${index + 1}`,
+      type,
+      `${RiderConfig[type].name} A`,
+      Teams.TEAM_A
+    ));
+  });
+  
+  // Team B (Blue)
+  riderTypes.forEach((type, index) => {
+    riders.push(createRider(
+      `b${index + 1}`,
+      type,
+      `${RiderConfig[type].name} B`,
+      Teams.TEAM_B
+    ));
+  });
+  
+  return riders;
+}
+
+/**
  * Create initial game state
  * @param {Object} options - Game options
  * @returns {Object} Initial game state
@@ -37,12 +92,12 @@ export const TurnPhase = {
 export function createGameState(options = {}) {
   const {
     courseLength = 50,
-    riderCount = 5,
+    twoTeams = true,
     courseDistribution = null
   } = options;
   
   const course = generateCourse(courseLength, courseDistribution);
-  const riders = createTestRiders().slice(0, riderCount);
+  const riders = twoTeams ? createTwoTeamsRiders() : createTestRiders();
   const { penaltyDeck, bonusDeck } = createGameDecks();
   
   return {
@@ -50,6 +105,7 @@ export function createGameState(options = {}) {
     courseLength,
     finishLine: courseLength,
     course,
+    twoTeams,
     
     // Riders
     riders,
@@ -66,6 +122,11 @@ export function createGameState(options = {}) {
     // Current turn state
     currentRiderIndex: null,
     turnOrder: [],
+    ridersPlayedThisTurn: [],
+    
+    // Last turn tracking
+    isLastTurn: false,
+    firstFinisher: null,
     
     // Action state
     lastDiceRoll: null,
@@ -76,11 +137,10 @@ export function createGameState(options = {}) {
     attackUsedThisTurn: false,
     canReroll: false,
     
-    // Log
-    turnLog: [],
+    // Log - persistent across turns
+    gameLog: [],
     
-    // Winner
-    winner: null,
+    // Final rankings
     rankings: []
   };
 }
@@ -107,11 +167,8 @@ export function getTerrainAt(state, position) {
  * @returns {Array} Ordered rider IDs
  */
 export function determineTurnOrder(riders) {
-  const activeRiders = riders.filter(r => !r.hasFinished);
-  
-  // Sort by position descending (leader first)
-  const sorted = [...activeRiders].sort((a, b) => b.position - a.position);
-  
+  // All riders play, even those who finished (they just skip)
+  const sorted = [...riders].sort((a, b) => b.position - a.position);
   return sorted.map(r => r.id);
 }
 
@@ -121,21 +178,21 @@ export function determineTurnOrder(riders) {
  * @returns {Object} Updated game state
  */
 export function startTurn(state) {
+  // All riders participate in turn order
   const turnOrder = determineTurnOrder(state.riders);
   
-  if (turnOrder.length === 0) {
-    return {
-      ...state,
-      phase: GamePhase.FINISHED
-    };
-  }
+  // Add turn separator to log
+  const turnHeader = state.isLastTurn 
+    ? `\n══════════ 🏁 DERNIER TOUR (Tour ${state.currentTurn}) ══════════`
+    : `\n────────── Tour ${state.currentTurn} ──────────`;
   
   return {
     ...state,
     turnOrder,
     currentRiderIndex: 0,
+    ridersPlayedThisTurn: [],
     turnPhase: TurnPhase.SELECT_RIDER,
-    turnLog: [`--- Tour ${state.currentTurn} ---`]
+    gameLog: [...state.gameLog, turnHeader]
   };
 }
 
@@ -162,6 +219,14 @@ export function selectRider(state) {
   const rider = getCurrentRider(state);
   if (!rider) return state;
   
+  // Skip riders who already finished
+  if (rider.hasFinished) {
+    return moveToNextRider({
+      ...state,
+      gameLog: [...state.gameLog, `${rider.name} a déjà franchi la ligne`]
+    });
+  }
+  
   const terrain = getTerrainAt(state, rider.position);
   const takingWind = isTakingWind(rider, state.riders, terrain);
   
@@ -181,9 +246,9 @@ export function selectRider(state) {
     if (card) {
       newState.penaltyDeck = deck;
       newState.lastCard = { type: 'penalty', card };
-      newState.turnLog = [
-        ...newState.turnLog,
-        `${rider.name} prend le vent → ${card.name}: ${getCardDescription(card)}`
+      newState.gameLog = [
+        ...newState.gameLog,
+        `⚠️ ${rider.name} prend le vent → ${card.name}: ${getCardDescription(card)}`
       ];
     }
   }
@@ -205,7 +270,7 @@ export function playAttackCard(state) {
   if (!success) {
     return {
       ...state,
-      turnLog: [...state.turnLog, `${rider.name} ne peut pas utiliser de carte Attaque`]
+      gameLog: [...state.gameLog, `❌ ${rider.name} ne peut pas utiliser de carte Attaque`]
     };
   }
   
@@ -217,7 +282,7 @@ export function playAttackCard(state) {
     ...state,
     riders: updatedRiders,
     attackUsedThisTurn: true,
-    turnLog: [...state.turnLog, `${rider.name} joue Attaque (+3, +1 fatigue)`]
+    gameLog: [...state.gameLog, `⚔️ ${rider.name} joue Attaque (+3, +1 fatigue)`]
   };
 }
 
@@ -245,9 +310,9 @@ export function rollDice(state) {
     if (card) {
       newState.bonusDeck = deck;
       newState.lastCard = { type: 'bonus', card };
-      newState.turnLog = [
-        ...newState.turnLog,
-        `${rider.name} fait 7 → ${card.name}: ${getCardDescription(card)}`
+      newState.gameLog = [
+        ...newState.gameLog,
+        `✨ ${rider.name} fait 7 → ${card.name}: ${getCardDescription(card)}`
       ];
       
       // Check if can reroll
@@ -260,9 +325,9 @@ export function rollDice(state) {
   // Check for fall in descent on snake eyes
   if (terrain === TerrainType.DESCENT && diceRoll.isSnakeEyes) {
     const fallTest = rollFallTest();
-    newState.turnLog = [
-      ...newState.turnLog,
-      `${rider.name} fait double 1 en descente → Test de chute: ${fallTest.roll}`
+    newState.gameLog = [
+      ...newState.gameLog,
+      `🎲 ${rider.name} fait double 1 en descente → Test de chute: ${fallTest.roll}`
     ];
     
     if (fallTest.hasFallen) {
@@ -276,17 +341,17 @@ export function rollDice(state) {
       newState.riders = state.riders.map(r => 
         r.id === rider.id ? updatedRider : r
       );
-      newState.turnLog = [
-        ...newState.turnLog,
-        `${rider.name} CHUTE! Recule de 3 cases, +2 fatigue`
+      newState.gameLog = [
+        ...newState.gameLog,
+        `💥 ${rider.name} CHUTE! Recule de 3 cases, +2 fatigue`
       ];
       newState.lastMovement = { type: 'fall', distance: -3 };
       
       return newState;
     } else {
-      newState.turnLog = [
-        ...newState.turnLog,
-        `${rider.name} évite la chute!`
+      newState.gameLog = [
+        ...newState.gameLog,
+        `😅 ${rider.name} évite la chute!`
       ];
     }
   }
@@ -372,6 +437,9 @@ export function resolveMovement(state) {
     fatigueChange += state.lastCard.card.effect.fatigue;
   }
   
+  // Check if crossing finish line
+  const crossingFinish = newPosition >= state.finishLine && !rider.hasFinished;
+  
   // Update rider
   let updatedRider = moveRider(rider, newPosition, state.finishLine);
   if (fatigueChange !== 0) {
@@ -390,26 +458,34 @@ export function resolveMovement(state) {
   // Apply aspiration
   const ridersAfterAspiration = applyAspiration(updatedRiders, terrain);
   
-  const newState = {
+  let newState = {
     ...state,
     riders: ridersAfterAspiration,
     lastMovement: { type: 'move', distance: movement },
-    turnLog: [
-      ...state.turnLog,
-      `${rider.name} avance de ${movement} cases (position: ${newPosition})`
+    ridersPlayedThisTurn: [...state.ridersPlayedThisTurn, rider.id],
+    gameLog: [
+      ...state.gameLog,
+      `🚴 ${rider.name} avance de ${movement} cases → position ${newPosition + 1}`
     ]
   };
   
-  // Check for winner
-  if (updatedRider.hasFinished && !state.winner) {
-    return {
+  // Check if this is the first finisher (triggers last turn)
+  if (crossingFinish && !state.isLastTurn && !state.firstFinisher) {
+    newState = {
       ...newState,
-      winner: updatedRider,
-      turnLog: [
-        ...newState.turnLog,
-        `🏆 ${rider.name} franchit la ligne d'arrivée!`
+      isLastTurn: true,
+      firstFinisher: updatedRider,
+      phase: GamePhase.LAST_TURN,
+      gameLog: [
+        ...newState.gameLog,
+        `🏁 ${rider.name} franchit la ligne en premier! DERNIER TOUR déclenché!`
       ]
     };
+  } else if (crossingFinish) {
+    newState.gameLog = [
+      ...newState.gameLog,
+      `🏁 ${rider.name} franchit la ligne d'arrivée!`
+    ];
   }
   
   return moveToNextRider(newState);
@@ -423,7 +499,7 @@ export function resolveMovement(state) {
 export function moveToNextRider(state) {
   const nextIndex = state.currentRiderIndex + 1;
   
-  // Check if turn is complete
+  // Check if turn is complete (all riders have played)
   if (nextIndex >= state.turnOrder.length) {
     return endTurn(state);
   }
@@ -453,24 +529,32 @@ export function endTurn(state) {
     isInPeloton: isInPeloton(r, state.riders)
   }));
   
-  // Check if game should end (someone finished)
-  const finishedRiders = ridersReset.filter(r => r.hasFinished);
-  
-  if (finishedRiders.length > 0) {
-    // Determine final rankings
-    const rankings = [...finishedRiders].sort((a, b) => b.finishPosition - a.finishPosition);
+  // If this was the last turn, game is over
+  if (state.isLastTurn) {
+    // Calculate final rankings based on position (furthest = winner)
+    const rankings = [...ridersReset].sort((a, b) => b.position - a.position);
+    
+    // Assign finish positions
+    rankings.forEach((rider, index) => {
+      rider.finalRank = index + 1;
+    });
+    
+    // Build results log
+    const resultsLog = [
+      `\n══════════ 🏆 RÉSULTATS FINAUX ══════════`,
+      ...rankings.slice(0, 10).map((r, i) => {
+        const medal = i === 0 ? '🥇' : i === 1 ? '🥈' : i === 2 ? '🥉' : `${i + 1}.`;
+        const team = TeamConfig[r.team]?.name || '';
+        return `${medal} ${r.name} (${team}) - Position: ${r.position + 1}`;
+      })
+    ];
     
     return {
       ...state,
       riders: ridersReset,
       phase: GamePhase.FINISHED,
       rankings,
-      currentTurn: state.currentTurn + 1,
-      turnLog: [
-        ...state.turnLog,
-        `=== Fin de la course! ===`,
-        `🥇 Vainqueur: ${rankings[0].name}`
-      ]
+      gameLog: [...state.gameLog, ...resultsLog]
     };
   }
   
@@ -495,9 +579,11 @@ export function getGameStatus(state) {
     turn: state.currentTurn,
     phase: state.phase,
     turnPhase: state.turnPhase,
+    isLastTurn: state.isLastTurn,
     currentRider: currentRider ? {
       ...currentRider,
       config: RiderConfig[currentRider.type],
+      teamConfig: TeamConfig[currentRider.team],
       terrain: getTerrainAt(state, currentRider.position),
       terrainConfig: TerrainConfig[getTerrainAt(state, currentRider.position)],
       fatigueStatus: getFatiguePenalty(currentRider.fatigue),
@@ -505,7 +591,8 @@ export function getGameStatus(state) {
     } : null,
     groups,
     leader: state.riders.reduce((l, r) => r.position > l.position ? r : l, state.riders[0]),
-    winner: state.winner,
+    firstFinisher: state.firstFinisher,
+    rankings: state.rankings,
     lastDiceRoll: state.lastDiceRoll,
     lastCard: state.lastCard,
     lastMovement: state.lastMovement,
