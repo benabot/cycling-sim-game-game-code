@@ -3,12 +3,23 @@
     <h1>🚴 Course Cycliste - Prototype</h1>
     
     <!-- Game Status -->
-    <div class="status-bar" :class="{ 'last-turn': gameStatus.isLastTurn }">
-      <span class="turn">Tour {{ gameStatus.turn }}</span>
-      <span v-if="gameStatus.isLastTurn" class="last-turn-badge">🏁 DERNIER TOUR</span>
-      <span class="phase">{{ phaseLabel }}</span>
+    <div 
+      class="status-bar" 
+      :class="{ 'last-turn': gameStatus.isLastTurn }"
+      :style="{ borderColor: gameStatus.currentTeamConfig?.color }"
+    >
+      <span class="turn" :title="`Tour actuel de la course`">Tour {{ gameStatus.turn }}</span>
+      <span v-if="gameStatus.isLastTurn" class="last-turn-badge" title="Tous les coureurs jouent une dernière fois">🏁 DERNIER TOUR</span>
+      <span 
+        class="current-player"
+        :style="{ background: gameStatus.currentTeamConfig?.color }"
+        :title="`C'est au tour de ${gameStatus.currentTeamConfig?.playerName} de choisir un coureur`"
+      >
+        {{ gameStatus.currentTeamConfig?.playerName }} ({{ gameStatus.currentTeamConfig?.shortName }})
+      </span>
+      <span class="phase" :title="phaseTooltip">{{ phaseLabel }}</span>
       <span v-if="gameStatus.phase === 'finished'" class="winner">
-        🏆 Vainqueur: {{ gameStatus.rankings[0]?.name }}
+        🏆 {{ TeamConfig[gameStatus.winningTeam]?.name || 'Égalité' }}
       </span>
     </div>
 
@@ -19,8 +30,14 @@
           v-for="(cell, index) in course" 
           :key="index"
           class="cell"
-          :class="[cell.terrain, { 'finish': index === finishLine - 1 }]"
-          :title="`Case ${index + 1} - ${getTerrainName(cell.terrain)}`"
+          :class="[
+            cell.terrain, 
+            { 
+              'finish': index === finishLine - 1,
+              'has-selected': hasSelectedRiderAtPosition(index)
+            }
+          ]"
+          :title="`Case ${index + 1} - ${getTerrainName(cell.terrain)}\n${getTerrainTooltip(cell.terrain)}`"
         >
           <span class="cell-number">{{ index + 1 }}</span>
           <div class="riders-on-cell">
@@ -28,9 +45,12 @@
               v-for="rider in getRidersAtPosition(index)" 
               :key="rider.id"
               class="rider-token"
-              :class="[rider.type, rider.team]"
-              :style="{ borderColor: getTeamColor(rider.team) }"
-              :title="`${rider.name} (Fatigue: ${rider.fatigue})`"
+              :class="[
+                rider.type, 
+                rider.team,
+                { 'selected': rider.id === gameStatus.selectedRiderId }
+              ]"
+              :title="getRiderTooltip(rider)"
             >
               {{ getRiderEmoji(rider.type) }}
             </span>
@@ -38,15 +58,14 @@
         </div>
         <!-- Finish zone with riders beyond -->
         <div class="finish-zone">
-          <span class="finish-flag">🏁</span>
+          <span class="finish-flag" title="Ligne d'arrivée">🏁</span>
           <div class="finished-riders">
             <span 
               v-for="rider in getFinishedRiders()" 
               :key="rider.id"
               class="rider-token finished"
               :class="[rider.type, rider.team]"
-              :style="{ borderColor: getTeamColor(rider.team) }"
-              :title="`${rider.name} - Position: ${rider.position + 1}`"
+              :title="getRiderTooltip(rider)"
             >
               {{ getRiderEmoji(rider.type) }}
             </span>
@@ -57,125 +76,266 @@
 
     <!-- Team Legend -->
     <div class="team-legend">
-      <div class="team-item team_a">
+      <div class="team-item team_a" title="Équipe contrôlée par le Joueur 1">
         <span class="team-color" style="background: #dc2626"></span>
-        Équipe Rouge
+        Équipe Rouge (Joueur 1)
       </div>
-      <div class="team-item team_b">
+      <div class="team-item team_b" title="Équipe contrôlée par le Joueur 2">
         <span class="team-color" style="background: #2563eb"></span>
-        Équipe Bleue
+        Équipe Bleue (Joueur 2)
       </div>
     </div>
 
-    <!-- Current Rider Panel -->
+    <!-- Player Action Panel -->
     <div 
-      v-if="gameStatus.currentRider && gameStatus.phase !== 'finished'" 
-      class="current-rider-panel"
-      :style="{ borderColor: gameStatus.currentRider.teamConfig?.color }"
+      v-if="gameStatus.phase !== 'finished'" 
+      class="player-panel"
+      :style="{ borderColor: gameStatus.currentTeamConfig?.color }"
     >
-      <div class="rider-header" :style="{ background: gameStatus.currentRider.teamConfig?.bgColor }">
-        <h2>
-          <span class="team-indicator" :style="{ background: gameStatus.currentRider.teamConfig?.color }"></span>
-          {{ gameStatus.currentRider.name }}
-          <span class="team-name">({{ gameStatus.currentRider.teamConfig?.name }})</span>
-        </h2>
-      </div>
-      <div class="rider-info">
-        <span class="rider-type">{{ getRiderEmoji(gameStatus.currentRider.type) }} {{ gameStatus.currentRider.config.name }}</span>
-        <span class="terrain">📍 {{ gameStatus.currentRider.terrainConfig.name }}</span>
-        <span class="fatigue" :class="fatigueClass">
-          ❤️ Fatigue: {{ gameStatus.currentRider.fatigue }}/10 
-          ({{ gameStatus.currentRider.fatigueStatus.status }})
-        </span>
-        <span class="attacks">⚔️ Attaques: {{ gameStatus.currentRider.attackCardsRemaining }}</span>
-        <span class="position">📊 Position: {{ gameStatus.currentRider.position + 1 }}</span>
-      </div>
-
-      <!-- Actions -->
-      <div class="actions">
-        <!-- Pre-roll phase -->
-        <template v-if="gameStatus.turnPhase === 'pre_roll'">
-          <button 
-            v-if="gameStatus.canAttack"
-            @click="useAttack"
-            class="btn attack"
-            :disabled="attackUsed"
+      <!-- Select Rider Phase -->
+      <div v-if="gameStatus.turnPhase === 'select_rider'" class="select-phase">
+        <div class="phase-header" :style="{ background: gameStatus.currentTeamConfig?.bgColor }">
+          <h2>
+            <span class="team-indicator" :style="{ background: gameStatus.currentTeamConfig?.color }"></span>
+            {{ gameStatus.currentTeamConfig?.playerName }} - Choisissez un coureur
+          </h2>
+          <p class="phase-hint">Cliquez sur un de vos coureurs disponibles</p>
+        </div>
+        
+        <div class="available-riders">
+          <div 
+            v-for="rider in getTeamRiders(gameStatus.currentTeam)" 
+            :key="rider.id"
+            class="rider-select-card"
+            :class="{ 
+              'available': isRiderAvailable(rider),
+              'played': hasRiderPlayed(rider),
+              'finished': rider.hasFinished
+            }"
+            :title="getRiderSelectTooltip(rider)"
+            @click="onRiderSelect(rider)"
           >
-            ⚔️ Attaque (+3) {{ attackUsed ? '✓' : '' }}
-          </button>
-          <button @click="rollDice" class="btn roll">
-            🎲 Lancer les dés
-          </button>
-        </template>
-
-        <!-- Resolve phase -->
-        <template v-if="gameStatus.turnPhase === 'resolve'">
-          <div class="dice-result">
-            <span class="dice">🎲 {{ gameStatus.lastDiceRoll?.dice1 }} + {{ gameStatus.lastDiceRoll?.dice2 }} = {{ gameStatus.lastDiceRoll?.total }}</span>
-            <span class="movement">→ Déplacement: {{ calculatedMovement }} cases</span>
+            <span class="emoji">{{ getRiderEmoji(rider.type) }}</span>
+            <div class="rider-details">
+              <span class="name">{{ rider.name }}</span>
+              <span class="type">{{ RiderConfig[rider.type].name }}</span>
+            </div>
+            <div class="rider-stats">
+              <span class="stat" :title="`Position sur le parcours: case ${rider.position + 1}`">
+                📍 {{ rider.position + 1 }}
+              </span>
+              <span 
+                class="stat" 
+                :class="getFatigueClass(rider.fatigue)"
+                :title="`Fatigue: ${rider.fatigue}/10 - ${getFatigueStatus(rider.fatigue)}`"
+              >
+                ❤️ {{ rider.fatigue }}
+              </span>
+              <span class="stat" :title="`Cartes Attaque restantes: ${rider.attackCardsRemaining}`">
+                ⚔️ {{ rider.attackCardsRemaining }}
+              </span>
+            </div>
+            <div class="rider-status">
+              <span v-if="rider.hasFinished" class="badge finished">🏁 Arrivé</span>
+              <span v-else-if="hasRiderPlayed(rider)" class="badge played">✓ Joué</span>
+              <span v-else class="badge available">Disponible</span>
+            </div>
           </div>
-          <div v-if="gameStatus.lastCard" class="card-drawn">
-            <span :class="gameStatus.lastCard.type">
-              {{ gameStatus.lastCard.type === 'penalty' ? '❌' : '✅' }}
-              {{ gameStatus.lastCard.card.name }}
+        </div>
+      </div>
+
+      <!-- Current Rider Action Phase -->
+      <div v-else-if="gameStatus.currentRider" class="action-phase">
+        <div 
+          class="rider-header" 
+          :style="{ background: gameStatus.currentRider.teamConfig?.bgColor }"
+        >
+          <h2>
+            <span class="team-indicator" :style="{ background: gameStatus.currentRider.teamConfig?.color }"></span>
+            {{ gameStatus.currentRider.name }}
+            <span class="team-name">({{ gameStatus.currentRider.teamConfig?.name }})</span>
+          </h2>
+          <button 
+            v-if="gameStatus.turnPhase === 'pre_roll'"
+            @click="cancelSelection" 
+            class="btn cancel"
+            title="Annuler la sélection et choisir un autre coureur"
+          >
+            ← Changer de coureur
+          </button>
+        </div>
+        
+        <div class="rider-info">
+          <span 
+            class="info-badge rider-type" 
+            :title="`Type de coureur avec ses bonus/malus par terrain`"
+          >
+            {{ getRiderEmoji(gameStatus.currentRider.type) }} {{ gameStatus.currentRider.config.name }}
+          </span>
+          <span 
+            class="info-badge terrain"
+            :title="getTerrainTooltip(gameStatus.currentRider.terrain)"
+          >
+            {{ TerrainConfig[gameStatus.currentRider.terrain]?.emoji }} {{ gameStatus.currentRider.terrainConfig.name }}
+            <span class="bonus">
+              ({{ getTerrainBonusDisplay(gameStatus.currentRider.type, gameStatus.currentRider.terrain) }})
             </span>
-          </div>
-          <button @click="resolveMove" class="btn resolve">
-            ✓ Appliquer le mouvement
-          </button>
-        </template>
+          </span>
+          <span 
+            class="info-badge fatigue" 
+            :class="fatigueClass"
+            :title="getFatigueTooltip(gameStatus.currentRider.fatigue)"
+          >
+            ❤️ Fatigue: {{ gameStatus.currentRider.fatigue }}/10 
+            ({{ gameStatus.currentRider.fatigueStatus.status }})
+          </span>
+          <span 
+            class="info-badge attacks"
+            :title="`Cartes Attaque: +3 cases, coûte +1 fatigue. À jouer AVANT le lancer de dés.`"
+          >
+            ⚔️ Attaques: {{ gameStatus.currentRider.attackCardsRemaining }}
+          </span>
+          <span 
+            class="info-badge position"
+            :title="`Position actuelle sur le parcours (${finishLine} cases au total)`"
+          >
+            📊 Position: {{ gameStatus.currentRider.position + 1 }}/{{ finishLine }}
+          </span>
+        </div>
 
-        <!-- Select rider phase -->
-        <template v-if="gameStatus.turnPhase === 'select_rider'">
-          <button @click="selectCurrentRider" class="btn select">
-            ▶️ Jouer {{ gameStatus.currentRider?.name }}
-          </button>
-        </template>
+        <!-- Actions -->
+        <div class="actions">
+          <!-- Pre-roll phase -->
+          <template v-if="gameStatus.turnPhase === 'pre_roll'">
+            <button 
+              v-if="gameStatus.canAttack"
+              @click="useAttack"
+              class="btn attack"
+              :disabled="attackUsed"
+              :title="attackUsed ? 'Attaque déjà utilisée ce tour' : 'Jouer une carte Attaque: +3 cases, +1 fatigue'"
+            >
+              ⚔️ Attaque (+3) {{ attackUsed ? '✓' : '' }}
+            </button>
+            <button 
+              @click="rollDice" 
+              class="btn roll"
+              title="Lancer 2 dés à 6 faces pour déterminer le déplacement"
+            >
+              🎲 Lancer les dés
+            </button>
+          </template>
+
+          <!-- Resolve phase -->
+          <template v-if="gameStatus.turnPhase === 'resolve'">
+            <div class="dice-result">
+              <span class="dice" title="Résultat des 2d6">
+                🎲 {{ gameStatus.lastDiceRoll?.dice1 }} + {{ gameStatus.lastDiceRoll?.dice2 }} = {{ gameStatus.lastDiceRoll?.total }}
+              </span>
+              <span class="movement" :title="getMovementBreakdown()">
+                → Déplacement: {{ calculatedMovement }} cases
+              </span>
+            </div>
+            <div v-if="gameStatus.lastCard" class="card-drawn">
+              <span 
+                :class="gameStatus.lastCard.type"
+                :title="getCardDescription(gameStatus.lastCard.card)"
+              >
+                {{ gameStatus.lastCard.type === 'penalty' ? '❌' : '✅' }}
+                {{ gameStatus.lastCard.card.name }}
+              </span>
+            </div>
+            <button 
+              @click="resolveMove" 
+              class="btn resolve"
+              title="Confirmer et appliquer le déplacement"
+            >
+              ✓ Appliquer le mouvement
+            </button>
+          </template>
+        </div>
       </div>
     </div>
 
     <!-- Riders Overview by Team -->
     <div class="riders-overview">
-      <h3>Classement</h3>
+      <h3>📊 État des équipes</h3>
       <div class="teams-container">
         <!-- Team A -->
-        <div class="team-column team_a">
-          <h4 style="color: #dc2626">🔴 Équipe Rouge</h4>
+        <div 
+          class="team-column" 
+          :class="{ 'active': gameStatus.currentTeam === 'team_a' }"
+        >
+          <h4 style="color: #dc2626">
+            🔴 Équipe Rouge
+            <span v-if="gameStatus.currentTeam === 'team_a'" class="active-badge">← Joue</span>
+          </h4>
           <div 
             v-for="rider in getTeamRiders('team_a')" 
             :key="rider.id"
             class="rider-row"
             :class="{ 
-              'current': rider.id === gameStatus.currentRider?.id,
-              'finished': rider.hasFinished 
+              'selected': rider.id === gameStatus.selectedRiderId,
+              'played': hasRiderPlayed(rider),
+              'finished': rider.hasFinished,
+              'available': isRiderAvailable(rider) && gameStatus.currentTeam === 'team_a'
             }"
+            :title="getRiderTooltip(rider)"
+            @click="onRiderRowClick(rider)"
           >
             <span class="emoji">{{ getRiderEmoji(rider.type) }}</span>
             <span class="name">{{ rider.name }}</span>
-            <span class="pos">{{ rider.position + 1 }}</span>
-            <span class="fatigue">❤️{{ rider.fatigue }}</span>
-            <span class="attacks">⚔️{{ rider.attackCardsRemaining }}</span>
-            <span v-if="rider.hasFinished" class="finished-badge">🏁</span>
+            <span class="pos" :title="`Case ${rider.position + 1}`">{{ rider.position + 1 }}</span>
+            <span 
+              class="fatigue" 
+              :class="getFatigueClass(rider.fatigue)"
+              :title="`Fatigue: ${rider.fatigue}/10`"
+            >
+              ❤️{{ rider.fatigue }}
+            </span>
+            <span class="attacks" :title="`Attaques restantes: ${rider.attackCardsRemaining}`">
+              ⚔️{{ rider.attackCardsRemaining }}
+            </span>
+            <span v-if="rider.hasFinished" class="status-badge">🏁</span>
+            <span v-else-if="hasRiderPlayed(rider)" class="status-badge played">✓</span>
           </div>
         </div>
         <!-- Team B -->
-        <div class="team-column team_b">
-          <h4 style="color: #2563eb">🔵 Équipe Bleue</h4>
+        <div 
+          class="team-column"
+          :class="{ 'active': gameStatus.currentTeam === 'team_b' }"
+        >
+          <h4 style="color: #2563eb">
+            🔵 Équipe Bleue
+            <span v-if="gameStatus.currentTeam === 'team_b'" class="active-badge">← Joue</span>
+          </h4>
           <div 
             v-for="rider in getTeamRiders('team_b')" 
             :key="rider.id"
             class="rider-row"
             :class="{ 
-              'current': rider.id === gameStatus.currentRider?.id,
-              'finished': rider.hasFinished 
+              'selected': rider.id === gameStatus.selectedRiderId,
+              'played': hasRiderPlayed(rider),
+              'finished': rider.hasFinished,
+              'available': isRiderAvailable(rider) && gameStatus.currentTeam === 'team_b'
             }"
+            :title="getRiderTooltip(rider)"
+            @click="onRiderRowClick(rider)"
           >
             <span class="emoji">{{ getRiderEmoji(rider.type) }}</span>
             <span class="name">{{ rider.name }}</span>
-            <span class="pos">{{ rider.position + 1 }}</span>
-            <span class="fatigue">❤️{{ rider.fatigue }}</span>
-            <span class="attacks">⚔️{{ rider.attackCardsRemaining }}</span>
-            <span v-if="rider.hasFinished" class="finished-badge">🏁</span>
+            <span class="pos" :title="`Case ${rider.position + 1}`">{{ rider.position + 1 }}</span>
+            <span 
+              class="fatigue"
+              :class="getFatigueClass(rider.fatigue)"
+              :title="`Fatigue: ${rider.fatigue}/10`"
+            >
+              ❤️{{ rider.fatigue }}
+            </span>
+            <span class="attacks" :title="`Attaques restantes: ${rider.attackCardsRemaining}`">
+              ⚔️{{ rider.attackCardsRemaining }}
+            </span>
+            <span v-if="rider.hasFinished" class="status-badge">🏁</span>
+            <span v-else-if="hasRiderPlayed(rider)" class="status-badge played">✓</span>
           </div>
         </div>
       </div>
@@ -184,6 +344,14 @@
     <!-- Game Over Panel -->
     <div v-if="gameStatus.phase === 'finished'" class="game-over-panel">
       <h2>🏆 Course Terminée!</h2>
+      <div class="winning-team" v-if="gameStatus.winningTeam">
+        <span 
+          class="winner-badge"
+          :style="{ background: TeamConfig[gameStatus.winningTeam]?.color }"
+        >
+          {{ TeamConfig[gameStatus.winningTeam]?.name }} gagne!
+        </span>
+      </div>
       <div class="final-rankings">
         <div 
           v-for="(rider, index) in gameStatus.rankings.slice(0, 10)" 
@@ -199,7 +367,7 @@
           <span class="final-pos">Position: {{ rider.position + 1 }}</span>
         </div>
       </div>
-      <button @click="restartGame" class="btn restart">
+      <button @click="restartGame" class="btn restart" title="Recommencer une nouvelle partie">
         🔄 Nouvelle partie
       </button>
     </div>
@@ -212,16 +380,7 @@
           v-for="(entry, i) in gameLog" 
           :key="i" 
           class="log-entry"
-          :class="{ 
-            'turn-header': entry.includes('──────'),
-            'last-turn-header': entry.includes('DERNIER TOUR'),
-            'results-header': entry.includes('RÉSULTATS'),
-            'finish': entry.includes('🏁'),
-            'attack': entry.includes('⚔️'),
-            'fall': entry.includes('💥'),
-            'bonus': entry.includes('✨'),
-            'penalty': entry.includes('⚠️')
-          }"
+          :class="getLogEntryClass(entry)"
         >
           {{ entry }}
         </div>
@@ -236,6 +395,11 @@
         <div class="rule-card">
           <h3>🎯 Objectif</h3>
           <p>Être le premier à franchir la ligne d'arrivée. Quand un coureur franchit la ligne, le <strong>dernier tour</strong> est déclenché : tous les coureurs jouent une dernière fois, puis le classement final est établi.</p>
+        </div>
+
+        <div class="rule-card">
+          <h3>🎮 Tour de Jeu</h3>
+          <p>Chaque joueur <strong>choisit librement</strong> quel coureur de son équipe jouer. Les joueurs <strong>alternent</strong> : Joueur 1 joue un coureur, puis Joueur 2, et ainsi de suite jusqu'à ce que tous les coureurs aient joué.</p>
         </div>
 
         <div class="rule-card">
@@ -320,13 +484,8 @@
         </div>
 
         <div class="rule-card">
-          <h3>🔄 Aspiration</h3>
-          <p>En fin de tour, si un coureur est à <strong>1 case</strong> du coureur devant lui, il avance automatiquement d'1 case (regroupement). L'aspiration est <strong>inactive</strong> en montagne et descente.</p>
-        </div>
-
-        <div class="rule-card">
           <h3>🏁 Fin de Course</h3>
-          <p>Quand le premier coureur franchit la ligne, le <strong>dernier tour</strong> commence. Tous les coureurs (même ceux déjà arrivés) jouent une dernière fois. Le classement est basé sur la position finale.</p>
+          <p>Quand le premier coureur franchit la ligne, le <strong>dernier tour</strong> commence. Tous les coureurs jouent une dernière fois. Le classement est basé sur la position finale. L'équipe avec les meilleures positions gagne!</p>
         </div>
       </div>
     </div>
@@ -338,15 +497,18 @@ import { ref, computed, onMounted, nextTick, watch } from 'vue';
 import {
   createGameState,
   startTurn,
-  selectRider,
+  selectRider as selectRiderAction,
+  deselectRider,
   playAttackCard,
   rollDice as rollDiceAction,
   resolveMovement,
   calculateMovement,
   getGameStatus,
+  getTerrainBonus,
   TerrainConfig,
   RiderConfig,
-  TeamConfig
+  TeamConfig,
+  getCardDescription
 } from '../core/game_engine.js';
 
 // Game state
@@ -391,11 +553,6 @@ const course = computed(() => gameState.value?.course || []);
 const finishLine = computed(() => gameState.value?.finishLine || 50);
 const gameLog = computed(() => gameState.value?.gameLog || []);
 
-const sortedRiders = computed(() => {
-  if (!gameState.value) return [];
-  return [...gameState.value.riders].sort((a, b) => b.position - a.position);
-});
-
 const calculatedMovement = computed(() => {
   if (!gameState.value) return 0;
   return calculateMovement(gameState.value);
@@ -403,12 +560,22 @@ const calculatedMovement = computed(() => {
 
 const phaseLabel = computed(() => {
   const labels = {
-    'select_rider': 'Sélection',
+    'select_rider': 'Sélection du coureur',
     'pre_roll': 'Préparation',
     'roll_dice': 'Lancer',
     'resolve': 'Résolution'
   };
   return labels[gameStatus.value.turnPhase] || '';
+});
+
+const phaseTooltip = computed(() => {
+  const tooltips = {
+    'select_rider': 'Choisissez un coureur de votre équipe à jouer',
+    'pre_roll': 'Vous pouvez jouer une carte Attaque avant de lancer les dés',
+    'roll_dice': 'Lancez les dés pour déterminer le déplacement',
+    'resolve': 'Confirmez le mouvement pour passer au joueur suivant'
+  };
+  return tooltips[gameStatus.value.turnPhase] || '';
 });
 
 const fatigueClass = computed(() => {
@@ -441,6 +608,23 @@ function getTeamRiders(team) {
     .sort((a, b) => b.position - a.position);
 }
 
+function hasSelectedRiderAtPosition(position) {
+  if (!gameStatus.value.selectedRiderId) return false;
+  const rider = gameState.value?.riders.find(r => r.id === gameStatus.value.selectedRiderId);
+  return rider?.position === position && !rider?.hasFinished;
+}
+
+function isRiderAvailable(rider) {
+  if (!gameState.value) return false;
+  return rider.team === gameStatus.value.currentTeam &&
+         !gameStatus.value.ridersPlayedThisTurn?.includes(rider.id) &&
+         !rider.hasFinished;
+}
+
+function hasRiderPlayed(rider) {
+  return gameStatus.value.ridersPlayedThisTurn?.includes(rider.id);
+}
+
 function getRiderEmoji(type) {
   return RiderConfig[type]?.emoji || '🚴';
 }
@@ -464,8 +648,108 @@ function getMedal(index) {
   return `${index + 1}.`;
 }
 
-function selectCurrentRider() {
-  gameState.value = selectRider(gameState.value);
+function getFatigueClass(fatigue) {
+  if (fatigue <= 3) return 'ok';
+  if (fatigue <= 6) return 'tired';
+  if (fatigue <= 9) return 'exhausted';
+  return 'fringale';
+}
+
+function getFatigueStatus(fatigue) {
+  if (fatigue <= 3) return 'OK';
+  if (fatigue <= 6) return 'Fatigué (-1)';
+  if (fatigue <= 9) return 'Épuisé (-2)';
+  return 'Fringale (max 4 cases)';
+}
+
+// Tooltips
+function getRiderTooltip(rider) {
+  const type = RiderConfig[rider.type]?.name;
+  const team = TeamConfig[rider.team]?.shortName;
+  const fatigueStatus = getFatigueStatus(rider.fatigue);
+  return `${rider.name} (${team})
+Type: ${type}
+Position: case ${rider.position + 1}
+Fatigue: ${rider.fatigue}/10 (${fatigueStatus})
+Attaques: ${rider.attackCardsRemaining} restantes`;
+}
+
+function getRiderSelectTooltip(rider) {
+  if (rider.hasFinished) return `${rider.name} a déjà franchi la ligne d'arrivée`;
+  if (hasRiderPlayed(rider)) return `${rider.name} a déjà joué ce tour`;
+  if (!isRiderAvailable(rider)) return `Ce n'est pas votre tour`;
+  return `Cliquez pour jouer ${rider.name}`;
+}
+
+function getTerrainTooltip(terrain) {
+  const tooltips = {
+    'flat': 'Plaine: Bonus pour Rouleur (+2) et Sprinteur (+1)',
+    'hill': 'Côte: Bonus pour Puncheur (+2) et Grimpeur (+1). Malus Sprinteur (-1)',
+    'mountain': 'Montagne: Bonus Grimpeur (+2), Puncheur (+1). Malus Rouleur (-1), Sprinteur (-2). Pas de prise de vent.',
+    'descent': 'Descente: +3 pour tous, minimum 5 cases. Risque de chute sur double 1. Récupération possible. Pas de prise de vent.',
+    'sprint': 'Zone Sprint: Bonus Sprinteur (+3). Malus Grimpeur (-1).'
+  };
+  return tooltips[terrain] || '';
+}
+
+function getTerrainBonusDisplay(riderType, terrain) {
+  const bonus = getTerrainBonus(terrain, riderType);
+  if (bonus > 0) return `+${bonus}`;
+  if (bonus < 0) return `${bonus}`;
+  return '±0';
+}
+
+function getFatigueTooltip(fatigue) {
+  if (fatigue <= 3) return 'Fatigue OK: Aucun malus de déplacement';
+  if (fatigue <= 6) return 'Fatigué: -1 au déplacement';
+  if (fatigue <= 9) return 'Épuisé: -2 au déplacement';
+  return 'Fringale! Déplacement maximum de 4 cases';
+}
+
+function getMovementBreakdown() {
+  if (!gameStatus.value.currentRider || !gameStatus.value.lastDiceRoll) return '';
+  
+  const rider = gameStatus.value.currentRider;
+  const terrain = rider.terrain;
+  const terrainBonus = getTerrainBonus(terrain, rider.type);
+  const diceTotal = gameStatus.value.lastDiceRoll.total;
+  
+  let breakdown = `Dés: ${diceTotal}`;
+  if (terrainBonus !== 0) breakdown += ` | Terrain: ${terrainBonus > 0 ? '+' : ''}${terrainBonus}`;
+  if (attackUsed.value) breakdown += ` | Attaque: +3`;
+  if (rider.fatigueStatus.penalty) breakdown += ` | Fatigue: ${rider.fatigueStatus.penalty}`;
+  
+  return breakdown;
+}
+
+function getLogEntryClass(entry) {
+  return {
+    'turn-header': entry.includes('──────'),
+    'last-turn-header': entry.includes('DERNIER TOUR'),
+    'results-header': entry.includes('RÉSULTATS'),
+    'finish': entry.includes('🏁'),
+    'attack': entry.includes('⚔️'),
+    'fall': entry.includes('💥'),
+    'bonus': entry.includes('✨'),
+    'penalty': entry.includes('⚠️'),
+    'player-turn': entry.includes('🎮') || entry.includes('🔄')
+  };
+}
+
+// Actions
+function onRiderSelect(rider) {
+  if (!isRiderAvailable(rider)) return;
+  gameState.value = selectRiderAction(gameState.value, rider.id);
+}
+
+function onRiderRowClick(rider) {
+  if (gameStatus.value.turnPhase !== 'select_rider') return;
+  if (!isRiderAvailable(rider)) return;
+  gameState.value = selectRiderAction(gameState.value, rider.id);
+}
+
+function cancelSelection() {
+  gameState.value = deselectRider(gameState.value);
 }
 
 function useAttack() {
@@ -496,29 +780,39 @@ h1 {
   margin-bottom: 20px;
 }
 
+/* Status Bar */
 .status-bar {
   display: flex;
   justify-content: center;
+  align-items: center;
   gap: 20px;
-  padding: 10px;
+  padding: 12px;
   background: #f5f5f5;
   border-radius: 8px;
   margin-bottom: 20px;
+  border: 3px solid #ddd;
 }
 
 .status-bar.last-turn {
   background: #fef3c7;
-  border: 2px solid #f59e0b;
+  border-color: #f59e0b;
 }
 
 .status-bar .turn {
   font-weight: bold;
 }
 
+.status-bar .current-player {
+  color: white;
+  padding: 4px 12px;
+  border-radius: 4px;
+  font-weight: bold;
+}
+
 .status-bar .last-turn-badge {
   background: #f59e0b;
   color: white;
-  padding: 2px 8px;
+  padding: 4px 12px;
   border-radius: 4px;
   font-weight: bold;
   animation: pulse 1s infinite;
@@ -527,11 +821,6 @@ h1 {
 @keyframes pulse {
   0%, 100% { opacity: 1; }
   50% { opacity: 0.7; }
-}
-
-.status-bar .winner {
-  color: #f59e0b;
-  font-weight: bold;
 }
 
 /* Board */
@@ -559,6 +848,7 @@ h1 {
   padding: 4px;
   border-radius: 4px;
   font-size: 10px;
+  transition: all 0.2s;
 }
 
 .cell.flat { background: #90EE90; }
@@ -567,6 +857,12 @@ h1 {
 .cell.descent { background: #87CEEB; }
 .cell.sprint { background: #FF69B4; }
 .cell.finish { border: 2px solid #000; }
+
+.cell.has-selected {
+  box-shadow: 0 0 0 3px #fbbf24, 0 0 15px rgba(251, 191, 36, 0.5);
+  transform: scale(1.1);
+  z-index: 10;
+}
 
 .cell-number {
   font-size: 8px;
@@ -591,10 +887,17 @@ h1 {
   align-items: center;
   justify-content: center;
   background: white;
+  transition: all 0.2s;
 }
 
 .rider-token.team_a { border-color: #dc2626; background: #fecaca; }
 .rider-token.team_b { border-color: #2563eb; background: #bfdbfe; }
+
+.rider-token.selected {
+  box-shadow: 0 0 0 3px #fbbf24, 0 0 10px rgba(251, 191, 36, 0.8);
+  transform: scale(1.2);
+  z-index: 20;
+}
 
 .finish-zone {
   display: flex;
@@ -627,6 +930,7 @@ h1 {
   display: flex;
   align-items: center;
   gap: 8px;
+  cursor: help;
 }
 
 .team-color {
@@ -635,8 +939,8 @@ h1 {
   border-radius: 50%;
 }
 
-/* Current Rider Panel */
-.current-rider-panel {
+/* Player Panel */
+.player-panel {
   background: #f9f9f9;
   border-radius: 8px;
   margin-bottom: 20px;
@@ -644,23 +948,129 @@ h1 {
   overflow: hidden;
 }
 
-.rider-header {
-  padding: 10px 20px;
-  display: flex;
-  align-items: center;
+/* Select Phase */
+.select-phase .phase-header {
+  padding: 15px 20px;
 }
 
-.rider-header h2 {
-  margin: 0;
+.select-phase .phase-header h2 {
+  margin: 0 0 5px 0;
   display: flex;
   align-items: center;
   gap: 10px;
+}
+
+.select-phase .phase-hint {
+  margin: 0;
+  color: #666;
+  font-size: 14px;
 }
 
 .team-indicator {
   width: 12px;
   height: 12px;
   border-radius: 50%;
+}
+
+.available-riders {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+  gap: 10px;
+  padding: 15px;
+}
+
+.rider-select-card {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 12px;
+  background: white;
+  border-radius: 8px;
+  border: 2px solid #e5e7eb;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.rider-select-card.available {
+  border-color: #22c55e;
+  cursor: pointer;
+}
+
+.rider-select-card.available:hover {
+  background: #dcfce7;
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+}
+
+.rider-select-card.played {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.rider-select-card.finished {
+  opacity: 0.5;
+  cursor: not-allowed;
+  background: #f0fdf4;
+}
+
+.rider-select-card .emoji {
+  font-size: 24px;
+}
+
+.rider-select-card .rider-details {
+  flex: 1;
+}
+
+.rider-select-card .name {
+  display: block;
+  font-weight: 600;
+}
+
+.rider-select-card .type {
+  display: block;
+  font-size: 12px;
+  color: #666;
+}
+
+.rider-select-card .rider-stats {
+  display: flex;
+  gap: 8px;
+}
+
+.rider-select-card .stat {
+  font-size: 12px;
+  padding: 2px 6px;
+  background: #f3f4f6;
+  border-radius: 4px;
+}
+
+.rider-select-card .stat.tired { background: #fef3c7; }
+.rider-select-card .stat.exhausted { background: #fee2e2; }
+.rider-select-card .stat.fringale { background: #fecaca; color: #991b1b; }
+
+.rider-select-card .rider-status .badge {
+  font-size: 11px;
+  padding: 2px 8px;
+  border-radius: 10px;
+}
+
+.rider-select-card .badge.available { background: #dcfce7; color: #166534; }
+.rider-select-card .badge.played { background: #e5e7eb; color: #374151; }
+.rider-select-card .badge.finished { background: #dbeafe; color: #1e40af; }
+
+/* Action Phase */
+.action-phase .rider-header {
+  padding: 15px 20px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.action-phase .rider-header h2 {
+  margin: 0;
+  display: flex;
+  align-items: center;
+  gap: 10px;
 }
 
 .team-name {
@@ -672,21 +1082,28 @@ h1 {
 .rider-info {
   display: flex;
   flex-wrap: wrap;
-  gap: 15px;
+  gap: 10px;
   padding: 15px 20px;
 }
 
-.rider-info span {
-  padding: 5px 10px;
+.info-badge {
+  padding: 6px 12px;
   background: #fff;
-  border-radius: 4px;
+  border-radius: 6px;
   border: 1px solid #ddd;
+  font-size: 13px;
+  cursor: help;
 }
 
-.fatigue.ok { border-color: #22c55e; }
-.fatigue.tired { border-color: #f59e0b; }
-.fatigue.exhausted { border-color: #ef4444; }
-.fatigue.fringale { border-color: #7f1d1d; background: #fecaca; }
+.info-badge .bonus {
+  font-weight: 600;
+  margin-left: 4px;
+}
+
+.info-badge.fatigue.ok { border-color: #22c55e; background: #f0fdf4; }
+.info-badge.fatigue.tired { border-color: #f59e0b; background: #fffbeb; }
+.info-badge.fatigue.exhausted { border-color: #ef4444; background: #fef2f2; }
+.info-badge.fatigue.fringale { border-color: #7f1d1d; background: #fecaca; }
 
 .actions {
   display: flex;
@@ -695,6 +1112,7 @@ h1 {
   align-items: center;
   padding: 15px 20px;
   background: #fff;
+  border-top: 1px solid #e5e7eb;
 }
 
 .btn {
@@ -717,10 +1135,10 @@ h1 {
   transform: none;
 }
 
+.btn.cancel { background: #e5e7eb; color: #374151; }
 .btn.attack { background: #f59e0b; color: white; }
 .btn.roll { background: #3b82f6; color: white; }
 .btn.resolve { background: #22c55e; color: white; }
-.btn.select { background: #8b5cf6; color: white; }
 .btn.restart { background: #6366f1; color: white; font-size: 16px; padding: 15px 30px; }
 
 .dice-result {
@@ -734,6 +1152,7 @@ h1 {
   padding: 8px 12px;
   border-radius: 4px;
   font-weight: 500;
+  cursor: help;
 }
 
 .card-drawn .penalty { color: #dc2626; }
@@ -748,7 +1167,7 @@ h1 {
 }
 
 .riders-overview h3 {
-  margin: 0 0 10px 0;
+  margin: 0 0 15px 0;
   text-align: center;
 }
 
@@ -758,31 +1177,67 @@ h1 {
   gap: 20px;
 }
 
+.team-column {
+  padding: 10px;
+  border-radius: 8px;
+  transition: all 0.3s;
+}
+
+.team-column.active {
+  background: #f0f9ff;
+  box-shadow: 0 0 0 2px #3b82f6;
+}
+
 .team-column h4 {
   margin: 0 0 10px 0;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.active-badge {
+  font-size: 12px;
+  background: #22c55e;
+  color: white;
+  padding: 2px 8px;
+  border-radius: 10px;
+  animation: pulse 1s infinite;
 }
 
 .rider-row {
   display: flex;
-  gap: 10px;
+  gap: 8px;
   padding: 8px;
   border-radius: 4px;
   margin-bottom: 5px;
   background: #fff;
   align-items: center;
   font-size: 13px;
+  cursor: pointer;
+  transition: all 0.2s;
+  border: 2px solid transparent;
 }
 
-.team_a .rider-row { border-left: 3px solid #dc2626; }
-.team_b .rider-row { border-left: 3px solid #2563eb; }
+.team-column:first-child .rider-row { border-left: 3px solid #dc2626; }
+.team-column:last-child .rider-row { border-left: 3px solid #2563eb; }
 
-.rider-row.current {
-  background: #dbeafe;
-  border: 2px solid #3b82f6;
+.rider-row.available:hover {
+  background: #f0fdf4;
+  border-color: #22c55e;
+}
+
+.rider-row.selected {
+  background: #fef3c7;
+  border-color: #f59e0b;
+  box-shadow: 0 0 0 2px #fbbf24;
+}
+
+.rider-row.played {
+  opacity: 0.5;
 }
 
 .rider-row.finished {
-  background: #dcfce7;
+  background: #f0fdf4;
 }
 
 .rider-row .name {
@@ -797,8 +1252,17 @@ h1 {
   color: #666;
 }
 
-.finished-badge {
-  margin-left: auto;
+.rider-row .fatigue.ok { color: #16a34a; }
+.rider-row .fatigue.tired { color: #d97706; }
+.rider-row .fatigue.exhausted { color: #dc2626; }
+.rider-row .fatigue.fringale { color: #7f1d1d; font-weight: bold; }
+
+.rider-row .status-badge {
+  font-size: 12px;
+}
+
+.rider-row .status-badge.played {
+  color: #9ca3af;
 }
 
 /* Game Over Panel */
@@ -812,7 +1276,20 @@ h1 {
 }
 
 .game-over-panel h2 {
-  margin: 0 0 20px 0;
+  margin: 0 0 15px 0;
+}
+
+.winning-team {
+  margin-bottom: 20px;
+}
+
+.winner-badge {
+  display: inline-block;
+  color: white;
+  padding: 10px 30px;
+  border-radius: 30px;
+  font-size: 20px;
+  font-weight: bold;
 }
 
 .final-rankings {
@@ -902,6 +1379,7 @@ h1 {
 .log-entry.fall { color: #ef4444; }
 .log-entry.bonus { color: #a78bfa; }
 .log-entry.penalty { color: #fb923c; }
+.log-entry.player-turn { color: #60a5fa; }
 
 /* Rules Section */
 .rules-section {

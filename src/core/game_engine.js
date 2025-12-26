@@ -15,7 +15,7 @@ import { isTakingWind, isInPeloton, applyAspiration, getRiderGroups, getGapToLea
 export const GamePhase = {
   SETUP: 'setup',
   PLAYING: 'playing',
-  LAST_TURN: 'last_turn',  // Final turn after first rider crosses finish
+  LAST_TURN: 'last_turn',
   FINISHED: 'finished'
 };
 
@@ -24,10 +24,10 @@ export const GamePhase = {
  */
 export const TurnPhase = {
   SELECT_RIDER: 'select_rider',
-  PRE_ROLL: 'pre_roll',       // Can use attack card
+  PRE_ROLL: 'pre_roll',
   ROLL_DICE: 'roll_dice',
   RESOLVE: 'resolve',
-  NEXT_RIDER: 'next_rider'
+  NEXT_PLAYER: 'next_player'
 };
 
 /**
@@ -41,15 +41,19 @@ export const Teams = {
 export const TeamConfig = {
   [Teams.TEAM_A]: {
     name: 'Équipe Rouge',
+    shortName: 'Rouge',
     color: '#dc2626',
     bgColor: '#fecaca',
-    borderColor: '#b91c1c'
+    borderColor: '#b91c1c',
+    playerName: 'Joueur 1'
   },
   [Teams.TEAM_B]: {
     name: 'Équipe Bleue',
+    shortName: 'Bleue',
     color: '#2563eb',
     bgColor: '#bfdbfe',
-    borderColor: '#1d4ed8'
+    borderColor: '#1d4ed8',
+    playerName: 'Joueur 2'
   }
 };
 
@@ -100,6 +104,9 @@ export function createGameState(options = {}) {
   const riders = twoTeams ? createTwoTeamsRiders() : createTestRiders();
   const { penaltyDeck, bonusDeck } = createGameDecks();
   
+  // Random starting player
+  const startingTeam = Math.random() < 0.5 ? Teams.TEAM_A : Teams.TEAM_B;
+  
   return {
     // Game configuration
     courseLength,
@@ -119,10 +126,12 @@ export function createGameState(options = {}) {
     turnPhase: TurnPhase.SELECT_RIDER,
     currentTurn: 1,
     
-    // Current turn state
-    currentRiderIndex: null,
-    turnOrder: [],
-    ridersPlayedThisTurn: [],
+    // Player turn management
+    currentTeam: startingTeam,
+    ridersPlayedThisTurn: [],  // IDs of riders who have played this turn
+    
+    // Selected rider for current action
+    selectedRiderId: null,
     
     // Last turn tracking
     isLastTurn: false,
@@ -153,7 +162,7 @@ export function createGameState(options = {}) {
  */
 export function getTerrainAt(state, position) {
   if (position >= state.courseLength) {
-    return TerrainType.SPRINT; // After finish line
+    return TerrainType.SPRINT;
   }
   if (position < 0) {
     return TerrainType.FLAT;
@@ -162,14 +171,36 @@ export function getTerrainAt(state, position) {
 }
 
 /**
- * Determine turn order based on position (leader first)
- * @param {Array} riders - All riders
- * @returns {Array} Ordered rider IDs
+ * Get the other team
+ * @param {string} team - Current team
+ * @returns {string} Other team
  */
-export function determineTurnOrder(riders) {
-  // All riders play, even those who finished (they just skip)
-  const sorted = [...riders].sort((a, b) => b.position - a.position);
-  return sorted.map(r => r.id);
+export function getOtherTeam(team) {
+  return team === Teams.TEAM_A ? Teams.TEAM_B : Teams.TEAM_A;
+}
+
+/**
+ * Get available riders for a team (not yet played this turn, not finished)
+ * @param {Object} state - Game state
+ * @param {string} team - Team to check
+ * @returns {Array} Available riders
+ */
+export function getAvailableRiders(state, team) {
+  return state.riders.filter(r => 
+    r.team === team && 
+    !state.ridersPlayedThisTurn.includes(r.id) &&
+    !r.hasFinished
+  );
+}
+
+/**
+ * Check if a team has available riders
+ * @param {Object} state - Game state
+ * @param {string} team - Team to check
+ * @returns {boolean}
+ */
+export function teamHasAvailableRiders(state, team) {
+  return getAvailableRiders(state, team).length > 0;
 }
 
 /**
@@ -178,60 +209,64 @@ export function determineTurnOrder(riders) {
  * @returns {Object} Updated game state
  */
 export function startTurn(state) {
-  // All riders participate in turn order
-  const turnOrder = determineTurnOrder(state.riders);
+  // Determine starting team for this turn (alternate from last turn's starter)
+  const startingTeam = state.currentTurn === 1 
+    ? state.currentTeam 
+    : getOtherTeam(state.lastTurnStarter || Teams.TEAM_A);
   
   // Add turn separator to log
   const turnHeader = state.isLastTurn 
     ? `\n══════════ 🏁 DERNIER TOUR (Tour ${state.currentTurn}) ══════════`
     : `\n────────── Tour ${state.currentTurn} ──────────`;
   
+  const teamName = TeamConfig[startingTeam].shortName;
+  
   return {
     ...state,
-    turnOrder,
-    currentRiderIndex: 0,
+    currentTeam: startingTeam,
+    lastTurnStarter: startingTeam,
     ridersPlayedThisTurn: [],
+    selectedRiderId: null,
     turnPhase: TurnPhase.SELECT_RIDER,
-    gameLog: [...state.gameLog, turnHeader]
+    gameLog: [
+      ...state.gameLog, 
+      turnHeader,
+      `🎮 ${TeamConfig[startingTeam].playerName} (${teamName}) commence`
+    ]
   };
 }
 
 /**
- * Get current rider
+ * Get current rider (selected)
  * @param {Object} state - Game state
  * @returns {Object|null} Current rider or null
  */
 export function getCurrentRider(state) {
-  if (state.currentRiderIndex === null || state.turnOrder.length === 0) {
-    return null;
-  }
-  
-  const riderId = state.turnOrder[state.currentRiderIndex];
-  return state.riders.find(r => r.id === riderId);
+  if (!state.selectedRiderId) return null;
+  return state.riders.find(r => r.id === state.selectedRiderId);
 }
 
 /**
- * Select rider for action (move to pre-roll phase)
+ * Select a rider to play
  * @param {Object} state - Game state
+ * @param {string} riderId - ID of rider to select
  * @returns {Object} Updated state
  */
-export function selectRider(state) {
-  const rider = getCurrentRider(state);
-  if (!rider) return state;
+export function selectRider(state, riderId) {
+  const rider = state.riders.find(r => r.id === riderId);
   
-  // Skip riders who already finished
-  if (rider.hasFinished) {
-    return moveToNextRider({
-      ...state,
-      gameLog: [...state.gameLog, `${rider.name} a déjà franchi la ligne`]
-    });
-  }
+  // Validation
+  if (!rider) return state;
+  if (rider.team !== state.currentTeam) return state;
+  if (state.ridersPlayedThisTurn.includes(riderId)) return state;
+  if (rider.hasFinished) return state;
   
   const terrain = getTerrainAt(state, rider.position);
   const takingWind = isTakingWind(rider, state.riders, terrain);
   
   let newState = {
     ...state,
+    selectedRiderId: riderId,
     turnPhase: TurnPhase.PRE_ROLL,
     attackUsedThisTurn: false,
     canReroll: false,
@@ -254,6 +289,22 @@ export function selectRider(state) {
   }
   
   return newState;
+}
+
+/**
+ * Deselect current rider (cancel selection)
+ * @param {Object} state - Game state
+ * @returns {Object} Updated state
+ */
+export function deselectRider(state) {
+  if (state.turnPhase !== TurnPhase.PRE_ROLL) return state;
+  
+  return {
+    ...state,
+    selectedRiderId: null,
+    turnPhase: TurnPhase.SELECT_RIDER,
+    lastCard: null
+  };
 }
 
 /**
@@ -315,7 +366,6 @@ export function rollDice(state) {
         `✨ ${rider.name} fait 7 → ${card.name}: ${getCardDescription(card)}`
       ];
       
-      // Check if can reroll
       if (card.effect.reroll) {
         newState.canReroll = true;
       }
@@ -331,7 +381,6 @@ export function rollDice(state) {
     ];
     
     if (fallTest.hasFallen) {
-      // Apply fall: move back 3, +2 fatigue
       const updatedRider = addFatigue({
         ...rider,
         position: Math.max(0, rider.position - 3),
@@ -406,7 +455,6 @@ export function calculateMovement(state) {
     movement = Math.max(movement, DescentRules.minSpeed);
   }
   
-  // Minimum 1 (unless special conditions)
   return Math.max(1, movement);
 }
 
@@ -421,7 +469,7 @@ export function resolveMovement(state) {
   
   // Skip if fallen this turn
   if (rider.hasFallenThisTurn) {
-    return moveToNextRider(state);
+    return moveToNextPlayer(state);
   }
   
   const terrain = getTerrainAt(state, rider.position);
@@ -488,32 +536,55 @@ export function resolveMovement(state) {
     ];
   }
   
-  return moveToNextRider(newState);
+  return moveToNextPlayer(newState);
 }
 
 /**
- * Move to next rider or end turn
+ * Move to next player or end turn
  * @param {Object} state - Game state
  * @returns {Object} Updated state
  */
-export function moveToNextRider(state) {
-  const nextIndex = state.currentRiderIndex + 1;
+export function moveToNextPlayer(state) {
+  const currentTeam = state.currentTeam;
+  const otherTeam = getOtherTeam(currentTeam);
   
-  // Check if turn is complete (all riders have played)
-  if (nextIndex >= state.turnOrder.length) {
-    return endTurn(state);
+  // Check if other team has available riders
+  if (teamHasAvailableRiders(state, otherTeam)) {
+    // Switch to other team
+    return {
+      ...state,
+      currentTeam: otherTeam,
+      selectedRiderId: null,
+      turnPhase: TurnPhase.SELECT_RIDER,
+      attackUsedThisTurn: false,
+      canReroll: false,
+      lastCard: null,
+      lastDiceRoll: null,
+      lastMovement: null,
+      gameLog: [
+        ...state.gameLog,
+        `🔄 Au tour de ${TeamConfig[otherTeam].playerName} (${TeamConfig[otherTeam].shortName})`
+      ]
+    };
   }
   
-  return {
-    ...state,
-    currentRiderIndex: nextIndex,
-    turnPhase: TurnPhase.SELECT_RIDER,
-    attackUsedThisTurn: false,
-    canReroll: false,
-    lastCard: null,
-    lastDiceRoll: null,
-    lastMovement: null
-  };
+  // Check if current team still has riders
+  if (teamHasAvailableRiders(state, currentTeam)) {
+    // Stay with current team
+    return {
+      ...state,
+      selectedRiderId: null,
+      turnPhase: TurnPhase.SELECT_RIDER,
+      attackUsedThisTurn: false,
+      canReroll: false,
+      lastCard: null,
+      lastDiceRoll: null,
+      lastMovement: null
+    };
+  }
+  
+  // Both teams have played all riders - end turn
+  return endTurn(state);
 }
 
 /**
@@ -531,22 +602,37 @@ export function endTurn(state) {
   
   // If this was the last turn, game is over
   if (state.isLastTurn) {
-    // Calculate final rankings based on position (furthest = winner)
+    // Calculate final rankings based on position
     const rankings = [...ridersReset].sort((a, b) => b.position - a.position);
     
-    // Assign finish positions
     rankings.forEach((rider, index) => {
       rider.finalRank = index + 1;
     });
     
-    // Build results log
+    // Determine team winner
+    const teamAScore = rankings
+      .filter(r => r.team === Teams.TEAM_A)
+      .slice(0, 3)
+      .reduce((sum, r, i) => sum + (10 - i * 2), 0);
+    const teamBScore = rankings
+      .filter(r => r.team === Teams.TEAM_B)
+      .slice(0, 3)
+      .reduce((sum, r, i) => sum + (10 - i * 2), 0);
+    
+    const winningTeam = teamAScore > teamBScore ? Teams.TEAM_A : 
+                        teamBScore > teamAScore ? Teams.TEAM_B : null;
+    
     const resultsLog = [
       `\n══════════ 🏆 RÉSULTATS FINAUX ══════════`,
       ...rankings.slice(0, 10).map((r, i) => {
         const medal = i === 0 ? '🥇' : i === 1 ? '🥈' : i === 2 ? '🥉' : `${i + 1}.`;
-        const team = TeamConfig[r.team]?.name || '';
+        const team = TeamConfig[r.team]?.shortName || '';
         return `${medal} ${r.name} (${team}) - Position: ${r.position + 1}`;
-      })
+      }),
+      ``,
+      winningTeam 
+        ? `🎉 ${TeamConfig[winningTeam].name} remporte la course!`
+        : `🤝 Égalité entre les équipes!`
     ];
     
     return {
@@ -554,6 +640,7 @@ export function endTurn(state) {
       riders: ridersReset,
       phase: GamePhase.FINISHED,
       rankings,
+      winningTeam,
       gameLog: [...state.gameLog, ...resultsLog]
     };
   }
@@ -574,12 +661,17 @@ export function endTurn(state) {
 export function getGameStatus(state) {
   const currentRider = getCurrentRider(state);
   const groups = getRiderGroups(state.riders);
+  const availableRiders = getAvailableRiders(state, state.currentTeam);
   
   return {
     turn: state.currentTurn,
     phase: state.phase,
     turnPhase: state.turnPhase,
     isLastTurn: state.isLastTurn,
+    currentTeam: state.currentTeam,
+    currentTeamConfig: TeamConfig[state.currentTeam],
+    selectedRiderId: state.selectedRiderId,
+    availableRiders,
     currentRider: currentRider ? {
       ...currentRider,
       config: RiderConfig[currentRider.type],
@@ -593,11 +685,13 @@ export function getGameStatus(state) {
     leader: state.riders.reduce((l, r) => r.position > l.position ? r : l, state.riders[0]),
     firstFinisher: state.firstFinisher,
     rankings: state.rankings,
+    winningTeam: state.winningTeam,
     lastDiceRoll: state.lastDiceRoll,
     lastCard: state.lastCard,
     lastMovement: state.lastMovement,
     canAttack: currentRider && !state.attackUsedThisTurn && currentRider.attackCardsRemaining > 0,
-    canReroll: state.canReroll
+    canReroll: state.canReroll,
+    ridersPlayedThisTurn: state.ridersPlayedThisTurn
   };
 }
 
