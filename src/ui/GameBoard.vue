@@ -23,6 +23,16 @@
       </span>
     </div>
 
+    <!-- Terrain Legend -->
+    <div class="terrain-legend">
+      <span class="legend-title">Terrains :</span>
+      <span class="terrain-item flat">🟩 Plaine 31%</span>
+      <span class="terrain-item hill">🟨 Côte 19%</span>
+      <span class="terrain-item mountain">🟫 Montagne 25%</span>
+      <span class="terrain-item descent">🟦 Descente 15%</span>
+      <span class="terrain-item sprint">🟪 Sprint 10%</span>
+    </div>
+
     <!-- Course Board -->
     <div class="board-container">
       <div class="course">
@@ -68,209 +78,269 @@
       </div>
     </div>
 
+    <!-- Selected Rider Panel (between course and teams) -->
+    <div v-if="gameStatus.currentRider && gameStatus.phase !== 'finished'" class="selected-rider-panel">
+      <div class="selected-rider-header" :style="{ background: gameStatus.currentRider.teamConfig?.bgColor, borderColor: gameStatus.currentRider.teamConfig?.color }">
+        <div class="rider-identity">
+          <span class="rider-emoji-large">{{ getRiderEmoji(gameStatus.currentRider.type) }}</span>
+          <div class="rider-details">
+            <span class="rider-name">{{ gameStatus.currentRider.name }}</span>
+            <span class="rider-type">{{ RiderConfig[gameStatus.currentRider.type]?.name }}</span>
+          </div>
+        </div>
+        
+        <div class="rider-stats">
+          <div class="stat-item">
+            <span class="stat-label">Position</span>
+            <span class="stat-value">{{ gameStatus.currentRider.position + 1 }}</span>
+          </div>
+          <div class="stat-item terrain-stat" :class="gameStatus.currentRider.terrain">
+            <span class="stat-label">Terrain</span>
+            <span class="stat-value">
+              {{ TerrainConfig[gameStatus.currentRider.terrain]?.emoji }}
+              {{ TerrainConfig[gameStatus.currentRider.terrain]?.name }}
+            </span>
+          </div>
+          <div class="stat-item bonus-stat" :class="{ 'positive': gameStatus.currentRider.terrainBonus > 0, 'negative': gameStatus.currentRider.terrainBonus < 0 }">
+            <span class="stat-label">Bonus terrain</span>
+            <span class="stat-value">{{ formatBonus(gameStatus.currentRider.terrainBonus) }}</span>
+          </div>
+        </div>
+
+        <button @click="cancelRiderSelection" class="btn-change-rider" title="Changer de coureur">
+          ← Changer
+        </button>
+      </div>
+
+      <div class="selected-rider-cards">
+        <!-- Movement Cards -->
+        <div class="cards-section">
+          <h4>🃏 Cartes Mouvement</h4>
+          <div class="cards-list">
+            <div 
+              v-for="card in gameStatus.currentRider.hand" 
+              :key="card.id"
+              class="card-item"
+              :class="{ 
+                'selectable': gameStatus.turnPhase === 'select_card',
+                'selected': card.id === gameStatus.selectedCardId,
+                'fatigue': card.type === 'fatigue'
+              }"
+              :style="{ background: card.type === 'fatigue' ? '#6b7280' : card.color }"
+              @click="onMovementCardClick(card)"
+            >
+              <span class="card-value">+{{ card.value }}</span>
+              <span class="card-name">{{ card.name }}</span>
+            </div>
+            <div v-if="gameStatus.currentRider.hand?.length === 0" class="empty-cards">
+              Main vide - Recyclage au prochain tour
+            </div>
+          </div>
+        </div>
+
+        <!-- Attack Cards -->
+        <div class="cards-section attack-section">
+          <h4>⚔️ Attaques</h4>
+          <div class="cards-list">
+            <div 
+              v-for="card in gameStatus.currentRider.attackCards" 
+              :key="card.id"
+              class="card-item attack-card"
+              :class="{ 
+                'selectable': gameStatus.turnPhase === 'select_card',
+                'selected': card.id === gameStatus.selectedCardId
+              }"
+              @click="onAttackCardClick(card)"
+            >
+              <span class="card-value">+6</span>
+              <span class="card-name">Attaque</span>
+            </div>
+            <div v-if="gameStatus.currentRider.attackCards?.length === 0" class="empty-cards">
+              Épuisées
+            </div>
+          </div>
+        </div>
+
+        <!-- Specialty Cards -->
+        <div class="cards-section specialty-section">
+          <h4>★ Spécialités</h4>
+          <div class="cards-list">
+            <div 
+              v-for="card in gameStatus.currentRider.specialtyCards" 
+              :key="card.id"
+              class="card-item specialty-card"
+              :class="{ 
+                'selectable': gameStatus.turnPhase === 'select_specialty' && gameStatus.currentRider.availableCards?.canUseSpecialty,
+                'selected': card.id === gameStatus.selectedSpecialtyId,
+                'disabled': !gameStatus.currentRider.availableCards?.canUseSpecialty
+              }"
+              @click="onSpecialtyCardClick(card)"
+            >
+              <span class="card-value">+2</span>
+              <span class="card-name">{{ getSpecialtyTerrainName(gameStatus.currentRider.type) }}</span>
+            </div>
+            <div v-if="gameStatus.currentRider.specialtyCards?.length === 0" class="empty-cards">
+              Épuisées
+            </div>
+          </div>
+          <div v-if="!gameStatus.currentRider.availableCards?.canUseSpecialty && gameStatus.currentRider.specialtyCards?.length > 0" class="specialty-hint">
+            (Utilisable sur {{ getSpecialtyTerrainName(gameStatus.currentRider.type) }})
+          </div>
+        </div>
+
+        <!-- Discard Info -->
+        <div class="discard-section" v-if="gameStatus.currentRider.discard?.length > 0">
+          <h4>📥 Défausse ({{ gameStatus.currentRider.discard.length }})</h4>
+          <div class="discard-preview">
+            <span 
+              v-for="card in gameStatus.currentRider.discard" 
+              :key="card.id"
+              class="discard-card"
+              :class="{ 'fatigue': card.type === 'fatigue' }"
+            >
+              +{{ card.value }}
+            </span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Action Zone -->
+      <div class="action-zone">
+        <!-- Phase: Select Card -->
+        <div v-if="gameStatus.turnPhase === 'select_card'" class="action-prompt">
+          <span class="prompt-icon">👆</span>
+          <span class="prompt-text">Choisissez une carte à jouer</span>
+        </div>
+
+        <!-- Phase: Roll Dice -->
+        <div v-if="gameStatus.turnPhase === 'roll_dice'" class="action-content">
+          <div class="selected-card-preview">
+            <span>Carte sélectionnée :</span>
+            <span class="selected-value" :class="{ 'attack': isSelectedCardAttack() }">+{{ getSelectedCardValue() }}</span>
+          </div>
+          <div class="action-buttons">
+            <button @click="onRollDice" class="btn btn-roll">
+              🎲 Lancer le dé
+            </button>
+            <button @click="cancelCardSelection" class="btn btn-cancel">
+              ← Changer de carte
+            </button>
+          </div>
+        </div>
+
+        <!-- Phase: Select Specialty -->
+        <div v-if="gameStatus.turnPhase === 'select_specialty'" class="action-content">
+          <div class="dice-result-display">
+            <span class="dice-icon">🎲</span>
+            <span class="dice-value">{{ gameStatus.lastDiceRoll?.result }}</span>
+            <span class="plus">+</span>
+            <span class="card-played">🃏 {{ getSelectedCardValue() }}</span>
+            <span v-if="gameStatus.currentRider.terrainBonus !== 0" class="terrain-bonus-display">
+              {{ formatBonus(gameStatus.currentRider.terrainBonus) }}
+            </span>
+          </div>
+          <div class="specialty-prompt">
+            Utiliser une carte Spécialité (+2) ?
+          </div>
+          <div class="action-buttons">
+            <button 
+              v-if="gameStatus.currentRider.specialtyCards?.length > 0"
+              @click="useSpecialty" 
+              class="btn btn-specialty"
+            >
+              ★ Utiliser (+2)
+            </button>
+            <button @click="skipSpecialty" class="btn btn-skip">
+              Passer →
+            </button>
+          </div>
+        </div>
+
+        <!-- Phase: Resolve -->
+        <div v-if="gameStatus.turnPhase === 'resolve'" class="action-content">
+          <div class="movement-calculation">
+            <div class="calc-row">
+              <span class="calc-item dice">🎲 {{ gameStatus.lastDiceRoll?.result }}</span>
+              <span class="calc-op">+</span>
+              <span class="calc-item card">🃏 {{ getSelectedCardValue() }}</span>
+              <span v-if="gameStatus.currentRider.terrainBonus !== 0" class="calc-op">{{ gameStatus.currentRider.terrainBonus > 0 ? '+' : '' }}</span>
+              <span v-if="gameStatus.currentRider.terrainBonus !== 0" class="calc-item terrain">{{ gameStatus.currentRider.terrainBonus }}</span>
+              <span v-if="gameStatus.selectedSpecialtyId" class="calc-op">+</span>
+              <span v-if="gameStatus.selectedSpecialtyId" class="calc-item specialty">★2</span>
+              <span class="calc-op">=</span>
+              <span class="calc-result">{{ gameStatus.calculatedMovement }}</span>
+            </div>
+          </div>
+          <button @click="onResolve" class="btn btn-resolve">
+            ✓ Avancer de {{ gameStatus.calculatedMovement }} cases
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- No rider selected prompt -->
+    <div v-else-if="gameStatus.phase !== 'finished'" class="no-selection-prompt">
+      <span class="prompt-icon">👆</span>
+      <span>Cliquez sur un coureur de <strong>{{ gameStatus.currentTeamConfig?.name }}</strong> pour le jouer</span>
+    </div>
+
     <!-- Team Legend -->
     <div class="team-legend">
       <div class="team-item">
         <span class="team-color" style="background: #dc2626"></span>
-        Équipe Rouge (J1)
+        Équipe Rouge (Joueur 1)
       </div>
       <div class="team-item">
         <span class="team-color" style="background: #2563eb"></span>
-        Équipe Bleue (J2)
-      </div>
-      <div class="legend-info">
-        Plateau: {{ finishLine }} cases | 1d6 + Carte + Bonus terrain
+        Équipe Bleue (Joueur 2)
       </div>
     </div>
 
-    <!-- Main Game Panel -->
-    <div v-if="gameStatus.phase !== 'finished'" class="game-panel">
-      
-      <!-- Team Cards Overview (Always Visible) -->
-      <div class="teams-cards-overview">
-        <div 
-          v-for="team in ['team_a', 'team_b']" 
-          :key="team"
-          class="team-cards-section"
-          :class="{ 'active': gameStatus.currentTeam === team }"
-        >
-          <h3 :style="{ color: TeamConfig[team].color }">
-            {{ TeamConfig[team].name }}
-            <span v-if="gameStatus.currentTeam === team" class="active-indicator">← Joue</span>
-          </h3>
-          
-          <div class="riders-cards-grid">
-            <div 
-              v-for="rider in getTeamRiders(team)" 
-              :key="rider.id"
-              class="rider-card-block"
-              :class="{ 
-                'selected': rider.id === gameStatus.selectedRiderId,
-                'played': hasRiderPlayed(rider),
-                'available': isRiderClickable(rider)
-              }"
-              @click="onRiderBlockClick(rider)"
-            >
-              <div class="rider-header-mini">
-                <span class="emoji">{{ getRiderEmoji(rider.type) }}</span>
-                <span class="name">{{ rider.name }}</span>
-                <span class="position" :title="`Position: case ${rider.position + 1}`">
-                  📍{{ rider.position + 1 }}
-                </span>
-                <span v-if="rider.hasFinished" class="badge-finished">🏁</span>
-                <span v-else-if="hasRiderPlayed(rider)" class="badge-played">✓</span>
-              </div>
-              
-              <!-- Cards Display -->
-              <div class="cards-row">
-                <!-- Movement Cards (Hand) -->
-                <div class="cards-group hand-cards">
-                  <span 
-                    v-for="card in rider.hand" 
-                    :key="card.id"
-                    class="mini-card movement"
-                    :class="{ 
-                      'selectable': canSelectCard(rider, card),
-                      'selected': card.id === gameStatus.selectedCardId,
-                      'fatigue': card.type === 'fatigue'
-                    }"
-                    :style="{ background: card.color }"
-                    :title="getCardTooltip(card)"
-                    @click.stop="onCardClick(rider, card)"
-                  >
-                    +{{ card.value }}
-                  </span>
-                  <span v-if="rider.hand.length === 0" class="empty-hand">∅</span>
-                </div>
-                
-                <!-- Attack Cards -->
-                <div class="cards-group attack-cards">
-                  <span 
-                    v-for="card in rider.attackCards" 
-                    :key="card.id"
-                    class="mini-card attack"
-                    :class="{ 
-                      'selectable': canSelectCard(rider, card),
-                      'selected': card.id === gameStatus.selectedCardId
-                    }"
-                    :title="'Attaque: +6 cases (usage unique)'"
-                    @click.stop="onCardClick(rider, card)"
-                  >
-                    ⚔️+6
-                  </span>
-                </div>
-                
-                <!-- Specialty Cards -->
-                <div class="cards-group specialty-cards">
-                  <span 
-                    v-for="card in rider.specialtyCards" 
-                    :key="card.id"
-                    class="mini-card specialty"
-                    :class="{ 
-                      'selectable': canSelectSpecialty(rider, card),
-                      'selected': card.id === gameStatus.selectedSpecialtyId
-                    }"
-                    :title="getSpecialtyTooltip(rider, card)"
-                    @click.stop="onSpecialtyClick(rider, card)"
-                  >
-                    ★+2
-                  </span>
-                </div>
-              </div>
-              
-              <!-- Discard pile indicator -->
-              <div v-if="rider.discard.length > 0" class="discard-info" :title="getDiscardTooltip(rider)">
-                📥 {{ rider.discard.length }} (moy: {{ getDiscardAverage(rider) }})
-              </div>
+    <!-- Teams Cards Overview -->
+    <div v-if="gameStatus.phase !== 'finished'" class="teams-overview">
+      <div 
+        v-for="team in ['team_a', 'team_b']" 
+        :key="team"
+        class="team-section"
+        :class="{ 'active': gameStatus.currentTeam === team }"
+      >
+        <h3 :style="{ color: TeamConfig[team].color }">
+          {{ TeamConfig[team].name }}
+          <span v-if="gameStatus.currentTeam === team" class="active-badge">← Joue</span>
+        </h3>
+        
+        <div class="riders-list">
+          <div 
+            v-for="rider in getTeamRiders(team)" 
+            :key="rider.id"
+            class="rider-row"
+            :class="{ 
+              'selected': rider.id === gameStatus.selectedRiderId,
+              'played': hasRiderPlayed(rider),
+              'clickable': isRiderClickable(rider)
+            }"
+            @click="onRiderRowClick(rider)"
+          >
+            <span class="rider-emoji">{{ getRiderEmoji(rider.type) }}</span>
+            <span class="rider-name">{{ rider.name }}</span>
+            <span class="rider-pos">📍{{ rider.position + 1 }}</span>
+            
+            <div class="rider-cards-mini">
+              <span class="hand-count" :title="`Main: ${rider.hand.length} cartes`">
+                🃏{{ rider.hand.length }}
+              </span>
+              <span class="attack-count" :title="`Attaques: ${rider.attackCards.length}`">
+                ⚔️{{ rider.attackCards.length }}
+              </span>
+              <span class="specialty-count" :title="`Spécialités: ${rider.specialtyCards.length}`">
+                ★{{ rider.specialtyCards.length }}
+              </span>
             </div>
-          </div>
-        </div>
-      </div>
 
-      <!-- Action Panel -->
-      <div class="action-panel" v-if="gameStatus.currentRider">
-        <div class="current-rider-info" :style="{ borderColor: gameStatus.currentRider.teamConfig?.color }">
-          <div class="info-header" :style="{ background: gameStatus.currentRider.teamConfig?.bgColor }">
-            <span class="rider-emoji">{{ getRiderEmoji(gameStatus.currentRider.type) }}</span>
-            <span class="rider-name">{{ gameStatus.currentRider.name }}</span>
-            <span class="terrain-badge" :class="gameStatus.currentRider.terrain">
-              {{ TerrainConfig[gameStatus.currentRider.terrain]?.emoji }}
-              {{ TerrainConfig[gameStatus.currentRider.terrain]?.name }}
-              <span class="bonus">({{ formatBonus(gameStatus.currentRider.terrainBonus) }})</span>
-            </span>
-          </div>
-          
-          <div class="action-buttons">
-            <!-- Phase: Select Card -->
-            <template v-if="gameStatus.turnPhase === 'select_card'">
-              <p class="instruction">Choisissez une carte à jouer</p>
-              <button @click="cancelRiderSelection" class="btn cancel">
-                ← Changer de coureur
-              </button>
-            </template>
-            
-            <!-- Phase: Roll Dice -->
-            <template v-if="gameStatus.turnPhase === 'roll_dice'">
-              <div class="selected-card-display">
-                Carte sélectionnée: 
-                <span class="card-value">+{{ getSelectedCardValue() }}</span>
-              </div>
-              <button @click="onRollDice" class="btn roll">
-                🎲 Lancer le dé
-              </button>
-              <button @click="cancelCardSelection" class="btn cancel">
-                ← Changer de carte
-              </button>
-            </template>
-            
-            <!-- Phase: Select Specialty -->
-            <template v-if="gameStatus.turnPhase === 'select_specialty'">
-              <div class="dice-result">
-                🎲 {{ gameStatus.lastDiceRoll?.result }} + Carte +{{ getSelectedCardValue() }}
-              </div>
-              <p class="instruction">Utiliser une carte Spécialité? (+2)</p>
-              <div class="specialty-choice">
-                <button 
-                  v-if="gameStatus.currentRider.specialtyCards?.length > 0"
-                  @click="useSpecialty" 
-                  class="btn specialty"
-                >
-                  ★ Utiliser Spécialité (+2)
-                </button>
-                <button @click="skipSpecialty" class="btn skip">
-                  Passer →
-                </button>
-              </div>
-            </template>
-            
-            <!-- Phase: Resolve -->
-            <template v-if="gameStatus.turnPhase === 'resolve'">
-              <div class="movement-summary">
-                <div class="dice-result" v-if="gameStatus.lastDiceRoll">
-                  🎲 {{ gameStatus.lastDiceRoll.result }}
-                  + 🃏 {{ getSelectedCardValue() }}
-                  <span v-if="gameStatus.currentRider.terrainBonus !== 0">
-                    {{ formatBonus(gameStatus.currentRider.terrainBonus) }} terrain
-                  </span>
-                  <span v-if="gameStatus.selectedSpecialtyId">
-                    + ★2 spécialité
-                  </span>
-                </div>
-                <div class="total-movement">
-                  = <strong>{{ gameStatus.calculatedMovement }}</strong> cases
-                </div>
-              </div>
-              <button @click="onResolve" class="btn resolve">
-                ✓ Appliquer
-              </button>
-            </template>
+            <span v-if="rider.hasFinished" class="status-badge finished">🏁</span>
+            <span v-else-if="hasRiderPlayed(rider)" class="status-badge played">✓</span>
           </div>
         </div>
-      </div>
-      
-      <!-- No rider selected -->
-      <div v-else class="no-selection">
-        <p>👆 Cliquez sur un coureur de votre équipe pour le jouer</p>
       </div>
     </div>
 
@@ -297,7 +367,7 @@
           <span class="final-pos">{{ rider.position + 1 }}</span>
         </div>
       </div>
-      <button @click="restartGame" class="btn restart">🔄 Nouvelle partie</button>
+      <button @click="restartGame" class="btn btn-restart">🔄 Nouvelle partie</button>
     </div>
 
     <!-- Game Log -->
@@ -322,95 +392,54 @@
       <div class="rules-grid">
         <div class="rule-card">
           <h3>🎯 Objectif</h3>
-          <p>Franchir la ligne d'arrivée en premier. Quand un coureur arrive, c'est le <strong>dernier tour</strong> : tous jouent une dernière fois.</p>
+          <p>Franchir la ligne d'arrivée en premier. Quand un coureur arrive, c'est le <strong>dernier tour</strong>.</p>
         </div>
 
         <div class="rule-card">
-          <h3>🎮 Tour de Jeu</h3>
-          <p>Les joueurs <strong>alternent</strong>. Choisissez librement quel coureur jouer et quelle carte utiliser. <strong>Toutes les cartes de votre équipe sont visibles</strong> pour planifier votre stratégie.</p>
+          <h3>🎮 Séquence de jeu</h3>
+          <ol>
+            <li>Choisir un coureur</li>
+            <li><strong>Jouer une carte</strong></li>
+            <li>Lancer le dé</li>
+            <li>(Optionnel) Spécialité</li>
+            <li>Résoudre le mouvement</li>
+          </ol>
         </div>
 
         <div class="rule-card highlight">
-          <h3>🎲 Mouvement (v3)</h3>
+          <h3>🎲 Calcul du mouvement</h3>
           <p><strong>1d6 + Carte + Bonus terrain</strong></p>
+          <p>Moyenne: ~7 cases</p>
+        </div>
+
+        <div class="rule-card highlight">
+          <h3>🃏 Cartes Mouvement (6)</h3>
           <ul>
-            <li>Dé: 1-6 (moyenne 3.5)</li>
-            <li>Carte: +2 à +6 (moyenne 3.5)</li>
-            <li>Total moyen: ~7 cases</li>
+            <li><span class="card-sample" style="background:#e5e7eb">+2</span> Tempo</li>
+            <li><span class="card-sample" style="background:#fef08a">+3</span> Rythme ×2</li>
+            <li><span class="card-sample" style="background:#fed7aa">+4</span> Accélération ×2</li>
+            <li><span class="card-sample" style="background:#fecaca">+5</span> Sprint</li>
           </ul>
         </div>
 
         <div class="rule-card highlight">
-          <h3>🃏 Cartes Mouvement</h3>
-          <p>Main initiale de 6 cartes par coureur:</p>
-          <ul>
-            <li><span class="card-sample" style="background:#e5e7eb">+2</span> Tempo (×1)</li>
-            <li><span class="card-sample" style="background:#fef08a">+3</span> Rythme (×2)</li>
-            <li><span class="card-sample" style="background:#fed7aa">+4</span> Accélération (×2)</li>
-            <li><span class="card-sample" style="background:#fecaca">+5</span> Sprint (×1)</li>
-          </ul>
+          <h3>⚔️ Attaques (+6)</h3>
+          <p><strong>2 par coureur</strong>, usage unique. Remplace la carte mouvement.</p>
         </div>
 
         <div class="rule-card highlight">
-          <h3>⚔️ Cartes Attaque (+6)</h3>
-          <p><strong>2 par coureur</strong>, usage unique. Remplace la carte mouvement normale. Idéal pour les moments décisifs!</p>
-        </div>
-
-        <div class="rule-card highlight">
-          <h3>★ Cartes Spécialité (+2)</h3>
-          <p><strong>2 par coureur</strong>, s'ajoute au mouvement. Utilisable uniquement sur le terrain favori:</p>
-          <ul>
-            <li>🧗 Grimpeur → Montagne</li>
-            <li>💥 Puncheur → Côte</li>
-            <li>🚴 Rouleur → Plaine</li>
-            <li>⚡ Sprinteur → Sprint</li>
-            <li>🎯 Polyvalent → Partout</li>
-          </ul>
-        </div>
-
-        <div class="rule-card highlight">
-          <h3>😓 Cartes Fatigue</h3>
-          <p>Polluent votre main! Ajoutées à la défausse:</p>
-          <ul>
-            <li><strong>+1 Fatigue</strong>: prise de vent, mener le groupe</li>
-            <li><strong>+2 Fatigue</strong>: dans l'aspiration</li>
-          </ul>
-          <p>Quand la main est vide, recyclez la défausse!</p>
+          <h3>★ Spécialités (+2)</h3>
+          <p><strong>2 par coureur</strong>, bonus sur terrain favori uniquement.</p>
         </div>
 
         <div class="rule-card">
-          <h3>💨 Prise de Vent</h3>
-          <p><strong>À partir du tour 2.</strong> Un coureur prend le vent s'il est seul en tête ou à 2+ cases du groupe.</p>
-          <p><em>Exception: pas en montagne ni en descente.</em></p>
-        </div>
-
-        <div class="rule-card">
-          <h3>🔄 Aspiration</h3>
-          <p>En fin de tour, les coureurs à 1 case d'écart se regroupent automatiquement. 2+ cases = échappée.</p>
-          <p><em>Active en plaine, côte et sprint.</em></p>
-        </div>
-
-        <div class="rule-card">
-          <h3>⛰️ Terrains</h3>
-          <ul>
-            <li>🟩 Plaine: Rouleur +1</li>
-            <li>🟨 Côte: Grimpeur/Puncheur +1</li>
-            <li>🟫 Montagne: Grimpeur +2</li>
-            <li>🟦 Descente: +2/+3, min 4, risque chute</li>
-            <li>🟪 Sprint: Sprinteur +2</li>
-          </ul>
-        </div>
-
-        <div class="rule-card">
-          <h3>⬇️ Descente</h3>
-          <p>Bonus +2 (ou +3 rouleur/sprinteur). Minimum 4 cases.</p>
-          <p><strong>Sur un 1:</strong> test de chute (1-2 = chute, recul 3 cases + 2 cartes fatigue)</p>
+          <h3>😓 Fatigue</h3>
+          <p>Cartes +1/+2 ajoutées à la défausse. Polluent la main au recyclage.</p>
         </div>
 
         <div class="rule-card">
           <h3>♻️ Recyclage</h3>
-          <p>Quand votre main est vide, mélangez votre défausse et elle devient votre nouvelle main.</p>
-          <p>Plus vous avez pris le vent, plus votre main sera faible!</p>
+          <p>Main vide → mélanger la défausse = nouvelle main.</p>
         </div>
       </div>
     </div>
@@ -467,9 +496,9 @@ export default {
     
     phaseLabel() {
       const phases = {
-        'select_rider': '👆 Choisir un coureur',
-        'select_card': '🃏 Choisir une carte',
-        'roll_dice': '🎲 Lancer le dé',
+        'select_rider': '👆 Choisir coureur',
+        'select_card': '🃏 Choisir carte',
+        'roll_dice': '🎲 Lancer dé',
         'select_specialty': '★ Spécialité?',
         'resolve': '✓ Résoudre'
       };
@@ -478,11 +507,11 @@ export default {
     
     phaseTooltip() {
       const tooltips = {
-        'select_rider': 'Cliquez sur un coureur de votre équipe pour le jouer ce tour',
-        'select_card': 'Choisissez une carte mouvement (+2 à +5) ou attaque (+6)',
-        'roll_dice': 'Lancez le dé pour déterminer votre mouvement de base',
-        'select_specialty': 'Vous pouvez utiliser une carte spécialité (+2) sur votre terrain favori',
-        'resolve': 'Appliquez le mouvement et passez au joueur suivant'
+        'select_rider': 'Cliquez sur un coureur de votre équipe',
+        'select_card': 'Choisissez une carte mouvement ou attaque',
+        'roll_dice': 'Lancez le dé',
+        'select_specialty': 'Utilisez une carte spécialité (+2) si disponible',
+        'resolve': 'Appliquez le mouvement'
       };
       return tooltips[this.gameStatus.turnPhase] || '';
     }
@@ -551,18 +580,13 @@ export default {
              (this.gameStatus.turnPhase === 'select_rider' || this.gameStatus.turnPhase === 'select_card');
     },
     
+    getSpecialtyTerrainName(riderType) {
+      const terrain = RiderConfig[riderType]?.specialtyTerrain;
+      if (terrain === 'all') return 'Tous terrains';
+      return TerrainConfig[terrain]?.name || terrain;
+    },
+    
     // Card helpers
-    canSelectCard(rider, card) {
-      return rider.id === this.gameStatus.selectedRiderId &&
-             this.gameStatus.turnPhase === 'select_card';
-    },
-    
-    canSelectSpecialty(rider, card) {
-      return rider.id === this.gameStatus.selectedRiderId &&
-             this.gameStatus.turnPhase === 'select_specialty' &&
-             this.gameStatus.currentRider?.availableCards?.canUseSpecialty;
-    },
-    
     getSelectedCardValue() {
       const rider = this.gameStatus.currentRider;
       if (!rider || !this.gameStatus.selectedCardId) return 0;
@@ -572,79 +596,58 @@ export default {
       return card?.value || 0;
     },
     
-    getDiscardAverage(rider) {
-      if (!rider.discard || rider.discard.length === 0) return '0';
-      const sum = rider.discard.reduce((a, c) => a + c.value, 0);
-      return (sum / rider.discard.length).toFixed(1);
+    isSelectedCardAttack() {
+      const rider = this.gameStatus.currentRider;
+      if (!rider || !this.gameStatus.selectedCardId) return false;
+      return rider.attackCards.some(c => c.id === this.gameStatus.selectedCardId);
     },
     
     // Tooltips
     getRiderBoardTooltip(rider) {
       const stats = getHandStats(rider);
       return `${rider.name}\n` +
-             `Type: ${RiderConfig[rider.type]?.name}\n` +
              `Position: ${rider.position + 1}\n` +
-             `Main: ${stats.handSize} cartes (moy: ${stats.handAverage})\n` +
-             `Attaques: ${stats.attacksRemaining}/2\n` +
-             `Spécialités: ${stats.specialtiesRemaining}/2`;
-    },
-    
-    getCardTooltip(card) {
-      if (card.type === 'fatigue') {
-        return `Fatigue: +${card.value} case seulement (pollue la main)`;
-      }
-      return `${card.name}: +${card.value} cases`;
-    },
-    
-    getSpecialtyTooltip(rider, card) {
-      const terrain = RiderConfig[rider.type]?.specialtyTerrain;
-      const terrainName = terrain === 'all' ? 'tous terrains' : TerrainConfig[terrain]?.name;
-      return `Spécialité: +2 cases sur ${terrainName}`;
-    },
-    
-    getDiscardTooltip(rider) {
-      const cards = rider.discard.map(c => `+${c.value}`).join(', ');
-      return `Défausse: ${cards}`;
+             `Main: ${stats.handSize} cartes\n` +
+             `Attaques: ${stats.attacksRemaining}/2`;
     },
     
     getCellTooltip(cell, index) {
       const config = TerrainConfig[cell.terrain];
       const riders = this.getRidersAtPosition(index);
-      let tooltip = `Case ${index + 1}: ${config?.name}\n`;
-      
-      if (cell.terrain === 'flat') tooltip += 'Rouleur +1';
-      else if (cell.terrain === 'hill') tooltip += 'Grimpeur/Puncheur +1, Sprinteur -1';
-      else if (cell.terrain === 'mountain') tooltip += 'Grimpeur +2, Rouleur -1, Sprinteur -2\nPas d\'aspiration';
-      else if (cell.terrain === 'descent') tooltip += 'Tous +2/+3, min 4 cases\nRisque chute sur 1';
-      else if (cell.terrain === 'sprint') tooltip += 'Sprinteur +2, Grimpeur -1';
+      let tooltip = `Case ${index + 1}: ${config?.name}`;
       
       if (riders.length > 0) {
-        tooltip += `\n\nCoureurs: ${riders.map(r => r.name).join(', ')}`;
+        tooltip += `\n${riders.map(r => r.name).join(', ')}`;
       }
       
       return tooltip;
     },
     
     // Actions
-    onRiderBlockClick(rider) {
+    onRiderRowClick(rider) {
       if (!this.isRiderClickable(rider)) return;
       
       if (this.gameStatus.turnPhase === 'select_rider') {
         this.gameState = selectRider(this.gameState, rider.id);
       } else if (this.gameStatus.turnPhase === 'select_card' && rider.id !== this.gameStatus.selectedRiderId) {
-        // Switch to different rider
         this.gameState = deselectRider(this.gameState);
         this.gameState = selectRider(this.gameState, rider.id);
       }
     },
     
-    onCardClick(rider, card) {
-      if (!this.canSelectCard(rider, card)) return;
+    onMovementCardClick(card) {
+      if (this.gameStatus.turnPhase !== 'select_card') return;
       this.gameState = selectCard(this.gameState, card.id);
     },
     
-    onSpecialtyClick(rider, card) {
-      if (!this.canSelectSpecialty(rider, card)) return;
+    onAttackCardClick(card) {
+      if (this.gameStatus.turnPhase !== 'select_card') return;
+      this.gameState = selectCard(this.gameState, card.id);
+    },
+    
+    onSpecialtyCardClick(card) {
+      if (this.gameStatus.turnPhase !== 'select_specialty') return;
+      if (!this.gameStatus.currentRider?.availableCards?.canUseSpecialty) return;
       this.gameState = selectSpecialty(this.gameState, card.id);
     },
     
@@ -728,7 +731,7 @@ h1 {
   padding: 12px 20px;
   background: #f8fafc;
   border-radius: 8px;
-  margin-bottom: 20px;
+  margin-bottom: 15px;
   border: 3px solid #e2e8f0;
   flex-wrap: wrap;
 }
@@ -766,7 +769,6 @@ h1 {
 
 .phase {
   color: #64748b;
-  cursor: help;
 }
 
 .winner {
@@ -775,10 +777,41 @@ h1 {
   font-size: 1.2em;
 }
 
+/* Terrain Legend */
+.terrain-legend {
+  display: flex;
+  align-items: center;
+  gap: 15px;
+  padding: 10px 15px;
+  background: #1e293b;
+  border-radius: 8px;
+  margin-bottom: 10px;
+  flex-wrap: wrap;
+}
+
+.legend-title {
+  color: #94a3b8;
+  font-weight: 600;
+}
+
+.terrain-item {
+  font-size: 0.85em;
+  padding: 4px 10px;
+  border-radius: 4px;
+  color: #1e293b;
+  font-weight: 500;
+}
+
+.terrain-item.flat { background: #90EE90; }
+.terrain-item.hill { background: #FFD700; }
+.terrain-item.mountain { background: #CD853F; color: white; }
+.terrain-item.descent { background: #87CEEB; }
+.terrain-item.sprint { background: #FF69B4; color: white; }
+
 /* Course Board */
 .board-container {
   overflow-x: auto;
-  margin-bottom: 20px;
+  margin-bottom: 15px;
   padding: 10px;
   background: #f1f5f9;
   border-radius: 8px;
@@ -875,13 +908,446 @@ h1 {
   margin-top: 5px;
 }
 
+/* Selected Rider Panel */
+.selected-rider-panel {
+  background: white;
+  border-radius: 12px;
+  margin-bottom: 20px;
+  box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+  overflow: hidden;
+}
+
+.selected-rider-header {
+  display: flex;
+  align-items: center;
+  gap: 20px;
+  padding: 15px 20px;
+  border-bottom: 3px solid;
+  flex-wrap: wrap;
+}
+
+.rider-identity {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.rider-emoji-large {
+  font-size: 2.5em;
+}
+
+.rider-details {
+  display: flex;
+  flex-direction: column;
+}
+
+.rider-details .rider-name {
+  font-size: 1.3em;
+  font-weight: bold;
+}
+
+.rider-details .rider-type {
+  color: #64748b;
+  font-size: 0.9em;
+}
+
+.rider-stats {
+  display: flex;
+  gap: 20px;
+  flex: 1;
+  justify-content: center;
+}
+
+.stat-item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 8px 15px;
+  background: white;
+  border-radius: 8px;
+}
+
+.stat-label {
+  font-size: 0.75em;
+  color: #64748b;
+  text-transform: uppercase;
+}
+
+.stat-value {
+  font-size: 1.1em;
+  font-weight: bold;
+}
+
+.bonus-stat.positive .stat-value { color: #10b981; }
+.bonus-stat.negative .stat-value { color: #ef4444; }
+
+.terrain-stat.flat { background: #dcfce7; }
+.terrain-stat.hill { background: #fef9c3; }
+.terrain-stat.mountain { background: #fed7aa; }
+.terrain-stat.descent { background: #dbeafe; }
+.terrain-stat.sprint { background: #fce7f3; }
+
+.btn-change-rider {
+  padding: 8px 15px;
+  background: #f1f5f9;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  color: #64748b;
+  font-size: 0.9em;
+}
+
+.btn-change-rider:hover {
+  background: #e2e8f0;
+}
+
+/* Selected Rider Cards */
+.selected-rider-cards {
+  display: flex;
+  gap: 20px;
+  padding: 20px;
+  background: #f8fafc;
+  flex-wrap: wrap;
+}
+
+.cards-section {
+  flex: 1;
+  min-width: 150px;
+}
+
+.cards-section h4 {
+  margin: 0 0 10px 0;
+  font-size: 0.9em;
+  color: #475569;
+}
+
+.cards-list {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.card-item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 10px 15px;
+  border-radius: 8px;
+  border: 2px solid rgba(0,0,0,0.1);
+  min-width: 60px;
+  cursor: default;
+  transition: all 0.2s;
+}
+
+.card-item .card-value {
+  font-size: 1.3em;
+  font-weight: bold;
+}
+
+.card-item .card-name {
+  font-size: 0.7em;
+  color: rgba(0,0,0,0.6);
+}
+
+.card-item.selectable {
+  cursor: pointer;
+  border-color: #10b981;
+}
+
+.card-item.selectable:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+}
+
+.card-item.selected {
+  transform: translateY(-4px);
+  box-shadow: 0 0 0 3px #f59e0b, 0 4px 12px rgba(0,0,0,0.2);
+}
+
+.card-item.fatigue {
+  background: #6b7280 !important;
+  color: white;
+}
+
+.card-item.fatigue .card-name {
+  color: rgba(255,255,255,0.7);
+}
+
+.attack-card {
+  background: #dc2626;
+  color: white;
+}
+
+.attack-card .card-name {
+  color: rgba(255,255,255,0.8);
+}
+
+.specialty-card {
+  background: #8b5cf6;
+  color: white;
+}
+
+.specialty-card .card-name {
+  color: rgba(255,255,255,0.8);
+}
+
+.specialty-card.disabled {
+  opacity: 0.5;
+}
+
+.empty-cards {
+  color: #94a3b8;
+  font-style: italic;
+  font-size: 0.85em;
+  padding: 10px;
+}
+
+.specialty-hint {
+  font-size: 0.75em;
+  color: #94a3b8;
+  margin-top: 5px;
+}
+
+.discard-section {
+  min-width: 100px;
+}
+
+.discard-section h4 {
+  margin: 0 0 8px 0;
+  font-size: 0.85em;
+  color: #64748b;
+}
+
+.discard-preview {
+  display: flex;
+  gap: 4px;
+  flex-wrap: wrap;
+}
+
+.discard-card {
+  font-size: 0.75em;
+  padding: 3px 6px;
+  background: #e2e8f0;
+  border-radius: 3px;
+}
+
+.discard-card.fatigue {
+  background: #6b7280;
+  color: white;
+}
+
+/* Action Zone */
+.action-zone {
+  padding: 20px;
+  background: white;
+  border-top: 1px solid #e2e8f0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 15px;
+}
+
+.action-prompt {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  color: #64748b;
+  font-size: 1.1em;
+}
+
+.prompt-icon {
+  font-size: 1.5em;
+}
+
+.action-content {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 15px;
+}
+
+.selected-card-preview {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 20px;
+  background: #f1f5f9;
+  border-radius: 8px;
+}
+
+.selected-value {
+  font-size: 1.5em;
+  font-weight: bold;
+  color: #10b981;
+}
+
+.selected-value.attack {
+  color: #dc2626;
+}
+
+.action-buttons {
+  display: flex;
+  gap: 10px;
+}
+
+.dice-result-display {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-size: 1.3em;
+  padding: 10px 20px;
+  background: #e0f2fe;
+  border-radius: 8px;
+}
+
+.dice-icon {
+  font-size: 1.5em;
+}
+
+.dice-value {
+  font-weight: bold;
+  font-size: 1.3em;
+  color: #0369a1;
+}
+
+.plus {
+  color: #64748b;
+}
+
+.card-played {
+  color: #10b981;
+  font-weight: bold;
+}
+
+.terrain-bonus-display {
+  color: #64748b;
+}
+
+.specialty-prompt {
+  color: #64748b;
+}
+
+.movement-calculation {
+  background: #f0fdf4;
+  padding: 15px 25px;
+  border-radius: 8px;
+}
+
+.calc-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 1.2em;
+}
+
+.calc-item {
+  padding: 5px 10px;
+  border-radius: 4px;
+  font-weight: bold;
+}
+
+.calc-item.dice {
+  background: #dbeafe;
+  color: #1d4ed8;
+}
+
+.calc-item.card {
+  background: #dcfce7;
+  color: #15803d;
+}
+
+.calc-item.terrain {
+  background: #fef3c7;
+  color: #b45309;
+}
+
+.calc-item.specialty {
+  background: #f3e8ff;
+  color: #7c3aed;
+}
+
+.calc-op {
+  color: #64748b;
+}
+
+.calc-result {
+  font-size: 1.5em;
+  font-weight: bold;
+  color: #10b981;
+  padding: 5px 15px;
+  background: #dcfce7;
+  border-radius: 6px;
+}
+
+/* Buttons */
+.btn {
+  padding: 12px 24px;
+  border-radius: 8px;
+  border: none;
+  font-size: 1em;
+  cursor: pointer;
+  transition: all 0.2s;
+  font-weight: 600;
+}
+
+.btn:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+}
+
+.btn-roll {
+  background: #3b82f6;
+  color: white;
+  font-size: 1.1em;
+}
+
+.btn-resolve {
+  background: #10b981;
+  color: white;
+  font-size: 1.1em;
+}
+
+.btn-specialty {
+  background: #8b5cf6;
+  color: white;
+}
+
+.btn-skip {
+  background: #94a3b8;
+  color: white;
+}
+
+.btn-cancel {
+  background: #f1f5f9;
+  color: #64748b;
+}
+
+.btn-restart {
+  background: #3b82f6;
+  color: white;
+  margin-top: 20px;
+}
+
+/* No Selection Prompt */
+.no-selection-prompt {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  padding: 30px;
+  background: #f8fafc;
+  border-radius: 12px;
+  margin-bottom: 20px;
+  color: #64748b;
+  font-size: 1.1em;
+}
+
 /* Team Legend */
 .team-legend {
   display: flex;
-  gap: 20px;
+  gap: 30px;
   justify-content: center;
-  margin-bottom: 20px;
-  flex-wrap: wrap;
+  margin-bottom: 15px;
 }
 
 .team-item {
@@ -896,345 +1362,112 @@ h1 {
   border-radius: 4px;
 }
 
-.legend-info {
-  color: #64748b;
-  font-size: 0.9em;
-}
-
-/* Game Panel */
-.game-panel {
-  display: flex;
-  flex-direction: column;
+/* Teams Overview */
+.teams-overview {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
   gap: 20px;
   margin-bottom: 20px;
 }
 
-/* Teams Cards Overview */
-.teams-cards-overview {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 20px;
-}
-
-.team-cards-section {
+.team-section {
   background: #f8fafc;
   border-radius: 8px;
   padding: 15px;
   border: 2px solid #e2e8f0;
 }
 
-.team-cards-section.active {
+.team-section.active {
   border-color: #3b82f6;
   background: #eff6ff;
 }
 
-.team-cards-section h3 {
-  margin: 0 0 15px 0;
+.team-section h3 {
+  margin: 0 0 12px 0;
   display: flex;
   align-items: center;
   gap: 10px;
 }
 
-.active-indicator {
-  font-size: 0.8em;
+.active-badge {
+  font-size: 0.7em;
   background: #3b82f6;
   color: white;
-  padding: 2px 8px;
+  padding: 3px 8px;
   border-radius: 10px;
 }
 
-.riders-cards-grid {
+.riders-list {
   display: flex;
   flex-direction: column;
+  gap: 6px;
+}
+
+.rider-row {
+  display: flex;
+  align-items: center;
   gap: 10px;
-}
-
-.rider-card-block {
+  padding: 8px 12px;
   background: white;
-  border-radius: 8px;
-  padding: 10px;
-  border: 2px solid #e2e8f0;
-  transition: all 0.2s;
+  border-radius: 6px;
+  border: 2px solid transparent;
+  transition: all 0.15s;
 }
 
-.rider-card-block.available {
+.rider-row.clickable {
   cursor: pointer;
   border-color: #10b981;
 }
 
-.rider-card-block.available:hover {
+.rider-row.clickable:hover {
   background: #ecfdf5;
-  transform: translateY(-2px);
-  box-shadow: 0 4px 6px rgba(0,0,0,0.1);
 }
 
-.rider-card-block.selected {
+.rider-row.selected {
   border-color: #f59e0b;
   background: #fef3c7;
-  box-shadow: 0 0 0 3px rgba(245, 158, 11, 0.3);
 }
 
-.rider-card-block.played {
+.rider-row.played {
   opacity: 0.6;
   background: #f1f5f9;
 }
 
-.rider-header-mini {
+.rider-row .rider-emoji {
+  font-size: 1.2em;
+}
+
+.rider-row .rider-name {
+  flex: 1;
+  font-weight: 500;
+}
+
+.rider-row .rider-pos {
+  color: #64748b;
+  font-size: 0.85em;
+}
+
+.rider-cards-mini {
   display: flex;
-  align-items: center;
   gap: 8px;
-  margin-bottom: 8px;
-  font-size: 0.9em;
-}
-
-.rider-header-mini .emoji {
-  font-size: 1.2em;
-}
-
-.rider-header-mini .name {
-  font-weight: 600;
-  flex: 1;
-}
-
-.rider-header-mini .position {
+  font-size: 0.8em;
   color: #64748b;
-  font-size: 0.85em;
 }
 
-.badge-finished {
-  background: #10b981;
-  color: white;
-  padding: 2px 6px;
+.status-badge {
+  padding: 2px 8px;
   border-radius: 10px;
   font-size: 0.75em;
 }
 
-.badge-played {
-  background: #94a3b8;
-  color: white;
-  padding: 2px 6px;
-  border-radius: 10px;
-  font-size: 0.75em;
-}
-
-/* Cards Row */
-.cards-row {
-  display: flex;
-  gap: 10px;
-  flex-wrap: wrap;
-}
-
-.cards-group {
-  display: flex;
-  gap: 3px;
-  align-items: center;
-}
-
-.mini-card {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  padding: 4px 6px;
-  border-radius: 4px;
-  font-size: 0.75em;
-  font-weight: bold;
-  border: 1px solid rgba(0,0,0,0.2);
-  cursor: help;
-  transition: all 0.15s;
-}
-
-.mini-card.selectable {
-  cursor: pointer;
-  border-color: #10b981;
-}
-
-.mini-card.selectable:hover {
-  transform: scale(1.1);
-  box-shadow: 0 2px 4px rgba(0,0,0,0.2);
-}
-
-.mini-card.selected {
-  transform: scale(1.15);
-  box-shadow: 0 0 0 2px #f59e0b;
-}
-
-.mini-card.fatigue {
-  background: #6b7280 !important;
-  color: white;
-}
-
-.mini-card.attack {
-  background: #dc2626;
-  color: white;
-}
-
-.mini-card.specialty {
-  background: #8b5cf6;
-  color: white;
-}
-
-.empty-hand {
-  color: #94a3b8;
-  font-style: italic;
-}
-
-.discard-info {
-  margin-top: 6px;
-  font-size: 0.75em;
-  color: #64748b;
-  cursor: help;
-}
-
-/* Action Panel */
-.action-panel {
-  max-width: 500px;
-  margin: 0 auto;
-}
-
-.current-rider-info {
-  background: white;
-  border-radius: 8px;
-  padding: 15px;
-  border: 3px solid #e2e8f0;
-}
-
-.info-header {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  padding: 10px;
-  border-radius: 6px;
-  margin-bottom: 15px;
-}
-
-.rider-emoji {
-  font-size: 1.5em;
-}
-
-.rider-name {
-  font-weight: bold;
-  flex: 1;
-}
-
-.terrain-badge {
-  padding: 4px 10px;
-  border-radius: 15px;
-  font-size: 0.85em;
-  background: white;
-}
-
-.terrain-badge .bonus {
-  font-weight: bold;
-}
-
-.action-buttons {
-  display: flex;
-  flex-direction: column;
-  gap: 10px;
-  align-items: center;
-}
-
-.instruction {
-  margin: 0;
-  color: #64748b;
-  text-align: center;
-}
-
-.selected-card-display {
-  background: #f1f5f9;
-  padding: 8px 16px;
-  border-radius: 6px;
-  margin-bottom: 10px;
-}
-
-.card-value {
-  font-weight: bold;
-  font-size: 1.2em;
-  color: #10b981;
-}
-
-.dice-result {
-  background: #e0f2fe;
-  padding: 10px 15px;
-  border-radius: 6px;
-  font-size: 1.1em;
-  margin-bottom: 10px;
-}
-
-.specialty-choice {
-  display: flex;
-  gap: 10px;
-}
-
-.movement-summary {
-  text-align: center;
-  margin-bottom: 15px;
-}
-
-.total-movement {
-  font-size: 1.3em;
-  margin-top: 10px;
-}
-
-.total-movement strong {
-  color: #10b981;
-  font-size: 1.5em;
-}
-
-/* Buttons */
-.btn {
-  padding: 10px 20px;
-  border-radius: 8px;
-  border: none;
-  font-size: 1em;
-  cursor: pointer;
-  transition: all 0.2s;
-  font-weight: 600;
-}
-
-.btn:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 4px 6px rgba(0,0,0,0.1);
-}
-
-.btn.roll {
-  background: #3b82f6;
-  color: white;
-}
-
-.btn.resolve {
+.status-badge.finished {
   background: #10b981;
   color: white;
 }
 
-.btn.specialty {
-  background: #8b5cf6;
-  color: white;
-}
-
-.btn.skip {
+.status-badge.played {
   background: #94a3b8;
   color: white;
-}
-
-.btn.cancel {
-  background: #f1f5f9;
-  color: #64748b;
-  font-size: 0.9em;
-}
-
-.btn.restart {
-  background: #3b82f6;
-  color: white;
-  margin-top: 20px;
-}
-
-.no-selection {
-  text-align: center;
-  padding: 20px;
-  color: #64748b;
-  background: #f8fafc;
-  border-radius: 8px;
 }
 
 /* Game Over */
@@ -1318,29 +1551,29 @@ h1 {
 }
 
 .log-entries {
-  max-height: 300px;
+  max-height: 200px;
   overflow-y: auto;
   font-family: 'Monaco', 'Menlo', monospace;
-  font-size: 0.85em;
+  font-size: 0.8em;
 }
 
 .log-entry {
   color: #d1d5db;
-  padding: 3px 0;
+  padding: 2px 0;
   border-bottom: 1px solid #374151;
 }
 
 .log-entry.turn-separator {
   color: #6b7280;
   text-align: center;
-  padding: 8px 0;
+  padding: 6px 0;
   border: none;
 }
 
 .log-entry.last-turn-header {
   color: #fbbf24;
   text-align: center;
-  padding: 10px 0;
+  padding: 8px 0;
   font-weight: bold;
   background: rgba(251, 191, 36, 0.1);
   border: none;
@@ -1362,20 +1595,20 @@ h1 {
 
 .rules-section h2 {
   text-align: center;
-  margin-bottom: 25px;
+  margin-bottom: 20px;
   color: #1e293b;
 }
 
 .rules-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
-  gap: 15px;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 12px;
 }
 
 .rule-card {
   background: white;
   border-radius: 8px;
-  padding: 15px;
+  padding: 12px;
   border: 1px solid #e2e8f0;
 }
 
@@ -1385,42 +1618,50 @@ h1 {
 }
 
 .rule-card h3 {
-  margin: 0 0 10px 0;
-  color: #1e293b;
-  font-size: 1em;
-}
-
-.rule-card p {
   margin: 0 0 8px 0;
-  color: #475569;
-  font-size: 0.9em;
-  line-height: 1.5;
+  font-size: 0.95em;
 }
 
-.rule-card ul {
-  margin: 8px 0;
-  padding-left: 20px;
+.rule-card p, .rule-card ul, .rule-card ol {
+  margin: 0;
+  font-size: 0.85em;
   color: #475569;
-  font-size: 0.9em;
+}
+
+.rule-card ul, .rule-card ol {
+  padding-left: 18px;
 }
 
 .rule-card li {
-  margin: 4px 0;
+  margin: 3px 0;
 }
 
 .card-sample {
   display: inline-block;
-  padding: 2px 6px;
+  padding: 1px 5px;
   border-radius: 3px;
   font-weight: bold;
   font-size: 0.85em;
-  margin-right: 5px;
 }
 
 /* Responsive */
 @media (max-width: 900px) {
-  .teams-cards-overview {
+  .teams-overview {
     grid-template-columns: 1fr;
+  }
+  
+  .selected-rider-header {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+  
+  .rider-stats {
+    width: 100%;
+    justify-content: flex-start;
+  }
+  
+  .selected-rider-cards {
+    flex-direction: column;
   }
   
   .cell {
@@ -1432,6 +1673,10 @@ h1 {
     font-size: 12px;
     width: 16px;
     height: 16px;
+  }
+  
+  .terrain-legend {
+    justify-content: center;
   }
 }
 </style>
