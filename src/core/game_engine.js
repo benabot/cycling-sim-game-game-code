@@ -1,13 +1,15 @@
 /**
- * Main game engine - orchestrates all game mechanics
+ * Main game engine - v3 Card System
  * @module core/game_engine
  */
 
-import { roll2D6, rollFallTest } from './dice.js';
-import { TerrainType, TerrainConfig, DescentRules, getTerrainBonus, generateCourse } from './terrain.js';
-import { createRider, createTestRiders, getFatiguePenalty, addFatigue, removeFatigue, useAttackCard, moveRider, RiderConfig } from './rider.js';
-import { createGameDecks, drawCard, applyCardEffect, getCardDescription } from './cards.js';
-import { isTakingWind, isInPeloton, applyAspiration, getRiderGroups, getGapToLeader } from './aspiration.js';
+import { roll1D6, rollFallTest } from './dice.js';
+import { TerrainType, TerrainConfig, DescentRules, getTerrainBonus, generateCourse, hasAspiration, hasWindPenalty } from './terrain.js';
+import { 
+  createRider, createTeamRiders, RiderConfig, CardType,
+  playCard, playSpecialtyCard, addFatigueCard, recycleCards, needsRecycle,
+  moveRider, getAvailableCards, getHandStats
+} from './rider.js';
 
 /**
  * Game phases
@@ -24,8 +26,9 @@ export const GamePhase = {
  */
 export const TurnPhase = {
   SELECT_RIDER: 'select_rider',
-  PRE_ROLL: 'pre_roll',
+  SELECT_CARD: 'select_card',
   ROLL_DICE: 'roll_dice',
+  SELECT_SPECIALTY: 'select_specialty',
   RESOLVE: 'resolve',
   NEXT_PLAYER: 'next_player'
 };
@@ -62,30 +65,10 @@ export const TeamConfig = {
  * @returns {Array} Array of 10 riders (5 per team)
  */
 export function createTwoTeamsRiders() {
-  const riderTypes = ['climber', 'puncher', 'rouleur', 'sprinter', 'versatile'];
-  const riders = [];
-  
-  // Team A (Red)
-  riderTypes.forEach((type, index) => {
-    riders.push(createRider(
-      `a${index + 1}`,
-      type,
-      `${RiderConfig[type].name} A`,
-      Teams.TEAM_A
-    ));
-  });
-  
-  // Team B (Blue)
-  riderTypes.forEach((type, index) => {
-    riders.push(createRider(
-      `b${index + 1}`,
-      type,
-      `${RiderConfig[type].name} B`,
-      Teams.TEAM_B
-    ));
-  });
-  
-  return riders;
+  return [
+    ...createTeamRiders(Teams.TEAM_A, 'A'),
+    ...createTeamRiders(Teams.TEAM_B, 'B')
+  ];
 }
 
 /**
@@ -95,14 +78,12 @@ export function createTwoTeamsRiders() {
  */
 export function createGameState(options = {}) {
   const {
-    courseLength = 50,
-    twoTeams = true,
-    courseDistribution = null
+    courseLength = 80,
+    twoTeams = true
   } = options;
   
-  const course = generateCourse(courseLength, courseDistribution);
-  const riders = twoTeams ? createTwoTeamsRiders() : createTestRiders();
-  const { penaltyDeck, bonusDeck } = createGameDecks();
+  const course = generateCourse(courseLength);
+  const riders = createTwoTeamsRiders();
   
   // Random starting player
   const startingTeam = Math.random() < 0.5 ? Teams.TEAM_A : Teams.TEAM_B;
@@ -117,10 +98,6 @@ export function createGameState(options = {}) {
     // Riders
     riders,
     
-    // Decks
-    penaltyDeck,
-    bonusDeck,
-    
     // Game state
     phase: GamePhase.PLAYING,
     turnPhase: TurnPhase.SELECT_RIDER,
@@ -128,10 +105,12 @@ export function createGameState(options = {}) {
     
     // Player turn management
     currentTeam: startingTeam,
-    ridersPlayedThisTurn: [],  // IDs of riders who have played this turn
+    ridersPlayedThisTurn: [],
     
-    // Selected rider for current action
+    // Selected rider and cards for current action
     selectedRiderId: null,
+    selectedCardId: null,
+    selectedSpecialtyId: null,
     
     // Last turn tracking
     isLastTurn: false,
@@ -139,26 +118,19 @@ export function createGameState(options = {}) {
     
     // Action state
     lastDiceRoll: null,
-    lastCard: null,
     lastMovement: null,
     
-    // Flags
-    attackUsedThisTurn: false,
-    canReroll: false,
-    
-    // Log - persistent across turns
+    // Log
     gameLog: [],
     
     // Final rankings
-    rankings: []
+    rankings: [],
+    winningTeam: null
   };
 }
 
 /**
  * Get terrain at a specific position
- * @param {Object} state - Game state
- * @param {number} position - Position on course
- * @returns {string} Terrain type
  */
 export function getTerrainAt(state, position) {
   if (position >= state.courseLength) {
@@ -172,18 +144,13 @@ export function getTerrainAt(state, position) {
 
 /**
  * Get the other team
- * @param {string} team - Current team
- * @returns {string} Other team
  */
 export function getOtherTeam(team) {
   return team === Teams.TEAM_A ? Teams.TEAM_B : Teams.TEAM_A;
 }
 
 /**
- * Get available riders for a team (not yet played this turn, not finished)
- * @param {Object} state - Game state
- * @param {string} team - Team to check
- * @returns {Array} Available riders
+ * Get available riders for a team
  */
 export function getAvailableRiders(state, team) {
   return state.riders.filter(r => 
@@ -195,9 +162,6 @@ export function getAvailableRiders(state, team) {
 
 /**
  * Check if a team has available riders
- * @param {Object} state - Game state
- * @param {string} team - Team to check
- * @returns {boolean}
  */
 export function teamHasAvailableRiders(state, team) {
   return getAvailableRiders(state, team).length > 0;
@@ -205,41 +169,45 @@ export function teamHasAvailableRiders(state, team) {
 
 /**
  * Start a new turn
- * @param {Object} state - Current game state
- * @returns {Object} Updated game state
  */
 export function startTurn(state) {
-  // Determine starting team for this turn (alternate from last turn's starter)
   const startingTeam = state.currentTurn === 1 
     ? state.currentTeam 
     : getOtherTeam(state.lastTurnStarter || Teams.TEAM_A);
   
-  // Add turn separator to log
   const turnHeader = state.isLastTurn 
     ? `\n══════════ 🏁 DERNIER TOUR (Tour ${state.currentTurn}) ══════════`
     : `\n────────── Tour ${state.currentTurn} ──────────`;
   
-  const teamName = TeamConfig[startingTeam].shortName;
+  // Recycle cards for riders with empty hands
+  let updatedRiders = state.riders.map(rider => {
+    if (needsRecycle(rider)) {
+      const recycled = recycleCards(rider);
+      return recycled;
+    }
+    return rider;
+  });
   
   return {
     ...state,
+    riders: updatedRiders,
     currentTeam: startingTeam,
     lastTurnStarter: startingTeam,
     ridersPlayedThisTurn: [],
     selectedRiderId: null,
+    selectedCardId: null,
+    selectedSpecialtyId: null,
     turnPhase: TurnPhase.SELECT_RIDER,
     gameLog: [
       ...state.gameLog, 
       turnHeader,
-      `🎮 ${TeamConfig[startingTeam].playerName} (${teamName}) commence`
+      `🎮 ${TeamConfig[startingTeam].playerName} (${TeamConfig[startingTeam].shortName}) commence`
     ]
   };
 }
 
 /**
- * Get current rider (selected)
- * @param {Object} state - Game state
- * @returns {Object|null} Current rider or null
+ * Get current rider
  */
 export function getCurrentRider(state) {
   if (!state.selectedRiderId) return null;
@@ -248,153 +216,116 @@ export function getCurrentRider(state) {
 
 /**
  * Select a rider to play
- * @param {Object} state - Game state
- * @param {string} riderId - ID of rider to select
- * @returns {Object} Updated state
  */
 export function selectRider(state, riderId) {
   const rider = state.riders.find(r => r.id === riderId);
   
-  // Validation
   if (!rider) return state;
   if (rider.team !== state.currentTeam) return state;
   if (state.ridersPlayedThisTurn.includes(riderId)) return state;
   if (rider.hasFinished) return state;
   
-  const terrain = getTerrainAt(state, rider.position);
-  const takingWind = isTakingWind(rider, state.riders, terrain);
-  
-  let newState = {
+  return {
     ...state,
     selectedRiderId: riderId,
-    turnPhase: TurnPhase.PRE_ROLL,
-    attackUsedThisTurn: false,
-    canReroll: false,
-    lastCard: null,
+    selectedCardId: null,
+    selectedSpecialtyId: null,
+    turnPhase: TurnPhase.SELECT_CARD,
     lastDiceRoll: null,
     lastMovement: null
   };
-  
-  // Draw penalty card if taking wind
-  if (takingWind) {
-    const { card, deck } = drawCard(state.penaltyDeck);
-    if (card) {
-      newState.penaltyDeck = deck;
-      newState.lastCard = { type: 'penalty', card };
-      newState.gameLog = [
-        ...newState.gameLog,
-        `⚠️ ${rider.name} prend le vent → ${card.name}: ${getCardDescription(card)}`
-      ];
-    }
-  }
-  
-  return newState;
 }
 
 /**
- * Deselect current rider (cancel selection)
- * @param {Object} state - Game state
- * @returns {Object} Updated state
+ * Deselect current rider
  */
 export function deselectRider(state) {
-  if (state.turnPhase !== TurnPhase.PRE_ROLL) return state;
+  if (state.turnPhase !== TurnPhase.SELECT_CARD) return state;
   
   return {
     ...state,
     selectedRiderId: null,
-    turnPhase: TurnPhase.SELECT_RIDER,
-    lastCard: null
+    selectedCardId: null,
+    turnPhase: TurnPhase.SELECT_RIDER
   };
 }
 
 /**
- * Use attack card for current rider
- * @param {Object} state - Game state
- * @returns {Object} Updated state
+ * Select a card to play
  */
-export function playAttackCard(state) {
-  const rider = getCurrentRider(state);
-  if (!rider || state.attackUsedThisTurn) return state;
-  
-  const { rider: updatedRider, success } = useAttackCard(rider);
-  
-  if (!success) {
-    return {
-      ...state,
-      gameLog: [...state.gameLog, `❌ ${rider.name} ne peut pas utiliser de carte Attaque`]
-    };
-  }
-  
-  const updatedRiders = state.riders.map(r => 
-    r.id === rider.id ? updatedRider : r
-  );
-  
-  return {
-    ...state,
-    riders: updatedRiders,
-    attackUsedThisTurn: true,
-    gameLog: [...state.gameLog, `⚔️ ${rider.name} joue Attaque (+3, +1 fatigue)`]
-  };
-}
-
-/**
- * Roll dice and calculate movement
- * @param {Object} state - Game state
- * @returns {Object} Updated state with dice roll and movement calculation
- */
-export function rollDice(state) {
+export function selectCard(state, cardId) {
   const rider = getCurrentRider(state);
   if (!rider) return state;
   
+  // Verify card exists in rider's hand or attack cards
+  const cardInHand = rider.hand.find(c => c.id === cardId);
+  const cardInAttack = rider.attackCards.find(c => c.id === cardId);
+  
+  if (!cardInHand && !cardInAttack) return state;
+  
+  return {
+    ...state,
+    selectedCardId: cardId,
+    turnPhase: TurnPhase.ROLL_DICE
+  };
+}
+
+/**
+ * Deselect current card
+ */
+export function deselectCard(state) {
+  if (state.turnPhase !== TurnPhase.ROLL_DICE) return state;
+  
+  return {
+    ...state,
+    selectedCardId: null,
+    turnPhase: TurnPhase.SELECT_CARD
+  };
+}
+
+/**
+ * Roll dice
+ */
+export function rollDice(state) {
+  const rider = getCurrentRider(state);
+  if (!rider || !state.selectedCardId) return state;
+  
   const terrain = getTerrainAt(state, rider.position);
-  const diceRoll = roll2D6();
+  const diceRoll = roll1D6();
   
   let newState = {
     ...state,
-    lastDiceRoll: diceRoll,
-    turnPhase: TurnPhase.RESOLVE
+    lastDiceRoll: diceRoll
   };
   
-  // Check for bonus card on 7
-  if (diceRoll.isSeven) {
-    const { card, deck } = drawCard(state.bonusDeck);
-    if (card) {
-      newState.bonusDeck = deck;
-      newState.lastCard = { type: 'bonus', card };
-      newState.gameLog = [
-        ...newState.gameLog,
-        `✨ ${rider.name} fait 7 → ${card.name}: ${getCardDescription(card)}`
-      ];
-      
-      if (card.effect.reroll) {
-        newState.canReroll = true;
-      }
-    }
-  }
-  
-  // Check for fall in descent on snake eyes
-  if (terrain === TerrainType.DESCENT && diceRoll.isSnakeEyes) {
+  // Check for fall in descent on 1
+  if (terrain === TerrainType.DESCENT && diceRoll.isOne) {
     const fallTest = rollFallTest();
     newState.gameLog = [
       ...newState.gameLog,
-      `🎲 ${rider.name} fait double 1 en descente → Test de chute: ${fallTest.roll}`
+      `🎲 ${rider.name} fait 1 en descente → Test de chute: ${fallTest.roll}`
     ];
     
     if (fallTest.hasFallen) {
-      const updatedRider = addFatigue({
+      // Apply fall
+      let updatedRider = {
         ...rider,
-        position: Math.max(0, rider.position - 3),
+        position: Math.max(0, rider.position - DescentRules.fallPenalty),
         hasFallenThisTurn: true
-      }, 2);
+      };
+      // Add fatigue cards
+      updatedRider = addFatigueCard(updatedRider, 1);
+      updatedRider = addFatigueCard(updatedRider, 1);
       
       newState.riders = state.riders.map(r => 
         r.id === rider.id ? updatedRider : r
       );
       newState.gameLog = [
         ...newState.gameLog,
-        `💥 ${rider.name} CHUTE! Recule de 3 cases, +2 fatigue`
+        `💥 ${rider.name} CHUTE! Recule de ${DescentRules.fallPenalty} cases, +2 cartes fatigue`
       ];
-      newState.lastMovement = { type: 'fall', distance: -3 };
+      newState.lastMovement = { type: 'fall', distance: -DescentRules.fallPenalty };
+      newState.turnPhase = TurnPhase.RESOLVE;
       
       return newState;
     } else {
@@ -405,52 +336,76 @@ export function rollDice(state) {
     }
   }
   
+  // Check if specialty can be used
+  const availableCards = getAvailableCards(rider, terrain);
+  if (availableCards.canUseSpecialty && availableCards.specialty.length > 0) {
+    newState.turnPhase = TurnPhase.SELECT_SPECIALTY;
+  } else {
+    newState.turnPhase = TurnPhase.RESOLVE;
+  }
+  
   return newState;
 }
 
 /**
- * Calculate final movement for current rider
- * @param {Object} state - Game state
- * @returns {number} Final movement value
+ * Select specialty card (optional)
+ */
+export function selectSpecialty(state, cardId) {
+  if (cardId === null) {
+    // Skip specialty
+    return {
+      ...state,
+      selectedSpecialtyId: null,
+      turnPhase: TurnPhase.RESOLVE
+    };
+  }
+  
+  const rider = getCurrentRider(state);
+  if (!rider) return state;
+  
+  const specialtyCard = rider.specialtyCards.find(c => c.id === cardId);
+  if (!specialtyCard) return state;
+  
+  return {
+    ...state,
+    selectedSpecialtyId: cardId,
+    turnPhase: TurnPhase.RESOLVE
+  };
+}
+
+/**
+ * Calculate movement for current rider
  */
 export function calculateMovement(state) {
   const rider = getCurrentRider(state);
-  if (!rider || !state.lastDiceRoll) return 0;
+  if (!rider || !state.lastDiceRoll || !state.selectedCardId) return 0;
   
   const terrain = getTerrainAt(state, rider.position);
-  let movement = state.lastDiceRoll.total;
   
-  // Apply terrain bonus
+  // Base: dice
+  let movement = state.lastDiceRoll.result;
+  
+  // Find selected card
+  const cardInHand = rider.hand.find(c => c.id === state.selectedCardId);
+  const cardInAttack = rider.attackCards.find(c => c.id === state.selectedCardId);
+  const selectedCard = cardInHand || cardInAttack;
+  
+  if (selectedCard) {
+    movement += selectedCard.value;
+  }
+  
+  // Terrain bonus
   movement += getTerrainBonus(terrain, rider.type);
   
-  // Apply attack card bonus
-  if (state.attackUsedThisTurn) {
-    movement += 3;
+  // Specialty card bonus
+  if (state.selectedSpecialtyId) {
+    const specialtyCard = rider.specialtyCards.find(c => c.id === state.selectedSpecialtyId);
+    if (specialtyCard) {
+      movement += specialtyCard.value;
+    }
   }
   
-  // Apply penalty card effects
-  if (state.lastCard?.type === 'penalty') {
-    const effect = state.lastCard.card.effect;
-    if (effect.movement) movement += effect.movement;
-    if (effect.noMove) return 0;
-    if (effect.maxMove && movement > effect.maxMove) movement = effect.maxMove;
-    if (effect.minMove && movement < effect.minMove) movement = effect.minMove;
-  }
-  
-  // Apply bonus card effects
-  if (state.lastCard?.type === 'bonus') {
-    const effect = state.lastCard.card.effect;
-    if (effect.movement) movement += effect.movement;
-  }
-  
-  // Apply fatigue penalty
-  const fatiguePenalty = getFatiguePenalty(rider.fatigue);
-  movement += fatiguePenalty.penalty;
-  if (fatiguePenalty.maxMove && movement > fatiguePenalty.maxMove) {
-    movement = fatiguePenalty.maxMove;
-  }
-  
-  // Apply descent minimum speed
+  // Descent minimum speed
   if (terrain === TerrainType.DESCENT) {
     movement = Math.max(movement, DescentRules.minSpeed);
   }
@@ -460,8 +415,6 @@ export function calculateMovement(state) {
 
 /**
  * Resolve movement and apply effects
- * @param {Object} state - Game state
- * @returns {Object} Updated state
  */
 export function resolveMovement(state) {
   const rider = getCurrentRider(state);
@@ -469,55 +422,52 @@ export function resolveMovement(state) {
   
   // Skip if fallen this turn
   if (rider.hasFallenThisTurn) {
-    return moveToNextPlayer(state);
+    return moveToNextPlayer({
+      ...state,
+      ridersPlayedThisTurn: [...state.ridersPlayedThisTurn, rider.id]
+    });
   }
   
   const terrain = getTerrainAt(state, rider.position);
   const movement = calculateMovement(state);
   const newPosition = rider.position + movement;
   
-  // Apply card fatigue effects
-  let fatigueChange = 0;
-  if (state.lastCard?.type === 'penalty' && state.lastCard.card.effect.fatigue) {
-    fatigueChange += state.lastCard.card.effect.fatigue;
-  }
-  if (state.lastCard?.type === 'bonus' && state.lastCard.card.effect.fatigue) {
-    fatigueChange += state.lastCard.card.effect.fatigue;
+  // Play the selected card
+  let updatedRider = rider;
+  const { rider: riderAfterCard, card: playedCard } = playCard(rider, state.selectedCardId);
+  updatedRider = riderAfterCard;
+  
+  // Play specialty card if selected
+  if (state.selectedSpecialtyId) {
+    const { rider: riderAfterSpecialty } = playSpecialtyCard(updatedRider, state.selectedSpecialtyId);
+    updatedRider = riderAfterSpecialty;
   }
   
-  // Check if crossing finish line
+  // Move rider
   const crossingFinish = newPosition >= state.finishLine && !rider.hasFinished;
+  updatedRider = moveRider(updatedRider, newPosition, state.finishLine);
   
-  // Update rider
-  let updatedRider = moveRider(rider, newPosition, state.finishLine);
-  if (fatigueChange !== 0) {
-    updatedRider = addFatigue(updatedRider, fatigueChange);
-  }
-  
-  // Check for descent recovery
-  if (terrain === TerrainType.DESCENT && isInPeloton(rider, state.riders)) {
-    updatedRider = removeFatigue(updatedRider, DescentRules.recoveryInPeloton);
-  }
-  
-  const updatedRiders = state.riders.map(r => 
+  // Update riders array
+  let updatedRiders = state.riders.map(r => 
     r.id === rider.id ? updatedRider : r
   );
   
-  // Apply aspiration
-  const ridersAfterAspiration = applyAspiration(updatedRiders, terrain);
+  // Build log message
+  let logMessage = `🚴 ${rider.name} joue ${playedCard?.name || 'carte'} (+${playedCard?.value || 0})`;
+  if (state.selectedSpecialtyId) {
+    logMessage += ` + Spécialité (+2)`;
+  }
+  logMessage += ` + 🎲${state.lastDiceRoll.result} → ${movement} cases (position ${newPosition + 1})`;
   
   let newState = {
     ...state,
-    riders: ridersAfterAspiration,
+    riders: updatedRiders,
     lastMovement: { type: 'move', distance: movement },
     ridersPlayedThisTurn: [...state.ridersPlayedThisTurn, rider.id],
-    gameLog: [
-      ...state.gameLog,
-      `🚴 ${rider.name} avance de ${movement} cases → position ${newPosition + 1}`
-    ]
+    gameLog: [...state.gameLog, logMessage]
   };
   
-  // Check if this is the first finisher (triggers last turn)
+  // Check if first finisher
   if (crossingFinish && !state.isLastTurn && !state.firstFinisher) {
     newState = {
       ...newState,
@@ -526,23 +476,131 @@ export function resolveMovement(state) {
       phase: GamePhase.LAST_TURN,
       gameLog: [
         ...newState.gameLog,
-        `🏁 ${rider.name} franchit la ligne en premier! DERNIER TOUR déclenché!`
+        `🏁 ${rider.name} franchit la ligne en premier! DERNIER TOUR!`
       ]
     };
   } else if (crossingFinish) {
-    newState.gameLog = [
-      ...newState.gameLog,
-      `🏁 ${rider.name} franchit la ligne d'arrivée!`
-    ];
+    newState.gameLog = [...newState.gameLog, `🏁 ${rider.name} franchit la ligne!`];
+  }
+  
+  // Apply wind/aspiration effects (from turn 2 onwards)
+  if (state.currentTurn >= 2 && hasWindPenalty(terrain)) {
+    newState = applyWindAndAspirationEffects(newState, rider.id, newPosition);
+  }
+  
+  // Apply regrouping
+  if (hasAspiration(terrain)) {
+    newState = applyRegrouping(newState);
   }
   
   return moveToNextPlayer(newState);
 }
 
 /**
+ * Apply wind and aspiration fatigue cards
+ */
+function applyWindAndAspirationEffects(state, riderId, riderPosition) {
+  const rider = state.riders.find(r => r.id === riderId);
+  const terrain = getTerrainAt(state, riderPosition);
+  
+  if (!hasWindPenalty(terrain)) return state;
+  
+  // Find riders ahead
+  const ridersAhead = state.riders.filter(r => 
+    r.id !== riderId && 
+    r.position > riderPosition &&
+    !r.hasFinished
+  );
+  
+  // Find closest rider ahead
+  const closestAhead = ridersAhead.length > 0 
+    ? ridersAhead.reduce((closest, r) => 
+        r.position < closest.position ? r : closest
+      )
+    : null;
+  
+  // Find riders behind (in aspiration range)
+  const ridersBehind = state.riders.filter(r =>
+    r.id !== riderId &&
+    r.position === riderPosition - 1 &&
+    !r.hasFinished
+  );
+  
+  let updatedRiders = [...state.riders];
+  let logMessages = [];
+  
+  // Check if taking wind
+  const takingWind = !closestAhead || (closestAhead.position - riderPosition >= 2);
+  
+  if (takingWind) {
+    // Add +1 fatigue card
+    const riderIndex = updatedRiders.findIndex(r => r.id === riderId);
+    updatedRiders[riderIndex] = addFatigueCard(updatedRiders[riderIndex], 1);
+    logMessages.push(`💨 ${rider.name} prend le vent (+1 fatigue)`);
+  } else if (closestAhead && closestAhead.position - riderPosition === 1) {
+    // In aspiration - add +2 fatigue card (better than +1)
+    const riderIndex = updatedRiders.findIndex(r => r.id === riderId);
+    updatedRiders[riderIndex] = addFatigueCard(updatedRiders[riderIndex], 2);
+    logMessages.push(`🌀 ${rider.name} dans l'aspiration (+2 fatigue)`);
+  }
+  
+  // Check if leading aspiration (someone in our wheel)
+  if (ridersBehind.length > 0) {
+    const riderIndex = updatedRiders.findIndex(r => r.id === riderId);
+    updatedRiders[riderIndex] = addFatigueCard(updatedRiders[riderIndex], 1);
+    logMessages.push(`🚂 ${rider.name} mène le groupe (+1 fatigue)`);
+  }
+  
+  return {
+    ...state,
+    riders: updatedRiders,
+    gameLog: [...state.gameLog, ...logMessages]
+  };
+}
+
+/**
+ * Apply regrouping at end of movement
+ */
+function applyRegrouping(state) {
+  // Sort riders by position (descending)
+  const sortedRiders = [...state.riders].sort((a, b) => b.position - a.position);
+  
+  let updatedRiders = [...state.riders];
+  let regrouped = false;
+  
+  // Check for 1-case gaps and close them
+  for (let i = 0; i < sortedRiders.length - 1; i++) {
+    const ahead = sortedRiders[i];
+    const behind = sortedRiders[i + 1];
+    
+    if (ahead.hasFinished || behind.hasFinished) continue;
+    
+    const gap = ahead.position - behind.position;
+    
+    if (gap === 1) {
+      // Close the gap - move behind rider up
+      const behindIndex = updatedRiders.findIndex(r => r.id === behind.id);
+      updatedRiders[behindIndex] = {
+        ...updatedRiders[behindIndex],
+        position: ahead.position
+      };
+      regrouped = true;
+    }
+  }
+  
+  if (regrouped) {
+    return {
+      ...state,
+      riders: updatedRiders,
+      gameLog: [...state.gameLog, `🔄 Regroupement automatique`]
+    };
+  }
+  
+  return state;
+}
+
+/**
  * Move to next player or end turn
- * @param {Object} state - Game state
- * @returns {Object} Updated state
  */
 export function moveToNextPlayer(state) {
   const currentTeam = state.currentTeam;
@@ -550,34 +608,30 @@ export function moveToNextPlayer(state) {
   
   // Check if other team has available riders
   if (teamHasAvailableRiders(state, otherTeam)) {
-    // Switch to other team
     return {
       ...state,
       currentTeam: otherTeam,
       selectedRiderId: null,
+      selectedCardId: null,
+      selectedSpecialtyId: null,
       turnPhase: TurnPhase.SELECT_RIDER,
-      attackUsedThisTurn: false,
-      canReroll: false,
-      lastCard: null,
       lastDiceRoll: null,
       lastMovement: null,
       gameLog: [
         ...state.gameLog,
-        `🔄 Au tour de ${TeamConfig[otherTeam].playerName} (${TeamConfig[otherTeam].shortName})`
+        `🔄 Au tour de ${TeamConfig[otherTeam].playerName}`
       ]
     };
   }
   
   // Check if current team still has riders
   if (teamHasAvailableRiders(state, currentTeam)) {
-    // Stay with current team
     return {
       ...state,
       selectedRiderId: null,
+      selectedCardId: null,
+      selectedSpecialtyId: null,
       turnPhase: TurnPhase.SELECT_RIDER,
-      attackUsedThisTurn: false,
-      canReroll: false,
-      lastCard: null,
       lastDiceRoll: null,
       lastMovement: null
     };
@@ -588,51 +642,48 @@ export function moveToNextPlayer(state) {
 }
 
 /**
- * End current turn and check for game end
- * @param {Object} state - Game state
- * @returns {Object} Updated state
+ * End current turn
  */
 export function endTurn(state) {
   // Reset fallen flags
   const ridersReset = state.riders.map(r => ({
     ...r,
-    hasFallenThisTurn: false,
-    isInPeloton: isInPeloton(r, state.riders)
+    hasFallenThisTurn: false
   }));
   
-  // If this was the last turn, game is over
+  // If last turn, game is over
   if (state.isLastTurn) {
-    // Calculate final rankings based on position
     const rankings = [...ridersReset].sort((a, b) => b.position - a.position);
-    
     rankings.forEach((rider, index) => {
       rider.finalRank = index + 1;
     });
     
     // Determine team winner
-    const teamAScore = rankings
+    const teamAPositions = rankings
       .filter(r => r.team === Teams.TEAM_A)
       .slice(0, 3)
-      .reduce((sum, r, i) => sum + (10 - i * 2), 0);
-    const teamBScore = rankings
+      .map((r, i) => rankings.findIndex(x => x.id === r.id) + 1);
+    const teamBPositions = rankings
       .filter(r => r.team === Teams.TEAM_B)
       .slice(0, 3)
-      .reduce((sum, r, i) => sum + (10 - i * 2), 0);
+      .map((r, i) => rankings.findIndex(x => x.id === r.id) + 1);
     
-    const winningTeam = teamAScore > teamBScore ? Teams.TEAM_A : 
-                        teamBScore > teamAScore ? Teams.TEAM_B : null;
+    const teamAScore = teamAPositions.reduce((a, b) => a + b, 0);
+    const teamBScore = teamBPositions.reduce((a, b) => a + b, 0);
+    
+    const winningTeam = teamAScore < teamBScore ? Teams.TEAM_A : 
+                        teamBScore < teamAScore ? Teams.TEAM_B : null;
     
     const resultsLog = [
-      `\n══════════ 🏆 RÉSULTATS FINAUX ══════════`,
+      `\n══════════ 🏆 RÉSULTATS ══════════`,
       ...rankings.slice(0, 10).map((r, i) => {
         const medal = i === 0 ? '🥇' : i === 1 ? '🥈' : i === 2 ? '🥉' : `${i + 1}.`;
-        const team = TeamConfig[r.team]?.shortName || '';
-        return `${medal} ${r.name} (${team}) - Position: ${r.position + 1}`;
+        return `${medal} ${r.name} (${TeamConfig[r.team]?.shortName}) - Position: ${r.position + 1}`;
       }),
       ``,
       winningTeam 
-        ? `🎉 ${TeamConfig[winningTeam].name} remporte la course!`
-        : `🤝 Égalité entre les équipes!`
+        ? `🎉 ${TeamConfig[winningTeam].name} gagne!`
+        : `🤝 Égalité!`
     ];
     
     return {
@@ -655,12 +706,11 @@ export function endTurn(state) {
 
 /**
  * Get game status for display
- * @param {Object} state - Game state
- * @returns {Object} Status info
  */
 export function getGameStatus(state) {
   const currentRider = getCurrentRider(state);
-  const groups = getRiderGroups(state.riders);
+  const terrain = currentRider ? getTerrainAt(state, currentRider.position) : null;
+  const availableCards = currentRider ? getAvailableCards(currentRider, terrain) : null;
   const availableRiders = getAvailableRiders(state, state.currentTeam);
   
   return {
@@ -671,42 +721,42 @@ export function getGameStatus(state) {
     currentTeam: state.currentTeam,
     currentTeamConfig: TeamConfig[state.currentTeam],
     selectedRiderId: state.selectedRiderId,
+    selectedCardId: state.selectedCardId,
+    selectedSpecialtyId: state.selectedSpecialtyId,
     availableRiders,
     currentRider: currentRider ? {
       ...currentRider,
       config: RiderConfig[currentRider.type],
       teamConfig: TeamConfig[currentRider.team],
-      terrain: getTerrainAt(state, currentRider.position),
-      terrainConfig: TerrainConfig[getTerrainAt(state, currentRider.position)],
-      fatigueStatus: getFatiguePenalty(currentRider.fatigue),
-      gapToLeader: getGapToLeader(currentRider, state.riders)
+      terrain,
+      terrainConfig: TerrainConfig[terrain],
+      terrainBonus: getTerrainBonus(terrain, currentRider.type),
+      availableCards,
+      handStats: getHandStats(currentRider)
     } : null,
-    groups,
     leader: state.riders.reduce((l, r) => r.position > l.position ? r : l, state.riders[0]),
     firstFinisher: state.firstFinisher,
     rankings: state.rankings,
     winningTeam: state.winningTeam,
     lastDiceRoll: state.lastDiceRoll,
-    lastCard: state.lastCard,
     lastMovement: state.lastMovement,
-    canAttack: currentRider && !state.attackUsedThisTurn && currentRider.attackCardsRemaining > 0,
-    canReroll: state.canReroll,
-    ridersPlayedThisTurn: state.ridersPlayedThisTurn
+    ridersPlayedThisTurn: state.ridersPlayedThisTurn,
+    calculatedMovement: state.turnPhase === TurnPhase.RESOLVE || state.turnPhase === TurnPhase.SELECT_SPECIALTY 
+      ? calculateMovement(state) 
+      : null
   };
 }
 
-// Export all modules for convenience
+// Exports
 export {
-  roll2D6,
+  roll1D6,
   rollFallTest,
   TerrainType,
   TerrainConfig,
   getTerrainBonus,
   generateCourse,
   RiderConfig,
+  CardType,
   createRider,
-  getFatiguePenalty,
-  createGameDecks,
-  getCardDescription,
-  getRiderGroups
+  getHandStats
 };
