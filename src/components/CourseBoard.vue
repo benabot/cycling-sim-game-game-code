@@ -9,14 +9,22 @@
       >
         <span class="cell-number">🏁 0</span>
         <div class="riders-on-cell">
-          <RiderToken 
+          <div 
             v-for="rider in getRidersAt(0)" 
             :key="rider.id"
-            :rider="rider"
-            :isSelected="rider.id === selectedRiderId"
-            :isAnimating="animatingRiders.includes(rider.id)"
-            :isLeader="isLeader(rider, 0)"
-          />
+            class="rider-wrapper"
+            :class="{ 'aspiration-active': getAspirationInfo(rider.id) }"
+          >
+            <div v-if="getAspirationInfo(rider.id)" class="aspiration-label">
+              🌀 Aspiration
+            </div>
+            <RiderToken 
+              :rider="rider"
+              :isSelected="rider.id === selectedRiderId"
+              :isAnimating="animatingRiders.includes(rider.id)"
+              :isLeader="isLeader(rider, 0)"
+            />
+          </div>
         </div>
         <span v-if="countAt(0) > 1" class="cell-count">{{ countAt(0) }}/4</span>
       </div>
@@ -51,14 +59,22 @@
           🎯 Cible
         </div>
         <div class="riders-on-cell" :style="{ flexDirection: 'row-reverse' }">
-          <RiderToken 
+          <div 
             v-for="rider in getRidersAt(index + 1)" 
             :key="rider.id"
-            :rider="rider"
-            :isSelected="rider.id === selectedRiderId"
-            :isAnimating="animatingRiders.includes(rider.id)"
-            :isLeader="isLeader(rider, index + 1)"
-          />
+            class="rider-wrapper"
+            :class="{ 'aspiration-active': getAspirationInfo(rider.id) }"
+          >
+            <div v-if="getAspirationInfo(rider.id)" class="aspiration-label">
+              🌀 Aspiration
+            </div>
+            <RiderToken 
+              :rider="rider"
+              :isSelected="rider.id === selectedRiderId"
+              :isAnimating="animatingRiders.includes(rider.id)"
+              :isLeader="isLeader(rider, index + 1)"
+            />
+          </div>
         </div>
         <span v-if="countAt(index + 1) > 1" class="cell-count">{{ countAt(index + 1) }}/4</span>
       </div>
@@ -97,6 +113,7 @@ const props = defineProps({
   riders: { type: Array, required: true },
   selectedRiderId: { type: String, default: null },
   animatingRiders: { type: Array, default: () => [] },
+  aspirationAnimations: { type: Array, default: () => [] },
   getLeaderAtPosition: { type: Function, required: true },
   previewPositions: { type: Object, default: null }
 });
@@ -158,6 +175,11 @@ function getCellTooltip(cell, position) {
   }
   return tip;
 }
+
+// v3.2.2: Get aspiration animation info for a rider
+function getAspirationInfo(riderId) {
+  return props.aspirationAnimations.find(a => a.riderId === riderId);
+}
 </script>
 
 <style scoped>
@@ -212,6 +234,46 @@ function getCellTooltip(cell, position) {
   justify-content: center;
   flex: 1;
   align-items: center;
+}
+
+/* v3.2.2: Aspiration animation wrapper */
+.rider-wrapper {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.rider-wrapper.aspiration-active {
+  z-index: 100;
+}
+
+.aspiration-label {
+  position: absolute;
+  top: -22px;
+  left: 50%;
+  transform: translateX(-50%);
+  background: #3b82f6;
+  color: white;
+  font-size: 9px;
+  font-weight: bold;
+  padding: 2px 6px;
+  border-radius: 4px;
+  white-space: nowrap;
+  animation: aspiration-label-pulse 0.8s ease-in-out infinite;
+  box-shadow: 0 2px 8px rgba(59, 130, 246, 0.5);
+  z-index: 101;
+}
+
+@keyframes aspiration-label-pulse {
+  0%, 100% { 
+    transform: translateX(-50%) scale(1);
+    opacity: 1;
+  }
+  50% { 
+    transform: translateX(-50%) scale(1.1);
+    opacity: 0.9;
+  }
 }
 
 .cell-count {

@@ -1,6 +1,6 @@
 <template>
   <div class="game-container">
-    <h1>🚴 Course Cycliste - v3.2</h1>
+    <h1>🚴 Course Cycliste - v3.2.2</h1>
     
     <!-- Status Bar -->
     <GameStatusBar 
@@ -21,6 +21,7 @@
       :riders="allRiders"
       :selectedRiderId="selectedRiderId"
       :animatingRiders="animatingRiders"
+      :aspirationAnimations="aspirationAnimations"
       :getLeaderAtPosition="getLeaderAt"
       :previewPositions="previewPositions"
     />
@@ -138,6 +139,7 @@ const {
   calculatedMovement,
   playedThisTurn,
   animatingRiders,
+  aspirationAnimations,
   showEffectsOverlay,
   endTurnEffects,
   

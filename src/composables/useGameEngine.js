@@ -25,6 +25,9 @@ export function useGameEngine() {
   const gameLog = ref([]);
   const animatingRiders = ref([]);
   const isAnimatingEffects = ref(false);
+  
+  // v3.2.2: Track aspiration animations with position info
+  const aspirationAnimations = ref([]);
 
   // Initialize
   function initialize() {
@@ -32,6 +35,7 @@ export function useGameEngine() {
     gameLog.value = ['🏁 Départ de la course !', '=== Tour 1 ==='];
     animatingRiders.value = [];
     isAnimatingEffects.value = false;
+    aspirationAnimations.value = [];
   }
 
   // Computed from game state
@@ -257,37 +261,43 @@ export function useGameEngine() {
       return;
     }
     
-    // Marquer qu'on anime les effets
+    // Marquer qu'on anime les effets AVANT tout
     isAnimatingEffects.value = true;
     
     log(`--- Fin du tour ${state.currentTurn} ---`);
     
     // Pause initiale pour que le joueur voie ce qui se passe
-    await sleep(800);
+    await sleep(500);
     
-    // Animer chaque aspiration séquentiellement - LENTEMENT
+    // v3.2.2: Animer chaque aspiration avec déplacement visible
     for (const effect of aspirationEffects) {
       // Log d'abord pour annoncer le mouvement
       log(`🌀 ${effect.riderName} rejoint le groupe (${effect.fromPosition} → ${effect.toPosition})`);
       
-      // Petite pause avant l'animation
-      await sleep(400);
+      // Ajouter l'animation avec les positions pour l'overlay
+      aspirationAnimations.value.push({
+        riderId: effect.riderId,
+        riderName: effect.riderName,
+        fromPosition: effect.fromPosition,
+        toPosition: effect.toPosition
+      });
       
-      // Ajouter le coureur aux animations
+      // Ajouter le coureur aux animations visuelles
       animatingRiders.value.push(effect.riderId);
       
-      // Attendre l'animation complète (1.5 secondes)
-      await sleep(1500);
+      // Attendre l'animation (visible sur le plateau)
+      await sleep(1200);
       
       // Retirer de l'animation
       animatingRiders.value = animatingRiders.value.filter(id => id !== effect.riderId);
+      aspirationAnimations.value = aspirationAnimations.value.filter(a => a.riderId !== effect.riderId);
       
       // Pause entre chaque coureur
-      await sleep(600);
+      await sleep(400);
     }
     
     // Pause avant les effets de vent/abri
-    await sleep(500);
+    await sleep(300);
     
     // Log des effets de vent/abri
     effects.filter(e => e.type === 'wind').forEach(e => {
@@ -298,7 +308,7 @@ export function useGameEngine() {
     });
     
     // Pause avant d'afficher l'overlay
-    await sleep(600);
+    await sleep(400);
     
     // Animations terminées, afficher l'overlay
     isAnimatingEffects.value = false;
@@ -375,6 +385,7 @@ export function useGameEngine() {
     // State
     gameLog,
     animatingRiders,
+    aspirationAnimations,
     showEffectsOverlay,
     endTurnEffects,
     isAnimatingEffects,
