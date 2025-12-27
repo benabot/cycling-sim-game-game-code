@@ -58,6 +58,8 @@ const tooltip = computed(() => {
 /* Team colors */
 .rider-token.team_a { background: #fecaca; border-color: #dc2626; }
 .rider-token.team_b { background: #bfdbfe; border-color: #2563eb; }
+.rider-token.team_c { background: #bbf7d0; border-color: #16a34a; }
+.rider-token.team_d { background: #fef08a; border-color: #ca8a04; }
 
 /* States */
 .rider-token.selected { 

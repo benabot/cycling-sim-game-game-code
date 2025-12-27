@@ -241,15 +241,20 @@ export function generateCourse(length = 80, distribution = null) {
   // Start with flat, end with sprint zone
   const courseStructure = createCourseStructure(length, dist);
   
-  // v3.3: Place refuel zone at ~40% of course (before mountain typically)
-  const refuelPosition = Math.floor(length * 0.4);
+  // v4.0: Place 2 refuel zones of 3 cells each (~30% and ~65% of course)
+  const refuelZone1Start = Math.floor(length * 0.30);
+  const refuelZone2Start = Math.floor(length * 0.65);
+  const refuelZoneLength = 3;
   
   for (let i = 0; i < length; i++) {
+    const isInRefuelZone1 = i >= refuelZone1Start && i < refuelZone1Start + refuelZoneLength;
+    const isInRefuelZone2 = i >= refuelZone2Start && i < refuelZone2Start + refuelZoneLength;
+    
     course.push({
       index: i,
       terrain: courseStructure[i],
       config: TerrainConfig[courseStructure[i]],
-      isRefuelZone: i === refuelPosition // v3.3: Single refuel zone
+      isRefuelZone: isInRefuelZone1 || isInRefuelZone2
     });
   }
   

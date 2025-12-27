@@ -54,6 +54,23 @@
         </div>
       </div>
       
+      <!-- Refuel zone effects (v4.0) -->
+      <div v-if="effects.refuel && effects.refuel.length > 0" class="effect-group refuel-group">
+        <h4>⛽ Ravitaillement</h4>
+        <p class="effect-rule">Arrêt en zone ravito → récupération d'énergie</p>
+        <div class="effect-list">
+          <div 
+            v-for="effect in effects.refuel" 
+            :key="effect.riderId"
+            class="effect-item refuel-effect"
+          >
+            <span class="effect-rider">{{ effect.riderName }}</span>
+            <span class="effect-energy">+{{ effect.energyRecovered }}</span>
+            <span class="effect-desc">énergie récupérée</span>
+          </div>
+        </div>
+      </div>
+      
       <div v-if="noEffects" class="no-effects">
         <p>Pas d'effets de fin de tour (terrain Montagne ou Descente).</p>
       </div>
@@ -72,7 +89,7 @@ const props = defineProps({
   turn: { type: Number, required: true },
   effects: { 
     type: Object, 
-    default: () => ({ aspiration: [], wind: [], shelter: [] })
+    default: () => ({ aspiration: [], wind: [], shelter: [], refuel: [] })
   }
 });
 
@@ -81,7 +98,8 @@ defineEmits(['acknowledge']);
 const noEffects = computed(() => 
   props.effects.aspiration.length === 0 && 
   props.effects.wind.length === 0 && 
-  props.effects.shelter.length === 0
+  props.effects.shelter.length === 0 &&
+  (!props.effects.refuel || props.effects.refuel.length === 0)
 );
 </script>
 
@@ -161,6 +179,16 @@ const noEffects = computed(() =>
 }
 .effect-card.bad { background: #fecaca; color: #dc2626; }
 .effect-card.good { background: #bbf7d0; color: #16a34a; }
+
+.effect-energy {
+  padding: 4px 10px;
+  border-radius: 4px;
+  font-weight: bold;
+  background: #fef3c7;
+  color: #d97706;
+}
+
+.refuel-group { background: #fffbeb; }
 
 .effect-desc { color: #64748b; font-size: 0.85em; }
 

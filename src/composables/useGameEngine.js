@@ -130,6 +130,11 @@ export function useGameEngine() {
       shelter: effects.filter(e => e.type === 'shelter').map(e => ({
         riderId: e.riderId,
         riderName: e.riderName
+      })),
+      refuel: effects.filter(e => e.type === 'refuel').map(e => ({
+        riderId: e.riderId,
+        riderName: e.riderName,
+        energyRecovered: e.energyRecovered
       }))
     };
   });

@@ -364,17 +364,21 @@ export function moveRider(rider, newPosition, finishLine) {
  * Create default set of 5 riders for a team
  * @param {string} teamId - Team identifier
  * @param {string} teamSuffix - Suffix for rider names (A or B)
+ * @param {Array<string>} customNames - Optional custom names for riders
  * @returns {Array<Object>} Array of riders
  */
-export function createTeamRiders(teamId, teamSuffix) {
+export function createTeamRiders(teamId, teamSuffix, customNames = null) {
   const riderTypes = ['climber', 'puncher', 'rouleur', 'sprinter', 'versatile'];
   
-  return riderTypes.map((type, index) => 
-    createRider(
+  return riderTypes.map((type, index) => {
+    const defaultName = `${RiderConfig[type].name} ${teamSuffix}`;
+    const name = customNames?.[index] || defaultName;
+    
+    return createRider(
       `${teamId}_${index + 1}`,
       type,
-      `${RiderConfig[type].name} ${teamSuffix}`,
+      name,
       teamId
-    )
-  );
+    );
+  });
 }

@@ -68,13 +68,16 @@ export const TeamConfig = TeamConfigs;
 /**
  * Create riders for multiple teams
  * @param {string[]} teamIds - Array of team IDs
+ * @param {Object} playersConfig - Optional players configuration with custom names
  * @returns {Array} Array of riders
  */
-export function createRidersForTeams(teamIds) {
+export function createRidersForTeams(teamIds, playersConfig = null) {
   const riders = [];
   teamIds.forEach(teamId => {
     const config = getTeamConfig(teamId);
-    riders.push(...createTeamRiders(teamId, config.prefix));
+    const playerConfig = playersConfig?.find(p => p.teamId === teamId);
+    const customNames = playerConfig?.riderNames || null;
+    riders.push(...createTeamRiders(teamId, config.prefix, customNames));
   });
   return riders;
 }
@@ -109,7 +112,7 @@ export function createGameState(options = {}) {
   ];
   
   const course = generateCourse(effectiveCourseLength);
-  let riders = createRidersForTeams(teamIds);
+  let riders = createRidersForTeams(teamIds, players);
   
   // All riders start at position 0 with arrival order
   riders = riders.map((r, index) => ({ 
@@ -769,12 +772,13 @@ export function resolveMovement(state) {
     isLeading: false // Will be determined at end of turn
   });
   
-  // v3.3: Calculate energy recovery (descent)
+  // v3.3: Calculate energy recovery (descent only during movement)
+  // v4.0: Refuel zone recovery moved to end of turn (must stop on zone)
   const energyRecovered = calculateRecovery({
     terrain,
     distance: terrain === 'descent' ? actualDistance : 0,
     isSheltered: false, // Determined at end of turn
-    inRefuelZone: isRefuelZone(state.course, newPosition)
+    inRefuelZone: false // v4.0: Now applied at end of turn only
   });
   
   // v3.3: Apply energy change
@@ -1119,6 +1123,39 @@ export function applyEndOfTurnEffects(state) {
       logMessages.push(`🎵 Tempo: ${shelterRiders.join(', ')} (carte +2)`);
     }
   
+  // ===== PHASE 3: REFUEL ZONE RECOVERY (v4.0) =====
+  // Riders who END their turn on a refuel zone recover energy
+  const refuelRiderIds = [];
+  updatedRiders.forEach((rider, index) => {
+    if (rider.hasFinished) return;
+    
+    const onRefuelZone = isRefuelZone(state.course, rider.position);
+    if (onRefuelZone) {
+      const energyRecovered = EnergyConfig.recovery.refuelZone;
+      const newEnergy = applyEnergyChange(rider.energy, 0, energyRecovered);
+      
+      updatedRiders[index] = {
+        ...rider,
+        energy: newEnergy
+      };
+      
+      refuelRiderIds.push(rider.id);
+      effects.push({
+        type: 'refuel',
+        riderId: rider.id,
+        riderName: rider.name,
+        energyRecovered
+      });
+    }
+  });
+  
+  if (refuelRiderIds.length > 0) {
+    const refuelRiders = effects
+      .filter(e => e.type === 'refuel')
+      .map(e => e.riderName);
+    logMessages.push(`⛽ Ravitaillement: ${refuelRiders.join(', ')} (+${EnergyConfig.recovery.refuelZone} énergie)`);
+  }
+
   // Return state with effects for animation
   return {
     ...state,

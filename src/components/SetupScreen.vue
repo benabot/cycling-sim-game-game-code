@@ -21,7 +21,7 @@
 
       <!-- Team configuration -->
       <div class="setup-section">
-        <h3>Configuration des joueurs</h3>
+        <h3>Configuration des équipes</h3>
         <div class="teams-config">
           <div 
             v-for="(player, index) in players" 
@@ -31,7 +31,13 @@
           >
             <div class="team-header" :style="{ background: player.bgColor }">
               <span class="team-emoji">{{ player.emoji }}</span>
-              <span class="team-name">{{ player.name }}</span>
+              <input 
+                type="text" 
+                v-model="player.customName" 
+                :placeholder="player.name"
+                class="team-name-input"
+                @input="updatePlayer(index)"
+              />
             </div>
             <div class="team-controls">
               <label class="player-type-toggle">
@@ -50,6 +56,33 @@
                   <option value="normal">Normal</option>
                   <option value="hard">Difficile</option>
                 </select>
+              </div>
+            </div>
+            
+            <!-- Riders customization -->
+            <div class="riders-section">
+              <button 
+                class="btn-toggle-riders" 
+                @click="toggleRidersExpand(index)"
+              >
+                🚴 Coureurs {{ expandedTeams[index] ? '▲' : '▼' }}
+              </button>
+              <div v-if="expandedTeams[index]" class="riders-list">
+                <div 
+                  v-for="(rider, riderIndex) in riderTypes" 
+                  :key="riderIndex"
+                  class="rider-row"
+                >
+                  <span class="rider-type" :title="rider.desc">{{ rider.emoji }}</span>
+                  <input 
+                    type="text" 
+                    v-model="player.riderNames[riderIndex]"
+                    :placeholder="rider.defaultName + ' ' + player.prefix"
+                    class="rider-name-input"
+                    @input="updatePlayer(index)"
+                  />
+                  <span class="rider-type-label">{{ rider.label }}</span>
+                </div>
               </div>
             </div>
           </div>
@@ -94,7 +127,7 @@
 </template>
 
 <script setup>
-import { ref, computed, watch } from 'vue';
+import { ref, computed, reactive } from 'vue';
 import { 
   TeamId, PlayerType, AIDifficulty, 
   getTeamIds, createPlayerConfig 
@@ -102,23 +135,40 @@ import {
 
 const emit = defineEmits(['start']);
 
+// Rider types configuration
+const riderTypes = [
+  { type: 'climber', emoji: '🏔️', label: 'Grimpeur', defaultName: 'Grimpeur', desc: 'Fort en montagne' },
+  { type: 'puncher', emoji: '⚡', label: 'Puncheur', defaultName: 'Puncheur', desc: 'Fort en côte' },
+  { type: 'rouleur', emoji: '🚴', label: 'Rouleur', defaultName: 'Rouleur', desc: 'Fort sur le plat' },
+  { type: 'sprinter', emoji: '💨', label: 'Sprinteur', defaultName: 'Sprinteur', desc: 'Fort au sprint' },
+  { type: 'versatile', emoji: '🎯', label: 'Polyvalent', defaultName: 'Polyvalent', desc: 'Équilibré' }
+];
+
 // Configuration state
 const numTeams = ref(2);
 const courseLength = ref(80);
 const players = ref([]);
+const expandedTeams = reactive({});
 
 // Initialize players
 function initializePlayers() {
   const teamIds = getTeamIds(numTeams.value);
   players.value = teamIds.map((teamId, index) => {
-    // First player is human by default
     const isHuman = index === 0;
-    return createPlayerConfig(
+    const config = createPlayerConfig(
       teamId,
       isHuman ? PlayerType.HUMAN : PlayerType.AI,
       AIDifficulty.NORMAL
     );
+    // Add custom name fields
+    return {
+      ...config,
+      customName: '',
+      riderNames: ['', '', '', '', '']
+    };
   });
+  // Reset expanded state
+  Object.keys(expandedTeams).forEach(k => delete expandedTeams[k]);
 }
 
 // Set number of teams
@@ -127,20 +177,31 @@ function setNumTeams(n) {
   initializePlayers();
 }
 
+// Toggle riders section expand
+function toggleRidersExpand(index) {
+  expandedTeams[index] = !expandedTeams[index];
+}
+
 // Toggle player type (human/AI)
 function togglePlayerType(index) {
   const player = players.value[index];
   const newType = player.playerType === PlayerType.HUMAN ? PlayerType.AI : PlayerType.HUMAN;
-  players.value[index] = createPlayerConfig(
+  const newConfig = createPlayerConfig(
     player.teamId,
     newType,
     newType === PlayerType.AI ? AIDifficulty.NORMAL : null
   );
+  // Preserve custom names
+  players.value[index] = {
+    ...newConfig,
+    customName: player.customName,
+    riderNames: player.riderNames
+  };
 }
 
 // Update player configuration
 function updatePlayer(index) {
-  // Difficulty already bound via v-model
+  // v-model handles the update
 }
 
 // Computed: count humans and AIs

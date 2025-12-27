@@ -89,7 +89,13 @@ const displayTeams = computed(() => {
 });
 
 function getTeamConfig(teamId) {
-  return TeamConfigs[teamId] || TeamConfig[teamId] || { name: teamId, color: '#666' };
+  const baseConfig = TeamConfigs[teamId] || TeamConfig[teamId] || { name: teamId, color: '#666' };
+  // v4.0: Use custom name if provided
+  const player = props.players.find(p => p.teamId === teamId);
+  if (player?.customName) {
+    return { ...baseConfig, name: player.customName };
+  }
+  return baseConfig;
 }
 
 function isAITeam(teamId) {
