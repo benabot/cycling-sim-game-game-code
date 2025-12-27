@@ -94,6 +94,7 @@ export function useGameEngine() {
   
   const numTeams = computed(() => gameState.value?.teamIds?.length || 2);
   const teamIds = computed(() => gameState.value?.teamIds || []);
+  const players = computed(() => gameState.value?.players || []);
   
   // Preview positions for UI highlighting (v3.2)
   const previewPositions = computed(() => {
@@ -386,7 +387,7 @@ export function useGameEngine() {
     initialize();
   }
 
-  // v4.0: Execute AI turn automatically
+  // v4.0: Execute AI turn - complete rider move without visible intermediate steps
   async function executeAITurn() {
     if (!isAITurn.value || !currentAI.value || isAIThinking.value) return;
     if (phase.value === 'finished') return;
@@ -396,54 +397,129 @@ export function useGameEngine() {
     const teamId = gameState.value.currentTeam;
     
     try {
-      // Wait for thinking delay
+      // Small delay for visibility
       await sleep(ai.thinkingDelay);
       
+      // Get current state phase
       const currentPhase = turnPhase.value;
-      const decision = ai.makeDecision(gameState.value, currentPhase, teamId);
       
-      switch (decision.type) {
-        case 'select_rider':
-          if (decision.riderId) {
-            log(`🤖 IA sélectionne ${decision.reason || decision.riderId}`);
-            selectRider(decision.riderId);
-          }
-          break;
-          
-        case 'select_card':
-          if (decision.cardId) {
-            log(`🤖 IA joue ${decision.reason}`);
-            selectCard(decision.cardId);
-          }
-          break;
-          
-        case 'roll_dice':
-          await sleep(300);
-          rollDice();
-          break;
-          
-        case 'use_specialty':
-          log(`🤖 IA utilise spécialité`);
-          useSpecialty();
-          break;
-          
-        case 'skip_specialty':
-          skipSpecialty();
-          break;
-          
-        case 'resolve':
-          await resolve();
-          break;
-          
-        case 'no_rider':
-        case 'error':
-          console.warn('AI decision error:', decision.reason);
-          break;
+      // If we're at select_rider, execute full rider turn at once
+      if (currentPhase === 'select_rider') {
+        await executeFullAIRiderTurn(ai, teamId);
+      } 
+      // Handle end_turn_effects phase (just acknowledge)
+      else if (currentPhase === 'end_turn_effects') {
+        acknowledgeEffects();
+      }
+      // Fallback for other phases (shouldn't happen often)
+      else {
+        const decision = ai.makeDecision(gameState.value, currentPhase, teamId);
+        await handleAIDecision(decision);
       }
     } catch (err) {
       console.error('AI turn error:', err);
     } finally {
       isAIThinking.value = false;
+    }
+  }
+  
+  // Execute a complete rider turn for AI (select → card → dice → specialty → resolve)
+  async function executeFullAIRiderTurn(ai, teamId) {
+    // 1. Select rider
+    const riderDecision = ai.makeDecision(gameState.value, 'select_rider', teamId);
+    if (riderDecision.type !== 'select_rider' || !riderDecision.riderId) {
+      return; // No rider available
+    }
+    
+    // Apply rider selection silently
+    gameState.value = selectRiderEngine(gameState.value, riderDecision.riderId);
+    const rider = gameState.value.riders.find(r => r.id === riderDecision.riderId);
+    if (!rider) return;
+    
+    // 2. Select card
+    const cardDecision = ai.makeDecision(gameState.value, 'select_card', teamId);
+    if (cardDecision.type !== 'select_card' || !cardDecision.cardId) return;
+    
+    gameState.value = selectCardEngine(gameState.value, cardDecision.cardId);
+    const card = rider.hand?.find(c => c.id === cardDecision.cardId) || 
+                 rider.attackCards?.find(c => c.id === cardDecision.cardId);
+    const isAttack = rider.attackCards?.some(c => c.id === cardDecision.cardId);
+    
+    // 3. Roll dice
+    gameState.value = rollDiceEngine(gameState.value);
+    const diceResult = gameState.value.lastDiceRoll?.result || 0;
+    
+    // Calculate movement after dice
+    let movement = calculateMovementEngine(gameState.value);
+    gameState.value = { ...gameState.value, calculatedMovement: movement };
+    
+    // 4. Decide specialty (if applicable)
+    const terrain = getTerrainAt(gameState.value, rider.position);
+    const canUseSpec = checkCanUseSpecialtyForAI(rider.type, terrain) && rider.specialtyCards?.length > 0;
+    let usedSpecialty = false;
+    
+    if (canUseSpec) {
+      const specDecision = ai.makeDecision(gameState.value, 'select_specialty', teamId);
+      if (specDecision.type === 'use_specialty' && rider.specialtyCards.length > 0) {
+        const specCard = rider.specialtyCards[0];
+        gameState.value = selectSpecialtyEngine(gameState.value, specCard.id);
+        movement = calculateMovementEngine(gameState.value);
+        gameState.value = { ...gameState.value, calculatedMovement: movement };
+        usedSpecialty = true;
+      }
+    }
+    
+    // Set phase to resolve
+    gameState.value = { ...gameState.value, turnPhase: TurnPhase.RESOLVE };
+    
+    // 5. Resolve movement (apply position change)
+    const startPos = rider.position;
+    const newState = resolveMovementEngine(gameState.value);
+    const finalPos = newState.riders.find(r => r.id === rider.id)?.position || startPos;
+    
+    // Log the complete action
+    const cardText = isAttack ? `Attaque (+${card?.value || 6})` : `carte +${card?.value || 0}`;
+    const specText = usedSpecialty ? ' + Spécialité' : '';
+    log(`🤖 ${rider.name}: ${cardText}${specText}, 🎲${diceResult} → case ${finalPos}`);
+    
+    if (finalPos > FINISH_LINE) {
+      log(`🏁 ${rider.name} franchit la ligne !`);
+    }
+    
+    // Update state
+    gameState.value = newState;
+    
+    // Handle end turn effects if needed (will be picked up by watcher)
+  }
+  
+  // Helper for AI specialty check
+  function checkCanUseSpecialtyForAI(riderType, terrain) {
+    if (riderType === 'versatile') return true;
+    const specialties = { climber: 'mountain', puncher: 'hill', rouleur: 'flat', sprinter: 'sprint' };
+    return specialties[riderType] === terrain;
+  }
+  
+  // Handle single AI decision (fallback)
+  async function handleAIDecision(decision) {
+    switch (decision.type) {
+      case 'select_rider':
+        if (decision.riderId) selectRider(decision.riderId);
+        break;
+      case 'select_card':
+        if (decision.cardId) selectCard(decision.cardId);
+        break;
+      case 'roll_dice':
+        rollDice();
+        break;
+      case 'use_specialty':
+        useSpecialty();
+        break;
+      case 'skip_specialty':
+        skipSpecialty();
+        break;
+      case 'resolve':
+        await resolve();
+        break;
     }
   }
 
@@ -515,6 +591,7 @@ export function useGameEngine() {
     isAITurn,
     numTeams,
     teamIds,
+    players,
     
     // Actions
     initialize,

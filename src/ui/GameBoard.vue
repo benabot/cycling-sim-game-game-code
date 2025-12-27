@@ -83,15 +83,16 @@
       <span>Cliquez sur un coureur de <strong>{{ currentTeamConfig?.name }}</strong> pour le jouer</span>
     </div>
 
-    <!-- Team Legend -->
+    <!-- Team Legend (dynamique) -->
     <div class="team-legend" v-if="!showEffectsOverlay">
-      <div class="team-item">
-        <span class="team-color" style="background: #dc2626"></span>
-        Équipe Rouge (Joueur 1)
-      </div>
-      <div class="team-item">
-        <span class="team-color" style="background: #2563eb"></span>
-        Équipe Bleue (Joueur 2)
+      <div 
+        v-for="teamId in teamIds" 
+        :key="teamId"
+        class="team-item"
+      >
+        <span class="team-color" :style="{ background: getTeamColor(teamId) }"></span>
+        {{ getTeamName(teamId) }}
+        <span v-if="isTeamAI(teamId)">🤖</span>
       </div>
     </div>
 
@@ -102,6 +103,8 @@
       :currentTeam="currentTeam"
       :selectedRiderId="selectedRiderId"
       :playedRiders="playedThisTurn"
+      :teamIds="teamIds"
+      :players="players"
       @selectRider="selectRider"
     />
 
@@ -124,6 +127,7 @@
 <script setup>
 import { onMounted, watch } from 'vue';
 import { useGameEngine } from '../composables/useGameEngine.js';
+import { TeamConfigs, PlayerType } from '../core/teams.js';
 import {
   GameStatusBar,
   TerrainLegend,
@@ -174,6 +178,9 @@ const {
   currentRider,
   previewPositions,
   isAITurn,
+  numTeams,
+  teamIds,
+  players,
   
   // Actions
   initialize,
@@ -203,6 +210,20 @@ function getSelectedCardValue() {
 function isSelectedCardAttack() {
   if (!currentRider.value) return false;
   return currentRider.value.attackCards?.some(c => c.id === selectedCardId.value);
+}
+
+// Team helpers for dynamic legend
+function getTeamColor(teamId) {
+  return TeamConfigs[teamId]?.color || '#666';
+}
+
+function getTeamName(teamId) {
+  return TeamConfigs[teamId]?.name || teamId;
+}
+
+function isTeamAI(teamId) {
+  const player = players.value?.find(p => p.teamId === teamId);
+  return player?.playerType === PlayerType.AI;
 }
 
 // Initialize on mount with game config

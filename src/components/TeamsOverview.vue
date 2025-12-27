@@ -1,13 +1,14 @@
 <template>
-  <div class="teams-overview">
+  <div class="teams-overview" :class="{ 'teams-3': displayTeams.length === 3, 'teams-4': displayTeams.length === 4 }">
     <div 
-      v-for="team in ['team_a', 'team_b']" 
+      v-for="team in displayTeams" 
       :key="team"
       class="team-section"
-      :class="{ 'active': currentTeam === team }"
+      :class="{ 'active': currentTeam === team, 'ai-team': isAITeam(team) }"
     >
-      <h3 :style="{ color: TeamConfig[team].color }">
-        {{ TeamConfig[team].name }}
+      <h3 :style="{ color: getTeamConfig(team).color }">
+        {{ getTeamConfig(team).name }}
+        <span v-if="isAITeam(team)" class="ai-badge">🤖</span>
         <span v-if="currentTeam === team" class="active-badge">← Joue</span>
       </h3>
       
@@ -61,17 +62,40 @@
 </template>
 
 <script setup>
+import { computed } from 'vue';
 import { TeamConfig, RiderConfig } from '../config/game.config.js';
 import { getEnergyColor } from '../core/energy.js';
+import { TeamConfigs, PlayerType } from '../core/teams.js';
 
 const props = defineProps({
   riders: { type: Array, required: true, default: () => [] },
   currentTeam: { type: String, required: true },
   selectedRiderId: { type: [String, null], default: null },
-  playedRiders: { type: Array, default: () => [] }
+  playedRiders: { type: Array, default: () => [] },
+  teamIds: { type: Array, default: () => ['team_a', 'team_b'] },
+  players: { type: Array, default: () => [] }
 });
 
 const emit = defineEmits(['selectRider']);
+
+// Use teamIds prop or fallback to detecting from riders
+const displayTeams = computed(() => {
+  if (props.teamIds && props.teamIds.length > 0) {
+    return props.teamIds;
+  }
+  // Fallback: extract unique teams from riders
+  const teams = [...new Set(props.riders.map(r => r.team))];
+  return teams.length > 0 ? teams : ['team_a', 'team_b'];
+});
+
+function getTeamConfig(teamId) {
+  return TeamConfigs[teamId] || TeamConfig[teamId] || { name: teamId, color: '#666' };
+}
+
+function isAITeam(teamId) {
+  const player = props.players.find(p => p.teamId === teamId);
+  return player?.playerType === PlayerType.AI;
+}
 
 function getTeamRiders(team) {
   return props.riders.filter(r => r.team === team);
@@ -210,7 +234,32 @@ function onRiderClick(rider, team) {
   transition: width 0.3s ease, background-color 0.3s ease;
 }
 
+/* Multi-team grid layouts */
+.teams-overview.teams-3 {
+  grid-template-columns: repeat(3, 1fr);
+}
+
+.teams-overview.teams-4 {
+  grid-template-columns: repeat(2, 1fr);
+}
+
+/* AI team indicator */
+.ai-badge {
+  font-size: 0.7em;
+  opacity: 0.7;
+}
+
+.team-section.ai-team {
+  opacity: 0.85;
+}
+
+.team-section.ai-team h3 {
+  font-style: italic;
+}
+
 @media (max-width: 900px) {
   .teams-overview { grid-template-columns: 1fr; }
+  .teams-overview.teams-3 { grid-template-columns: 1fr; }
+  .teams-overview.teams-4 { grid-template-columns: 1fr; }
 }
 </style>
