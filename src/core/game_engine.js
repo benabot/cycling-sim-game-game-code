@@ -4,9 +4,9 @@
  */
 
 import { roll1D6, rollFallTest } from './dice.js';
-import { TerrainType, TerrainConfig, DescentRules, getTerrainBonus, generateCourse, hasAspiration, hasWindPenalty } from './terrain.js';
+import { TerrainType, TerrainConfig, DescentRules, MountainRules, getTerrainBonus, generateCourse, hasAspiration, hasWindPenalty, findSummitPosition, isExemptFromSummitStop } from './terrain.js';
 import { 
-  createRider, createTeamRiders, RiderConfig, CardType,
+  createRider, createTeamRiders, RiderConfig, CardType, RiderType,
   playCard, playSpecialtyCard, addFatigueCard, recycleCards, needsRecycle,
   moveRider, getAvailableCards, getHandStats, createMovementCard
 } from './rider.js';
@@ -506,6 +506,97 @@ export function calculateMovement(state) {
 }
 
 /**
+ * Calculate preview positions for UI display
+ * Shows where the rider will end up with and without specialty card
+ * @param {Object} state - Current game state
+ * @returns {Object} Preview data with positions
+ */
+export function calculatePreviewPositions(state) {
+  const rider = getCurrentRider(state);
+  if (!rider || !state.lastDiceRoll || !state.selectedCardId) {
+    return null;
+  }
+  
+  const terrain = getTerrainAt(state, rider.position);
+  
+  // Base movement: dice + card + terrain bonus
+  let baseMovement = state.lastDiceRoll.result;
+  
+  const cardInHand = rider.hand.find(c => c.id === state.selectedCardId);
+  const cardInAttack = rider.attackCards.find(c => c.id === state.selectedCardId);
+  const selectedCard = cardInHand || cardInAttack;
+  
+  if (selectedCard) {
+    baseMovement += selectedCard.value;
+  }
+  
+  baseMovement += getTerrainBonus(terrain, rider.type);
+  
+  // Descent minimum speed
+  if (terrain === TerrainType.DESCENT) {
+    baseMovement = Math.max(baseMovement, DescentRules.minSpeed);
+  }
+  
+  baseMovement = Math.max(1, baseMovement);
+  
+  // Calculate position without specialty
+  let targetWithoutSpecialty = rider.position + baseMovement;
+  
+  // Check summit stop for non-climbers (without specialty)
+  let summitStopWithout = null;
+  if (!isExemptFromSummitStop(rider.type)) {
+    summitStopWithout = findSummitPosition(state.course, rider.position, targetWithoutSpecialty);
+    if (summitStopWithout !== null) {
+      targetWithoutSpecialty = summitStopWithout;
+    }
+  }
+  
+  // Find available position (cell capacity)
+  const finalWithoutSpecialty = findAvailablePosition(state, targetWithoutSpecialty);
+  
+  // Calculate position with specialty (+2)
+  let targetWithSpecialty = rider.position + baseMovement + 2;
+  
+  // Check summit stop for non-climbers (with specialty)
+  let summitStopWith = null;
+  if (!isExemptFromSummitStop(rider.type)) {
+    summitStopWith = findSummitPosition(state.course, rider.position, targetWithSpecialty);
+    if (summitStopWith !== null) {
+      targetWithSpecialty = summitStopWith;
+    }
+  }
+  
+  const finalWithSpecialty = findAvailablePosition(state, targetWithSpecialty);
+  
+  // Check if crossing finish
+  const crossingFinishWithout = finalWithoutSpecialty >= state.finishLine;
+  const crossingFinishWith = finalWithSpecialty >= state.finishLine;
+  
+  // Check if specialty can be used
+  const canUseSpecialty = rider.specialtyCards.length > 0 && (
+    rider.type === 'versatile' ||
+    (rider.type === 'climber' && terrain === TerrainType.MOUNTAIN) ||
+    (rider.type === 'puncher' && terrain === TerrainType.HILL) ||
+    (rider.type === 'rouleur' && terrain === TerrainType.FLAT) ||
+    (rider.type === 'sprinter' && terrain === TerrainType.SPRINT)
+  );
+  
+  return {
+    startPosition: rider.position,
+    movementWithout: baseMovement,
+    movementWith: baseMovement + 2,
+    positionWithout: finalWithoutSpecialty,
+    positionWith: finalWithSpecialty,
+    summitStopWithout: summitStopWithout !== null,
+    summitStopWith: summitStopWith !== null,
+    crossingFinishWithout,
+    crossingFinishWith,
+    canUseSpecialty,
+    hasSpecialtyCards: rider.specialtyCards.length > 0
+  };
+}
+
+/**
  * Resolve movement and apply effects
  */
 export function resolveMovement(state) {
@@ -525,6 +616,18 @@ export function resolveMovement(state) {
   
   // Check if crossing finish
   const crossingFinish = targetPosition >= state.finishLine && !rider.hasFinished;
+  
+  // v3.2: Check for summit stop (non-climbers must stop at mountain summit)
+  let stoppedAtSummit = false;
+  let summitPosition = null;
+  if (!crossingFinish && !isExemptFromSummitStop(rider.type)) {
+    summitPosition = findSummitPosition(state.course, rider.position, targetPosition);
+    if (summitPosition !== null) {
+      // Non-climber must stop at summit
+      stoppedAtSummit = true;
+      targetPosition = summitPosition;
+    }
+  }
   
   // If not crossing finish, check for cell capacity
   let newPosition = targetPosition;
@@ -565,7 +668,9 @@ export function resolveMovement(state) {
   }
   logMessage += ` + 🎲${state.lastDiceRoll.result} → ${movement} cases`;
   
-  if (!crossingFinish && newPosition !== targetPosition) {
+  if (stoppedAtSummit) {
+    logMessage += ` (⛰️ arrêt au sommet, case ${newPosition})`;
+  } else if (!crossingFinish && newPosition !== targetPosition) {
     logMessage += ` (case pleine, arrêt case ${newPosition})`;
   } else {
     logMessage += ` (case ${newPosition})`;
@@ -789,8 +894,15 @@ export function applyEndOfTurnEffects(state) {
     
     if (cellInFrontEmpty) {
       // Leader (first arrived = rightmost) takes wind
+      // v3.2: Rouleurs are immune to wind (always get shelter bonus)
       const leader = ridersAtPos[0];
-      windRiderIds.push(leader.id);
+      
+      if (leader.type === RiderType.ROULEUR) {
+        // Rouleur gets shelter instead of wind (immune to wind)
+        shelteredRiderIds.push(leader.id);
+      } else {
+        windRiderIds.push(leader.id);
+      }
       
       // Others at same position are sheltered
       ridersAtPos.slice(1).forEach(r => shelteredRiderIds.push(r.id));

@@ -1,6 +1,6 @@
 <template>
   <div class="game-container">
-    <h1>🚴 Course Cycliste - v3.1</h1>
+    <h1>🚴 Course Cycliste - v3.2</h1>
     
     <!-- Status Bar -->
     <GameStatusBar 
@@ -22,6 +22,7 @@
       :selectedRiderId="selectedRiderId"
       :animatingRiders="animatingRiders"
       :getLeaderAtPosition="getLeaderAt"
+      :previewPositions="previewPositions"
     />
 
     <!-- Effects Overlay -->
@@ -151,6 +152,7 @@ const {
   rankings,
   currentTeamConfig,
   currentRider,
+  previewPositions,
   
   // Actions
   initialize,

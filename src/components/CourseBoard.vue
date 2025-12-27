@@ -31,12 +31,25 @@
           { 
             'finish': index === finishLine - 1,
             'has-selected': hasSelectedAt(index + 1),
-            'cell-full': countAt(index + 1) >= 4
+            'cell-full': countAt(index + 1) >= 4,
+            'preview-without': isPreviewWithout(index + 1),
+            'preview-with': isPreviewWith(index + 1),
+            'preview-both': isPreviewBoth(index + 1)
           }
         ]"
         :title="getCellTooltip(cell, index + 1)"
       >
         <span class="cell-number">{{ index + 1 }}</span>
+        <!-- Preview indicator -->
+        <div v-if="isPreviewWithout(index + 1) && !isPreviewWith(index + 1)" class="preview-indicator without">
+          {{ previewPositions?.summitStopWithout ? '⛰️' : '' }} Sans spé
+        </div>
+        <div v-if="isPreviewWith(index + 1) && !isPreviewWithout(index + 1)" class="preview-indicator with">
+          {{ previewPositions?.summitStopWith ? '⛰️' : '' }} Avec spé
+        </div>
+        <div v-if="isPreviewBoth(index + 1)" class="preview-indicator both">
+          🎯 Cible
+        </div>
         <div class="riders-on-cell" :style="{ flexDirection: 'row-reverse' }">
           <RiderToken 
             v-for="rider in getRidersAt(index + 1)" 
@@ -51,8 +64,17 @@
       </div>
       
       <!-- Finish zone -->
-      <div class="finish-zone">
+      <div 
+        class="finish-zone"
+        :class="{
+          'preview-without': isPreviewWithoutFinish,
+          'preview-with': isPreviewWithFinish
+        }"
+      >
         <span class="finish-flag">🏁</span>
+        <div v-if="isPreviewWithoutFinish || isPreviewWithFinish" class="preview-indicator finish">
+          🏆 Arrivée!
+        </div>
         <div class="finished-riders">
           <RiderToken 
             v-for="rider in finishedRiders" 
@@ -75,12 +97,36 @@ const props = defineProps({
   riders: { type: Array, required: true },
   selectedRiderId: { type: String, default: null },
   animatingRiders: { type: Array, default: () => [] },
-  getLeaderAtPosition: { type: Function, required: true }
+  getLeaderAtPosition: { type: Function, required: true },
+  previewPositions: { type: Object, default: null }
 });
 
 const finishLine = FINISH_LINE;
 
 const finishedRiders = computed(() => props.riders.filter(r => r.position > FINISH_LINE));
+
+// Preview position checks
+const isPreviewWithoutFinish = computed(() => 
+  props.previewPositions?.crossingFinishWithout && !props.previewPositions?.crossingFinishWith
+);
+const isPreviewWithFinish = computed(() => 
+  props.previewPositions?.crossingFinishWith
+);
+
+function isPreviewWithout(position) {
+  if (!props.previewPositions) return false;
+  return props.previewPositions.positionWithout === position && !props.previewPositions.crossingFinishWithout;
+}
+
+function isPreviewWith(position) {
+  if (!props.previewPositions) return false;
+  if (!props.previewPositions.canUseSpecialty) return false;
+  return props.previewPositions.positionWith === position && !props.previewPositions.crossingFinishWith;
+}
+
+function isPreviewBoth(position) {
+  return isPreviewWithout(position) && isPreviewWith(position);
+}
 
 function getRidersAt(position) {
   return props.riders
@@ -198,7 +244,87 @@ function getCellTooltip(cell, position) {
   justify-content: center;
 }
 
+/* Preview highlighting (v3.2) */
+.cell.preview-without:not(.preview-with) {
+  animation: preview-pulse-orange 1s ease-in-out infinite;
+  box-shadow: 0 0 0 3px #f97316, 0 0 15px rgba(249, 115, 22, 0.5);
+}
+
+.cell.preview-with:not(.preview-without) {
+  animation: preview-pulse-green 1s ease-in-out infinite;
+  box-shadow: 0 0 0 3px #22c55e, 0 0 15px rgba(34, 197, 94, 0.5);
+}
+
+.cell.preview-both {
+  animation: preview-pulse-blue 1s ease-in-out infinite;
+  box-shadow: 0 0 0 3px #3b82f6, 0 0 15px rgba(59, 130, 246, 0.5);
+}
+
+.finish-zone.preview-without,
+.finish-zone.preview-with {
+  animation: preview-pulse-gold 1s ease-in-out infinite;
+  box-shadow: 0 0 0 4px #fbbf24, 0 0 20px rgba(251, 191, 36, 0.6);
+}
+
+.preview-indicator {
+  font-size: 8px;
+  font-weight: bold;
+  padding: 1px 3px;
+  border-radius: 3px;
+  position: absolute;
+  top: -2px;
+  left: 50%;
+  transform: translateX(-50%);
+  white-space: nowrap;
+  z-index: 10;
+}
+
+.preview-indicator.without {
+  background: #f97316;
+  color: white;
+}
+
+.preview-indicator.with {
+  background: #22c55e;
+  color: white;
+}
+
+.preview-indicator.both {
+  background: #3b82f6;
+  color: white;
+}
+
+.preview-indicator.finish {
+  background: #fbbf24;
+  color: #1f2937;
+  font-size: 10px;
+  position: relative;
+  top: 0;
+  margin-bottom: 4px;
+}
+
+@keyframes preview-pulse-orange {
+  0%, 100% { box-shadow: 0 0 0 3px #f97316, 0 0 15px rgba(249, 115, 22, 0.5); }
+  50% { box-shadow: 0 0 0 5px #f97316, 0 0 25px rgba(249, 115, 22, 0.8); }
+}
+
+@keyframes preview-pulse-green {
+  0%, 100% { box-shadow: 0 0 0 3px #22c55e, 0 0 15px rgba(34, 197, 94, 0.5); }
+  50% { box-shadow: 0 0 0 5px #22c55e, 0 0 25px rgba(34, 197, 94, 0.8); }
+}
+
+@keyframes preview-pulse-blue {
+  0%, 100% { box-shadow: 0 0 0 3px #3b82f6, 0 0 15px rgba(59, 130, 246, 0.5); }
+  50% { box-shadow: 0 0 0 5px #3b82f6, 0 0 25px rgba(59, 130, 246, 0.8); }
+}
+
+@keyframes preview-pulse-gold {
+  0%, 100% { box-shadow: 0 0 0 4px #fbbf24, 0 0 20px rgba(251, 191, 36, 0.6); }
+  50% { box-shadow: 0 0 0 6px #fbbf24, 0 0 30px rgba(251, 191, 36, 0.9); }
+}
+
 @media (max-width: 900px) {
   .cell { width: 35px; min-height: 55px; }
+  .preview-indicator { font-size: 6px; }
 }
 </style>

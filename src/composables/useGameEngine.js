@@ -12,6 +12,7 @@ import {
   rollDice as rollDiceEngine,
   selectSpecialty as selectSpecialtyEngine,
   calculateMovement as calculateMovementEngine,
+  calculatePreviewPositions as calculatePreviewPositionsEngine,
   resolveMovement as resolveMovementEngine,
   acknowledgeEndTurnEffects as acknowledgeEndTurnEffectsEngine,
   TurnPhase
@@ -49,6 +50,12 @@ export function useGameEngine() {
   const lastDiceRoll = computed(() => gameState.value?.lastDiceRoll);
   const calculatedMovement = computed(() => gameState.value?.calculatedMovement || 0);
   const playedThisTurn = computed(() => gameState.value?.ridersPlayedThisTurn || []);
+  
+  // Preview positions for UI highlighting (v3.2)
+  const previewPositions = computed(() => {
+    if (!gameState.value) return null;
+    return calculatePreviewPositionsEngine(gameState.value);
+  });
   
   // Show effects overlay when turnPhase is 'end_turn_effects' AND animations are done
   const showEffectsOverlay = computed(() => 
@@ -100,13 +107,13 @@ export function useGameEngine() {
     };
   });
 
-  // Helper functions
+  // Helper functions - v3.2 balanced bonuses
   function getTerrainBonus(riderType, terrain) {
     const bonuses = {
       climber: { flat: 0, hill: 1, mountain: 2, descent: 2, sprint: -1 },
-      puncher: { flat: 0, hill: 1, mountain: 1, descent: 2, sprint: 0 },
-      rouleur: { flat: 1, hill: 0, mountain: -1, descent: 3, sprint: 0 },
-      sprinter: { flat: 0, hill: -1, mountain: -2, descent: 3, sprint: 2 },
+      puncher: { flat: 0, hill: 2, mountain: 1, descent: 2, sprint: 0 },   // v3.2: +2 hill
+      rouleur: { flat: 2, hill: 0, mountain: -1, descent: 3, sprint: 0 },  // v3.2: +2 flat
+      sprinter: { flat: 0, hill: -1, mountain: -2, descent: 3, sprint: 3 }, // v3.2: +3 sprint
       versatile: { flat: 0, hill: 0, mountain: 0, descent: 2, sprint: 0 }
     };
     return bonuses[riderType]?.[terrain] || 0;
@@ -388,6 +395,7 @@ export function useGameEngine() {
     lastDiceRoll,
     calculatedMovement,
     playedThisTurn,
+    previewPositions,
     currentTeamConfig,
     currentRider,
     

@@ -56,20 +56,26 @@ export const TerrainConfig = {
 };
 
 /**
- * Terrain bonus matrix by rider type (v3 - adjusted for 1d6)
+ * Terrain bonus matrix by rider type (v3.2 - rebalanced)
  * Positive = bonus, Negative = malus
+ * 
+ * v3.2 Balance changes:
+ * - Rouleur: +2 flat (was +1), wind immunity (handled in game_engine)
+ * - Sprinter: +3 sprint (was +2)
+ * - Puncher: +2 hill (was +1), no penalty on short mountain (≤3 cases, handled in game_engine)
+ * - Climber: no forced stop at summit (handled in game_engine)
  */
 export const TerrainBonus = {
   [TerrainType.FLAT]: {
     climber: 0,
     puncher: 0,
-    rouleur: 1,
+    rouleur: 2,    // v3.2: +2 (was +1)
     sprinter: 0,
     versatile: 0
   },
   [TerrainType.HILL]: {
     climber: 1,
-    puncher: 1,
+    puncher: 2,    // v3.2: +2 (was +1)
     rouleur: 0,
     sprinter: -1,
     versatile: 0
@@ -92,9 +98,19 @@ export const TerrainBonus = {
     climber: -1,
     puncher: 0,
     rouleur: 0,
-    sprinter: 2,
+    sprinter: 3,   // v3.2: +3 (was +2)
     versatile: 0
   }
+};
+
+/**
+ * Mountain summit stop rules (v3.2)
+ * Non-climbers must stop at the last mountain cell if their movement
+ * would take them beyond the mountain section
+ */
+export const MountainRules = {
+  climbersExempt: true,  // Climbers can pass through summits freely
+  stopAtSummit: true     // Non-climbers must stop at summit
 };
 
 /**
@@ -134,6 +150,53 @@ export function hasAspiration(terrain) {
  */
 export function hasWindPenalty(terrain) {
   return TerrainConfig[terrain]?.hasWindPenalty ?? false;
+}
+
+/**
+ * Find the last mountain cell before leaving mountain terrain (summit)
+ * Used for summit stop rule for non-climbers
+ * @param {Array} course - Course array
+ * @param {number} startPosition - Starting position
+ * @param {number} targetPosition - Target position after movement
+ * @returns {number|null} Summit position or null if no summit crossing
+ */
+export function findSummitPosition(course, startPosition, targetPosition) {
+  // Check if we're in mountain terrain at start
+  const startTerrain = course[startPosition]?.terrain;
+  if (startTerrain !== TerrainType.MOUNTAIN) {
+    return null; // Not starting in mountain
+  }
+  
+  // Find the last mountain cell in our path
+  let lastMountainPos = null;
+  let foundNonMountain = false;
+  
+  for (let pos = startPosition; pos <= targetPosition && pos < course.length; pos++) {
+    const terrain = course[pos]?.terrain;
+    if (terrain === TerrainType.MOUNTAIN) {
+      lastMountainPos = pos;
+    } else if (lastMountainPos !== null) {
+      // We found non-mountain terrain after mountain
+      foundNonMountain = true;
+      break;
+    }
+  }
+  
+  // Return summit position only if we would exit mountain terrain
+  if (foundNonMountain && lastMountainPos !== null && targetPosition > lastMountainPos) {
+    return lastMountainPos;
+  }
+  
+  return null;
+}
+
+/**
+ * Check if a rider type is exempt from summit stop rule
+ * @param {string} riderType - Rider type
+ * @returns {boolean} True if exempt (climbers)
+ */
+export function isExemptFromSummitStop(riderType) {
+  return riderType === 'climber';
 }
 
 /**
