@@ -56,6 +56,13 @@
                   <option value="normal">Normal</option>
                   <option value="hard">Difficile</option>
                 </select>
+                <select v-model="player.personality" @change="updatePlayer(index)" class="personality-select">
+                  <option value="">🎲 Aléatoire</option>
+                  <option value="attacker">⚔️ Attaquant</option>
+                  <option value="conservative">🛡️ Conservateur</option>
+                  <option value="opportunist">🎯 Opportuniste</option>
+                  <option value="balanced">⚖️ Équilibré</option>
+                </select>
               </div>
             </div>
             
@@ -164,7 +171,8 @@ function initializePlayers() {
     return {
       ...config,
       customName: '',
-      riderNames: ['', '', '', '', '']
+      riderNames: ['', '', '', '', ''],
+      personality: ''  // Empty = random
     };
   });
   // Reset expanded state
@@ -191,11 +199,12 @@ function togglePlayerType(index) {
     newType,
     newType === PlayerType.AI ? AIDifficulty.NORMAL : null
   );
-  // Preserve custom names
+  // Preserve custom names and personality
   players.value[index] = {
     ...newConfig,
     customName: player.customName,
-    riderNames: player.riderNames
+    riderNames: player.riderNames,
+    personality: player.personality || ''
   };
 }
 
@@ -346,14 +355,20 @@ h1 {
 
 .ai-difficulty {
   margin-top: 10px;
+  display: flex;
+  gap: 8px;
 }
 
 .ai-difficulty select {
-  width: 100%;
+  flex: 1;
   padding: 8px;
   border: 1px solid #e2e8f0;
   border-radius: 6px;
   font-size: 0.9em;
+}
+
+.personality-select {
+  min-width: 120px;
 }
 
 /* Course length */

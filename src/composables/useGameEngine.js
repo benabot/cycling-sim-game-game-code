@@ -55,7 +55,15 @@ export function useGameEngine() {
       gameConfig.players
         .filter(p => p.playerType === PlayerType.AI)
         .forEach(p => {
-          aiInstances.value[p.teamId] = createAI(p.difficulty);
+          // v4.5: Pass personality (empty = random)
+          const personality = p.personality || null;
+          const ai = createAI(p.difficulty, personality);
+          aiInstances.value[p.teamId] = ai;
+          // Store personality for display
+          if (!gameState.value.aiPersonalities) {
+            gameState.value.aiPersonalities = {};
+          }
+          gameState.value.aiPersonalities[p.teamId] = ai.personality;
         });
     }
     
@@ -64,6 +72,10 @@ export function useGameEngine() {
     const numAI = Object.keys(aiInstances.value).length;
     if (numAI > 0) {
       log(`🤖 ${numAI} équipe(s) IA sur ${numTeams}`);
+      // Log personalities
+      Object.entries(aiInstances.value).forEach(([teamId, ai]) => {
+        log(`   ${teamId}: ${ai.getPersonalityName()}`);
+      });
     }
   }
 
@@ -81,6 +93,7 @@ export function useGameEngine() {
   const selectedCardId = computed(() => gameState.value?.selectedCardId);
   const selectedSpecialtyId = computed(() => gameState.value?.selectedSpecialtyId);
   const lastDiceRoll = computed(() => gameState.value?.lastDiceRoll);
+  const aiPersonalities = computed(() => gameState.value?.aiPersonalities || {});
   const calculatedMovement = computed(() => gameState.value?.calculatedMovement || 0);
   const playedThisTurn = computed(() => gameState.value?.ridersPlayedThisTurn || []);
   
@@ -618,6 +631,7 @@ export function useGameEngine() {
     numTeams,
     teamIds,
     players,
+    aiPersonalities,
     
     // Actions
     initialize,

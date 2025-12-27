@@ -108,6 +108,7 @@
       :playedRiders="playedThisTurn"
       :teamIds="teamIds"
       :players="players"
+      :aiPersonalities="aiPersonalities"
       @selectRider="quickSelectRider"
     />
 
@@ -185,6 +186,7 @@ const {
   numTeams,
   teamIds,
   players,
+  aiPersonalities,
   
   // Actions
   initialize,

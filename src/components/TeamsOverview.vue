@@ -8,7 +8,7 @@
     >
       <h3 :style="{ color: getTeamConfig(team).color }">
         {{ getTeamConfig(team).name }}
-        <span v-if="isAITeam(team)" class="ai-badge">🤖</span>
+        <span v-if="isAITeam(team)" class="ai-badge">🤖{{ getAIPersonalityIcon(team) }}</span>
         <span v-if="currentTeam === team" class="active-badge">← Joue</span>
       </h3>
       
@@ -73,10 +73,19 @@ const props = defineProps({
   selectedRiderId: { type: [String, null], default: null },
   playedRiders: { type: Array, default: () => [] },
   teamIds: { type: Array, default: () => ['team_a', 'team_b'] },
-  players: { type: Array, default: () => [] }
+  players: { type: Array, default: () => [] },
+  aiPersonalities: { type: Object, default: () => ({}) }
 });
 
 const emit = defineEmits(['selectRider']);
+
+// Personality display names
+const personalityNames = {
+  attacker: '⚔️',
+  conservative: '🛡️',
+  opportunist: '🎯',
+  balanced: '⚖️'
+};
 
 // Use teamIds prop or fallback to detecting from riders
 const displayTeams = computed(() => {
@@ -101,6 +110,11 @@ function getTeamConfig(teamId) {
 function isAITeam(teamId) {
   const player = props.players.find(p => p.teamId === teamId);
   return player?.playerType === PlayerType.AI;
+}
+
+function getAIPersonalityIcon(teamId) {
+  const personality = props.aiPersonalities[teamId];
+  return personalityNames[personality] || '';
 }
 
 function getTeamRiders(team) {
