@@ -178,6 +178,8 @@ export function createGameState(options = {}) {
 
 /**
  * Get terrain at a specific position
+ * Note: Position is 1-based (position 1 = first course cell = course[0])
+ * Position 0 is the starting line (flat terrain)
  */
 export function getTerrainAt(state, position) {
   if (position >= state.courseLength) {
@@ -186,7 +188,9 @@ export function getTerrainAt(state, position) {
   if (position <= 0) {
     return TerrainType.FLAT;
   }
-  return state.course[position]?.terrain || TerrainType.FLAT;
+  // Position 1 = course[0], position N = course[N-1]
+  const courseIndex = position - 1;
+  return state.course[courseIndex]?.terrain || TerrainType.FLAT;
 }
 
 /**

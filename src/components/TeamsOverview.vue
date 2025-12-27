@@ -26,7 +26,10 @@
           @click="onRiderClick(rider, team)"
         >
           <span class="rider-emoji">{{ getRiderEmoji(rider.type) }}</span>
-          <span class="rider-name">{{ rider.name }}</span>
+          <div class="rider-info">
+            <span class="rider-name">{{ rider.name }}</span>
+            <span class="rider-type-label">{{ getRiderTypeName(rider.type) }}</span>
+          </div>
           <span class="rider-pos">Case {{ rider.position }}</span>
           
           <div class="rider-cards-mini">
@@ -125,6 +128,17 @@ function getRiderEmoji(type) {
   return RiderConfig[type]?.emoji || '🚴';
 }
 
+function getRiderTypeName(type) {
+  const names = {
+    climber: 'Grimpeur',
+    puncher: 'Puncheur',
+    rouleur: 'Rouleur',
+    sprinter: 'Sprinteur',
+    versatile: 'Polyvalent'
+  };
+  return names[type] || type;
+}
+
 function isRiderClickable(rider, team) {
   if (team !== props.currentTeam) return false;
   if (props.playedRiders.includes(rider.id)) return false;
@@ -211,7 +225,19 @@ function onRiderClick(rider, team) {
 }
 
 .rider-row .rider-emoji { font-size: 1.2em; }
-.rider-row .rider-name { flex: 1; font-weight: 500; }
+.rider-row .rider-info { 
+  flex: 1; 
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+}
+.rider-row .rider-name { font-weight: 500; }
+.rider-row .rider-type-label { 
+  font-size: 0.75em; 
+  color: #64748b;
+  font-weight: 400;
+  font-style: italic;
+}
 .rider-row .rider-pos { color: #64748b; font-size: 0.85em; }
 
 .rider-cards-mini {

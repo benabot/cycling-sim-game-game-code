@@ -155,24 +155,39 @@ export function hasWindPenalty(terrain) {
 /**
  * Find the last mountain cell before leaving mountain terrain (summit)
  * Used for summit stop rule for non-climbers
- * @param {Array} course - Course array
- * @param {number} startPosition - Starting position
- * @param {number} targetPosition - Target position after movement
- * @returns {number|null} Summit position or null if no summit crossing
+ * 
+ * IMPORTANT: Positions are 1-based (position 1 = course[0])
+ * 
+ * @param {Array} course - Course array (0-indexed)
+ * @param {number} startPosition - Starting position (1-based)
+ * @param {number} targetPosition - Target position after movement (1-based)
+ * @returns {number|null} Summit position (1-based) or null if no summit crossing
  */
 export function findSummitPosition(course, startPosition, targetPosition) {
+  // Convert 1-based position to 0-based index
+  const startIndex = startPosition - 1;
+  
+  // Bounds check
+  if (startIndex < 0 || startIndex >= course.length) {
+    return null;
+  }
+  
   // Check if we're in mountain terrain at start
-  const startTerrain = course[startPosition]?.terrain;
+  const startTerrain = course[startIndex]?.terrain;
   if (startTerrain !== TerrainType.MOUNTAIN) {
     return null; // Not starting in mountain
   }
   
   // Find the summit (last mountain cell before non-mountain)
+  // Work with 1-based positions for the result
   let summitPos = null;
-  for (let pos = startPosition; pos < course.length; pos++) {
-    const terrain = course[pos]?.terrain;
+  for (let pos = startPosition; pos <= course.length; pos++) {
+    const idx = pos - 1; // Convert to 0-based index
+    if (idx >= course.length) break;
+    
+    const terrain = course[idx]?.terrain;
     if (terrain === TerrainType.MOUNTAIN) {
-      summitPos = pos;
+      summitPos = pos; // Store 1-based position
     } else {
       break; // Found end of mountain section
     }
@@ -263,13 +278,16 @@ export function generateCourse(length = 80, distribution = null) {
 
 /**
  * Check if a position is a refuel zone
- * @param {Array} course - Course array
- * @param {number} position - Position to check
+ * IMPORTANT: Position is 1-based (position 1 = course[0])
+ * @param {Array} course - Course array (0-indexed)
+ * @param {number} position - Position to check (1-based)
  * @returns {boolean} True if refuel zone
  */
 export function isRefuelZone(course, position) {
-  if (position < 1 || position > course.length) return false;
-  return course[position - 1]?.isRefuelZone || false;
+  // Convert 1-based position to 0-based index
+  const index = position - 1;
+  if (index < 0 || index >= course.length) return false;
+  return course[index]?.isRefuelZone || false;
 }
 
 /**
