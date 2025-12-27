@@ -34,6 +34,7 @@
       :aspirationAnimations="aspirationAnimations"
       :getLeaderAtPosition="getLeaderAt"
       :previewPositions="previewPositions"
+      :aiMoveFlash="aiMoveFlash"
     />
 
     <!-- Effects Overlay -->
@@ -164,6 +165,7 @@ const {
   showEffectsOverlay,
   endTurnEffects,
   isAIThinking,
+  aiMoveFlash,
   
   // Computed
   course,
@@ -233,18 +235,18 @@ onMounted(() => {
 
 // v4.0: Watch for AI turns and execute automatically
 watch(
-  [isAITurn, turnPhase, showEffectsOverlay, phase],
-  ([aiTurn, tPhase, effectsShowing, gamePhase]) => {
+  [isAITurn, turnPhase, showEffectsOverlay, phase, currentTeam],
+  ([aiTurn, tPhase, effectsShowing, gamePhase, team]) => {
     // Only execute AI if:
     // - It's an AI turn
     // - Game is still playing
     // - Not showing effects overlay
     // - Valid turn phase
     if (aiTurn && gamePhase !== 'finished' && !effectsShowing) {
-      const validPhases = ['select_rider', 'select_card', 'roll_dice', 'select_specialty', 'resolve'];
+      const validPhases = ['select_rider', 'end_turn_effects'];
       if (validPhases.includes(tPhase)) {
         // Small delay before AI action for visibility
-        setTimeout(() => executeAITurn(), 200);
+        setTimeout(() => executeAITurn(), 300);
       }
     }
   },

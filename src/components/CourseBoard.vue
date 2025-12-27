@@ -43,7 +43,8 @@
             'preview-without': isPreviewWithout(index + 1),
             'preview-with': isPreviewWith(index + 1),
             'preview-both': isPreviewBoth(index + 1),
-            'refuel-zone': cell.isRefuelZone
+            'refuel-zone': cell.isRefuelZone,
+            'ai-flash': hasAIMoveFlash(index + 1)
           }
         ]"
         :title="getCellTooltip(cell, index + 1)"
@@ -119,7 +120,8 @@ const props = defineProps({
   animatingRiders: { type: Array, default: () => [] },
   aspirationAnimations: { type: Array, default: () => [] },
   getLeaderAtPosition: { type: Function, required: true },
-  previewPositions: { type: Object, default: null }
+  previewPositions: { type: Object, default: null },
+  aiMoveFlash: { type: Object, default: null }
 });
 
 const finishLine = FINISH_LINE;
@@ -147,6 +149,15 @@ function isPreviewWith(position) {
 
 function isPreviewBoth(position) {
   return isPreviewWithout(position) && isPreviewWith(position);
+}
+
+// AI move flash check
+function hasAIMoveFlash(position) {
+  return props.aiMoveFlash?.position === position;
+}
+
+function getAIFlashTeam() {
+  return props.aiMoveFlash?.teamId;
 }
 
 function getRidersAt(position) {
@@ -403,6 +414,27 @@ function getAspirationInfo(riderId) {
 @keyframes preview-pulse-gold {
   0%, 100% { box-shadow: 0 0 0 4px #fbbf24, 0 0 20px rgba(251, 191, 36, 0.6); }
   50% { box-shadow: 0 0 0 6px #fbbf24, 0 0 30px rgba(251, 191, 36, 0.9); }
+}
+
+/* AI Move Flash Effect (v4.0) */
+.cell.ai-flash {
+  animation: ai-flash-effect 0.5s ease-out;
+  z-index: 20;
+}
+
+@keyframes ai-flash-effect {
+  0% { 
+    transform: scale(1.3);
+    box-shadow: 0 0 20px rgba(255, 255, 255, 0.9), 0 0 40px rgba(59, 130, 246, 0.8);
+  }
+  50% {
+    transform: scale(1.15);
+    box-shadow: 0 0 15px rgba(255, 255, 255, 0.6), 0 0 30px rgba(59, 130, 246, 0.6);
+  }
+  100% { 
+    transform: scale(1);
+    box-shadow: none;
+  }
 }
 
 @media (max-width: 900px) {

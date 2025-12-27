@@ -34,6 +34,9 @@ export function useGameEngine() {
   const aiInstances = ref({});
   const isAIThinking = ref(false);
   
+  // v4.0: Track AI move flashes (position → timestamp)
+  const aiMoveFlash = ref(null);
+  
   // v3.2.2: Track aspiration animations with position info
   const aspirationAnimations = ref([]);
 
@@ -486,10 +489,24 @@ export function useGameEngine() {
       log(`🏁 ${rider.name} franchit la ligne !`);
     }
     
+    // Trigger flash effect on the target position
+    triggerAIMoveFlash(finalPos, rider.team);
+    
     // Update state
     gameState.value = newState;
     
     // Handle end turn effects if needed (will be picked up by watcher)
+  }
+  
+  // Trigger a brief flash effect at a position for AI moves
+  function triggerAIMoveFlash(position, teamId) {
+    aiMoveFlash.value = { position, teamId, timestamp: Date.now() };
+    // Clear after animation
+    setTimeout(() => {
+      if (aiMoveFlash.value?.position === position) {
+        aiMoveFlash.value = null;
+      }
+    }, 600);
   }
   
   // Helper for AI specialty check
@@ -567,6 +584,7 @@ export function useGameEngine() {
     endTurnEffects,
     isAnimatingEffects,
     isAIThinking,
+    aiMoveFlash,
     
     // Computed
     course,

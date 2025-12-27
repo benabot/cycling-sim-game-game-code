@@ -851,45 +851,46 @@ export function resolveMovement(state) {
 }
 
 /**
- * Move to next player or end turn
+ * Move to next player or end turn (v4.0: supports N teams)
  */
 export function moveToNextPlayer(state) {
   const currentTeam = state.currentTeam;
-  const otherTeam = getOtherTeam(currentTeam);
+  const teamIds = state.teamIds || [TeamId.TEAM_A, TeamId.TEAM_B];
+  const numTeams = teamIds.length;
   
-  // Check if other team has available riders
-  if (teamHasAvailableRiders(state, otherTeam)) {
-    return {
-      ...state,
-      currentTeam: otherTeam,
-      selectedRiderId: null,
-      selectedCardId: null,
-      selectedSpecialtyId: null,
-      turnPhase: TurnPhase.SELECT_RIDER,
-      lastDiceRoll: null,
-      lastMovement: null,
-      gameLog: [
-        ...state.gameLog,
-        `🔄 Au tour de ${TeamConfig[otherTeam].playerName}`
-      ]
-    };
+  // Try to find the next team with available riders
+  for (let i = 1; i <= numTeams; i++) {
+    const nextTeam = getNextTeamInRotation(currentTeam, teamIds, i);
+    
+    if (teamHasAvailableRiders(state, nextTeam)) {
+      return {
+        ...state,
+        currentTeam: nextTeam,
+        selectedRiderId: null,
+        selectedCardId: null,
+        selectedSpecialtyId: null,
+        turnPhase: TurnPhase.SELECT_RIDER,
+        lastDiceRoll: null,
+        lastMovement: null,
+        gameLog: [
+          ...state.gameLog,
+          `🔄 Au tour de ${TeamConfigs[nextTeam]?.name || TeamConfig[nextTeam]?.playerName}`
+        ]
+      };
+    }
   }
   
-  // Check if current team still has riders
-  if (teamHasAvailableRiders(state, currentTeam)) {
-    return {
-      ...state,
-      selectedRiderId: null,
-      selectedCardId: null,
-      selectedSpecialtyId: null,
-      turnPhase: TurnPhase.SELECT_RIDER,
-      lastDiceRoll: null,
-      lastMovement: null
-    };
-  }
-  
-  // Both teams have played all riders - apply end of turn effects
+  // No team has available riders - apply end of turn effects
   return applyEndOfTurnEffects(state);
+}
+
+/**
+ * Get team N steps ahead in rotation
+ */
+function getNextTeamInRotation(currentTeam, teamIds, steps = 1) {
+  const currentIndex = teamIds.indexOf(currentTeam);
+  const nextIndex = (currentIndex + steps) % teamIds.length;
+  return teamIds[nextIndex];
 }
 
 /**
