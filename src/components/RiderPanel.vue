@@ -41,7 +41,7 @@
             :key="card.id"
             class="card-item"
             :class="{ 
-              'selectable': turnPhase === 'select_card',
+              'selectable': turnPhase === 'select_card' || turnPhase === 'roll_dice',
               'selected': card.id === selectedCardId,
               'wind-card': card.name === 'Prise de vent',
               'shelter-card': card.name === 'Abri'
@@ -67,7 +67,7 @@
             :key="card.id"
             class="card-item attack-card"
             :class="{ 
-              'selectable': turnPhase === 'select_card',
+              'selectable': turnPhase === 'select_card' || turnPhase === 'roll_dice',
               'selected': card.id === selectedCardId
             }"
             @click="onCardClick(card, true)"
@@ -152,7 +152,9 @@ function formatBonus(value) {
 }
 
 function onCardClick(card, isAttack) {
-  if (props.turnPhase !== 'select_card') return;
+  // Allow card selection during 'select_card' AND 'roll_dice' phases
+  // This lets the player change their card before rolling the dice
+  if (props.turnPhase !== 'select_card' && props.turnPhase !== 'roll_dice') return;
   emit('selectCard', card.id, isAttack);
 }
 </script>
