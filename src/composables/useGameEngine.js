@@ -106,8 +106,11 @@ export function useGameEngine() {
   });
   
   // Show effects overlay when turnPhase is 'end_turn_effects' AND animations are done
+  // v4.0: Don't show if game is finished
   const showEffectsOverlay = computed(() => 
-    turnPhase.value === 'end_turn_effects' && !isAnimatingEffects.value
+    turnPhase.value === 'end_turn_effects' && 
+    !isAnimatingEffects.value && 
+    phase.value !== 'finished'
   );
   
   // End turn effects from game state

@@ -167,24 +167,25 @@ export function findSummitPosition(course, startPosition, targetPosition) {
     return null; // Not starting in mountain
   }
   
-  // Find the last mountain cell in our path
-  let lastMountainPos = null;
-  let foundNonMountain = false;
-  
-  for (let pos = startPosition; pos <= targetPosition && pos < course.length; pos++) {
+  // Find the summit (last mountain cell before non-mountain)
+  let summitPos = null;
+  for (let pos = startPosition; pos < course.length; pos++) {
     const terrain = course[pos]?.terrain;
     if (terrain === TerrainType.MOUNTAIN) {
-      lastMountainPos = pos;
-    } else if (lastMountainPos !== null) {
-      // We found non-mountain terrain after mountain
-      foundNonMountain = true;
-      break;
+      summitPos = pos;
+    } else {
+      break; // Found end of mountain section
     }
   }
   
-  // Return summit position only if we would exit mountain terrain
-  if (foundNonMountain && lastMountainPos !== null && targetPosition > lastMountainPos) {
-    return lastMountainPos;
+  // If already at summit, don't block again - let them pass
+  if (startPosition === summitPos) {
+    return null;
+  }
+  
+  // Check if movement would cross the summit
+  if (summitPos !== null && targetPosition > summitPos) {
+    return summitPos;
   }
   
   return null;
