@@ -659,15 +659,21 @@ export function applyEndOfTurnEffects(state) {
         continue;
       }
       
+      // Target position is backPos + 1 (advance by 1 case, NOT to frontPos)
+      const targetPos = backPos + 1;
+      
+      // Also check target terrain - no aspiration into mountain
+      const terrainAtTarget = getTerrainAt(state, targetPos);
+      if (!hasAspiration(terrainAtTarget)) {
+        continue;
+      }
+      
       // Get riders at back position
       const ridersAtBack = updatedRiders.filter(r => 
         r.position === backPos && !r.hasFinished
       );
       
       if (ridersAtBack.length === 0) continue;
-      
-      // Target position is backPos + 1 (advance by 1 case, NOT to frontPos)
-      const targetPos = backPos + 1;
       
       // Check if target position has room (max 4 riders per cell)
       const ridersAtTarget = updatedRiders.filter(r => 
