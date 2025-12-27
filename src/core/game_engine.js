@@ -214,7 +214,8 @@ export function getAvailableRiders(state, team) {
   return state.riders.filter(r => 
     r.team === team && 
     !state.ridersPlayedThisTurn.includes(r.id) &&
-    !r.hasFinished
+    !r.hasFinished &&
+    !(r.turnsToSkip > 0)
   );
 }
 
@@ -238,12 +239,40 @@ export function startTurn(state) {
     : `\n────────── Tour ${state.currentTurn} ──────────`;
   
   // Recycle cards for riders with empty hands
+  // Also decrement turnsToSkip and reset hasFallenThisTurn
   let updatedRiders = state.riders.map(rider => {
-    if (needsRecycle(rider)) {
-      return recycleCards(rider);
+    let updated = rider;
+    
+    // Recycle if needed
+    if (needsRecycle(updated)) {
+      updated = recycleCards(updated);
     }
-    return rider;
+    
+    // Decrement turns to skip
+    if (updated.turnsToSkip > 0) {
+      updated = {
+        ...updated,
+        turnsToSkip: updated.turnsToSkip - 1
+      };
+    }
+    
+    // Reset fall flag
+    if (updated.hasFallenThisTurn) {
+      updated = {
+        ...updated,
+        hasFallenThisTurn: false
+      };
+    }
+    
+    return updated;
   });
+  
+  // Log riders skipping this turn
+  const skippingRiders = updatedRiders.filter(r => r.turnsToSkip > 0);
+  let extraLogs = [];
+  if (skippingRiders.length > 0) {
+    extraLogs = skippingRiders.map(r => `🤕 ${r.name} récupère de sa chute (passe ce tour)`);
+  }
   
   return {
     ...state,
@@ -259,6 +288,7 @@ export function startTurn(state) {
     gameLog: [
       ...state.gameLog, 
       turnHeader,
+      ...extraLogs,
       `🎮 ${TeamConfig[startingTeam].playerName} (${TeamConfig[startingTeam].shortName}) commence`
     ]
   };
@@ -372,7 +402,8 @@ export function rollDice(state) {
         ...rider,
         position: fallPosition,
         arrivalOrder: newState.arrivalCounter++,
-        hasFallenThisTurn: true
+        hasFallenThisTurn: true,
+        turnsToSkip: 1  // Skip next turn
       };
       // Add fatigue cards
       updatedRider = addFatigueCard(updatedRider, 1);
@@ -383,7 +414,7 @@ export function rollDice(state) {
       );
       newState.gameLog = [
         ...newState.gameLog,
-        `💥 ${rider.name} CHUTE! Recule à la case ${fallPosition}, +2 cartes fatigue`
+        `💥 ${rider.name} CHUTE! Recule à la case ${fallPosition}, +2 cartes fatigue, passe le prochain tour`
       ];
       newState.lastMovement = { type: 'fall', distance: -DescentRules.fallPenalty };
       newState.turnPhase = TurnPhase.RESOLVE;

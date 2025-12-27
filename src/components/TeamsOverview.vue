@@ -19,6 +19,7 @@
           :class="{ 
             'selected': rider.id === selectedRiderId,
             'played': playedRiders.includes(rider.id),
+            'skipping': rider.turnsToSkip > 0,
             'clickable': isRiderClickable(rider, team)
           }"
           @click="onRiderClick(rider, team)"
@@ -40,6 +41,7 @@
           </div>
 
           <span v-if="rider.hasFinished" class="status-badge finished">🏁</span>
+          <span v-else-if="rider.turnsToSkip > 0" class="status-badge skipping">🤕</span>
           <span v-else-if="playedRiders.includes(rider.id)" class="status-badge played">✓</span>
         </div>
       </div>
@@ -71,6 +73,7 @@ function isRiderClickable(rider, team) {
   if (team !== props.currentTeam) return false;
   if (props.playedRiders.includes(rider.id)) return false;
   if (rider.hasFinished) return false;
+  if (rider.turnsToSkip > 0) return false;
   return true;
 }
 
@@ -145,6 +148,11 @@ function onRiderClick(rider, team) {
   opacity: 0.6;
   background: #f1f5f9;
 }
+.rider-row.skipping {
+  opacity: 0.5;
+  background: #fef2f2;
+  border-color: #fca5a5;
+}
 
 .rider-row .rider-emoji { font-size: 1.2em; }
 .rider-row .rider-name { flex: 1; font-weight: 500; }
@@ -164,6 +172,7 @@ function onRiderClick(rider, team) {
 }
 .status-badge.finished { background: #10b981; color: white; }
 .status-badge.played { background: #94a3b8; color: white; }
+.status-badge.skipping { background: #ef4444; color: white; }
 
 @media (max-width: 900px) {
   .teams-overview { grid-template-columns: 1fr; }

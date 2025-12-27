@@ -157,6 +157,7 @@ export function createRider(id, type, name, team = 'default') {
     hasFinished: false,
     finishPosition: null,
     hasFallenThisTurn: false,
+    turnsToSkip: 0,
     
     // Card system v3
     hand: createInitialMovementCards(),

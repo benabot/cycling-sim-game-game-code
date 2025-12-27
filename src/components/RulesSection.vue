@@ -65,6 +65,13 @@
         <p>Pas d'aspiration, pas de vent.</p>
         <p><em>Tous les coureurs reçoivent +2 abri.</em></p>
       </div>
+
+      <div class="rule-card highlight">
+        <h3>🎿 Descente - Chute</h3>
+        <p>🎲 = 1 → Test de chute (1d6).</p>
+        <p>Si 1-2 : <strong>Chute !</strong> Recule 3 cases, +2 fatigue, passe le tour suivant.</p>
+        <p><em>Vitesse minimum garantie : 3 cases.</em></p>
+      </div>
     </div>
   </div>
 </template>
