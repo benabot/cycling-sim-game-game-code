@@ -255,23 +255,32 @@ export function useGameEngine() {
     
     log(`--- Fin du tour ${state.currentTurn} ---`);
     
-    // Animer chaque aspiration séquentiellement
+    // Pause initiale pour que le joueur voie ce qui se passe
+    await sleep(800);
+    
+    // Animer chaque aspiration séquentiellement - LENTEMENT
     for (const effect of aspirationEffects) {
+      // Log d'abord pour annoncer le mouvement
+      log(`🌀 ${effect.riderName} rejoint le groupe (${effect.fromPosition} → ${effect.toPosition})`);
+      
+      // Petite pause avant l'animation
+      await sleep(400);
+      
       // Ajouter le coureur aux animations
       animatingRiders.value.push(effect.riderId);
       
-      // Log
-      log(`🌀 ${effect.riderName} rejoint le groupe (${effect.fromPosition} → ${effect.toPosition})`);
-      
-      // Attendre l'animation
-      await sleep(400);
+      // Attendre l'animation complète (1.5 secondes)
+      await sleep(1500);
       
       // Retirer de l'animation
       animatingRiders.value = animatingRiders.value.filter(id => id !== effect.riderId);
       
-      // Petite pause entre les animations
-      await sleep(100);
+      // Pause entre chaque coureur
+      await sleep(600);
     }
+    
+    // Pause avant les effets de vent/abri
+    await sleep(500);
     
     // Log des effets de vent/abri
     effects.filter(e => e.type === 'wind').forEach(e => {
@@ -281,8 +290,8 @@ export function useGameEngine() {
       log(`🛡️ ${e.riderName} à l'abri (+2)`);
     });
     
-    // Petite pause avant d'afficher l'overlay
-    await sleep(300);
+    // Pause avant d'afficher l'overlay
+    await sleep(600);
     
     // Animations terminées, afficher l'overlay
     isAnimatingEffects.value = false;

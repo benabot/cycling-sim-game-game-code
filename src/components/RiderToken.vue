@@ -66,7 +66,7 @@ const tooltip = computed(() => {
   z-index: 10; 
 }
 .rider-token.animating { 
-  animation: aspiration-move 0.4s ease-out;
+  animation: aspiration-move 1.5s ease-in-out infinite;
   z-index: 20;
 }
 .rider-token.leader { 
@@ -78,20 +78,29 @@ const tooltip = computed(() => {
 
 @keyframes aspiration-move {
   0% { 
-    transform: scale(1) translateX(0); 
-    box-shadow: 0 0 0 3px #3b82f6;
+    transform: scale(1); 
+    box-shadow: 0 0 0 4px #3b82f6;
+    background: #60a5fa;
   }
-  30% { 
-    transform: scale(1.5) translateX(-5px); 
-    box-shadow: 0 0 15px 5px rgba(59, 130, 246, 0.6);
+  25% { 
+    transform: scale(1.8); 
+    box-shadow: 0 0 20px 8px rgba(59, 130, 246, 0.8);
+    background: #3b82f6;
   }
-  70% { 
-    transform: scale(1.3) translateX(5px); 
-    box-shadow: 0 0 10px 3px rgba(59, 130, 246, 0.4);
+  50% { 
+    transform: scale(1.4); 
+    box-shadow: 0 0 30px 12px rgba(59, 130, 246, 0.6);
+    background: #60a5fa;
+  }
+  75% { 
+    transform: scale(1.8); 
+    box-shadow: 0 0 20px 8px rgba(59, 130, 246, 0.8);
+    background: #3b82f6;
   }
   100% { 
-    transform: scale(1) translateX(0); 
-    box-shadow: none;
+    transform: scale(1); 
+    box-shadow: 0 0 0 4px #3b82f6;
+    background: #60a5fa;
   }
 }
 </style>
