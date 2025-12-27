@@ -1,5 +1,5 @@
 /**
- * Main game engine - v3.3 Energy System
+ * Main game engine - v4.0 Multi-teams + AI
  * @module core/game_engine
  */
 
@@ -21,6 +21,15 @@ import {
   getEnergyColor,
   getEnergyLabel
 } from './energy.js';
+import {
+  TeamId,
+  TeamConfigs,
+  PlayerType,
+  getTeamIds,
+  getTeamConfig,
+  isAITeam,
+  getNextTeam
+} from './teams.js';
 
 /**
  * Constants
@@ -51,56 +60,56 @@ export const TurnPhase = {
 };
 
 /**
- * Team configuration
+ * Team configuration - v4.0 uses teams.js, these are aliases for compatibility
  */
-export const Teams = {
-  TEAM_A: 'team_a',
-  TEAM_B: 'team_b'
-};
-
-export const TeamConfig = {
-  [Teams.TEAM_A]: {
-    name: 'Équipe Rouge',
-    shortName: 'Rouge',
-    color: '#dc2626',
-    bgColor: '#fecaca',
-    borderColor: '#b91c1c',
-    playerName: 'Joueur 1'
-  },
-  [Teams.TEAM_B]: {
-    name: 'Équipe Bleue',
-    shortName: 'Bleue',
-    color: '#2563eb',
-    bgColor: '#bfdbfe',
-    borderColor: '#1d4ed8',
-    playerName: 'Joueur 2'
-  }
-};
+export const Teams = TeamId;
+export const TeamConfig = TeamConfigs;
 
 /**
- * Create riders for two teams
- * @returns {Array} Array of 10 riders (5 per team)
+ * Create riders for multiple teams
+ * @param {string[]} teamIds - Array of team IDs
+ * @returns {Array} Array of riders
+ */
+export function createRidersForTeams(teamIds) {
+  const riders = [];
+  teamIds.forEach(teamId => {
+    const config = getTeamConfig(teamId);
+    riders.push(...createTeamRiders(teamId, config.prefix));
+  });
+  return riders;
+}
+
+/**
+ * Create riders for two teams (legacy support)
+ * @returns {Array} Array of 8 riders (4 per team)
  */
 export function createTwoTeamsRiders() {
-  return [
-    ...createTeamRiders(Teams.TEAM_A, 'A'),
-    ...createTeamRiders(Teams.TEAM_B, 'B')
-  ];
+  return createRidersForTeams([TeamId.TEAM_A, TeamId.TEAM_B]);
 }
 
 /**
  * Create initial game state
  * @param {Object} options - Game options
+ * @param {Object} options.gameConfig - Full game configuration from setup
+ * @param {number} options.courseLength - Course length (default 80)
  * @returns {Object} Initial game state
  */
 export function createGameState(options = {}) {
   const {
-    courseLength = 80,
-    twoTeams = true
+    gameConfig = null,
+    courseLength = 80
   } = options;
   
-  const course = generateCourse(courseLength);
-  let riders = createTwoTeamsRiders();
+  // Use gameConfig if provided, otherwise legacy 2-team mode
+  const effectiveCourseLength = gameConfig?.courseLength || courseLength;
+  const teamIds = gameConfig?.players?.map(p => p.teamId) || [TeamId.TEAM_A, TeamId.TEAM_B];
+  const players = gameConfig?.players || [
+    { teamId: TeamId.TEAM_A, playerType: PlayerType.HUMAN },
+    { teamId: TeamId.TEAM_B, playerType: PlayerType.HUMAN }
+  ];
+  
+  const course = generateCourse(effectiveCourseLength);
+  let riders = createRidersForTeams(teamIds);
   
   // All riders start at position 0 with arrival order
   riders = riders.map((r, index) => ({ 
@@ -109,15 +118,20 @@ export function createGameState(options = {}) {
     arrivalOrder: index // First riders are "rightmost" (arrived first)
   }));
   
-  // Random starting player
-  const startingTeam = Math.random() < 0.5 ? Teams.TEAM_A : Teams.TEAM_B;
+  // Random starting team from available teams
+  const startingTeam = teamIds[Math.floor(Math.random() * teamIds.length)];
   
   return {
     // Game configuration
-    courseLength,
-    finishLine: courseLength,
+    courseLength: effectiveCourseLength,
+    finishLine: effectiveCourseLength,
     course,
-    twoTeams,
+    
+    // v4.0: Multi-team configuration
+    gameConfig,
+    teamIds,
+    players,
+    numTeams: teamIds.length,
     
     // Riders
     riders,
@@ -173,10 +187,39 @@ export function getTerrainAt(state, position) {
 }
 
 /**
- * Get the other team
+ * Get the next team in rotation
+ * @param {string} team - Current team
+ * @param {Object} state - Game state (optional, for multi-team)
+ * @returns {string} Next team ID
  */
-export function getOtherTeam(team) {
+export function getOtherTeam(team, state = null) {
+  if (state?.teamIds && state.teamIds.length > 2) {
+    return getNextTeam(team, state.teamIds);
+  }
+  // Legacy 2-team fallback
   return team === Teams.TEAM_A ? Teams.TEAM_B : Teams.TEAM_A;
+}
+
+/**
+ * Check if current team is AI controlled
+ * @param {Object} state - Game state
+ * @returns {boolean} True if AI team
+ */
+export function isCurrentTeamAI(state) {
+  if (!state.players) return false;
+  const player = state.players.find(p => p.teamId === state.currentTeam);
+  return player?.playerType === PlayerType.AI;
+}
+
+/**
+ * Get AI difficulty for current team
+ * @param {Object} state - Game state
+ * @returns {string|null} AI difficulty or null if human
+ */
+export function getCurrentTeamAIDifficulty(state) {
+  if (!state.players) return null;
+  const player = state.players.find(p => p.teamId === state.currentTeam);
+  return player?.playerType === PlayerType.AI ? player.difficulty : null;
 }
 
 /**

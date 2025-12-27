@@ -1,5 +1,5 @@
 import { createApp } from 'vue';
-import GameBoard from './ui/GameBoard.vue';
+import App from './App.vue';
 
-const app = createApp(GameBoard);
+const app = createApp(App);
 app.mount('#app');

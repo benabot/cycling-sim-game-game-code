@@ -1,5 +1,5 @@
-// Composable pour la logique du jeu
-import { ref, computed } from 'vue';
+// Composable pour la logique du jeu - v4.0 Multi-teams + AI
+import { ref, computed, watch } from 'vue';
 import { 
   createGameState,
   getRidersAtPosition,
@@ -15,8 +15,12 @@ import {
   calculatePreviewPositions as calculatePreviewPositionsEngine,
   resolveMovement as resolveMovementEngine,
   acknowledgeEndTurnEffects as acknowledgeEndTurnEffectsEngine,
+  isCurrentTeamAI,
+  getCurrentTeamAIDifficulty,
   TurnPhase
 } from '../core/game_engine.js';
+import { CyclingAI, createAI } from '../core/ai.js';
+import { PlayerType } from '../core/teams.js';
 import { FINISH_LINE, TeamConfig } from '../config/game.config.js';
 
 export function useGameEngine() {
@@ -26,16 +30,38 @@ export function useGameEngine() {
   const animatingRiders = ref([]);
   const isAnimatingEffects = ref(false);
   
+  // v4.0: AI instances (one per AI team)
+  const aiInstances = ref({});
+  const isAIThinking = ref(false);
+  
   // v3.2.2: Track aspiration animations with position info
   const aspirationAnimations = ref([]);
 
-  // Initialize
-  function initialize() {
-    gameState.value = createGameState();
+  // Initialize with optional game configuration
+  function initialize(gameConfig = null) {
+    gameState.value = createGameState({ gameConfig });
     gameLog.value = ['🏁 Départ de la course !', '=== Tour 1 ==='];
     animatingRiders.value = [];
     isAnimatingEffects.value = false;
     aspirationAnimations.value = [];
+    isAIThinking.value = false;
+    
+    // v4.0: Create AI instances for AI-controlled teams
+    aiInstances.value = {};
+    if (gameConfig?.players) {
+      gameConfig.players
+        .filter(p => p.playerType === PlayerType.AI)
+        .forEach(p => {
+          aiInstances.value[p.teamId] = createAI(p.difficulty);
+        });
+    }
+    
+    // Log team setup
+    const numTeams = gameState.value.teamIds?.length || 2;
+    const numAI = Object.keys(aiInstances.value).length;
+    if (numAI > 0) {
+      log(`🤖 ${numAI} équipe(s) IA sur ${numTeams}`);
+    }
   }
 
   // Computed from game state
@@ -54,6 +80,20 @@ export function useGameEngine() {
   const lastDiceRoll = computed(() => gameState.value?.lastDiceRoll);
   const calculatedMovement = computed(() => gameState.value?.calculatedMovement || 0);
   const playedThisTurn = computed(() => gameState.value?.ridersPlayedThisTurn || []);
+  
+  // v4.0: AI computed properties
+  const isAITurn = computed(() => {
+    if (!gameState.value) return false;
+    return isCurrentTeamAI(gameState.value);
+  });
+  
+  const currentAI = computed(() => {
+    if (!isAITurn.value) return null;
+    return aiInstances.value[gameState.value.currentTeam] || null;
+  });
+  
+  const numTeams = computed(() => gameState.value?.teamIds?.length || 2);
+  const teamIds = computed(() => gameState.value?.teamIds || []);
   
   // Preview positions for UI highlighting (v3.2)
   const previewPositions = computed(() => {
@@ -346,6 +386,67 @@ export function useGameEngine() {
     initialize();
   }
 
+  // v4.0: Execute AI turn automatically
+  async function executeAITurn() {
+    if (!isAITurn.value || !currentAI.value || isAIThinking.value) return;
+    if (phase.value === 'finished') return;
+    
+    isAIThinking.value = true;
+    const ai = currentAI.value;
+    const teamId = gameState.value.currentTeam;
+    
+    try {
+      // Wait for thinking delay
+      await sleep(ai.thinkingDelay);
+      
+      const currentPhase = turnPhase.value;
+      const decision = ai.makeDecision(gameState.value, currentPhase, teamId);
+      
+      switch (decision.type) {
+        case 'select_rider':
+          if (decision.riderId) {
+            log(`🤖 IA sélectionne ${decision.reason || decision.riderId}`);
+            selectRider(decision.riderId);
+          }
+          break;
+          
+        case 'select_card':
+          if (decision.cardId) {
+            log(`🤖 IA joue ${decision.reason}`);
+            selectCard(decision.cardId);
+          }
+          break;
+          
+        case 'roll_dice':
+          await sleep(300);
+          rollDice();
+          break;
+          
+        case 'use_specialty':
+          log(`🤖 IA utilise spécialité`);
+          useSpecialty();
+          break;
+          
+        case 'skip_specialty':
+          skipSpecialty();
+          break;
+          
+        case 'resolve':
+          await resolve();
+          break;
+          
+        case 'no_rider':
+        case 'error':
+          console.warn('AI decision error:', decision.reason);
+          break;
+      }
+    } catch (err) {
+      console.error('AI turn error:', err);
+    } finally {
+      isAIThinking.value = false;
+    }
+  }
+
   // Utility getters
   function getRidersAt(position) {
     return getRidersAtPosition(gameState.value, position);
@@ -389,6 +490,7 @@ export function useGameEngine() {
     showEffectsOverlay,
     endTurnEffects,
     isAnimatingEffects,
+    isAIThinking,
     
     // Computed
     course,
@@ -409,6 +511,10 @@ export function useGameEngine() {
     previewPositions,
     currentTeamConfig,
     currentRider,
+    // v4.0: AI
+    isAITurn,
+    numTeams,
+    teamIds,
     
     // Actions
     initialize,
@@ -422,6 +528,7 @@ export function useGameEngine() {
     resolve,
     acknowledgeEffects,
     restartGame,
+    executeAITurn,
     
     // Utils
     getRidersAt,

@@ -1,6 +1,16 @@
 <template>
   <div class="game-container">
-    <h1>🚴 Course Cycliste - v3.2.2</h1>
+    <div class="header-row">
+      <h1>🚴 Course Cycliste - v4.0</h1>
+      <button v-if="phase === 'finished'" class="btn-back" @click="$emit('backToSetup')">
+        ← Nouvelle partie
+      </button>
+    </div>
+    
+    <!-- AI Thinking Indicator -->
+    <div v-if="isAIThinking" class="ai-thinking">
+      🤖 L'IA réfléchit...
+    </div>
     
     <!-- Status Bar -->
     <GameStatusBar 
@@ -112,7 +122,7 @@
 </template>
 
 <script setup>
-import { onMounted } from 'vue';
+import { onMounted, watch } from 'vue';
 import { useGameEngine } from '../composables/useGameEngine.js';
 import {
   GameStatusBar,
@@ -126,6 +136,13 @@ import {
   GameLog,
   RulesSection
 } from '../components';
+
+// Props and emits
+const props = defineProps({
+  gameConfig: { type: Object, default: null }
+});
+
+defineEmits(['backToSetup']);
 
 // Initialize game engine
 const {
@@ -142,6 +159,7 @@ const {
   aspirationAnimations,
   showEffectsOverlay,
   endTurnEffects,
+  isAIThinking,
   
   // Computed
   course,
@@ -155,6 +173,7 @@ const {
   currentTeamConfig,
   currentRider,
   previewPositions,
+  isAITurn,
   
   // Actions
   initialize,
@@ -168,6 +187,7 @@ const {
   resolve,
   acknowledgeEffects,
   restartGame,
+  executeAITurn,
   
   // Utils
   getLeaderAt,
@@ -185,10 +205,30 @@ function isSelectedCardAttack() {
   return currentRider.value.attackCards?.some(c => c.id === selectedCardId.value);
 }
 
-// Initialize on mount
+// Initialize on mount with game config
 onMounted(() => {
-  initialize();
+  initialize(props.gameConfig);
 });
+
+// v4.0: Watch for AI turns and execute automatically
+watch(
+  [isAITurn, turnPhase, showEffectsOverlay, phase],
+  ([aiTurn, tPhase, effectsShowing, gamePhase]) => {
+    // Only execute AI if:
+    // - It's an AI turn
+    // - Game is still playing
+    // - Not showing effects overlay
+    // - Valid turn phase
+    if (aiTurn && gamePhase !== 'finished' && !effectsShowing) {
+      const validPhases = ['select_rider', 'select_card', 'roll_dice', 'select_specialty', 'resolve'];
+      if (validPhases.includes(tPhase)) {
+        // Small delay before AI action for visibility
+        setTimeout(() => executeAITurn(), 200);
+      }
+    }
+  },
+  { immediate: true }
+);
 </script>
 
 <style>
@@ -240,5 +280,48 @@ h1 {
   width: 20px;
   height: 20px;
   border-radius: 4px;
+}
+
+/* v4.0: Header and AI styles */
+.header-row {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 20px;
+  margin-bottom: 20px;
+}
+
+.header-row h1 {
+  margin: 0;
+}
+
+.btn-back {
+  padding: 8px 16px;
+  background: #64748b;
+  color: white;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 0.9em;
+}
+
+.btn-back:hover {
+  background: #475569;
+}
+
+.ai-thinking {
+  text-align: center;
+  padding: 10px;
+  background: #fef3c7;
+  border-radius: 8px;
+  margin-bottom: 15px;
+  color: #92400e;
+  font-weight: 500;
+  animation: pulse 1.5s ease-in-out infinite;
+}
+
+@keyframes pulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.6; }
 }
 </style>
