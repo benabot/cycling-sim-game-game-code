@@ -50,7 +50,7 @@
 
       <div class="rule-card">
         <h3>💨 Prise de Vent</h3>
-        <p>Le <strong>leader seul</strong> (premier arrivé) d'un groupe isolé (2+ cases d'écart derrière) reçoit une carte +1.</p>
+        <p>Après aspiration : si <strong>case vide devant</strong>, le leader (premier arrivé) reçoit une carte +1.</p>
       </div>
 
       <div class="rule-card">

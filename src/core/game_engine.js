@@ -713,9 +713,10 @@ export function applyEndOfTurnEffects(state) {
   }
   
   // ===== PHASE 2: WIND CARDS (prise de vent) =====
-  // Applies from turn 1
-  // Only the LEADER (first arrived = rightmost) at a position takes wind if isolated
-  // Isolated = 2+ cases gap to next group behind OR no one behind
+  // Calculated AFTER aspiration
+  // Condition: empty cell in front (position + 1 has no riders)
+  // Only the LEADER (first arrived = rightmost) takes wind penalty
+  // Others at same position are sheltered
   
   // Get all unique positions with riders after regrouping
   const finalPositions = [...new Set(
@@ -728,9 +729,7 @@ export function applyEndOfTurnEffects(state) {
   const windRiderIds = [];
   const shelteredRiderIds = [];
   
-  for (let i = 0; i < finalPositions.length; i++) {
-    const pos = finalPositions[i];
-    const nextPos = finalPositions[i + 1]; // Position behind (if any)
+  for (const pos of finalPositions) {
     const terrain = getTerrainAt(state, pos);
     
     // Skip if terrain doesn't have wind penalty (mountain, descent)
@@ -742,24 +741,26 @@ export function applyEndOfTurnEffects(state) {
     const ridersAtPos = updatedRiders
       .filter(r => r.position === pos && !r.hasFinished)
       .sort((a, b) => a.arrivalOrder - b.arrivalOrder); // First arrived = rightmost
+    
+    if (ridersAtPos.length === 0) continue;
+    
+    // Check if cell in front (pos + 1) is empty
+    const cellInFrontEmpty = !updatedRiders.some(r => 
+      r.position === pos + 1 && !r.hasFinished
+    );
+    
+    if (cellInFrontEmpty) {
+      // Leader (first arrived = rightmost) takes wind
+      const leader = ridersAtPos[0];
+      windRiderIds.push(leader.id);
       
-      if (ridersAtPos.length === 0) continue;
-      
-      // Check if this position is isolated (2+ gap to next group behind OR no one behind)
-      const isIsolated = nextPos === undefined || (pos - nextPos) >= 2;
-      
-      if (isIsolated) {
-        // Only the LEADER (first arrived = rightmost) takes wind
-        const leader = ridersAtPos[0];
-        windRiderIds.push(leader.id);
-        
-        // Others at same position are sheltered (behind the leader)
-        ridersAtPos.slice(1).forEach(r => shelteredRiderIds.push(r.id));
-      } else {
-        // Not isolated - everyone here is sheltered
-        ridersAtPos.forEach(r => shelteredRiderIds.push(r.id));
-      }
+      // Others at same position are sheltered
+      ridersAtPos.slice(1).forEach(r => shelteredRiderIds.push(r.id));
+    } else {
+      // Cell in front occupied - everyone here is sheltered
+      ridersAtPos.forEach(r => shelteredRiderIds.push(r.id));
     }
+  }
     
     // Apply wind cards (+1) to leaders taking wind
     windRiderIds.forEach(riderId => {
