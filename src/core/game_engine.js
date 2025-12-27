@@ -714,9 +714,9 @@ export function applyEndOfTurnEffects(state) {
   
   // ===== PHASE 2: WIND CARDS (prise de vent) =====
   // Calculated AFTER aspiration
-  // Condition: empty cell in front (position + 1 has no riders)
-  // Only the LEADER (first arrived = rightmost) takes wind penalty
-  // Others at same position are sheltered
+  // ALL riders get a card at end of turn:
+  // - Empty cell in front → leader gets +1 (wind penalty)
+  // - Others (including those behind leader or with occupied cell in front) → +2 (shelter)
   
   // Get all unique positions with riders after regrouping
   const finalPositions = [...new Set(
@@ -730,13 +730,6 @@ export function applyEndOfTurnEffects(state) {
   const shelteredRiderIds = [];
   
   for (const pos of finalPositions) {
-    const terrain = getTerrainAt(state, pos);
-    
-    // Skip if terrain doesn't have wind penalty (mountain, descent)
-    if (!hasWindPenalty(terrain)) {
-      continue;
-    }
-    
     // Get riders at this position sorted by arrival order
     const ridersAtPos = updatedRiders
       .filter(r => r.position === pos && !r.hasFinished)

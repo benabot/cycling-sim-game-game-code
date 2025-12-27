@@ -23,7 +23,7 @@
       <!-- Wind effects -->
       <div v-if="effects.wind.length > 0" class="effect-group wind-group">
         <h4>💨 Prise de vent</h4>
-        <p class="effect-rule">Leader isolé (2+ cases d'écart) → reçoit carte +1</p>
+        <p class="effect-rule">Case vide devant → leader reçoit carte +1</p>
         <div class="effect-list">
           <div 
             v-for="effect in effects.wind" 
@@ -40,7 +40,7 @@
       <!-- Shelter effects -->
       <div v-if="effects.shelter.length > 0" class="effect-group shelter-group">
         <h4>🛡️ À l'abri</h4>
-        <p class="effect-rule">Derrière un leader ou dans un groupe → reçoit carte +2</p>
+        <p class="effect-rule">Derrière un leader ou case devant occupée → reçoit carte +2</p>
         <div class="effect-list">
           <div 
             v-for="effect in effects.shelter" 
