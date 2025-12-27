@@ -625,8 +625,10 @@ export function applyEndOfTurnEffects(state) {
   let arrivalCounter = state.arrivalCounter;
   
   // ===== PHASE 1: ASPIRATION (regroupement) =====
-  // Only applies when gap is exactly 1 case
+  // Applies from turn 1
+  // If gap is exactly 1 case → riders behind advance by 1 (not to the front group)
   // Does not apply in mountain or descent
+  // Process from front to back
   
   let regroupingOccurred = true;
   let iterations = 0;
@@ -635,14 +637,14 @@ export function applyEndOfTurnEffects(state) {
     regroupingOccurred = false;
     iterations++;
     
-    // Get all unique positions with riders (excluding finished)
+    // Get all unique positions with riders (excluding finished), sorted descending (front to back)
     const positionsWithRiders = [...new Set(
       updatedRiders
         .filter(r => !r.hasFinished)
         .map(r => r.position)
-    )].sort((a, b) => b - a); // Descending order (front to back)
+    )].sort((a, b) => b - a);
     
-    // Check each position pair for aspiration
+    // Check each position pair for aspiration (from front to back)
     for (let i = 0; i < positionsWithRiders.length - 1; i++) {
       const frontPos = positionsWithRiders[i];
       const backPos = positionsWithRiders[i + 1];
@@ -653,9 +655,7 @@ export function applyEndOfTurnEffects(state) {
       
       // Check terrain - no aspiration in mountain or descent
       const terrainAtBack = getTerrainAt(state, backPos);
-      const terrainAtFront = getTerrainAt(state, frontPos);
-      
-      if (!hasAspiration(terrainAtBack) || !hasAspiration(terrainAtFront)) {
+      if (!hasAspiration(terrainAtBack)) {
         continue;
       }
       
@@ -666,27 +666,30 @@ export function applyEndOfTurnEffects(state) {
       
       if (ridersAtBack.length === 0) continue;
       
-      // Check if front position has room (max 4 riders per cell)
-      const ridersAtFront = updatedRiders.filter(r => 
-        r.position === frontPos && !r.hasFinished
+      // Target position is backPos + 1 (advance by 1 case, NOT to frontPos)
+      const targetPos = backPos + 1;
+      
+      // Check if target position has room (max 4 riders per cell)
+      const ridersAtTarget = updatedRiders.filter(r => 
+        r.position === targetPos && !r.hasFinished
       );
       
-      const availableSlots = MAX_RIDERS_PER_CELL - ridersAtFront.length;
+      const availableSlots = MAX_RIDERS_PER_CELL - ridersAtTarget.length;
       
       if (availableSlots <= 0) continue;
       
-      // Move riders from back to front (up to available slots)
-      // Sort by arrival order to move most recent arrivals first (they're at the back of the group)
+      // Move riders from back to target (up to available slots)
+      // Sort by arrival order to move most recent arrivals first
       const ridersToMove = ridersAtBack
-        .sort((a, b) => b.arrivalOrder - a.arrivalOrder) // Most recent first
+        .sort((a, b) => b.arrivalOrder - a.arrivalOrder)
         .slice(0, availableSlots);
       
       ridersToMove.forEach(rider => {
         const riderIndex = updatedRiders.findIndex(r => r.id === rider.id);
         updatedRiders[riderIndex] = {
           ...updatedRiders[riderIndex],
-          position: frontPos,
-          arrivalOrder: arrivalCounter++ // Update arrival order
+          position: targetPos,
+          arrivalOrder: arrivalCounter++
         };
         
         effects.push({
@@ -694,7 +697,7 @@ export function applyEndOfTurnEffects(state) {
           riderId: rider.id,
           riderName: rider.name,
           fromPosition: backPos,
-          toPosition: frontPos
+          toPosition: targetPos
         });
       });
       
@@ -710,35 +713,35 @@ export function applyEndOfTurnEffects(state) {
   }
   
   // ===== PHASE 2: WIND CARDS (prise de vent) =====
-  // Only from turn 2 onwards
-  // Only the LEADER (rightmost = first arrived) at a position takes wind if isolated
+  // Applies from turn 1
+  // Only the LEADER (first arrived = rightmost) at a position takes wind if isolated
+  // Isolated = 2+ cases gap to next group behind OR no one behind
   
-  if (state.currentTurn >= 2) {
-    // Get all unique positions with riders after regrouping
-    const finalPositions = [...new Set(
-      updatedRiders
-        .filter(r => !r.hasFinished)
-        .map(r => r.position)
-    )].sort((a, b) => b - a); // Descending (front to back)
+  // Get all unique positions with riders after regrouping
+  const finalPositions = [...new Set(
+    updatedRiders
+      .filter(r => !r.hasFinished)
+      .map(r => r.position)
+  )].sort((a, b) => b - a); // Descending (front to back)
+  
+  // Identify who takes wind and who is sheltered
+  const windRiderIds = [];
+  const shelteredRiderIds = [];
+  
+  for (let i = 0; i < finalPositions.length; i++) {
+    const pos = finalPositions[i];
+    const nextPos = finalPositions[i + 1]; // Position behind (if any)
+    const terrain = getTerrainAt(state, pos);
     
-    // Identify who takes wind and who is sheltered
-    const windRiderIds = [];
-    const shelteredRiderIds = [];
+    // Skip if terrain doesn't have wind penalty (mountain, descent)
+    if (!hasWindPenalty(terrain)) {
+      continue;
+    }
     
-    for (let i = 0; i < finalPositions.length; i++) {
-      const pos = finalPositions[i];
-      const nextPos = finalPositions[i + 1]; // Position behind (if any)
-      const terrain = getTerrainAt(state, pos);
-      
-      // Skip if terrain doesn't have wind penalty (mountain, descent)
-      if (!hasWindPenalty(terrain)) {
-        continue;
-      }
-      
-      // Get riders at this position sorted by arrival order
-      const ridersAtPos = updatedRiders
-        .filter(r => r.position === pos && !r.hasFinished)
-        .sort((a, b) => a.arrivalOrder - b.arrivalOrder); // First arrived = rightmost
+    // Get riders at this position sorted by arrival order
+    const ridersAtPos = updatedRiders
+      .filter(r => r.position === pos && !r.hasFinished)
+      .sort((a, b) => a.arrivalOrder - b.arrivalOrder); // First arrived = rightmost
       
       if (ridersAtPos.length === 0) continue;
       
@@ -813,7 +816,6 @@ export function applyEndOfTurnEffects(state) {
         .map(e => e.riderName);
       logMessages.push(`🛡️ À l'abri: ${shelterRiders.join(', ')} (carte +2)`);
     }
-  }
   
   // Return state with effects for animation
   return {

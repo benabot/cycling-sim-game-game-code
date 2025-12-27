@@ -1,47 +1,41 @@
 // Composable pour la logique du jeu
-import { ref, computed, nextTick } from 'vue';
+import { ref, computed } from 'vue';
 import { 
   createGameState,
   getRidersAtPosition,
   getLeaderAtPosition,
   getTerrainAt,
   selectRider as selectRiderEngine,
-  deselectRider,
+  deselectRider as deselectRiderEngine,
   selectCard as selectCardEngine,
-  deselectCard,
+  deselectCard as deselectCardEngine,
   rollDice as rollDiceEngine,
-  selectSpecialty,
-  calculateMovement,
-  resolveMovement,
-  moveToNextPlayer,
-  applyEndOfTurnEffects,
-  acknowledgeEndTurnEffects,
-  getGameStatus
+  selectSpecialty as selectSpecialtyEngine,
+  calculateMovement as calculateMovementEngine,
+  resolveMovement as resolveMovementEngine,
+  acknowledgeEndTurnEffects as acknowledgeEndTurnEffectsEngine,
+  TurnPhase
 } from '../core/game_engine.js';
-import { FINISH_LINE, TeamConfig, RiderConfig, TerrainConfig } from '../config/game.config.js';
+import { FINISH_LINE, TeamConfig, RiderConfig } from '../config/game.config.js';
 
 export function useGameEngine() {
   // State
   const gameState = ref(null);
   const gameLog = ref([]);
   const animatingRiders = ref([]);
-  const showEffectsOverlay = ref(false);
-  const endTurnEffects = ref({ aspiration: [], wind: [], shelter: [] });
 
   // Initialize
   function initialize() {
     gameState.value = createGameState();
-    gameLog.value = ['🏁 Départ de la course !'];
+    gameLog.value = ['🏁 Départ de la course !', '=== Tour 1 ==='];
     animatingRiders.value = [];
-    showEffectsOverlay.value = false;
-    endTurnEffects.value = { aspiration: [], wind: [], shelter: [] };
   }
 
   // Computed from game state
   const course = computed(() => gameState.value?.course || []);
   const allRiders = computed(() => gameState.value?.riders || []);
   const currentTeam = computed(() => gameState.value?.currentTeam || 'team_a');
-  const turn = computed(() => gameState.value?.turn || 1);
+  const turn = computed(() => gameState.value?.currentTurn || 1);
   const phase = computed(() => gameState.value?.phase || 'playing');
   const isLastTurn = computed(() => gameState.value?.isLastTurn || false);
   const winningTeam = computed(() => gameState.value?.winningTeam);
@@ -52,7 +46,31 @@ export function useGameEngine() {
   const selectedSpecialtyId = computed(() => gameState.value?.selectedSpecialtyId);
   const lastDiceRoll = computed(() => gameState.value?.lastDiceRoll);
   const calculatedMovement = computed(() => gameState.value?.calculatedMovement || 0);
-  const playedThisTurn = computed(() => gameState.value?.playedThisTurn || []);
+  const playedThisTurn = computed(() => gameState.value?.ridersPlayedThisTurn || []);
+  
+  // Show effects overlay when turnPhase is 'end_turn_effects'
+  const showEffectsOverlay = computed(() => turnPhase.value === 'end_turn_effects');
+  
+  // End turn effects from game state
+  const endTurnEffects = computed(() => {
+    const effects = gameState.value?.endTurnEffects || [];
+    return {
+      aspiration: effects.filter(e => e.type === 'aspiration').map(e => ({
+        riderId: e.riderId,
+        riderName: e.riderName,
+        fromPosition: e.fromPosition,
+        toPosition: e.toPosition
+      })),
+      wind: effects.filter(e => e.type === 'wind').map(e => ({
+        riderId: e.riderId,
+        riderName: e.riderName
+      })),
+      shelter: effects.filter(e => e.type === 'shelter').map(e => ({
+        riderId: e.riderId,
+        riderName: e.riderName
+      }))
+    };
+  });
 
   const currentTeamConfig = computed(() => TeamConfig[currentTeam.value]);
   
@@ -101,67 +119,80 @@ export function useGameEngine() {
     return specialties[riderType] === terrain;
   }
 
-  function log(message, type = '') {
-    const prefix = type ? `[${type.toUpperCase()}] ` : '';
-    gameLog.value.push(prefix + message);
+  function log(message) {
+    gameLog.value.push(message);
   }
 
   // Actions
   function selectRider(riderId) {
-    const result = selectRiderEngine(gameState.value, riderId);
-    if (result.success) {
-      gameState.value = result.newState;
-    }
+    const newState = selectRiderEngine(gameState.value, riderId);
+    gameState.value = newState;
   }
 
   function cancelRiderSelection() {
-    const result = deselectRider(gameState.value);
-    gameState.value = result.newState;
+    gameState.value = deselectRiderEngine(gameState.value);
   }
 
-  function selectCard(cardId, isAttack = false) {
-    const result = selectCardEngine(gameState.value, cardId);
-    if (result.success) {
-      gameState.value = result.newState;
-    }
+  function selectCard(cardId) {
+    const newState = selectCardEngine(gameState.value, cardId);
+    gameState.value = newState;
   }
 
   function cancelCardSelection() {
-    const result = deselectCard(gameState.value);
-    gameState.value = result.newState;
+    gameState.value = deselectCardEngine(gameState.value);
   }
 
   function rollDice() {
-    const result = rollDiceEngine(gameState.value);
-    if (result.success) {
-      gameState.value = result.newState;
-      log(`🎲 ${currentRider.value?.name || 'Coureur'} lance le dé : ${result.diceResult}`);
+    // Roll dice - returns new state
+    let newState = rollDiceEngine(gameState.value);
+    
+    if (newState.lastDiceRoll) {
+      log(`🎲 ${currentRider.value?.name || 'Coureur'} lance le dé : ${newState.lastDiceRoll.result}`);
       
-      // Auto-calculate movement
-      const calcResult = calculateMovement(gameState.value);
-      gameState.value = calcResult.newState;
+      // Calculate movement - returns a NUMBER, not state
+      const movement = calculateMovementEngine(newState);
+      
+      // Store calculated movement in state
+      newState = {
+        ...newState,
+        calculatedMovement: movement,
+        // Move to select_specialty phase if specialty can be used
+        turnPhase: checkCanUseSpecialty(
+          currentRider.value?.type, 
+          getTerrainAt(newState, currentRider.value?.position)
+        ) && currentRider.value?.specialtyCards?.length > 0
+          ? TurnPhase.SELECT_SPECIALTY
+          : TurnPhase.RESOLVE
+      };
     }
+    
+    gameState.value = newState;
   }
 
   function useSpecialty() {
     if (!currentRider.value?.specialtyCards?.length) return;
     
-    const result = selectSpecialty(gameState.value, currentRider.value.specialtyCards[0].id);
-    if (result.success) {
-      gameState.value = result.newState;
-      log(`★ ${currentRider.value?.name} utilise sa carte Spécialité (+2)`);
-      
-      // Recalculate movement
-      const calcResult = calculateMovement(gameState.value);
-      gameState.value = calcResult.newState;
-    }
+    const cardId = currentRider.value.specialtyCards[0].id;
+    let newState = selectSpecialtyEngine(gameState.value, cardId);
+    
+    log(`★ ${currentRider.value?.name} utilise sa carte Spécialité (+2)`);
+    
+    // Recalculate movement with specialty
+    const movement = calculateMovementEngine(newState);
+    
+    newState = {
+      ...newState,
+      calculatedMovement: movement,
+      turnPhase: TurnPhase.RESOLVE
+    };
+    
+    gameState.value = newState;
   }
 
   function skipSpecialty() {
-    // Just move to resolve phase
     gameState.value = {
       ...gameState.value,
-      turnPhase: 'resolve'
+      turnPhase: TurnPhase.RESOLVE
     };
   }
 
@@ -177,75 +208,55 @@ export function useGameEngine() {
     animatingRiders.value.push(riderId);
     
     // Apply movement
-    const result = resolveMovement(gameState.value);
-    gameState.value = result.newState;
+    const newState = resolveMovementEngine(gameState.value);
     
-    // Log
+    // Log movement
+    const actualPos = newState.riders.find(r => r.id === riderId)?.position;
     const targetPos = startPos + movement;
-    const actualPos = result.newState.riders.find(r => r.id === riderId)?.position;
     
     if (actualPos < targetPos && actualPos <= FINISH_LINE) {
-      log(`${riderName} avance de ${movement} cases → case ${actualPos} (case pleine, arrêt forcé)`, 'blocked');
+      log(`${riderName} avance de ${movement} cases → case ${actualPos} (case pleine)`);
     } else {
       log(`${riderName} avance de ${movement} cases → case ${actualPos}`);
     }
 
     if (actualPos > FINISH_LINE) {
-      log(`🏁 ${riderName} franchit la ligne !`, 'finish');
+      log(`🏁 ${riderName} franchit la ligne !`);
     }
+
+    gameState.value = newState;
 
     // Animation end
     await new Promise(r => setTimeout(r, 300));
     animatingRiders.value = animatingRiders.value.filter(id => id !== riderId);
-
-    // Move to next player or end turn
-    const moveResult = moveToNextPlayer(gameState.value);
-    gameState.value = moveResult.newState;
     
-    if (moveResult.turnEnded) {
-      applyEndTurn();
+    // If we're now in end_turn_effects phase, log it
+    if (newState.turnPhase === TurnPhase.END_TURN_EFFECTS) {
+      log(`--- Fin du tour ${newState.currentTurn} ---`);
+      
+      const effects = newState.endTurnEffects || [];
+      effects.filter(e => e.type === 'aspiration').forEach(e => {
+        log(`🌀 ${e.riderName} rejoint le groupe (${e.fromPosition} → ${e.toPosition})`);
+      });
+      effects.filter(e => e.type === 'wind').forEach(e => {
+        log(`💨 ${e.riderName} prend le vent (+1)`);
+      });
+      effects.filter(e => e.type === 'shelter').forEach(e => {
+        log(`🛡️ ${e.riderName} à l'abri (+2)`);
+      });
     }
   }
 
-  function applyEndTurn() {
-    log(`--- Fin du tour ${turn.value} ---`, 'turn-separator');
-    
-    const result = applyEndOfTurnEffects(gameState.value);
-    gameState.value = result.newState;
-    
-    endTurnEffects.value = {
-      aspiration: result.aspirationMoves || [],
-      wind: result.windCards || [],
-      shelter: result.shelterCards || []
-    };
-
-    // Log effects
-    result.aspirationMoves?.forEach(m => {
-      log(`🌀 ${m.riderName} rejoint le groupe (${m.fromPosition} → ${m.toPosition})`, 'aspiration');
-    });
-    result.windCards?.forEach(w => {
-      log(`💨 ${w.riderName} prend le vent (+1)`, 'wind');
-    });
-    result.shelterCards?.forEach(s => {
-      log(`🛡️ ${s.riderName} à l'abri (+2)`, 'shelter');
-    });
-
-    showEffectsOverlay.value = true;
-  }
-
   function acknowledgeEffects() {
-    showEffectsOverlay.value = false;
+    const newState = acknowledgeEndTurnEffectsEngine(gameState.value);
+    gameState.value = newState;
     
-    const result = acknowledgeEndTurnEffects(gameState.value);
-    gameState.value = result.newState;
+    log(`=== Tour ${newState.currentTurn} ===`);
     
-    log(`=== Tour ${gameState.value.turn} ===`, 'last-turn-header');
-    
-    // Check game end
-    if (gameState.value.phase === 'finished') {
-      const winner = gameState.value.rankings?.[0];
+    if (newState.phase === 'finished') {
+      const winner = newState.rankings?.[0];
       if (winner) {
-        log(`🏆 ${TeamConfig[winner.team].name} remporte la course !`, 'winner');
+        log(`🏆 ${TeamConfig[winner.team].name} remporte la course !`);
       }
     }
   }

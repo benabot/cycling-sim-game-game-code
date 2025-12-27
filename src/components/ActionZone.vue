@@ -73,6 +73,8 @@
 </template>
 
 <script setup>
+import { computed } from 'vue';
+
 const props = defineProps({
   turnPhase: { type: String, required: true },
   cardValue: { type: Number, default: 0 },
@@ -87,7 +89,7 @@ const props = defineProps({
 
 defineEmits(['rollDice', 'cancelCard', 'useSpecialty', 'skipSpecialty', 'resolve']);
 
-const targetPosition = props.currentPosition + props.totalMovement;
+const targetPosition = computed(() => props.currentPosition + props.totalMovement);
 
 function formatBonus(value) {
   return value > 0 ? `+${value}` : `${value}`;

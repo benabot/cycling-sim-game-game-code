@@ -44,13 +44,13 @@
 
       <div class="rule-card">
         <h3>🌀 Aspiration</h3>
-        <p>Fin de tour : si 1 case d'écart → regroupement automatique.</p>
-        <p><em>Pas en montagne ni descente</em></p>
+        <p>Fin de tour : si 1 case d'écart → avancer d'1 case (pas forcément rejoindre le groupe).</p>
+        <p><em>Pas en montagne ni descente. Dès le tour 1.</em></p>
       </div>
 
       <div class="rule-card">
         <h3>💨 Prise de Vent</h3>
-        <p>À partir du tour 2, le <strong>leader seul</strong> (premier arrivé) d'un groupe isolé (2+ cases d'écart) reçoit une carte +1.</p>
+        <p>Le <strong>leader seul</strong> (premier arrivé) d'un groupe isolé (2+ cases d'écart derrière) reçoit une carte +1.</p>
       </div>
 
       <div class="rule-card">

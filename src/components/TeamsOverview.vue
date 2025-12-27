@@ -51,9 +51,9 @@
 import { TeamConfig, RiderConfig } from '../config/game.config.js';
 
 const props = defineProps({
-  riders: { type: Array, required: true },
+  riders: { type: Array, required: true, default: () => [] },
   currentTeam: { type: String, required: true },
-  selectedRiderId: { type: String, default: null },
+  selectedRiderId: { type: [String, null], default: null },
   playedRiders: { type: Array, default: () => [] }
 });
 
