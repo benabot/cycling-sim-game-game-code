@@ -50,18 +50,20 @@
 
       <div class="rule-card">
         <h3>💨 Prise de Vent</h3>
-        <p>Après aspiration : si <strong>case vide devant</strong>, le leader (premier arrivé) reçoit une carte +1.</p>
+        <p>Après aspiration : si <strong>case vide devant</strong>, le leader reçoit +1.</p>
+        <p><em>Pas de vent en montagne.</em></p>
       </div>
 
       <div class="rule-card">
         <h3>🛡️ À l'Abri</h3>
-        <p>Les autres coureurs de la même case ou du groupe proche reçoivent une carte +2.</p>
+        <p>Tous les autres coureurs reçoivent +2.</p>
+        <p><em>En montagne : tous reçoivent +2.</em></p>
       </div>
 
       <div class="rule-card">
-        <h3>🏔️ Terrains</h3>
-        <p>🟩 Plaine, 🟨 Côte, 🟫 Montagne, 🟦 Descente, 🟪 Sprint</p>
-        <p><em>Bonus/malus selon type de coureur</em></p>
+        <h3>🏔️ Montagne</h3>
+        <p>Pas d'aspiration, pas de vent.</p>
+        <p><em>Tous les coureurs reçoivent +2 abri.</em></p>
       </div>
     </div>
   </div>
