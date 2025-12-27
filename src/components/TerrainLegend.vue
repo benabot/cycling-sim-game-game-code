@@ -6,6 +6,7 @@
     <span class="terrain-item mountain">🟫 Montagne 25%</span>
     <span class="terrain-item descent">🟦 Descente 15%</span>
     <span class="terrain-item sprint">🟪 Sprint 10%</span>
+    <span class="terrain-item refuel">🍌 Ravitaillement</span>
     <span class="legend-info">| Max 4 coureurs/case | Leader = droite</span>
   </div>
 </template>
@@ -30,6 +31,7 @@
 .terrain-item.mountain { background: #d4a574; color: white; }
 .terrain-item.descent { background: #dbeafe; }
 .terrain-item.sprint { background: #f3e8ff; }
+.terrain-item.refuel { background: #fef3c7; border: 2px dashed #f59e0b; }
 .legend-info { color: #94a3b8; font-size: 0.9em; margin-left: auto; }
 
 @media (max-width: 900px) {

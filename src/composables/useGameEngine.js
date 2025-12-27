@@ -296,15 +296,15 @@ export function useGameEngine() {
       await sleep(400);
     }
     
-    // Pause avant les effets de vent/abri
+    // Pause avant les effets relais/tempo
     await sleep(300);
     
-    // Log des effets de vent/abri
+    // Log des effets relais/tempo
     effects.filter(e => e.type === 'wind').forEach(e => {
-      log(`💨 ${e.riderName} prend le vent (+1)`);
+      log(`💨 ${e.riderName} fait le relais (+1)`);
     });
     effects.filter(e => e.type === 'shelter').forEach(e => {
-      log(`🛡️ ${e.riderName} à l'abri (+2)`);
+      log(`🎵 ${e.riderName} tempo (+2)`);
     });
     
     // Pause avant d'afficher l'overlay
@@ -321,10 +321,10 @@ export function useGameEngine() {
       log(`🌀 ${e.riderName} rejoint le groupe (${e.fromPosition} → ${e.toPosition})`);
     });
     effects.filter(e => e.type === 'wind').forEach(e => {
-      log(`💨 ${e.riderName} prend le vent (+1)`);
+      log(`💨 ${e.riderName} fait le relais (+1)`);
     });
     effects.filter(e => e.type === 'shelter').forEach(e => {
-      log(`🛡️ ${e.riderName} à l'abri (+2)`);
+      log(`🎵 ${e.riderName} tempo (+2)`);
     });
   }
 

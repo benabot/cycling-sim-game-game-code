@@ -45,7 +45,7 @@
           ★ Utiliser (+2)
         </button>
         <button @click="$emit('skipSpecialty')" class="btn btn-skip">
-          Passer →
+          Rouler →
         </button>
       </div>
     </div>

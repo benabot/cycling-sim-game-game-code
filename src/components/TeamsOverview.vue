@@ -39,6 +39,17 @@
               ★{{ rider.specialtyCards.length }}
             </span>
           </div>
+          
+          <!-- v3.3: Mini energy bar -->
+          <div class="energy-mini" :title="'Énergie: ' + (rider.energy || 100) + '%'">
+            <span class="energy-icon">⚡</span>
+            <div class="energy-bar-mini">
+              <div 
+                class="energy-fill-mini" 
+                :style="{ width: (rider.energy || 100) + '%', backgroundColor: getEnergyColor(rider.energy || 100) }"
+              ></div>
+            </div>
+          </div>
 
           <span v-if="rider.hasFinished" class="status-badge finished">🏁</span>
           <span v-else-if="rider.turnsToSkip > 0" class="status-badge skipping">🤕</span>
@@ -51,6 +62,7 @@
 
 <script setup>
 import { TeamConfig, RiderConfig } from '../config/game.config.js';
+import { getEnergyColor } from '../core/energy.js';
 
 const props = defineProps({
   riders: { type: Array, required: true, default: () => [] },
@@ -173,6 +185,30 @@ function onRiderClick(rider, team) {
 .status-badge.finished { background: #10b981; color: white; }
 .status-badge.played { background: #94a3b8; color: white; }
 .status-badge.skipping { background: #ef4444; color: white; }
+
+.energy-mini {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.energy-icon {
+  font-size: 0.8em;
+}
+
+.energy-bar-mini {
+  width: 40px;
+  height: 6px;
+  background: #e5e7eb;
+  border-radius: 3px;
+  overflow: hidden;
+}
+
+.energy-fill-mini {
+  height: 100%;
+  border-radius: 3px;
+  transition: width 0.3s ease, background-color 0.3s ease;
+}
 
 @media (max-width: 900px) {
   .teams-overview { grid-template-columns: 1fr; }

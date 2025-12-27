@@ -240,15 +240,30 @@ export function generateCourse(length = 80, distribution = null) {
   // Start with flat, end with sprint zone
   const courseStructure = createCourseStructure(length, dist);
   
+  // v3.3: Place refuel zone at ~40% of course (before mountain typically)
+  const refuelPosition = Math.floor(length * 0.4);
+  
   for (let i = 0; i < length; i++) {
     course.push({
       index: i,
       terrain: courseStructure[i],
-      config: TerrainConfig[courseStructure[i]]
+      config: TerrainConfig[courseStructure[i]],
+      isRefuelZone: i === refuelPosition // v3.3: Single refuel zone
     });
   }
   
   return course;
+}
+
+/**
+ * Check if a position is a refuel zone
+ * @param {Array} course - Course array
+ * @param {number} position - Position to check
+ * @returns {boolean} True if refuel zone
+ */
+export function isRefuelZone(course, position) {
+  if (position < 1 || position > course.length) return false;
+  return course[position - 1]?.isRefuelZone || false;
 }
 
 /**
@@ -401,11 +416,11 @@ function shuffleArray(array) {
  */
 export function getTerrainDescription(terrain) {
   const descriptions = {
-    [TerrainType.FLAT]: 'Plaine: Rouleur +1. Aspiration active, prise de vent possible.',
-    [TerrainType.HILL]: 'Côte: Grimpeur +1, Puncheur +1, Sprinteur -1. Aspiration active.',
-    [TerrainType.MOUNTAIN]: 'Montagne: Grimpeur +2, Puncheur +1, Rouleur -1, Sprinteur -2. Pas d\'aspiration ni prise de vent.',
+    [TerrainType.FLAT]: 'Plaine: Rouleur +2, immunité vent. Aspiration active, leader exposé → Relais.',
+    [TerrainType.HILL]: 'Côte: Puncheur +2, Grimpeur +1, Sprinteur -1. Aspiration active.',
+    [TerrainType.MOUNTAIN]: 'Montagne: Grimpeur +2, Puncheur +1, Rouleur -1, Sprinteur -2. Tous reçoivent Tempo.',
     [TerrainType.DESCENT]: 'Descente: Tous +2/+3, minimum 4 cases. Risque de chute sur 1. Pas d\'aspiration.',
-    [TerrainType.SPRINT]: 'Sprint: Sprinteur +2, Grimpeur -1. Aspiration active.'
+    [TerrainType.SPRINT]: 'Sprint: Sprinteur +3, Grimpeur -1. Aspiration active.'
   };
   return descriptions[terrain] || '';
 }

@@ -66,14 +66,14 @@
       </div>
 
       <div class="rule-card">
-        <h3>💨 Prise de Vent</h3>
-        <p>Après aspiration : si <strong>case vide devant</strong>, le leader reçoit +1.</p>
-        <p><em>Pas de vent en montagne. Rouleurs immunisés.</em></p>
+        <h3>💨 Relais (+1)</h3>
+        <p>Après aspiration : si <strong>case vide devant</strong>, le leader reçoit une carte +1.</p>
+        <p><em>Pas de vent en montagne. Rouleurs immunisés (reçoivent +2).</em></p>
       </div>
 
       <div class="rule-card">
-        <h3>🛡️ À l'Abri</h3>
-        <p>Tous les autres coureurs reçoivent +2.</p>
+        <h3>🎵 Tempo (+2)</h3>
+        <p>Tous les autres coureurs reçoivent une carte +2.</p>
         <p><em>En montagne : tous reçoivent +2.</em></p>
       </div>
 

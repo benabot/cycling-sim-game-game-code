@@ -42,12 +42,16 @@
             'cell-full': countAt(index + 1) >= 4,
             'preview-without': isPreviewWithout(index + 1),
             'preview-with': isPreviewWith(index + 1),
-            'preview-both': isPreviewBoth(index + 1)
+            'preview-both': isPreviewBoth(index + 1),
+            'refuel-zone': cell.isRefuelZone
           }
         ]"
         :title="getCellTooltip(cell, index + 1)"
       >
-        <span class="cell-number">{{ index + 1 }}</span>
+        <span class="cell-number">
+          <span v-if="cell.isRefuelZone" class="refuel-icon">🍌</span>
+          {{ index + 1 }}
+        </span>
         <!-- Preview indicator -->
         <div v-if="isPreviewWithout(index + 1) && !isPreviewWith(index + 1)" class="preview-indicator without">
           {{ previewPositions?.summitStopWithout ? '⛰️' : '' }} Sans spé
@@ -170,6 +174,9 @@ function getCellTooltip(cell, position) {
   const riders = getRidersAt(position);
   
   let tip = `Case ${position}: ${terrain?.name || cell.terrain} (${count}/4)`;
+  if (cell.isRefuelZone) {
+    tip += ' 🍌 RAVITAILLEMENT (+15⚡)';
+  }
   if (riders.length > 0) {
     tip += '\n' + riders.map((r, i) => `${i === 0 ? '→ ' : '  '}${r.name}`).join('\n');
   }
@@ -220,6 +227,19 @@ function getAspirationInfo(riderId) {
 .cell.finish { border: 2px solid #10b981; }
 .cell.has-selected { box-shadow: 0 0 0 2px #f59e0b; }
 .cell.cell-full { box-shadow: inset 0 0 0 2px #ef4444; }
+
+/* v3.3: Refuel zone */
+.cell.refuel-zone {
+  border: 2px dashed #f59e0b;
+  background-image: linear-gradient(135deg, rgba(245, 158, 11, 0.1) 25%, transparent 25%),
+                    linear-gradient(225deg, rgba(245, 158, 11, 0.1) 25%, transparent 25%);
+  background-size: 10px 10px;
+}
+
+.refuel-icon {
+  font-size: 12px;
+  margin-right: 2px;
+}
 
 .cell-number {
   font-size: 10px;

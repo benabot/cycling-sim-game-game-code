@@ -1,15 +1,26 @@
 /**
- * Main game engine - v3 Card System
+ * Main game engine - v3.3 Energy System
  * @module core/game_engine
  */
 
 import { roll1D6, rollFallTest } from './dice.js';
-import { TerrainType, TerrainConfig, DescentRules, MountainRules, getTerrainBonus, generateCourse, hasAspiration, hasWindPenalty, findSummitPosition, isExemptFromSummitStop } from './terrain.js';
+import { TerrainType, TerrainConfig, DescentRules, MountainRules, getTerrainBonus, generateCourse, hasAspiration, hasWindPenalty, findSummitPosition, isExemptFromSummitStop, isRefuelZone } from './terrain.js';
 import { 
   createRider, createTeamRiders, RiderConfig, CardType, RiderType,
   playCard, playSpecialtyCard, addFatigueCard, recycleCards, needsRecycle,
   moveRider, getAvailableCards, getHandStats, createMovementCard
 } from './rider.js';
+import {
+  EnergyConfig,
+  getEnergyStatus,
+  getEnergyEffects,
+  isAdaptedToTerrain,
+  calculateMovementConsumption,
+  calculateRecovery,
+  applyEnergyChange,
+  getEnergyColor,
+  getEnergyLabel
+} from './energy.js';
 
 /**
  * Constants
@@ -351,6 +362,21 @@ export function selectCard(state, cardId) {
   
   if (!cardInHand && !cardInAttack) return state;
   
+  // v3.3: Check energy restrictions for attack cards
+  if (cardInAttack) {
+    const energyEffects = getEnergyEffects(rider.energy);
+    if (!energyEffects.canUseAttack) {
+      // Cannot use attack card - energy too low
+      return {
+        ...state,
+        gameLog: [
+          ...state.gameLog,
+          `⚡ ${rider.name} est trop fatigué pour attaquer (énergie: ${rider.energy}%)`
+        ]
+      };
+    }
+  }
+  
   return {
     ...state,
     selectedCardId: cardId,
@@ -458,6 +484,20 @@ export function selectSpecialty(state, cardId) {
   const specialtyCard = rider.specialtyCards.find(c => c.id === cardId);
   if (!specialtyCard) return state;
   
+  // v3.3: Check energy restrictions for specialty cards
+  const energyEffects = getEnergyEffects(rider.energy);
+  if (!energyEffects.canUseSpecialty) {
+    return {
+      ...state,
+      selectedSpecialtyId: null,
+      turnPhase: TurnPhase.RESOLVE,
+      gameLog: [
+        ...state.gameLog,
+        `⚡ ${rider.name} est trop fatigué pour utiliser sa spécialité (énergie: ${rider.energy}%)`
+      ]
+    };
+  }
+  
   return {
     ...state,
     selectedSpecialtyId: cardId,
@@ -466,13 +506,14 @@ export function selectSpecialty(state, cardId) {
 }
 
 /**
- * Calculate movement for current rider
+ * Calculate movement for current rider (v3.3 with energy effects)
  */
 export function calculateMovement(state) {
   const rider = getCurrentRider(state);
   if (!rider || !state.lastDiceRoll || !state.selectedCardId) return 0;
   
   const terrain = getTerrainAt(state, rider.position);
+  const energyEffects = getEnergyEffects(rider.energy);
   
   // Base: dice
   let movement = state.lastDiceRoll.result;
@@ -483,23 +524,44 @@ export function calculateMovement(state) {
   const selectedCard = cardInHand || cardInAttack;
   
   if (selectedCard) {
-    movement += selectedCard.value;
+    let cardValue = selectedCard.value;
+    
+    // v3.3: Apply energy penalties to attack cards
+    if (cardInAttack && energyEffects.attackPenalty !== null) {
+      cardValue += energyEffects.attackPenalty; // Penalty is negative or 0
+    }
+    
+    movement += cardValue;
   }
   
-  // Terrain bonus
-  movement += getTerrainBonus(terrain, rider.type);
+  // Terrain bonus (v3.3: disabled if exhausted/fringale)
+  if (!energyEffects.bonusDisabled) {
+    movement += getTerrainBonus(terrain, rider.type);
+  }
   
   // Specialty card bonus
   if (state.selectedSpecialtyId) {
     const specialtyCard = rider.specialtyCards.find(c => c.id === state.selectedSpecialtyId);
     if (specialtyCard) {
-      movement += specialtyCard.value;
+      let specialtyValue = specialtyCard.value;
+      
+      // v3.3: Apply energy penalties to specialty cards
+      if (energyEffects.specialtyPenalty !== null) {
+        specialtyValue += energyEffects.specialtyPenalty;
+      }
+      
+      movement += specialtyValue;
     }
   }
   
   // Descent minimum speed
   if (terrain === TerrainType.DESCENT) {
     movement = Math.max(movement, DescentRules.minSpeed);
+  }
+  
+  // v3.3: Fringale max movement
+  if (energyEffects.maxMovement !== null) {
+    movement = Math.min(movement, energyEffects.maxMovement);
   }
   
   return Math.max(1, movement);
@@ -597,7 +659,7 @@ export function calculatePreviewPositions(state) {
 }
 
 /**
- * Resolve movement and apply effects
+ * Resolve movement and apply effects (v3.3 with energy)
  */
 export function resolveMovement(state) {
   const rider = getCurrentRider(state);
@@ -613,6 +675,7 @@ export function resolveMovement(state) {
   
   const movement = calculateMovement(state);
   let targetPosition = rider.position + movement;
+  const terrain = getTerrainAt(state, rider.position);
   
   // Check if crossing finish
   const crossingFinish = targetPosition >= state.finishLine && !rider.hasFinished;
@@ -635,16 +698,44 @@ export function resolveMovement(state) {
     newPosition = findAvailablePosition(state, targetPosition);
   }
   
+  // Calculate actual distance moved
+  const actualDistance = newPosition - rider.position;
+  
   // Play the selected card
   let updatedRider = rider;
   const { rider: riderAfterCard, card: playedCard } = playCard(rider, state.selectedCardId);
   updatedRider = riderAfterCard;
   
+  // Check if attack card was used
+  const usedAttack = rider.attackCards.some(c => c.id === state.selectedCardId);
+  
   // Play specialty card if selected
-  if (state.selectedSpecialtyId) {
+  const usedSpecialty = !!state.selectedSpecialtyId;
+  if (usedSpecialty) {
     const { rider: riderAfterSpecialty } = playSpecialtyCard(updatedRider, state.selectedSpecialtyId);
     updatedRider = riderAfterSpecialty;
   }
+  
+  // v3.3: Calculate energy consumption
+  const energyConsumed = calculateMovementConsumption({
+    distance: actualDistance,
+    terrain,
+    riderType: rider.type,
+    usedAttack,
+    usedSpecialty,
+    isLeading: false // Will be determined at end of turn
+  });
+  
+  // v3.3: Calculate energy recovery (descent)
+  const energyRecovered = calculateRecovery({
+    terrain,
+    distance: terrain === 'descent' ? actualDistance : 0,
+    isSheltered: false, // Determined at end of turn
+    inRefuelZone: isRefuelZone(state.course, newPosition)
+  });
+  
+  // v3.3: Apply energy change
+  const newEnergy = applyEnergyChange(updatedRider.energy, energyConsumed, energyRecovered);
   
   // Update arrival order and position
   let newArrivalCounter = state.arrivalCounter;
@@ -653,7 +744,8 @@ export function resolveMovement(state) {
     position: crossingFinish ? targetPosition : newPosition,
     arrivalOrder: newArrivalCounter++,
     hasFinished: crossingFinish,
-    finishPosition: crossingFinish ? state.rankings.length + 1 : null
+    finishPosition: crossingFinish ? state.rankings.length + 1 : null,
+    energy: newEnergy // v3.3
   };
   
   // Update riders array
@@ -663,10 +755,16 @@ export function resolveMovement(state) {
   
   // Build log message
   let logMessage = `🚴 ${rider.name} joue ${playedCard?.name || 'carte'} (+${playedCard?.value || 0})`;
-  if (state.selectedSpecialtyId) {
+  if (usedSpecialty) {
     logMessage += ` + Spécialité (+2)`;
   }
   logMessage += ` + 🎲${state.lastDiceRoll.result} → ${movement} cases`;
+  
+  // v3.3: Add energy info
+  const energyDelta = energyRecovered - energyConsumed;
+  if (energyDelta !== 0) {
+    logMessage += ` | ⚡${energyDelta > 0 ? '+' : ''}${energyDelta}`;
+  }
   
   if (stoppedAtSummit) {
     logMessage += ` (⛰️ arrêt au sommet, case ${newPosition})`;
@@ -680,7 +778,7 @@ export function resolveMovement(state) {
     ...state,
     riders: updatedRiders,
     arrivalCounter: newArrivalCounter,
-    lastMovement: { type: 'move', distance: movement, newPosition },
+    lastMovement: { type: 'move', distance: movement, newPosition, energyDelta },
     ridersPlayedThisTurn: [...state.ridersPlayedThisTurn, rider.id],
     gameLog: [...state.gameLog, logMessage]
   };
@@ -761,48 +859,43 @@ export function applyEndOfTurnEffects(state) {
   let arrivalCounter = state.arrivalCounter;
   
   // ===== PHASE 1: ASPIRATION (regroupement) =====
-  // Applies from turn 1
-  // If gap is exactly 1 case → riders behind advance by 1 (not to the front group)
-  // Does not apply in mountain or descent
-  // Process from front to back
+  // v3.3 FIX: Corrected aspiration rules
+  // - Gap of 2 positions = 1 empty case between groups → aspiration applies
+  // - Process from BACK to FRONT (ascending positions)
+  // - Only blocked if benefiting group is in mountain
+  // - Cascade effect: when a group moves forward, groups behind follow if they become adjacent
   
   let regroupingOccurred = true;
   let iterations = 0;
   
-  while (regroupingOccurred && iterations < 20) {
+  while (regroupingOccurred && iterations < 50) {
     regroupingOccurred = false;
     iterations++;
     
-    // Get all unique positions with riders (excluding finished), sorted descending (front to back)
+    // Get all unique positions with riders (excluding finished), sorted ASCENDING (back to front)
     const positionsWithRiders = [...new Set(
       updatedRiders
         .filter(r => !r.hasFinished)
         .map(r => r.position)
-    )].sort((a, b) => b - a);
+    )].sort((a, b) => a - b); // ASCENDING = back to front
     
-    // Check each position pair for aspiration (from front to back)
+    // Check each position pair for aspiration (from BACK to FRONT)
     for (let i = 0; i < positionsWithRiders.length - 1; i++) {
-      const frontPos = positionsWithRiders[i];
-      const backPos = positionsWithRiders[i + 1];
+      const backPos = positionsWithRiders[i];      // Smaller position (back)
+      const frontPos = positionsWithRiders[i + 1]; // Larger position (front)
       const gap = frontPos - backPos;
       
-      // Aspiration only happens with exactly 1 case gap
-      if (gap !== 1) continue;
+      // Aspiration only happens with gap of 2 (1 empty case between groups)
+      if (gap !== 2) continue;
       
-      // Check terrain - no aspiration in mountain or descent
+      // Check terrain - no aspiration if BACK group is in mountain
       const terrainAtBack = getTerrainAt(state, backPos);
       if (!hasAspiration(terrainAtBack)) {
         continue;
       }
       
-      // Target position is backPos + 1 (advance by 1 case, NOT to frontPos)
+      // Target position is backPos + 1 (advance by 1 case to fill the gap)
       const targetPos = backPos + 1;
-      
-      // Also check target terrain - no aspiration into mountain
-      const terrainAtTarget = getTerrainAt(state, targetPos);
-      if (!hasAspiration(terrainAtTarget)) {
-        continue;
-      }
       
       // Get riders at back position
       const ridersAtBack = updatedRiders.filter(r => 
@@ -821,10 +914,7 @@ export function applyEndOfTurnEffects(state) {
       if (availableSlots <= 0) continue;
       
       // Move riders from back to target (up to available slots)
-      // Sort by arrival order to move most recent arrivals first
-      const ridersToMove = ridersAtBack
-        .sort((a, b) => b.arrivalOrder - a.arrivalOrder)
-        .slice(0, availableSlots);
+      const ridersToMove = ridersAtBack.slice(0, availableSlots);
       
       ridersToMove.forEach(rider => {
         const riderIndex = updatedRiders.findIndex(r => r.id === rider.id);
@@ -912,44 +1002,61 @@ export function applyEndOfTurnEffects(state) {
     }
   }
     
-    // Apply wind cards (+1) to leaders taking wind
+    // Apply wind cards (+1) to leaders taking wind + v3.3: energy penalty
     windRiderIds.forEach(riderId => {
       const riderIndex = updatedRiders.findIndex(r => r.id === riderId);
       if (riderIndex !== -1) {
         const rider = updatedRiders[riderIndex];
-        const windCard = createMovementCard(1, 'Prise de vent', '#94a3b8');
+        const windCard = createMovementCard(1, 'Relais', '#94a3b8');
+        
+        // v3.3: Wind penalty consumes energy
+        const energyConsumed = EnergyConfig.consumption.windPenalty;
+        const newEnergy = applyEnergyChange(rider.energy, energyConsumed, 0);
         
         updatedRiders[riderIndex] = {
           ...rider,
-          hand: [...rider.hand, windCard]
+          hand: [...rider.hand, windCard],
+          energy: newEnergy
         };
         
         effects.push({
           type: 'wind',
           riderId: rider.id,
           riderName: rider.name,
-          cardValue: 1
+          cardValue: 1,
+          energyConsumed // v3.3
         });
       }
     });
     
-    // Apply bonus cards (+2) to sheltered riders
+    // Apply tempo cards (+2) to sheltered riders + v3.3: energy recovery
     shelteredRiderIds.forEach(riderId => {
       const riderIndex = updatedRiders.findIndex(r => r.id === riderId);
       if (riderIndex !== -1) {
         const rider = updatedRiders[riderIndex];
-        const bonusCard = createMovementCard(2, 'Abri', '#86efac');
+        const bonusCard = createMovementCard(2, 'Tempo', '#86efac');
+        
+        // v3.3: Energy recovery for sheltered riders
+        const energyRecovered = calculateRecovery({
+          terrain: getTerrainAt(state, rider.position),
+          distance: 0,
+          isSheltered: true,
+          inRefuelZone: false
+        });
+        const newEnergy = applyEnergyChange(rider.energy, 0, energyRecovered);
         
         updatedRiders[riderIndex] = {
           ...rider,
-          hand: [...rider.hand, bonusCard]
+          hand: [...rider.hand, bonusCard],
+          energy: newEnergy
         };
         
         effects.push({
           type: 'shelter',
           riderId: rider.id,
           riderName: rider.name,
-          cardValue: 2
+          cardValue: 2,
+          energyRecovered // v3.3
         });
       }
     });
@@ -958,14 +1065,14 @@ export function applyEndOfTurnEffects(state) {
       const windRiders = effects
         .filter(e => e.type === 'wind')
         .map(e => e.riderName);
-      logMessages.push(`💨 Prise de vent: ${windRiders.join(', ')} (carte +1)`);
+      logMessages.push(`💨 Relais: ${windRiders.join(', ')} (carte +1)`);
     }
     
     if (shelteredRiderIds.length > 0) {
       const shelterRiders = effects
         .filter(e => e.type === 'shelter')
         .map(e => e.riderName);
-      logMessages.push(`🛡️ À l'abri: ${shelterRiders.join(', ')} (carte +2)`);
+      logMessages.push(`🎵 Tempo: ${shelterRiders.join(', ')} (carte +2)`);
     }
   
   // Return state with effects for animation

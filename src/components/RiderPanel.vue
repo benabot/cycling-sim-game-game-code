@@ -19,10 +19,15 @@
           <span class="stat-label">Terrain</span>
           <span class="stat-value">{{ terrainEmoji }} {{ terrainName }}</span>
         </div>
-        <div class="stat-item bonus-stat" :class="{ 'positive': terrainBonus > 0, 'negative': terrainBonus < 0 }">
+        <div class="stat-item bonus-stat" :class="{ 'positive': terrainBonus > 0, 'negative': terrainBonus < 0, 'disabled': energyEffects.bonusDisabled }">
           <span class="stat-label">Bonus terrain</span>
-          <span class="stat-value">{{ formatBonus(terrainBonus) }}</span>
+          <span class="stat-value">{{ energyEffects.bonusDisabled ? '❌' : formatBonus(terrainBonus) }}</span>
         </div>
+      </div>
+      
+      <!-- v3.3: Energy Bar -->
+      <div class="energy-section">
+        <EnergyBar :energy="rider.energy || 100" :showEffects="true" />
       </div>
 
       <button @click="$emit('cancel')" class="btn-change-rider" title="Changer de coureur">
@@ -43,8 +48,8 @@
             :class="{ 
               'selectable': turnPhase === 'select_card' || turnPhase === 'roll_dice',
               'selected': card.id === selectedCardId,
-              'wind-card': card.name === 'Prise de vent',
-              'shelter-card': card.name === 'Abri'
+              'relais-card': card.name === 'Relais',
+              'tempo-card': card.name === 'Tempo'
             }"
             :style="{ background: card.color }"
             @click="onCardClick(card, false)"
@@ -60,19 +65,22 @@
 
       <!-- Attack Cards -->
       <div class="cards-section attack-section">
-        <h4>⚔️ Attaques ({{ rider.attackCards?.length || 0 }}/2)</h4>
+        <h4>⚔️ Attaques ({{ rider.attackCards?.length || 0 }}/2)
+          <span v-if="!canUseAttackCard" class="energy-warning">⚡ Énergie insuffisante</span>
+        </h4>
         <div class="cards-list">
           <div 
             v-for="card in rider.attackCards" 
             :key="card.id"
             class="card-item attack-card"
             :class="{ 
-              'selectable': turnPhase === 'select_card' || turnPhase === 'roll_dice',
-              'selected': card.id === selectedCardId
+              'selectable': canUseAttackCard && (turnPhase === 'select_card' || turnPhase === 'roll_dice'),
+              'selected': card.id === selectedCardId,
+              'disabled': !canUseAttackCard
             }"
-            @click="onCardClick(card, true)"
+            @click="canUseAttackCard && onCardClick(card, true)"
           >
-            <span class="card-value">+6</span>
+            <span class="card-value">+{{ canUseAttackCard ? (6 + (energyEffects.attackPenalty || 0)) : '❌' }}</span>
             <span class="card-name">Attaque</span>
           </div>
           <div v-if="rider.attackCards?.length === 0" class="empty-cards">Épuisées</div>
@@ -81,23 +89,25 @@
 
       <!-- Specialty Cards -->
       <div class="cards-section specialty-section">
-        <h4>★ Spécialités ({{ rider.specialtyCards?.length || 0 }}/2)</h4>
+        <h4>★ Spécialités ({{ rider.specialtyCards?.length || 0 }}/2)
+          <span v-if="!energyEffects.canUseSpecialty" class="energy-warning">⚡ Énergie insuffisante</span>
+        </h4>
         <div class="cards-list">
           <div 
             v-for="card in rider.specialtyCards" 
             :key="card.id"
             class="card-item specialty-card"
             :class="{ 
-              'selectable': turnPhase === 'select_specialty' && canUseSpecialty,
-              'disabled': !canUseSpecialty
+              'selectable': turnPhase === 'select_specialty' && canUseSpecialtyCard,
+              'disabled': !canUseSpecialtyCard
             }"
           >
-            <span class="card-value">+2</span>
+            <span class="card-value">+{{ energyEffects.canUseSpecialty ? (2 + (energyEffects.specialtyPenalty || 0)) : '❌' }}</span>
             <span class="card-name">{{ specialtyTerrainName }}</span>
           </div>
           <div v-if="rider.specialtyCards?.length === 0" class="empty-cards">Épuisées</div>
         </div>
-        <div v-if="!canUseSpecialty && rider.specialtyCards?.length > 0" class="specialty-hint">
+        <div v-if="!canUseSpecialty && rider.specialtyCards?.length > 0 && energyEffects.canUseSpecialty" class="specialty-hint">
           (Utilisable sur {{ specialtyTerrainName }})
         </div>
       </div>
@@ -110,7 +120,7 @@
             v-for="card in rider.discard" 
             :key="card.id"
             class="discard-card"
-            :class="{ 'wind': card.name === 'Prise de vent' }"
+            :class="{ 'relais': card.name === 'Relais' }"
           >
             +{{ card.value }}
           </span>
@@ -126,6 +136,8 @@
 <script setup>
 import { computed } from 'vue';
 import { TeamConfig, RiderConfig, TerrainConfig } from '../config/game.config.js';
+import { getEnergyEffects } from '../core/energy.js';
+import EnergyBar from './EnergyBar.vue';
 
 const props = defineProps({
   rider: { type: Object, required: true },
@@ -144,6 +156,11 @@ const riderTypeName = computed(() => RiderConfig[props.rider.type]?.name || '');
 const terrainEmoji = computed(() => TerrainConfig[props.terrain]?.emoji || '');
 const terrainName = computed(() => TerrainConfig[props.terrain]?.name || '');
 const specialtyTerrainName = computed(() => RiderConfig[props.rider.type]?.specialtyName || 'Tous terrains');
+
+// v3.3: Energy effects
+const energyEffects = computed(() => getEnergyEffects(props.rider.energy || 100));
+const canUseAttackCard = computed(() => energyEffects.value.canUseAttack);
+const canUseSpecialtyCard = computed(() => props.canUseSpecialty && energyEffects.value.canUseSpecialty);
 
 function formatBonus(value) {
   if (value > 0) return `+${value}`;
@@ -228,6 +245,23 @@ function onCardClick(card, isAttack) {
 
 .bonus-stat.positive .stat-value { color: #16a34a; }
 .bonus-stat.negative .stat-value { color: #dc2626; }
+.bonus-stat.disabled .stat-value { color: #dc2626; }
+.bonus-stat.disabled { opacity: 0.7; }
+
+/* v3.3: Energy section */
+.energy-section {
+  min-width: 150px;
+  padding: 8px 12px;
+  background: white;
+  border-radius: 8px;
+}
+
+.energy-warning {
+  font-size: 0.7em;
+  color: #dc2626;
+  font-weight: normal;
+  margin-left: 8px;
+}
 
 .btn-change-rider {
   margin-left: auto;
@@ -284,8 +318,8 @@ function onCardClick(card, isAttack) {
   opacity: 0.5;
   cursor: not-allowed;
 }
-.card-item.wind-card { background: #e5e7eb !important; }
-.card-item.shelter-card { background: #d1fae5 !important; }
+.card-item.relais-card { background: #e5e7eb !important; }
+.card-item.tempo-card { background: #d1fae5 !important; }
 
 .attack-card { background: #c4b5fd; }
 .specialty-card { background: #bbf7d0; }
@@ -331,7 +365,21 @@ function onCardClick(card, isAttack) {
   font-size: 0.8em;
   color: #64748b;
 }
-.discard-card.wind { background: #fecaca; color: #dc2626; }
+.discard-card.relais { background: #fecaca; color: #dc2626; }
+
+.energy-section {
+  width: 100%;
+  margin-top: 8px;
+  padding-top: 8px;
+  border-top: 1px solid rgba(0,0,0,0.1);
+}
+
+.energy-warning {
+  font-size: 0.7em;
+  color: #dc2626;
+  font-weight: normal;
+  margin-left: 8px;
+}
 
 @media (max-width: 900px) {
   .selected-rider-header { flex-direction: column; align-items: flex-start; }

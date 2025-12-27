@@ -3,6 +3,8 @@
  * @module core/rider
  */
 
+import { EnergyConfig } from './energy.js';
+
 /**
  * Rider type enumeration
  */
@@ -158,6 +160,9 @@ export function createRider(id, type, name, team = 'default') {
     finishPosition: null,
     hasFallenThisTurn: false,
     turnsToSkip: 0,
+    
+    // Energy system v3.3
+    energy: EnergyConfig.startEnergy,
     
     // Card system v3
     hand: createInitialMovementCards(),
