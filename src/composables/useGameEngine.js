@@ -16,19 +16,21 @@ import {
   acknowledgeEndTurnEffects as acknowledgeEndTurnEffectsEngine,
   TurnPhase
 } from '../core/game_engine.js';
-import { FINISH_LINE, TeamConfig, RiderConfig } from '../config/game.config.js';
+import { FINISH_LINE, TeamConfig } from '../config/game.config.js';
 
 export function useGameEngine() {
   // State
   const gameState = ref(null);
   const gameLog = ref([]);
   const animatingRiders = ref([]);
+  const isAnimatingEffects = ref(false);
 
   // Initialize
   function initialize() {
     gameState.value = createGameState();
     gameLog.value = ['🏁 Départ de la course !', '=== Tour 1 ==='];
     animatingRiders.value = [];
+    isAnimatingEffects.value = false;
   }
 
   // Computed from game state
@@ -48,8 +50,10 @@ export function useGameEngine() {
   const calculatedMovement = computed(() => gameState.value?.calculatedMovement || 0);
   const playedThisTurn = computed(() => gameState.value?.ridersPlayedThisTurn || []);
   
-  // Show effects overlay when turnPhase is 'end_turn_effects'
-  const showEffectsOverlay = computed(() => turnPhase.value === 'end_turn_effects');
+  // Show effects overlay when turnPhase is 'end_turn_effects' AND animations are done
+  const showEffectsOverlay = computed(() => 
+    turnPhase.value === 'end_turn_effects' && !isAnimatingEffects.value
+  );
   
   // End turn effects from game state
   const endTurnEffects = computed(() => {
@@ -123,6 +127,11 @@ export function useGameEngine() {
     gameLog.value.push(message);
   }
 
+  // Sleep helper
+  function sleep(ms) {
+    return new Promise(resolve => setTimeout(resolve, ms));
+  }
+
   // Actions
   function selectRider(riderId) {
     const newState = selectRiderEngine(gameState.value, riderId);
@@ -143,20 +152,16 @@ export function useGameEngine() {
   }
 
   function rollDice() {
-    // Roll dice - returns new state
     let newState = rollDiceEngine(gameState.value);
     
     if (newState.lastDiceRoll) {
       log(`🎲 ${currentRider.value?.name || 'Coureur'} lance le dé : ${newState.lastDiceRoll.result}`);
       
-      // Calculate movement - returns a NUMBER, not state
       const movement = calculateMovementEngine(newState);
       
-      // Store calculated movement in state
       newState = {
         ...newState,
         calculatedMovement: movement,
-        // Move to select_specialty phase if specialty can be used
         turnPhase: checkCanUseSpecialty(
           currentRider.value?.type, 
           getTerrainAt(newState, currentRider.value?.position)
@@ -177,7 +182,6 @@ export function useGameEngine() {
     
     log(`★ ${currentRider.value?.name} utilise sa carte Spécialité (+2)`);
     
-    // Recalculate movement with specialty
     const movement = calculateMovementEngine(newState);
     
     newState = {
@@ -204,7 +208,7 @@ export function useGameEngine() {
     const movement = calculatedMovement.value;
     const startPos = currentRider.value.position;
 
-    // Animation
+    // Animation du mouvement principal
     animatingRiders.value.push(riderId);
     
     // Apply movement
@@ -226,25 +230,76 @@ export function useGameEngine() {
 
     gameState.value = newState;
 
-    // Animation end
-    await new Promise(r => setTimeout(r, 300));
+    // Fin animation du mouvement principal
+    await sleep(300);
     animatingRiders.value = animatingRiders.value.filter(id => id !== riderId);
     
-    // If we're now in end_turn_effects phase, log it
+    // Si on entre dans la phase end_turn_effects, animer les aspirations
     if (newState.turnPhase === TurnPhase.END_TURN_EFFECTS) {
-      log(`--- Fin du tour ${newState.currentTurn} ---`);
-      
-      const effects = newState.endTurnEffects || [];
-      effects.filter(e => e.type === 'aspiration').forEach(e => {
-        log(`🌀 ${e.riderName} rejoint le groupe (${e.fromPosition} → ${e.toPosition})`);
-      });
-      effects.filter(e => e.type === 'wind').forEach(e => {
-        log(`💨 ${e.riderName} prend le vent (+1)`);
-      });
-      effects.filter(e => e.type === 'shelter').forEach(e => {
-        log(`🛡️ ${e.riderName} à l'abri (+2)`);
-      });
+      await animateEndTurnEffects(newState);
     }
+  }
+
+  async function animateEndTurnEffects(state) {
+    const effects = state.endTurnEffects || [];
+    const aspirationEffects = effects.filter(e => e.type === 'aspiration');
+    
+    if (aspirationEffects.length === 0) {
+      // Pas d'aspiration, on log directement les effets de vent/abri
+      logEndTurnEffects(effects);
+      return;
+    }
+    
+    // Marquer qu'on anime les effets
+    isAnimatingEffects.value = true;
+    
+    log(`--- Fin du tour ${state.currentTurn} ---`);
+    
+    // Animer chaque aspiration séquentiellement
+    for (const effect of aspirationEffects) {
+      // Ajouter le coureur aux animations
+      animatingRiders.value.push(effect.riderId);
+      
+      // Log
+      log(`🌀 ${effect.riderName} rejoint le groupe (${effect.fromPosition} → ${effect.toPosition})`);
+      
+      // Attendre l'animation
+      await sleep(400);
+      
+      // Retirer de l'animation
+      animatingRiders.value = animatingRiders.value.filter(id => id !== effect.riderId);
+      
+      // Petite pause entre les animations
+      await sleep(100);
+    }
+    
+    // Log des effets de vent/abri
+    effects.filter(e => e.type === 'wind').forEach(e => {
+      log(`💨 ${e.riderName} prend le vent (+1)`);
+    });
+    effects.filter(e => e.type === 'shelter').forEach(e => {
+      log(`🛡️ ${e.riderName} à l'abri (+2)`);
+    });
+    
+    // Petite pause avant d'afficher l'overlay
+    await sleep(300);
+    
+    // Animations terminées, afficher l'overlay
+    isAnimatingEffects.value = false;
+  }
+
+  function logEndTurnEffects(effects) {
+    log(`--- Fin du tour ${gameState.value.currentTurn} ---`);
+    
+    effects.filter(e => e.type === 'aspiration').forEach(e => {
+      log(`🌀 ${e.riderName} rejoint le groupe (${e.fromPosition} → ${e.toPosition})`);
+    });
+    effects.filter(e => e.type === 'wind').forEach(e => {
+      log(`💨 ${e.riderName} prend le vent (+1)`);
+    });
+    effects.filter(e => e.type === 'shelter').forEach(e => {
+      log(`🛡️ ${e.riderName} à l'abri (+2)`);
+    });
   }
 
   function acknowledgeEffects() {
@@ -306,6 +361,7 @@ export function useGameEngine() {
     animatingRiders,
     showEffectsOverlay,
     endTurnEffects,
+    isAnimatingEffects,
     
     // Computed
     course,
