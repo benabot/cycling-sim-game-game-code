@@ -121,7 +121,7 @@ function isRiderClickable(rider, team) {
 
 function onRiderClick(rider, team) {
   if (isRiderClickable(rider, team)) {
-    emit('selectRider', rider.id);
+    emit('selectRider', rider);
   }
 }
 </script>

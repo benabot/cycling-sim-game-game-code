@@ -23,6 +23,7 @@
               :isSelected="rider.id === selectedRiderId"
               :isAnimating="animatingRiders.includes(rider.id)"
               :isLeader="isLeader(rider, 0)"
+              :hasPlayed="hasPlayed(rider.id)"
             />
           </div>
         </div>
@@ -78,6 +79,7 @@
               :isSelected="rider.id === selectedRiderId"
               :isAnimating="animatingRiders.includes(rider.id)"
               :isLeader="isLeader(rider, index + 1)"
+              :hasPlayed="hasPlayed(rider.id)"
             />
           </div>
         </div>
@@ -101,6 +103,7 @@
             v-for="rider in finishedRiders" 
             :key="rider.id"
             :rider="rider"
+            :hasPlayed="hasPlayed(rider.id)"
           />
         </div>
       </div>
@@ -121,7 +124,8 @@ const props = defineProps({
   aspirationAnimations: { type: Array, default: () => [] },
   getLeaderAtPosition: { type: Function, required: true },
   previewPositions: { type: Object, default: null },
-  aiMoveFlash: { type: Object, default: null }
+  aiMoveFlash: { type: Object, default: null },
+  playedRiders: { type: Array, default: () => [] }
 });
 
 const finishLine = FINISH_LINE;
@@ -172,6 +176,10 @@ function countAt(position) {
 
 function hasSelectedAt(position) {
   return props.riders.some(r => r.position === position && r.id === props.selectedRiderId);
+}
+
+function hasPlayed(riderId) {
+  return props.playedRiders.includes(riderId);
 }
 
 function isLeader(rider, position) {

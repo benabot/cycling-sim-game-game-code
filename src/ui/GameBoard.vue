@@ -27,6 +27,7 @@
 
     <!-- Course Board -->
     <CourseBoard 
+      ref="courseBoardRef"
       :course="course"
       :riders="allRiders"
       :selectedRiderId="selectedRiderId"
@@ -35,6 +36,7 @@
       :getLeaderAtPosition="getLeaderAt"
       :previewPositions="previewPositions"
       :aiMoveFlash="aiMoveFlash"
+      :playedRiders="playedThisTurn"
     />
 
     <!-- Effects Overlay -->
@@ -97,16 +99,16 @@
       </div>
     </div>
 
-    <!-- Teams Overview -->
+    <!-- Teams Overview - always visible for quick rider selection -->
     <TeamsOverview 
-      v-if="phase !== 'finished' && !showEffectsOverlay"
+      v-if="phase !== 'finished'"
       :riders="allRiders"
       :currentTeam="currentTeam"
       :selectedRiderId="selectedRiderId"
       :playedRiders="playedThisTurn"
       :teamIds="teamIds"
       :players="players"
-      @selectRider="selectRider"
+      @selectRider="quickSelectRider"
     />
 
     <!-- Game Over -->
@@ -126,7 +128,7 @@
 </template>
 
 <script setup>
-import { onMounted, watch } from 'vue';
+import { ref, onMounted, watch, nextTick } from 'vue';
 import { useGameEngine } from '../composables/useGameEngine.js';
 import { TeamConfigs, PlayerType } from '../core/teams.js';
 import {
@@ -202,6 +204,50 @@ const {
   getLeaderAt,
   getSelectedCard
 } = useGameEngine();
+
+// Ref for course board scrolling
+const courseBoardRef = ref(null);
+
+// Scroll to rider position on the course
+function scrollToRider(riderId) {
+  const rider = allRiders.value.find(r => r.id === riderId);
+  if (!rider || !courseBoardRef.value) return;
+  
+  nextTick(() => {
+    const courseEl = courseBoardRef.value.$el?.querySelector('.course');
+    if (!courseEl) return;
+    
+    // Find the cell at rider's position
+    const cells = courseEl.querySelectorAll('.cell');
+    const targetCell = cells[rider.position];
+    
+    if (targetCell) {
+      targetCell.scrollIntoView({ behavior: 'smooth', inline: 'center', block: 'nearest' });
+    }
+  });
+}
+
+// Quick rider selection from TeamsOverview
+function quickSelectRider(rider) {
+  if (phase.value === 'finished') return;
+  if (rider.hasFinished || rider.turnsToSkip > 0) return;
+  if (playedThisTurn.value.includes(rider.id)) return;
+  if (rider.team !== currentTeam.value) return;
+  
+  // If already selected, just scroll
+  if (selectedRiderId.value === rider.id) {
+    scrollToRider(rider.id);
+    return;
+  }
+  
+  // Cancel current selection if needed and select new rider
+  if (selectedRiderId.value && turnPhase.value !== 'select_rider') {
+    cancelRiderSelection();
+  }
+  
+  selectRider(rider.id);
+  scrollToRider(rider.id);
+}
 
 // Card helpers
 function getSelectedCardValue() {

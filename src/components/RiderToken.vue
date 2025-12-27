@@ -8,7 +8,8 @@
         'selected': isSelected,
         'animating': isAnimating,
         'leader': isLeader,
-        'finished': rider.hasFinished
+        'finished': rider.hasFinished,
+        'played': hasPlayed
       }
     ]"
     :title="tooltip"
@@ -25,7 +26,8 @@ const props = defineProps({
   rider: { type: Object, required: true },
   isSelected: { type: Boolean, default: false },
   isAnimating: { type: Boolean, default: false },
-  isLeader: { type: Boolean, default: false }
+  isLeader: { type: Boolean, default: false },
+  hasPlayed: { type: Boolean, default: false }
 });
 
 const emoji = computed(() => RiderConfig[props.rider.type]?.emoji || '🚴');
@@ -37,6 +39,7 @@ const tooltip = computed(() => {
     `Case ${props.rider.position}`
   ];
   if (props.isLeader) parts.push('(LEADER - prend le vent)');
+  if (props.hasPlayed) parts.push('(déjà joué)');
   return parts.join(' | ');
 });
 </script>
@@ -76,6 +79,10 @@ const tooltip = computed(() => {
 }
 .rider-token.finished { 
   opacity: 0.7; 
+}
+.rider-token.played {
+  background: #9ca3af !important;
+  opacity: 0.6;
 }
 
 @keyframes aspiration-move {
