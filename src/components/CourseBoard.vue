@@ -191,7 +191,7 @@ function getCellTooltip(cell, position) {
 /* Terrain colors */
 .cell.flat { background: #dcfce7; }
 .cell.hill { background: #fef3c7; }
-.cell.mountain { background: #fde2e2; }
+.cell.mountain { background: #d4a574; }
 .cell.descent { background: #dbeafe; }
 .cell.sprint { background: #f3e8ff; }
 .cell.start { background: #e0e7ff; border: 2px dashed #6366f1; }

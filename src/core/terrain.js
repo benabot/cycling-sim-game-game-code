@@ -35,7 +35,7 @@ export const TerrainConfig = {
   [TerrainType.MOUNTAIN]: {
     name: 'Montagne',
     emoji: '🟫',
-    color: '#CD853F',
+    color: '#d4a574',
     hasAspiration: false,
     hasWindPenalty: false
   },
@@ -253,6 +253,7 @@ export function generateCourse(length = 80, distribution = null) {
 
 /**
  * Create a logical course structure (realistic race progression)
+ * v3.2.2: Mountain minimum 15 consecutive cases, Hill maximum 15 total
  * @param {number} length - Course length
  * @param {Object} dist - Terrain distribution
  * @returns {Array} Array of terrain types
@@ -271,11 +272,17 @@ function createCourseStructure(length, dist) {
     structure[i] = TerrainType.FLAT;
   }
   
+  // v3.2.2: Enforce terrain constraints
+  // - Mountain: minimum 15 consecutive cases (one big climb)
+  // - Hill: maximum 15 cases total (short punchy climbs)
+  const mountainCases = Math.max(15, dist[TerrainType.MOUNTAIN]);
+  const hillCases = Math.min(15, dist[TerrainType.HILL]);
+  
   // Remaining terrain to distribute
   const remaining = {
     [TerrainType.FLAT]: dist[TerrainType.FLAT] - 5,
-    [TerrainType.HILL]: dist[TerrainType.HILL],
-    [TerrainType.MOUNTAIN]: dist[TerrainType.MOUNTAIN],
+    [TerrainType.HILL]: hillCases,
+    [TerrainType.MOUNTAIN]: mountainCases,
     [TerrainType.DESCENT]: dist[TerrainType.DESCENT],
     [TerrainType.SPRINT]: 0 // Already placed
   };
@@ -284,56 +291,81 @@ function createCourseStructure(length, dist) {
   const middleLength = sprintStart - 5;
   const segments = [];
   
-  // Create mountain + descent pairs
-  const mountainDescents = Math.min(
-    Math.floor(remaining[TerrainType.MOUNTAIN] / 6),
-    Math.floor(remaining[TerrainType.DESCENT] / 4)
-  );
-  
-  for (let i = 0; i < mountainDescents; i++) {
-    // Mountain segment (6 cases)
-    segments.push({ terrain: TerrainType.MOUNTAIN, length: 6 });
-    remaining[TerrainType.MOUNTAIN] -= 6;
+  // v3.2.2: Create ONE big mountain segment (minimum 15 cases) followed by descent
+  if (remaining[TerrainType.MOUNTAIN] >= 15) {
+    // Single mountain block (realistic col)
+    segments.push({ terrain: TerrainType.MOUNTAIN, length: remaining[TerrainType.MOUNTAIN] });
     
-    // Descent segment (4 cases)
-    segments.push({ terrain: TerrainType.DESCENT, length: 4 });
-    remaining[TerrainType.DESCENT] -= 4;
+    // Descent after mountain (all descent cases)
+    if (remaining[TerrainType.DESCENT] > 0) {
+      segments.push({ terrain: TerrainType.DESCENT, length: remaining[TerrainType.DESCENT] });
+      remaining[TerrainType.DESCENT] = 0;
+    }
+    
+    remaining[TerrainType.MOUNTAIN] = 0;
   }
   
-  // Add remaining mountain
-  while (remaining[TerrainType.MOUNTAIN] >= 3) {
-    segments.push({ terrain: TerrainType.MOUNTAIN, length: 3 });
-    remaining[TerrainType.MOUNTAIN] -= 3;
-  }
-  
-  // Add hills in groups of 3-4
-  while (remaining[TerrainType.HILL] >= 3) {
-    const len = Math.min(remaining[TerrainType.HILL], 4);
+  // v3.2.2: Add hills in small groups (3-5 cases each, total max 15)
+  // Hills are punchy short climbs, not long ascents
+  let hillRemaining = remaining[TerrainType.HILL];
+  while (hillRemaining >= 3) {
+    const len = Math.min(hillRemaining, 3 + Math.floor(Math.random() * 3)); // 3-5 cases
     segments.push({ terrain: TerrainType.HILL, length: len });
-    remaining[TerrainType.HILL] -= len;
+    hillRemaining -= len;
   }
+  remaining[TerrainType.HILL] = 0;
   
-  // Add remaining descent
+  // Add any remaining descent (if not all used after mountain)
   while (remaining[TerrainType.DESCENT] >= 2) {
-    const len = Math.min(remaining[TerrainType.DESCENT], 3);
+    const len = Math.min(remaining[TerrainType.DESCENT], 4);
     segments.push({ terrain: TerrainType.DESCENT, length: len });
     remaining[TerrainType.DESCENT] -= len;
   }
   
   // Fill rest with flat
-  const flatNeeded = middleLength - segments.reduce((sum, s) => sum + s.length, 0);
+  const usedLength = segments.reduce((sum, s) => sum + s.length, 0);
+  const flatNeeded = middleLength - usedLength;
   if (flatNeeded > 0) {
     // Distribute flat in segments of 4-6
     let flatRemaining = flatNeeded;
     while (flatRemaining > 0) {
-      const len = Math.min(flatRemaining, 5);
+      const len = Math.min(flatRemaining, 4 + Math.floor(Math.random() * 3)); // 4-6 cases
       segments.push({ terrain: TerrainType.FLAT, length: len });
       flatRemaining -= len;
     }
   }
   
-  // Shuffle segments (but keep general flow)
+  // Shuffle segments but keep mountain+descent together at a strategic position
+  // Find mountain and descent segments
+  const mountainIdx = segments.findIndex(s => s.terrain === TerrainType.MOUNTAIN);
+  const descentIdx = segments.findIndex(s => s.terrain === TerrainType.DESCENT && s.length > 5);
+  
+  // Remove mountain+descent pair if they exist
+  let mountainSegment = null;
+  let descentSegment = null;
+  
+  if (mountainIdx !== -1) {
+    mountainSegment = segments.splice(mountainIdx, 1)[0];
+  }
+  
+  const newDescentIdx = segments.findIndex(s => s.terrain === TerrainType.DESCENT && s.length > 5);
+  if (newDescentIdx !== -1) {
+    descentSegment = segments.splice(newDescentIdx, 1)[0];
+  }
+  
+  // Shuffle other segments
   shuffleArray(segments);
+  
+  // Insert mountain at ~40-60% of the course (realistic race progression)
+  if (mountainSegment) {
+    const insertPos = Math.floor(segments.length * 0.4) + Math.floor(Math.random() * (segments.length * 0.2));
+    segments.splice(insertPos, 0, mountainSegment);
+    
+    // Insert descent right after mountain
+    if (descentSegment) {
+      segments.splice(insertPos + 1, 0, descentSegment);
+    }
+  }
   
   // Place segments into structure
   let pos = 5; // Start after initial flat

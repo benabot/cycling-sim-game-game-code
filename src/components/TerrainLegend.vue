@@ -27,7 +27,7 @@
 .terrain-item { padding: 3px 8px; border-radius: 4px; }
 .terrain-item.flat { background: #dcfce7; }
 .terrain-item.hill { background: #fef3c7; }
-.terrain-item.mountain { background: #fde2e2; }
+.terrain-item.mountain { background: #d4a574; color: white; }
 .terrain-item.descent { background: #dbeafe; }
 .terrain-item.sprint { background: #f3e8ff; }
 .legend-info { color: #94a3b8; font-size: 0.9em; margin-left: auto; }
