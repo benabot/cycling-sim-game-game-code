@@ -33,7 +33,7 @@ export const EnergyConfig = {
   recovery: {
     descentMovement: 1,   // +1 per case in descent
     shelterBonus: 3,      // +3 when sheltered at end of turn
-    refuelZone: 15        // +15 in refuel zone
+    refuelZone: 25        // +25 in refuel zone
   },
   
   // Terrain adaptation reduces consumption by 50%

@@ -68,7 +68,7 @@
             <span class="game-card-name">{{ card.name }}</span>
           </button>
           <span v-if="!rider.hand?.length" class="type-caption cards-empty">
-            Main vide - Recyclage prochain tour
+            Main vide — cartes fin de tour
           </span>
         </div>
       </div>
