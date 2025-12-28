@@ -1,0 +1,356 @@
+/**
+ * Layout - Cycling Race Board Game
+ * Design System: "Plateau Premium" (Option A1)
+ * 
+ * Main containers, panels, section headers, log panel
+ */
+
+/* ========================================
+   MAIN CONTAINER (App background)
+   Fond gradient sombre + grain subtil
+   ======================================== */
+
+.app-container {
+  min-height: 100vh;
+  background: 
+    /* Grain overlay (noise pattern) */
+    url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)'/%3E%3C/svg%3E"),
+    /* Subtle warm gradient */
+    linear-gradient(180deg, var(--color-paper) 0%, #F5F3ED 100%);
+  background-blend-mode: overlay, normal;
+}
+
+/* Alternative: Cleaner version without SVG noise */
+.app-container-clean {
+  min-height: 100vh;
+  background: linear-gradient(180deg, var(--color-paper) 0%, #F5F3ED 100%);
+}
+
+/* Dark variant for contrast sections */
+.app-container-dark {
+  min-height: 100vh;
+  background: linear-gradient(180deg, #2A2D32 0%, #1F2328 100%);
+}
+
+/* ========================================
+   MAIN PANEL (White surface container)
+   ======================================== */
+
+.main-panel {
+  background-color: var(--color-surface);
+  border-radius: var(--radius-container);
+  box-shadow: var(--shadow-md);
+}
+
+.main-panel-sm {
+  background-color: var(--color-surface);
+  border-radius: var(--radius-card);
+  box-shadow: var(--shadow-sm);
+}
+
+/* Panel with border instead of shadow */
+.main-panel-bordered {
+  background-color: var(--color-surface);
+  border: 1px solid var(--color-line);
+  border-radius: var(--radius-container);
+}
+
+/* ========================================
+   SECTION HEADER
+   ======================================== */
+
+.section-header {
+  display: flex;
+  align-items: center;
+  gap: var(--space-md);
+  padding-bottom: var(--space-md);
+  margin-bottom: var(--space-lg);
+  border-bottom: 1px solid var(--color-line);
+}
+
+.section-header-title {
+  font-family: var(--font-display);
+  font-size: 20px;
+  line-height: 26px;
+  font-weight: 600;
+  letter-spacing: -0.01em;
+  color: var(--color-ink);
+}
+
+.section-header-icon {
+  width: 24px;
+  height: 24px;
+  color: var(--color-ink-muted);
+  flex-shrink: 0;
+}
+
+.section-header-subtitle {
+  font-family: var(--font-ui);
+  font-size: 14px;
+  color: var(--color-muted);
+  margin-left: auto;
+}
+
+/* Compact version */
+.section-header-compact {
+  padding-bottom: var(--space-sm);
+  margin-bottom: var(--space-md);
+}
+
+.section-header-compact .section-header-title {
+  font-size: 16px;
+  line-height: 22px;
+}
+
+/* No border variant */
+.section-header-plain {
+  border-bottom: none;
+  padding-bottom: 0;
+}
+
+/* ========================================
+   LOG PANEL (Signature A1 - Dark slate)
+   ======================================== */
+
+.log-panel {
+  background-color: #2A2D32;
+  border-radius: var(--radius-card);
+  box-shadow: var(--shadow-sm);
+  padding: var(--space-md);
+  color: rgba(255, 255, 255, 0.85);
+}
+
+.log-panel-header {
+  display: flex;
+  align-items: center;
+  gap: var(--space-sm);
+  padding-bottom: var(--space-sm);
+  margin-bottom: var(--space-sm);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.12);
+}
+
+.log-panel-title {
+  font-family: var(--font-ui);
+  font-size: 12px;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: rgba(255, 255, 255, 0.60);
+}
+
+.log-panel-icon {
+  width: 16px;
+  height: 16px;
+  color: rgba(255, 255, 255, 0.50);
+}
+
+.log-panel-content {
+  max-height: 200px;
+  overflow-y: auto;
+}
+
+.log-panel-content::-webkit-scrollbar {
+  width: 6px;
+}
+
+.log-panel-content::-webkit-scrollbar-track {
+  background: rgba(255, 255, 255, 0.05);
+  border-radius: 3px;
+}
+
+.log-panel-content::-webkit-scrollbar-thumb {
+  background: rgba(255, 255, 255, 0.20);
+  border-radius: 3px;
+}
+
+.log-panel-content::-webkit-scrollbar-thumb:hover {
+  background: rgba(255, 255, 255, 0.30);
+}
+
+/* Log entries */
+.log-entry {
+  font-family: var(--font-mono);
+  font-size: 12px;
+  line-height: 18px;
+  padding: var(--space-xs) 0;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+}
+
+.log-entry:last-child {
+  border-bottom: none;
+}
+
+.log-entry-time {
+  color: rgba(255, 255, 255, 0.40);
+  margin-right: var(--space-sm);
+}
+
+.log-entry-team {
+  font-weight: 500;
+}
+
+.log-entry-team-red { color: #E87070; }
+.log-entry-team-blue { color: #6B9AE8; }
+.log-entry-team-green { color: #5CC98A; }
+.log-entry-team-yellow { color: #F5D678; }
+
+/* ========================================
+   SIDEBAR LAYOUT
+   ======================================== */
+
+.layout-sidebar {
+  display: grid;
+  grid-template-columns: 280px 1fr;
+  gap: var(--space-lg);
+  min-height: 100vh;
+}
+
+.layout-sidebar-left {
+  padding: var(--space-lg);
+}
+
+.layout-sidebar-main {
+  padding: var(--space-lg);
+  padding-left: 0;
+}
+
+/* Responsive: Stack on mobile */
+@media (max-width: 768px) {
+  .layout-sidebar {
+    grid-template-columns: 1fr;
+  }
+  
+  .layout-sidebar-main {
+    padding-left: var(--space-lg);
+  }
+}
+
+/* ========================================
+   SPLIT LAYOUT (Two columns)
+   ======================================== */
+
+.layout-split {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: var(--space-xl);
+}
+
+.layout-split-3-1 {
+  display: grid;
+  grid-template-columns: 3fr 1fr;
+  gap: var(--space-xl);
+}
+
+.layout-split-1-3 {
+  display: grid;
+  grid-template-columns: 1fr 3fr;
+  gap: var(--space-xl);
+}
+
+@media (max-width: 768px) {
+  .layout-split,
+  .layout-split-3-1,
+  .layout-split-1-3 {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* ========================================
+   CONTENT AREA
+   ======================================== */
+
+.content-area {
+  padding: var(--space-xl);
+}
+
+.content-area-compact {
+  padding: var(--space-lg);
+}
+
+.content-area-loose {
+  padding: var(--space-2xl);
+}
+
+/* ========================================
+   STICKY ELEMENTS
+   ======================================== */
+
+.sticky-top {
+  position: sticky;
+  top: 0;
+  z-index: var(--z-sticky);
+  background-color: var(--color-surface);
+}
+
+.sticky-bottom {
+  position: sticky;
+  bottom: 0;
+  z-index: var(--z-sticky);
+  background-color: var(--color-surface);
+}
+
+/* ========================================
+   OVERLAY / MODAL BACKDROP
+   ======================================== */
+
+.overlay-backdrop {
+  position: fixed;
+  inset: 0;
+  background-color: rgba(31, 35, 40, 0.50);
+  z-index: var(--z-overlay);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: var(--space-lg);
+}
+
+.overlay-content {
+  background-color: var(--color-surface);
+  border-radius: var(--radius-container);
+  box-shadow: var(--shadow-lg);
+  max-width: 600px;
+  width: 100%;
+  max-height: 90vh;
+  overflow-y: auto;
+}
+
+/* ========================================
+   GAME STATUS BAR
+   ======================================== */
+
+.status-bar {
+  display: flex;
+  align-items: center;
+  gap: var(--space-lg);
+  padding: var(--space-md) var(--space-lg);
+  background-color: var(--color-surface);
+  border-bottom: 1px solid var(--color-line);
+}
+
+.status-bar-item {
+  display: flex;
+  align-items: center;
+  gap: var(--space-sm);
+}
+
+.status-bar-label {
+  font-family: var(--font-ui);
+  font-size: 12px;
+  font-weight: 500;
+  color: var(--color-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+.status-bar-value {
+  font-family: var(--font-mono);
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--color-ink);
+}
+
+.status-bar-divider {
+  width: 1px;
+  height: 24px;
+  background-color: var(--color-line);
+}

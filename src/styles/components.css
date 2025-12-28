@@ -1,0 +1,494 @@
+/**
+ * Components - Cycling Race Board Game
+ * Design System: "Plateau Premium" (Option A1)
+ * 
+ * Base UI components: buttons, badges, inputs, segmented controls
+ */
+
+/* ========================================
+   BUTTONS
+   ======================================== */
+
+.btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-sm);
+  padding: var(--space-sm) var(--space-lg);
+  font-family: var(--font-ui);
+  font-size: 14px;
+  font-weight: 500;
+  line-height: 20px;
+  border-radius: var(--radius-md);
+  border: 1px solid transparent;
+  cursor: pointer;
+  transition: var(--transition-fast);
+  white-space: nowrap;
+}
+
+.btn:disabled {
+  cursor: not-allowed;
+  opacity: 0.6;
+}
+
+/* Primary Button */
+.btn-primary {
+  background-color: var(--team-blue-ui);
+  color: white;
+  border-color: var(--team-blue-ui);
+}
+
+.btn-primary:hover:not(:disabled) {
+  background-color: #2860d8;
+  border-color: #2860d8;
+}
+
+.btn-primary:active:not(:disabled) {
+  background-color: #2255c0;
+}
+
+/* Secondary Button */
+.btn-secondary {
+  background-color: var(--color-surface);
+  color: var(--color-ink);
+  border-color: var(--color-line);
+}
+
+.btn-secondary:hover:not(:disabled) {
+  background-color: var(--color-paper);
+  border-color: var(--color-line-strong);
+}
+
+.btn-secondary:active:not(:disabled) {
+  background-color: #f0efe9;
+}
+
+/* Ghost Button */
+.btn-ghost {
+  background-color: transparent;
+  color: var(--color-ink);
+  border-color: transparent;
+}
+
+.btn-ghost:hover:not(:disabled) {
+  background-color: rgba(31, 35, 40, 0.06);
+}
+
+.btn-ghost:active:not(:disabled) {
+  background-color: rgba(31, 35, 40, 0.10);
+}
+
+/* Danger Button */
+.btn-danger {
+  background-color: var(--team-red-ui);
+  color: white;
+  border-color: var(--team-red-ui);
+}
+
+.btn-danger:hover:not(:disabled) {
+  background-color: #c43d3d;
+}
+
+/* Success Button */
+.btn-success {
+  background-color: var(--team-green-ui);
+  color: white;
+  border-color: var(--team-green-ui);
+}
+
+.btn-success:hover:not(:disabled) {
+  background-color: #2ea35d;
+}
+
+/* Button Sizes */
+.btn-sm {
+  padding: var(--space-xs) var(--space-md);
+  font-size: 12px;
+  line-height: 16px;
+  border-radius: var(--radius-sm);
+}
+
+.btn-lg {
+  padding: var(--space-md) var(--space-xl);
+  font-size: 16px;
+  line-height: 24px;
+  border-radius: var(--radius-card);
+}
+
+/* Icon-only Button */
+.btn-icon {
+  padding: var(--space-sm);
+  width: 36px;
+  height: 36px;
+}
+
+.btn-icon.btn-sm {
+  width: 28px;
+  height: 28px;
+  padding: var(--space-xs);
+}
+
+/* ========================================
+   BADGES / CHIPS
+   ======================================== */
+
+.badge {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-xs);
+  padding: 2px var(--space-sm);
+  font-family: var(--font-ui);
+  font-size: 12px;
+  font-weight: 500;
+  line-height: 16px;
+  border-radius: var(--radius-chip);
+  background-color: var(--color-paper);
+  color: var(--color-ink);
+  border: 1px solid var(--color-line);
+}
+
+.badge-pill {
+  border-radius: var(--radius-pill);
+  padding: 2px var(--space-md);
+}
+
+/* Badge Colors */
+.badge-red {
+  background-color: var(--team-red-light);
+  color: var(--team-red-ui);
+  border-color: rgba(216, 74, 74, 0.25);
+}
+
+.badge-blue {
+  background-color: var(--team-blue-light);
+  color: var(--team-blue-ui);
+  border-color: rgba(47, 111, 237, 0.25);
+}
+
+.badge-green {
+  background-color: var(--team-green-light);
+  color: var(--team-green-ui);
+  border-color: rgba(53, 181, 106, 0.25);
+}
+
+.badge-yellow {
+  background-color: var(--team-yellow-light);
+  color: #9a7b1a;
+  border-color: rgba(242, 201, 76, 0.35);
+}
+
+.badge-gold {
+  background-color: var(--color-gold-light);
+  color: #8a6a14;
+  border-color: rgba(215, 162, 26, 0.30);
+}
+
+/* Terrain Badges */
+.badge-terrain-flat {
+  background-color: var(--terrain-flat);
+  border-color: rgba(31, 35, 40, 0.15);
+}
+
+.badge-terrain-hill {
+  background-color: var(--terrain-hill);
+  border-color: rgba(31, 35, 40, 0.15);
+}
+
+.badge-terrain-mountain {
+  background-color: var(--terrain-mountain);
+  border-color: rgba(31, 35, 40, 0.15);
+}
+
+.badge-terrain-descent {
+  background-color: var(--terrain-descent);
+  border-color: rgba(31, 35, 40, 0.15);
+}
+
+.badge-terrain-sprint {
+  background-color: var(--terrain-sprint);
+  border-color: rgba(31, 35, 40, 0.15);
+}
+
+/* ========================================
+   INPUTS
+   ======================================== */
+
+.input {
+  display: block;
+  width: 100%;
+  padding: var(--space-sm) var(--space-md);
+  font-family: var(--font-ui);
+  font-size: 14px;
+  line-height: 20px;
+  color: var(--color-ink);
+  background-color: var(--color-surface);
+  border: 1px solid var(--color-line);
+  border-radius: var(--radius-sm);
+  box-shadow: var(--shadow-inset);
+  transition: var(--transition-fast);
+}
+
+.input::placeholder {
+  color: var(--color-muted);
+}
+
+.input:hover:not(:disabled) {
+  border-color: var(--color-line-strong);
+}
+
+.input:focus {
+  outline: none;
+  border-color: var(--team-blue-ui);
+  box-shadow: 0 0 0 3px var(--team-blue-light);
+}
+
+.input:disabled {
+  background-color: var(--state-disabled-bg);
+  color: var(--state-disabled-text);
+  cursor: not-allowed;
+}
+
+/* Input with error */
+.input-error {
+  border-color: var(--team-red-ui);
+}
+
+.input-error:focus {
+  box-shadow: 0 0 0 3px var(--team-red-light);
+}
+
+/* Input sizes */
+.input-sm {
+  padding: var(--space-xs) var(--space-sm);
+  font-size: 12px;
+  line-height: 16px;
+}
+
+.input-lg {
+  padding: var(--space-md) var(--space-lg);
+  font-size: 16px;
+  line-height: 24px;
+}
+
+/* ========================================
+   SELECT
+   ======================================== */
+
+.select {
+  display: block;
+  width: 100%;
+  padding: var(--space-sm) var(--space-md);
+  padding-right: var(--space-2xl);
+  font-family: var(--font-ui);
+  font-size: 14px;
+  line-height: 20px;
+  color: var(--color-ink);
+  background-color: var(--color-surface);
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 24 24' fill='none' stroke='%236B7280' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'%3E%3C/polyline%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right var(--space-sm) center;
+  border: 1px solid var(--color-line);
+  border-radius: var(--radius-sm);
+  cursor: pointer;
+  appearance: none;
+  transition: var(--transition-fast);
+}
+
+.select:hover:not(:disabled) {
+  border-color: var(--color-line-strong);
+}
+
+.select:focus {
+  outline: none;
+  border-color: var(--team-blue-ui);
+  box-shadow: 0 0 0 3px var(--team-blue-light);
+}
+
+/* ========================================
+   SEGMENTED CONTROL
+   ======================================== */
+
+.segmented {
+  display: inline-flex;
+  gap: var(--space-xs);
+  padding: var(--space-xs);
+  background-color: var(--color-paper);
+  border: 1px solid var(--color-line);
+  border-radius: var(--radius-md);
+}
+
+.segmented-item {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-xs);
+  padding: var(--space-sm) var(--space-lg);
+  font-family: var(--font-ui);
+  font-size: 14px;
+  font-weight: 500;
+  line-height: 20px;
+  color: var(--color-muted);
+  background-color: transparent;
+  border: 1px solid transparent;
+  border-radius: var(--radius-sm);
+  cursor: pointer;
+  transition: var(--transition-fast);
+}
+
+.segmented-item:hover:not(.segmented-item-active):not(:disabled) {
+  color: var(--color-ink);
+  background-color: rgba(31, 35, 40, 0.04);
+}
+
+.segmented-item-active {
+  color: var(--color-ink);
+  background-color: var(--color-surface);
+  border-color: var(--color-line);
+  box-shadow: var(--shadow-sm);
+}
+
+.segmented-item:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+/* Segmented with check icon */
+.segmented-item-active .segmented-check {
+  display: inline-flex;
+  width: 16px;
+  height: 16px;
+  color: var(--team-blue-ui);
+}
+
+.segmented-item:not(.segmented-item-active) .segmented-check {
+  display: none;
+}
+
+/* ========================================
+   FORM GROUP
+   ======================================== */
+
+.form-group {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-xs);
+}
+
+.form-label {
+  font-family: var(--font-ui);
+  font-size: 12px;
+  font-weight: 500;
+  line-height: 16px;
+  color: var(--color-ink);
+}
+
+.form-hint {
+  font-family: var(--font-ui);
+  font-size: 12px;
+  line-height: 16px;
+  color: var(--color-muted);
+}
+
+.form-error {
+  font-family: var(--font-ui);
+  font-size: 12px;
+  line-height: 16px;
+  color: var(--team-red-ui);
+}
+
+/* ========================================
+   CARD
+   ======================================== */
+
+.card {
+  background-color: var(--color-surface);
+  border: 1px solid var(--color-line);
+  border-radius: var(--radius-card);
+  overflow: hidden;
+}
+
+.card-elevated {
+  border: none;
+  box-shadow: var(--shadow-sm);
+}
+
+.card-header {
+  padding: var(--space-md) var(--space-lg);
+  border-bottom: 1px solid var(--color-line);
+}
+
+.card-body {
+  padding: var(--space-lg);
+}
+
+.card-footer {
+  padding: var(--space-md) var(--space-lg);
+  border-top: 1px solid var(--color-line);
+  background-color: var(--color-paper);
+}
+
+/* Team-colored card accent */
+.card-team-red {
+  border-left: 6px solid var(--team-red-print);
+}
+
+.card-team-blue {
+  border-left: 6px solid var(--team-blue-print);
+}
+
+.card-team-green {
+  border-left: 6px solid var(--team-green-print);
+}
+
+.card-team-yellow {
+  border-left: 6px solid var(--team-yellow-print);
+}
+
+/* ========================================
+   DIVIDER
+   ======================================== */
+
+.divider {
+  height: 1px;
+  background-color: var(--color-line);
+  border: none;
+  margin: var(--space-lg) 0;
+}
+
+.divider-strong {
+  background-color: var(--color-line-strong);
+}
+
+/* ========================================
+   TOOLTIP (basic)
+   ======================================== */
+
+.tooltip {
+  position: relative;
+}
+
+.tooltip::after {
+  content: attr(data-tooltip);
+  position: absolute;
+  bottom: 100%;
+  left: 50%;
+  transform: translateX(-50%);
+  padding: var(--space-xs) var(--space-sm);
+  font-family: var(--font-ui);
+  font-size: 12px;
+  line-height: 16px;
+  color: white;
+  background-color: var(--color-ink);
+  border-radius: var(--radius-chip);
+  white-space: nowrap;
+  opacity: 0;
+  visibility: hidden;
+  transition: var(--transition-fast);
+  z-index: var(--z-tooltip);
+  margin-bottom: var(--space-xs);
+}
+
+.tooltip:hover::after {
+  opacity: 1;
+  visibility: visible;
+}

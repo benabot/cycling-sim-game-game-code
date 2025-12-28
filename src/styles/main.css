@@ -8,6 +8,8 @@
 /* Design System Imports */
 @import './design-tokens.css';
 @import './typography.css';
+@import './components.css';
+@import './layout.css';
 
 /* ========================================
    CSS RESET (Minimal)
