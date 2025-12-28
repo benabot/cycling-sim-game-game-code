@@ -10,17 +10,17 @@
       >
         <span class="track-cell-number">0</span>
         <div class="track-cell-riders-start">
-          <!-- Group riders by team, stacked -->
+          <!-- Group riders by team, 2 columns stacked -->
           <div 
             v-for="teamId in getTeamsAtStart()" 
             :key="teamId"
-            class="track-start-stack"
+            class="track-start-team"
           >
             <div 
               v-for="(rider, idx) in getRidersByTeamAt(0, teamId)" 
               :key="rider.id"
               class="track-start-token"
-              :style="{ '--stack-index': idx }"
+              :style="{ '--stack-index': Math.floor(idx / 2), '--col-index': idx % 2 }"
             >
               <RiderToken 
                 :rider="rider"
@@ -306,39 +306,39 @@ function getAspirationInfo(riderId) {
   flex: 1;
 }
 
-/* Start cell: contains stacked teams */
+/* Start cell: contains teams side by side */
 .track-cell--start {
-  width: 80px;
+  width: 90px;
   height: 88px;
 }
 
 /* Start cell riders: teams side by side */
 .track-cell-riders-start {
   display: flex;
-  gap: 8px;
+  gap: 6px;
   flex: 1;
   justify-content: center;
   align-items: center;
   padding: 4px;
 }
 
-/* Each team stack at start - overlapping tokens like card pile */
-.track-start-stack {
+/* Each team block: 2 columns, stacked rows */
+.track-start-team {
   position: relative;
-  width: 24px;
-  height: 60px;
+  width: 36px;
+  height: 64px;
 }
 
 .track-start-token {
   position: absolute;
-  left: calc(var(--stack-index) * 2px);
-  top: calc(var(--stack-index) * 8px);
+  left: calc(var(--col-index) * 18px);
+  top: calc(var(--stack-index) * 10px);
   z-index: calc(10 - var(--stack-index));
   transition: transform 0.15s ease;
 }
 
 .track-start-token:hover {
-  transform: translateY(-3px) scale(1.15);
+  transform: translateY(-2px) scale(1.1);
   z-index: 20;
 }
 
