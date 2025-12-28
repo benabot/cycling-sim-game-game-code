@@ -236,18 +236,29 @@ const targetPosition = computed(() => props.currentPosition + props.totalMovemen
   align-items: center;
   gap: 4px;
   font-family: var(--font-mono);
-  font-weight: 500;
+  font-weight: 600;
+  color: var(--color-ink);
   padding: var(--space-xs) var(--space-sm);
-  background: var(--color-canvas);
+  background: var(--color-line);
   border-radius: var(--radius-sm);
 }
 
-.calc-item--positive { color: var(--color-success); }
-.calc-item--negative { color: var(--color-danger); }
-.calc-item--specialty { background: #bbf7d0; }
-
 .calc-op {
-  color: var(--color-ink-muted);
+  color: var(--color-ink);
+  font-weight: 500;
+}
+
+.calc-item--positive { 
+  color: var(--state-success); 
+  background: color-mix(in srgb, var(--state-success) 15%, white);
+}
+.calc-item--negative { 
+  color: var(--state-error); 
+  background: color-mix(in srgb, var(--state-error) 15%, white);
+}
+.calc-item--specialty { 
+  color: var(--state-success);
+  background: #bbf7d0; 
 }
 
 .calc-result {
