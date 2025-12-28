@@ -17,7 +17,7 @@
       </section>
 
       <!-- Race format -->
-      <section class="setup-section">
+      <section ref="raceFormatSection" class="setup-section">
         <div v-if="raceType === 'classic'" class="race-config-block">
           <ClassicRaceSelector v-model="selectedClassic" />
           <div v-if="selectedClassicPreset" class="race-summary">
@@ -38,7 +38,7 @@
       </section>
 
       <!-- Number of teams -->
-      <section class="setup-section">
+      <section ref="teamsSection" class="setup-section">
         <label class="form-label">Nombre d'équipes</label>
         <div class="segmented segmented--stretch">
           <button 
@@ -196,7 +196,7 @@
 </template>
 
 <script setup>
-import { ref, computed, reactive, watch } from 'vue';
+import { ref, computed, reactive, watch, nextTick } from 'vue';
 import { TeamId, PlayerType, AIDifficulty, getTeamIds, createPlayerConfig } from '../core/teams.js';
 import RiderToken from './RiderToken.vue';
 import { RiderIcon, UIIcon } from './icons';
@@ -230,6 +230,8 @@ const numTeams = ref(2);
 const courseLength = ref(80);
 const players = ref([]);
 const expandedTeams = reactive({});
+const raceFormatSection = ref(null);
+const teamsSection = ref(null);
 
 // Get team card class
 function getTeamCardClass(teamId) {
@@ -336,10 +338,33 @@ const startWarning = computed(() => {
 
 const canStart = computed(() => startWarning.value === '');
 
+function scrollToSection(sectionRef) {
+  if (!sectionRef?.value) return;
+  nextTick(() => {
+    sectionRef.value?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+  });
+}
+
+watch(raceType, (value) => {
+  if (value) {
+    scrollToSection(raceFormatSection);
+  }
+});
+
 watch(selectedClassic, (classicId) => {
   const preset = getClassicPreset(classicId);
   if (preset?.defaultLength) {
     courseLength.value = preset.defaultLength;
+  }
+
+  if (classicId && raceType.value === 'classic') {
+    scrollToSection(teamsSection);
+  }
+});
+
+watch(isStageConfigComplete, (complete) => {
+  if (complete && raceType.value === 'stage') {
+    scrollToSection(teamsSection);
   }
 });
 
@@ -398,6 +423,7 @@ initializePlayers();
 
 .setup-section {
   margin-bottom: var(--space-xl);
+  scroll-margin-top: var(--space-xl);
 }
 
 /* Teams Grid */
