@@ -283,25 +283,23 @@ function getAspirationInfo(riderId) {
 </script>
 
 <style scoped>
-/* Local overrides only - main styles in track.css */
-
 /* Track container - no vertical scroll */
 .track-container {
   overflow-x: auto;
   overflow-y: hidden;
 }
 
-/* Fixed height for cells: fit 2x2 compact tokens (28px each) */
+/* Fixed height for cells: fit 2x2 tokens (22px each) */
 .track-cell {
   height: 88px;
   width: 56px;
 }
 
-/* Riders container: 2x2 grid for max 4 compact tokens */
+/* Riders container: 2x2 grid for max 4 tokens */
 .track-cell-riders {
   display: grid;
-  grid-template-columns: repeat(2, 28px);
-  grid-template-rows: repeat(2, 28px);
+  grid-template-columns: repeat(2, 22px);
+  grid-template-rows: repeat(2, 22px);
   gap: 2px;
   justify-content: center;
   align-content: center;
@@ -310,37 +308,37 @@ function getAspirationInfo(riderId) {
 
 /* Start cell: contains stacked teams */
 .track-cell--start {
-  width: 70px;
+  width: 80px;
   height: 88px;
 }
 
 /* Start cell riders: teams side by side */
 .track-cell-riders-start {
   display: flex;
-  gap: 6px;
+  gap: 8px;
   flex: 1;
   justify-content: center;
   align-items: center;
   padding: 4px;
 }
 
-/* Each team stack at start - overlapping tokens */
+/* Each team stack at start - overlapping tokens like card pile */
 .track-start-stack {
   position: relative;
-  width: 20px;
-  height: 68px;
+  width: 24px;
+  height: 60px;
 }
 
 .track-start-token {
   position: absolute;
-  left: 0;
-  top: calc(var(--stack-index) * 12px);
+  left: calc(var(--stack-index) * 2px);
+  top: calc(var(--stack-index) * 8px);
   z-index: calc(10 - var(--stack-index));
   transition: transform 0.15s ease;
 }
 
 .track-start-token:hover {
-  transform: translateY(-2px) scale(1.1);
+  transform: translateY(-3px) scale(1.15);
   z-index: 20;
 }
 
@@ -351,7 +349,7 @@ function getAspirationInfo(riderId) {
 
 .track-finished-riders {
   display: grid;
-  grid-template-columns: repeat(3, 20px);
+  grid-template-columns: repeat(3, 18px);
   gap: 2px;
   justify-content: center;
 }
