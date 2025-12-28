@@ -11,6 +11,32 @@
         <span class="section-header-subtitle">Configuration de la partie</span>
       </div>
 
+      <!-- Race type -->
+      <section class="setup-section">
+        <RaceTypeSelector v-model="raceType" />
+      </section>
+
+      <!-- Race format -->
+      <section class="setup-section">
+        <div v-if="raceType === 'classic'" class="race-config-block">
+          <ClassicRaceSelector v-model="selectedClassic" />
+          <div v-if="selectedClassicPreset" class="race-summary">
+            <UIIcon :type="selectedClassicPreset.icon" size="sm" />
+            <span>Vous avez choisi : {{ selectedClassicPreset.name }} — avantage {{ selectedClassicPreset.advantageLabel }}</span>
+          </div>
+        </div>
+        <div v-else-if="raceType === 'stage'" class="race-config-block">
+          <StageRaceConfigurator
+            v-model="stageConfig"
+            :stageLength="courseLength"
+          />
+        </div>
+        <div v-else class="race-placeholder">
+          <UIIcon type="info" size="sm" />
+          <span>Choisissez un type de course pour afficher le format.</span>
+        </div>
+      </section>
+
       <!-- Number of teams -->
       <section class="setup-section">
         <label class="form-label">Nombre d'équipes</label>
@@ -119,7 +145,7 @@
 
       <!-- Course length -->
       <section class="setup-section">
-        <label class="form-label">Longueur du parcours</label>
+        <label class="form-label">{{ lengthLabel }}</label>
         <div class="segmented segmented--stretch">
           <button 
             v-for="len in courseLengths" 
@@ -129,9 +155,12 @@
             @click="courseLength = len.value"
           >
             <span class="type-body-medium">{{ len.value }} cases</span>
-            <span class="type-caption">~{{ len.duration }}</span>
+            <span class="type-caption">
+              ~{{ len.duration }}<span v-if="isStageRace"> par étape</span>
+            </span>
           </button>
         </div>
+        <p v-if="lengthHint" class="form-hint">{{ lengthHint }}</p>
       </section>
 
       <!-- Summary -->
@@ -151,26 +180,30 @@
       <button 
         class="btn btn-success btn-lg" 
         @click="startGame" 
-        :disabled="humanCount === 0"
+        :disabled="!canStart"
         style="display: flex; margin: 0 auto;"
       >
         <UIIcon type="finish" size="lg" />
         Lancer la course !
       </button>
 
-      <p v-if="humanCount === 0" class="setup-warning type-caption">
+      <p v-if="startWarning" class="setup-warning type-caption">
         <UIIcon type="warning" size="sm" />
-        Au moins un joueur humain requis
+        {{ startWarning }}
       </p>
     </div>
   </div>
 </template>
 
 <script setup>
-import { ref, computed, reactive } from 'vue';
+import { ref, computed, reactive, watch } from 'vue';
 import { TeamId, PlayerType, AIDifficulty, getTeamIds, createPlayerConfig } from '../core/teams.js';
 import RiderToken from './RiderToken.vue';
 import { RiderIcon, UIIcon } from './icons';
+import RaceTypeSelector from './RaceTypeSelector.vue';
+import ClassicRaceSelector from './ClassicRaceSelector.vue';
+import StageRaceConfigurator from './StageRaceConfigurator.vue';
+import { getClassicPreset } from '../config/race-presets.js';
 
 const emit = defineEmits(['start']);
 
@@ -190,6 +223,9 @@ const courseLengths = [
 ];
 
 // Configuration state
+const raceType = ref(null);
+const selectedClassic = ref(null);
+const stageConfig = ref({ numStages: null, profile: null });
 const numTeams = ref(2);
 const courseLength = ref(80);
 const players = ref([]);
@@ -263,12 +299,67 @@ const aiCount = computed(() =>
   players.value.filter(p => p.playerType === PlayerType.AI).length
 );
 
+const isStageRace = computed(() => raceType.value === 'stage');
+const isClassicRace = computed(() => raceType.value === 'classic');
+const isStageConfigComplete = computed(() => 
+  !!stageConfig.value?.numStages && !!stageConfig.value?.profile
+);
+const isRaceConfigComplete = computed(() => {
+  if (isClassicRace.value) return !!selectedClassic.value;
+  if (isStageRace.value) return isStageConfigComplete.value;
+  return false;
+});
+
+const selectedClassicPreset = computed(() => 
+  selectedClassic.value ? getClassicPreset(selectedClassic.value) : null
+);
+
+const lengthLabel = computed(() => 
+  isStageRace.value ? 'Longueur des étapes' : 'Longueur du parcours'
+);
+
+const lengthHint = computed(() => {
+  if (!isStageRace.value) return '';
+  if (!stageConfig.value?.numStages) return 'Par étape';
+  return `${stageConfig.value.numStages} étapes × ${courseLength.value} cases`;
+});
+
+const startWarning = computed(() => {
+  if (humanCount.value === 0) return 'Au moins un joueur humain requis';
+  if (!raceType.value) return 'Choisissez d\'abord un type de course.';
+  if (isClassicRace.value && !selectedClassic.value) return 'Choisissez une classique.';
+  if (isStageRace.value && !isStageConfigComplete.value) {
+    return 'Choisissez un nombre d\'étapes et un profil.';
+  }
+  return '';
+});
+
+const canStart = computed(() => startWarning.value === '');
+
+watch(selectedClassic, (classicId) => {
+  const preset = getClassicPreset(classicId);
+  if (preset?.defaultLength) {
+    courseLength.value = preset.defaultLength;
+  }
+});
+
 function startGame() {
-  if (humanCount.value === 0) return;
+  if (!canStart.value) return;
+  const stageRace = isStageRace.value
+    ? {
+        numStages: stageConfig.value.numStages,
+        profile: stageConfig.value.profile,
+        stageLength: courseLength.value
+      }
+    : null;
+
   emit('start', {
     numTeams: numTeams.value,
     players: players.value,
-    courseLength: courseLength.value
+    courseLength: courseLength.value,
+    raceType: raceType.value,
+    classicId: selectedClassic.value,
+    stageRace
   });
 }
 
@@ -449,6 +540,40 @@ initializePlayers();
   text-align: center;
   color: var(--color-danger);
   margin-top: var(--space-sm);
+}
+
+/* Race sections */
+.race-config-block {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-md);
+}
+
+.race-placeholder {
+  display: flex;
+  align-items: center;
+  gap: var(--space-xs);
+  padding: var(--space-md);
+  border: 1px dashed var(--color-line);
+  border-radius: var(--radius-md);
+  background-color: var(--color-canvas);
+  color: var(--color-ink-muted);
+  font-family: var(--font-ui);
+  font-size: 12px;
+}
+
+.race-summary {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-xs);
+  padding: var(--space-xs) var(--space-sm);
+  border: 1px solid var(--color-line);
+  border-radius: var(--radius-chip);
+  background-color: var(--color-canvas);
+  color: var(--color-ink-soft);
+  font-family: var(--font-ui);
+  font-size: 12px;
+  width: fit-content;
 }
 
 /* Responsive */

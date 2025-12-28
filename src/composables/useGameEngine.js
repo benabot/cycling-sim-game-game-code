@@ -114,6 +114,7 @@ export function useGameEngine() {
   const numTeams = computed(() => gameState.value?.teamIds?.length || 2);
   const teamIds = computed(() => gameState.value?.teamIds || []);
   const players = computed(() => gameState.value?.players || []);
+  const stageRace = computed(() => gameState.value?.stageRace || null);
   
   // Preview positions for UI highlighting (v3.2)
   const previewPositions = computed(() => {
@@ -660,6 +661,7 @@ export function useGameEngine() {
     numTeams,
     teamIds,
     players,
+    stageRace,
     aiPersonalities,
     
     // Actions

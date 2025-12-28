@@ -23,6 +23,7 @@
       :currentTeam="currentTeam"
       :isLastTurn="isLastTurn"
       :winningTeam="winningTeam"
+      :stageRace="stageRace"
     />
 
     <!-- Terrain Legend -->
@@ -201,6 +202,7 @@ const {
   teamIds,
   players,
   aiPersonalities,
+  stageRace,
   
   // Actions
   initialize,
