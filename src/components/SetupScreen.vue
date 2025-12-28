@@ -143,6 +143,25 @@
         </div>
       </section>
 
+      <!-- Draft riders -->
+      <section class="setup-section">
+        <DraftRosterSection
+          :team-ids="draftTeamIds"
+          :players="players"
+          :active-team-id="activeDraftTeamId"
+          :rosters="teamRosters"
+          :pool="riderPool"
+          :budget-total="DraftConfig.budgetTotal"
+          :roster-size="DraftConfig.rosterSize"
+          :roles="DraftConfig.roles"
+          :stat-order="DraftStatOrder"
+          :stat-labels="DraftStatLabels"
+          @selectTeam="activeDraftTeamId = $event"
+          @recruit="recruitRider"
+          @release="releaseRider"
+        />
+      </section>
+
       <!-- Course length -->
       <section class="setup-section">
         <label class="form-label">{{ lengthLabel }}</label>
@@ -203,7 +222,9 @@ import { RiderIcon, UIIcon } from './icons';
 import RaceTypeSelector from './RaceTypeSelector.vue';
 import ClassicRaceSelector from './ClassicRaceSelector.vue';
 import StageRaceConfigurator from './StageRaceConfigurator.vue';
+import DraftRosterSection from './DraftRosterSection.vue';
 import { getClassicPreset } from '../config/race-presets.js';
+import { DraftConfig, DraftStatLabels, DraftStatOrder, RiderPool } from '../config/draft.config.js';
 
 const emit = defineEmits(['start']);
 
@@ -232,6 +253,10 @@ const players = ref([]);
 const expandedTeams = reactive({});
 const raceFormatSection = ref(null);
 const teamsSection = ref(null);
+const riderPool = ref([]);
+const teamRosters = ref({});
+const activeDraftTeamId = ref(null);
+const riderPoolIndex = new Map(RiderPool.map((rider, index) => [rider.id, index]));
 
 // Get team card class
 function getTeamCardClass(teamId) {
@@ -262,6 +287,70 @@ function initializePlayers() {
     };
   });
   Object.keys(expandedTeams).forEach(k => delete expandedTeams[k]);
+  initializeDraftState(teamIds);
+}
+
+function initializeDraftState(teamIds = getTeamIds(numTeams.value)) {
+  teamRosters.value = teamIds.reduce((acc, teamId) => {
+    acc[teamId] = [];
+    return acc;
+  }, {});
+  riderPool.value = RiderPool.map(rider => ({
+    ...rider,
+    stats: { ...rider.stats }
+  }));
+  activeDraftTeamId.value = teamIds[0] || null;
+  sortRiderPool();
+}
+
+function sortRiderPool() {
+  riderPool.value.sort((a, b) => {
+    const indexA = riderPoolIndex.get(a.id) ?? 0;
+    const indexB = riderPoolIndex.get(b.id) ?? 0;
+    return indexA - indexB;
+  });
+}
+
+function getRoster(teamId) {
+  return teamRosters.value[teamId] || [];
+}
+
+function getBudgetRemaining(teamId) {
+  const spent = getRoster(teamId).reduce((sum, rider) => sum + rider.price, 0);
+  return Math.max(0, DraftConfig.budgetTotal - spent);
+}
+
+function isRosterComplete(teamId) {
+  return getRoster(teamId).length === DraftConfig.rosterSize;
+}
+
+function canRecruitRider(teamId, rider) {
+  if (!teamId || !rider) return false;
+  if (getRoster(teamId).length >= DraftConfig.rosterSize) return false;
+  if (getBudgetRemaining(teamId) < rider.price) return false;
+  return !getRoster(teamId).some(selected => selected.role === rider.role);
+}
+
+function recruitRider({ teamId, rider }) {
+  if (!canRecruitRider(teamId, rider)) return;
+  const roster = getRoster(teamId);
+  teamRosters.value = {
+    ...teamRosters.value,
+    [teamId]: [...roster, { ...rider, stats: { ...rider.stats } }]
+  };
+  riderPool.value = riderPool.value.filter(entry => entry.id !== rider.id);
+}
+
+function releaseRider({ teamId, rider }) {
+  if (!teamId || !rider) return;
+  const roster = getRoster(teamId);
+  if (!roster.some(entry => entry.id === rider.id)) return;
+  teamRosters.value = {
+    ...teamRosters.value,
+    [teamId]: roster.filter(entry => entry.id !== rider.id)
+  };
+  riderPool.value = [...riderPool.value, { ...rider, stats: { ...rider.stats } }];
+  sortRiderPool();
 }
 
 function setNumTeams(n) {
@@ -301,6 +390,14 @@ const aiCount = computed(() =>
   players.value.filter(p => p.playerType === PlayerType.AI).length
 );
 
+const draftTeamIds = computed(() => players.value.map(player => player.teamId));
+const incompleteDraftTeam = computed(() => 
+  draftTeamIds.value.find(teamId => !isRosterComplete(teamId))
+);
+const isDraftComplete = computed(() => 
+  draftTeamIds.value.length > 0 && !incompleteDraftTeam.value
+);
+
 const isStageRace = computed(() => raceType.value === 'stage');
 const isClassicRace = computed(() => raceType.value === 'classic');
 const isStageConfigComplete = computed(() => 
@@ -332,6 +429,11 @@ const startWarning = computed(() => {
   if (isClassicRace.value && !selectedClassic.value) return 'Choisissez une classique.';
   if (isStageRace.value && !isStageConfigComplete.value) {
     return 'Choisissez un nombre d\'étapes et un profil.';
+  }
+  if (!isDraftComplete.value) {
+    const teamId = incompleteDraftTeam.value;
+    const count = getRoster(teamId).length;
+    return `À compléter : coureurs (${count}/${DraftConfig.rosterSize}).`;
   }
   return '';
 });
@@ -368,6 +470,19 @@ watch(isStageConfigComplete, (complete) => {
   }
 });
 
+function buildDraftRosters() {
+  return draftTeamIds.value.reduce((acc, teamId) => {
+    acc[teamId] = getRoster(teamId).map(rider => ({
+      id: rider.id,
+      name: rider.name,
+      role: rider.role,
+      price: rider.price,
+      stats: { ...rider.stats }
+    }));
+    return acc;
+  }, {});
+}
+
 function startGame() {
   if (!canStart.value) return;
   const stageRace = isStageRace.value
@@ -378,6 +493,7 @@ function startGame() {
       }
     : null;
   const raceMode = isStageRace.value ? 'STAGE_RACE' : 'CLASSIC';
+  const draftRosters = buildDraftRosters();
 
   emit('start', {
     numTeams: numTeams.value,
@@ -386,7 +502,8 @@ function startGame() {
     raceType: raceType.value,
     classicId: selectedClassic.value,
     raceMode,
-    stageRace
+    stageRace,
+    draftRosters
   });
 }
 
@@ -406,7 +523,7 @@ initializePlayers();
   background: var(--color-surface);
   border-radius: var(--radius-lg);
   padding: var(--space-2xl);
-  max-width: 700px;
+  max-width: 980px;
   width: 100%;
   box-shadow: var(--shadow-lg);
 }

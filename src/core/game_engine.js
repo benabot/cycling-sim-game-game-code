@@ -6,7 +6,7 @@
 import { roll1D6, rollFallTest } from './dice.js';
 import { TerrainType, TerrainConfig, DescentRules, MountainRules, getTerrainBonus, generateCourse, hasAspiration, hasWindPenalty, findSummitPosition, isExemptFromSummitStop, isRefuelZone } from './terrain.js';
 import { 
-  createRider, createTeamRiders, RiderConfig, CardType, RiderType,
+  createRider, createRiderFromDraft, createTeamRiders, RiderConfig, CardType, RiderType,
   playCard, playSpecialtyCard, addFatigueCard,
   moveRider, getAvailableCards, getHandStats, createMovementCard
 } from './rider.js';
@@ -84,12 +84,32 @@ export const TeamConfig = TeamConfigs;
  * @param {Object} playersConfig - Optional players configuration with custom names
  * @returns {Array} Array of riders
  */
-export function createRidersForTeams(teamIds, playersConfig = null) {
+export function createRidersForTeams(teamIds, playersConfig = null, draftRosters = null) {
   const riders = [];
   teamIds.forEach(teamId => {
     const config = getTeamConfig(teamId);
     const playerConfig = playersConfig?.find(p => p.teamId === teamId);
     const customNames = playerConfig?.riderNames || null;
+    const roster = draftRosters?.[teamId] || null;
+
+    if (roster && roster.length > 0) {
+      const customNameByRole = customNames
+        ? {
+            climber: customNames[0],
+            puncher: customNames[1],
+            rouleur: customNames[2],
+            sprinter: customNames[3],
+            versatile: customNames[4]
+          }
+        : null;
+
+      roster.forEach(draftRider => {
+        const customName = customNameByRole?.[draftRider.role] || null;
+        riders.push(createRiderFromDraft(draftRider, teamId, customName));
+      });
+      return;
+    }
+
     riders.push(...createTeamRiders(teamId, config.prefix, customNames));
   });
   return riders;
@@ -124,8 +144,9 @@ export function createGameState(options = {}) {
     { teamId: TeamId.TEAM_B, playerType: PlayerType.HUMAN }
   ];
   const raceMode = gameConfig?.raceMode || (gameConfig?.stageRace ? 'STAGE_RACE' : 'CLASSIC');
+  const draftRosters = gameConfig?.draftRosters || null;
   
-  let riders = createRidersForTeams(teamIds, players);
+  let riders = createRidersForTeams(teamIds, players, draftRosters);
   const stageRaceConfig = gameConfig?.stageRace || null;
   let stageRace = null;
   let effectiveCourseLength = baseCourseLength;

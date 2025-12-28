@@ -181,6 +181,28 @@ export function createRider(id, type, name, team = 'default') {
 }
 
 /**
+ * Create a rider from a draft pool entry
+ * @param {Object} draftRider - Draft rider data
+ * @param {string} teamId - Team identifier
+ * @param {string|null} customName - Optional override name
+ * @returns {Object} Rider object
+ */
+export function createRiderFromDraft(draftRider, teamId, customName = null) {
+  const role = draftRider.role || draftRider.type;
+  const name = customName || draftRider.name || role;
+  const base = createRider(draftRider.id, role, name, teamId);
+
+  return {
+    ...base,
+    stats: { ...draftRider.stats },
+    draft: {
+      price: draftRider.price,
+      role
+    }
+  };
+}
+
+/**
  * Get all available cards for a rider (hand + attack + specialty)
  * @param {Object} rider - Rider object
  * @param {string} currentTerrain - Current terrain type

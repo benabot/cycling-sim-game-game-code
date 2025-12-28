@@ -15,6 +15,7 @@ export { default as EnergyBar } from './EnergyBar.vue';
 export { default as SetupScreen } from './SetupScreen.vue';
 export { default as StageRaceConfigurator } from './StageRaceConfigurator.vue';
 export { default as StagePreview } from './StagePreview.vue';
+export { default as DraftRosterSection } from './DraftRosterSection.vue';
 
 // Icon components
 export * from './icons';
