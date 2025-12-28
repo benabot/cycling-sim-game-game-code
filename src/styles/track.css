@@ -1,8 +1,7 @@
 /**
  * Track & Terrain - Cycling Race Board Game
  * Design System: "Plateau Premium" (Option A1)
- * 
- * Course board cells, terrain patterns, special cells
+ * Phase 14: Terrain patterns at 10-12% opacity max
  */
 
 /* ========================================
@@ -100,37 +99,38 @@
 }
 
 /* ========================================
-   TERRAIN COLORS (Pastels + Patterns)
+   TERRAIN COLORS (Pastels + Patterns @ 10-12%)
+   Phase 14: Reduced opacity for subtlety
    ======================================== */
 
-/* --- FLAT (Plaine) --- */
+/* --- FLAT (Plaine) - dots pattern --- */
 .track-cell--flat {
   background-color: var(--terrain-flat);
-  background-image: url("data:image/svg+xml,%3Csvg width='32' height='32' viewBox='0 0 32 32' xmlns='http://www.w3.org/2000/svg'%3E%3Ccircle cx='8' cy='8' r='1.5' fill='%231F2328' fill-opacity='0.07'/%3E%3Ccircle cx='24' cy='8' r='1.5' fill='%231F2328' fill-opacity='0.07'/%3E%3Ccircle cx='8' cy='24' r='1.5' fill='%231F2328' fill-opacity='0.07'/%3E%3Ccircle cx='24' cy='24' r='1.5' fill='%231F2328' fill-opacity='0.07'/%3E%3C/svg%3E");
+  background-image: url("data:image/svg+xml,%3Csvg width='32' height='32' viewBox='0 0 32 32' xmlns='http://www.w3.org/2000/svg'%3E%3Ccircle cx='8' cy='8' r='1.2' fill='%231F2328' fill-opacity='0.10'/%3E%3Ccircle cx='24' cy='8' r='1.2' fill='%231F2328' fill-opacity='0.10'/%3E%3Ccircle cx='8' cy='24' r='1.2' fill='%231F2328' fill-opacity='0.10'/%3E%3Ccircle cx='24' cy='24' r='1.2' fill='%231F2328' fill-opacity='0.10'/%3E%3C/svg%3E");
 }
 
-/* --- HILL (Côte) --- */
+/* --- HILL (Côte) - fine hatching 45° --- */
 .track-cell--hill {
   background-color: var(--terrain-hill);
-  background-image: url("data:image/svg+xml,%3Csvg width='32' height='32' viewBox='0 0 32 32' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M0 28L14 14M4 32L18 18M8 32L22 18M12 32L26 18M16 32L30 18M20 32L32 20M24 32L32 24M28 32L32 28' stroke='%231F2328' stroke-opacity='0.08' stroke-width='1' fill='none'/%3E%3C/svg%3E");
+  background-image: url("data:image/svg+xml,%3Csvg width='32' height='32' viewBox='0 0 32 32' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M0 28L14 14M4 32L18 18M8 32L22 18M12 32L26 18M16 32L30 18M20 32L32 20M24 32L32 24M28 32L32 28' stroke='%231F2328' stroke-opacity='0.10' stroke-width='0.8' fill='none'/%3E%3C/svg%3E");
 }
 
-/* --- MOUNTAIN (Montagne) --- */
+/* --- MOUNTAIN (Montagne) - dense hatching 60° --- */
 .track-cell--mountain {
   background-color: var(--terrain-mountain);
-  background-image: url("data:image/svg+xml,%3Csvg width='32' height='32' viewBox='0 0 32 32' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M0 24L8 16M0 32L16 16M8 32L24 16M16 32L32 16M24 32L32 24' stroke='%231F2328' stroke-opacity='0.07' stroke-width='1.5' fill='none'/%3E%3Cpath d='M4 28L12 20M12 32L20 24M20 32L28 24' stroke='%231F2328' stroke-opacity='0.05' stroke-width='1' fill='none'/%3E%3C/svg%3E");
+  background-image: url("data:image/svg+xml,%3Csvg width='32' height='32' viewBox='0 0 32 32' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M0 24L8 16M0 32L16 16M8 32L24 16M16 32L32 16M24 32L32 24' stroke='%231F2328' stroke-opacity='0.10' stroke-width='1' fill='none'/%3E%3Cpath d='M4 28L12 20M12 32L20 24M20 32L28 24' stroke='%231F2328' stroke-opacity='0.06' stroke-width='0.8' fill='none'/%3E%3C/svg%3E");
 }
 
-/* --- DESCENT (Descente) --- */
+/* --- DESCENT (Descente) - chevrons --- */
 .track-cell--descent {
   background-color: var(--terrain-descent);
-  background-image: url("data:image/svg+xml,%3Csvg width='32' height='32' viewBox='0 0 32 32' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M16 4L8 12L16 12L8 20L16 20L8 28' stroke='%231F2328' stroke-opacity='0.08' stroke-width='1.5' fill='none' stroke-linecap='round' stroke-linejoin='round'/%3E%3Cpath d='M24 4L16 12L24 12L16 20L24 20L16 28' stroke='%231F2328' stroke-opacity='0.06' stroke-width='1' fill='none' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");
+  background-image: url("data:image/svg+xml,%3Csvg width='32' height='32' viewBox='0 0 32 32' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M16 4L8 12L16 12L8 20L16 20L8 28' stroke='%231F2328' stroke-opacity='0.10' stroke-width='1' fill='none' stroke-linecap='round' stroke-linejoin='round'/%3E%3Cpath d='M24 4L16 12L24 12L16 20L24 20L16 28' stroke='%231F2328' stroke-opacity='0.07' stroke-width='0.8' fill='none' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");
 }
 
-/* --- SPRINT --- */
+/* --- SPRINT - checkerboard --- */
 .track-cell--sprint {
   background-color: var(--terrain-sprint);
-  background-image: url("data:image/svg+xml,%3Csvg width='32' height='32' viewBox='0 0 32 32' xmlns='http://www.w3.org/2000/svg'%3E%3Crect x='0' y='0' width='8' height='8' fill='%231F2328' fill-opacity='0.06'/%3E%3Crect x='16' y='0' width='8' height='8' fill='%231F2328' fill-opacity='0.06'/%3E%3Crect x='8' y='8' width='8' height='8' fill='%231F2328' fill-opacity='0.06'/%3E%3Crect x='24' y='8' width='8' height='8' fill='%231F2328' fill-opacity='0.06'/%3E%3Crect x='0' y='16' width='8' height='8' fill='%231F2328' fill-opacity='0.06'/%3E%3Crect x='16' y='16' width='8' height='8' fill='%231F2328' fill-opacity='0.06'/%3E%3Crect x='8' y='24' width='8' height='8' fill='%231F2328' fill-opacity='0.06'/%3E%3Crect x='24' y='24' width='8' height='8' fill='%231F2328' fill-opacity='0.06'/%3E%3C/svg%3E");
+  background-image: url("data:image/svg+xml,%3Csvg width='32' height='32' viewBox='0 0 32 32' xmlns='http://www.w3.org/2000/svg'%3E%3Crect x='0' y='0' width='8' height='8' fill='%231F2328' fill-opacity='0.08'/%3E%3Crect x='16' y='0' width='8' height='8' fill='%231F2328' fill-opacity='0.08'/%3E%3Crect x='8' y='8' width='8' height='8' fill='%231F2328' fill-opacity='0.08'/%3E%3Crect x='24' y='8' width='8' height='8' fill='%231F2328' fill-opacity='0.08'/%3E%3Crect x='0' y='16' width='8' height='8' fill='%231F2328' fill-opacity='0.08'/%3E%3Crect x='16' y='16' width='8' height='8' fill='%231F2328' fill-opacity='0.08'/%3E%3Crect x='8' y='24' width='8' height='8' fill='%231F2328' fill-opacity='0.08'/%3E%3Crect x='24' y='24' width='8' height='8' fill='%231F2328' fill-opacity='0.08'/%3E%3C/svg%3E");
 }
 
 /* ========================================
@@ -156,33 +156,36 @@
 
 /* --- FINISH --- */
 .track-cell--finish {
-  border: 2px solid var(--state-success);
+  border: 2px solid var(--color-action);
   background-image: 
-    linear-gradient(45deg, rgba(53, 181, 106, 0.08) 25%, transparent 25%),
-    linear-gradient(-45deg, rgba(53, 181, 106, 0.08) 25%, transparent 25%),
-    linear-gradient(45deg, transparent 75%, rgba(53, 181, 106, 0.08) 75%),
-    linear-gradient(-45deg, transparent 75%, rgba(53, 181, 106, 0.08) 75%);
+    linear-gradient(45deg, rgba(58, 164, 98, 0.08) 25%, transparent 25%),
+    linear-gradient(-45deg, rgba(58, 164, 98, 0.08) 25%, transparent 25%),
+    linear-gradient(45deg, transparent 75%, rgba(58, 164, 98, 0.08) 75%),
+    linear-gradient(-45deg, transparent 75%, rgba(58, 164, 98, 0.08) 75%);
   background-size: 8px 8px;
   background-position: 0 0, 0 4px, 4px -4px, -4px 0px;
 }
 
 .track-cell--finish .track-cell-number {
-  color: var(--state-success);
+  color: var(--color-action);
   font-weight: 600;
 }
 
 /* --- REFUEL ZONE --- */
 .track-cell--refuel {
-  border: 2px dashed var(--state-warning);
+  border: 2px dashed var(--color-warning);
   position: relative;
 }
 
 .track-cell--refuel::before {
-  content: '🍌';
+  content: '';
   position: absolute;
   top: -8px;
   right: -4px;
-  font-size: 12px;
+  width: 14px;
+  height: 14px;
+  background: var(--color-warning);
+  border-radius: 50%;
   z-index: 5;
 }
 
@@ -198,7 +201,7 @@
   padding: var(--space-sm);
   background: linear-gradient(135deg, var(--terrain-flat) 0%, #C8EDCE 100%);
   border-radius: var(--radius-md);
-  border: 2px solid var(--state-success);
+  border: 2px solid var(--color-action);
   min-width: 70px;
   height: 88px;
   gap: 4px;
@@ -214,7 +217,7 @@
   font-family: var(--font-display);
   font-size: 11px;
   font-weight: 600;
-  color: var(--state-success);
+  color: var(--color-action);
   text-transform: uppercase;
   letter-spacing: 0.04em;
 }
@@ -241,7 +244,7 @@
 /* --- FULL (4/4 riders) --- */
 .track-cell--full {
   box-shadow: 
-    inset 0 0 0 2px var(--state-error),
+    inset 0 0 0 2px var(--color-danger),
     inset 0 0 0 1px var(--track-grid-line);
 }
 
@@ -255,7 +258,7 @@
   font-size: 7px;
   font-weight: 600;
   color: white;
-  background: var(--state-error);
+  background: var(--color-danger);
   padding: 1px 3px;
   border-radius: 2px;
 }
@@ -325,13 +328,13 @@
     box-shadow: 
       inset 0 0 0 1px var(--track-grid-line),
       0 0 0 2px var(--preview-without),
-      0 0 12px rgba(240, 138, 36, 0.35);
+      0 0 10px rgba(232, 138, 36, 0.30);
   }
   50% { 
     box-shadow: 
       inset 0 0 0 1px var(--track-grid-line),
       0 0 0 3px var(--preview-without),
-      0 0 18px rgba(240, 138, 36, 0.5);
+      0 0 14px rgba(232, 138, 36, 0.40);
   }
 }
 
@@ -340,13 +343,13 @@
     box-shadow: 
       inset 0 0 0 1px var(--track-grid-line),
       0 0 0 2px var(--preview-with),
-      0 0 12px rgba(45, 190, 126, 0.35);
+      0 0 10px rgba(45, 190, 126, 0.30);
   }
   50% { 
     box-shadow: 
       inset 0 0 0 1px var(--track-grid-line),
       0 0 0 3px var(--preview-with),
-      0 0 18px rgba(45, 190, 126, 0.5);
+      0 0 14px rgba(45, 190, 126, 0.40);
   }
 }
 
@@ -355,13 +358,13 @@
     box-shadow: 
       inset 0 0 0 1px var(--track-grid-line),
       0 0 0 2px var(--preview-same),
-      0 0 12px rgba(43, 166, 203, 0.35);
+      0 0 10px rgba(43, 166, 203, 0.30);
   }
   50% { 
     box-shadow: 
       inset 0 0 0 1px var(--track-grid-line),
       0 0 0 3px var(--preview-same),
-      0 0 18px rgba(43, 166, 203, 0.5);
+      0 0 14px rgba(43, 166, 203, 0.40);
   }
 }
 
@@ -374,12 +377,12 @@
   0%, 100% { 
     box-shadow: 
       0 0 0 3px var(--preview-finish),
-      0 0 15px rgba(215, 162, 26, 0.4);
+      0 0 12px rgba(215, 162, 26, 0.35);
   }
   50% { 
     box-shadow: 
-      0 0 0 5px var(--preview-finish),
-      0 0 25px rgba(215, 162, 26, 0.6);
+      0 0 0 4px var(--preview-finish),
+      0 0 18px rgba(215, 162, 26, 0.50);
   }
 }
 
@@ -394,10 +397,10 @@
 
 @keyframes ai-move-flash {
   0% { 
-    transform: scale(1.2);
+    transform: scale(1.15);
     box-shadow: 
-      0 0 15px rgba(255, 255, 255, 0.8),
-      0 0 30px var(--team-blue-light);
+      0 0 12px rgba(255, 255, 255, 0.7),
+      0 0 24px var(--team-blue-light);
   }
   100% { 
     transform: scale(1);
@@ -465,7 +468,7 @@
   top: -20px;
   left: 50%;
   transform: translateX(-50%);
-  background: var(--team-blue-ui);
+  background: var(--color-accent);
   color: white;
   font-family: var(--font-ui);
   font-size: 8px;

@@ -198,21 +198,34 @@ function onRiderClick(rider, team) {
 </script>
 
 <style scoped>
+/* ===========================================
+   TEAMS OVERVIEW - Phase 14 Grid Responsive
+   Évite l'effet "tableur" avec grille 2 colonnes
+   =========================================== */
+
 .teams-overview {
   display: grid;
   grid-template-columns: repeat(2, 1fr);
   gap: var(--space-md);
 }
 
+/* 3 équipes: 2 colonnes, dernière centrée */
 .teams-overview--3 {
-  grid-template-columns: repeat(3, 1fr);
+  grid-template-columns: repeat(2, 1fr);
 }
 
+.teams-overview--3 .team-card:last-child {
+  grid-column: 1 / -1;
+  max-width: 50%;
+  justify-self: center;
+}
+
+/* 4 équipes: grille 2x2 */
 .teams-overview--4 {
   grid-template-columns: repeat(2, 1fr);
 }
 
-/* Team Card - Premium flat style with accent bar */
+/* ---- Team Card ---- */
 .team-card {
   display: flex;
   background: var(--color-surface);
@@ -220,50 +233,58 @@ function onRiderClick(rider, team) {
   border-radius: var(--radius-card);
   overflow: hidden;
   box-shadow: var(--shadow-sm);
-  transition: box-shadow 0.2s;
+  transition: box-shadow 0.2s, transform 0.15s;
+}
+
+.team-card:hover {
+  transform: translateY(-1px);
 }
 
 .team-card--active {
   box-shadow: var(--shadow-sm), 0 0 0 2px var(--color-accent);
 }
 
-/* Accent bar (left) */
+/* Accent bar (left) - subtle tint */
 .team-card-accent {
   width: 5px;
   flex-shrink: 0;
 }
 
-.team-card-accent--team_a { background: var(--team-red-print); opacity: 0.35; }
-.team-card-accent--team_b { background: var(--team-blue-print); opacity: 0.35; }
-.team-card-accent--team_c { background: var(--team-green-print); opacity: 0.35; }
-.team-card-accent--team_d { background: var(--team-yellow-print); opacity: 0.35; }
+.team-card-accent--team_a { background: var(--team-red-print); opacity: 0.40; }
+.team-card-accent--team_b { background: var(--team-blue-print); opacity: 0.40; }
+.team-card-accent--team_c { background: var(--team-green-print); opacity: 0.40; }
+.team-card-accent--team_d { background: var(--team-yellow-print); opacity: 0.40; }
 
 .team-card-content {
   flex: 1;
   display: flex;
   flex-direction: column;
+  min-width: 0;
 }
 
-/* Header strip with very light tint */
+/* ---- Header strip ---- */
 .team-card-header {
   display: flex;
   align-items: center;
   gap: var(--space-sm);
-  padding: var(--space-xs) var(--space-md);
+  padding: var(--space-xs) var(--space-sm);
   border-bottom: 1px solid var(--color-line-subtle);
 }
 
-.team-card-header--team_a { background: rgba(201, 75, 75, 0.06); }
-.team-card-header--team_b { background: rgba(63, 96, 201, 0.06); }
-.team-card-header--team_c { background: rgba(58, 164, 98, 0.06); }
-.team-card-header--team_d { background: rgba(221, 187, 74, 0.06); }
+.team-card-header--team_a { background: var(--team-red-strip); }
+.team-card-header--team_b { background: var(--team-blue-strip); }
+.team-card-header--team_c { background: var(--team-green-strip); }
+.team-card-header--team_d { background: var(--team-yellow-strip); }
 
 .team-card-name {
   flex: 1;
   font-family: var(--font-ui);
-  font-size: 13px;
+  font-size: 12px;
   font-weight: 600;
   color: var(--color-ink);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
 /* Team badges */
@@ -271,7 +292,7 @@ function onRiderClick(rider, team) {
   display: inline-flex;
   align-items: center;
   gap: 2px;
-  padding: 2px 5px;
+  padding: 2px 4px;
   border-radius: var(--radius-sm);
   font-size: 10px;
 }
@@ -283,11 +304,11 @@ function onRiderClick(rider, team) {
 }
 
 .team-badge--active {
-  background: color-mix(in srgb, var(--color-accent) 12%, transparent);
+  background: var(--color-accent-light);
   color: var(--color-accent);
 }
 
-/* Riders List */
+/* ---- Riders List ---- */
 .team-riders-list {
   display: flex;
   flex-direction: column;
@@ -296,41 +317,41 @@ function onRiderClick(rider, team) {
 .rider-row {
   display: flex;
   align-items: center;
-  gap: var(--space-sm);
-  padding: var(--space-xs) var(--space-md);
+  gap: var(--space-xs);
+  padding: 3px var(--space-sm);
   transition: background 0.15s;
 }
 
 .rider-row--clickable {
   cursor: pointer;
-  background: color-mix(in srgb, var(--color-success) 4%, transparent);
+  background: var(--color-action-light);
 }
 
 .rider-row--clickable:hover {
-  background: color-mix(in srgb, var(--color-success) 10%, transparent);
+  background: rgba(58, 164, 98, 0.15);
 }
 
 .rider-row--selected {
-  background: color-mix(in srgb, var(--color-gold) 12%, transparent);
+  background: var(--color-gold-light);
 }
 
-/* Played/disabled state: lower text/icon opacity, keep background */
+/* Played/disabled state */
 .rider-row--played .rider-row-info,
 .rider-row--played .rider-row-pos,
 .rider-row--played .rider-row-cards,
 .rider-row--played .rider-row-energy {
-  opacity: 0.55;
+  opacity: 0.50;
 }
 
 .rider-row--skipping {
-  background: color-mix(in srgb, var(--color-danger) 5%, transparent);
+  background: rgba(216, 74, 74, 0.06);
 }
 
 .rider-row--skipping .rider-row-info,
 .rider-row--skipping .rider-row-pos,
 .rider-row--skipping .rider-row-cards,
 .rider-row--skipping .rider-row-energy {
-  opacity: 0.50;
+  opacity: 0.45;
 }
 
 .rider-row-info {
@@ -342,7 +363,7 @@ function onRiderClick(rider, team) {
 
 .rider-row-name {
   font-family: var(--font-ui);
-  font-size: 12px;
+  font-size: 11px;
   font-weight: 500;
   color: var(--color-ink);
   white-space: nowrap;
@@ -351,41 +372,41 @@ function onRiderClick(rider, team) {
 }
 
 .rider-row-type {
-  font-size: 10px;
+  font-size: 9px;
   color: var(--color-ink-muted);
 }
 
 .rider-row-pos {
   font-family: var(--font-mono);
-  font-size: 11px;
+  font-size: 10px;
   color: var(--color-ink-muted);
-  min-width: 20px;
+  min-width: 18px;
   text-align: right;
 }
 
 /* Cards Count */
 .rider-row-cards {
   display: flex;
-  gap: 4px;
+  gap: 3px;
 }
 
 .card-count {
   display: inline-flex;
   align-items: center;
   gap: 1px;
-  color: var(--color-ink-muted);
-  font-size: 10px;
+  color: var(--color-ink-subtle);
+  font-size: 9px;
   font-family: var(--font-mono);
 }
 
 /* Energy Mini Bar */
 .rider-row-energy {
-  width: 36px;
+  width: 32px;
 }
 
 .energy-bar-mini {
   width: 100%;
-  height: 4px;
+  height: 3px;
   background: var(--color-canvas);
   border-radius: 2px;
   overflow: hidden;
@@ -397,9 +418,9 @@ function onRiderClick(rider, team) {
   transition: width 0.3s ease;
 }
 
-/* Status Indicator - Premium mini badge */
+/* Status Indicator */
 .rider-status {
-  width: 20px;
+  width: 18px;
   display: flex;
   justify-content: center;
 }
@@ -408,8 +429,8 @@ function onRiderClick(rider, team) {
   display: flex;
   align-items: center;
   justify-content: center;
-  width: 18px;
-  height: 18px;
+  width: 16px;
+  height: 16px;
   border-radius: 50%;
   background: var(--color-paper);
   border: 1px solid var(--color-line);
@@ -417,29 +438,43 @@ function onRiderClick(rider, team) {
 
 .rider-status-badge--finish {
   color: var(--color-success);
-  border-color: color-mix(in srgb, var(--color-success) 30%, transparent);
+  border-color: var(--color-action-light);
 }
 
 .rider-status-badge--crash {
   color: var(--color-danger);
-  border-color: color-mix(in srgb, var(--color-danger) 30%, transparent);
+  border-color: rgba(216, 74, 74, 0.20);
 }
 
 .rider-status-badge--done {
-  color: var(--color-ink-muted);
-  border-color: var(--color-line);
+  color: var(--color-ink-subtle);
 }
 
-/* Responsive */
+/* ---- Responsive ---- */
 @media (max-width: 900px) {
+  .teams-overview,
+  .teams-overview--3,
+  .teams-overview--4 {
+    grid-template-columns: 1fr 1fr;
+  }
+  
+  .teams-overview--3 .team-card:last-child {
+    max-width: 100%;
+  }
+}
+
+@media (max-width: 600px) {
   .teams-overview,
   .teams-overview--3,
   .teams-overview--4 {
     grid-template-columns: 1fr;
   }
-}
-
-@media (max-width: 600px) {
+  
+  .teams-overview--3 .team-card:last-child {
+    max-width: 100%;
+    justify-self: stretch;
+  }
+  
   .rider-row-cards {
     display: none;
   }

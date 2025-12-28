@@ -1,33 +1,40 @@
 <template>
   <div class="race-notebook" :class="{ 'race-notebook--expanded': isExpanded }">
-    <!-- Header -->
-    <div class="notebook-header">
+    <!-- Header (always visible, clickable to expand) -->
+    <button class="notebook-header" @click="toggleExpand">
       <div class="notebook-header-left">
         <UIIcon type="history" size="sm" class="notebook-icon" />
         <span class="notebook-title">Historique</span>
+        <span v-if="log.length > 0" class="notebook-count">{{ log.length }}</span>
       </div>
       <div class="notebook-header-right">
         <span v-if="currentTurn" class="notebook-turn-badge">Tour {{ currentTurn }}</span>
+        <span class="notebook-expand-hint">{{ isExpanded ? 'Replier' : 'Déplier' }}</span>
+        <UIIcon :type="isExpanded ? 'chevron-up' : 'chevron-down'" size="sm" class="notebook-chevron" />
+      </div>
+    </button>
+
+    <!-- Body (drawer, hidden by default) -->
+    <div v-if="isExpanded" class="notebook-body" ref="logContainer">
+      <!-- Controls -->
+      <div class="notebook-controls">
         <button 
-          v-if="isExpanded" 
           class="notebook-toggle-autoscroll"
           :class="{ 'active': autoScroll }"
           @click.stop="autoScroll = !autoScroll"
-          title="Auto-scroll"
+          title="Auto-scroll vers le bas"
         >
           <UIIcon type="chevron-down" size="xs" />
+          <span>Auto</span>
         </button>
       </div>
-    </div>
-
-    <!-- Body -->
-    <div class="notebook-body" ref="logContainer">
+      
       <!-- Left margin line (notebook effect) -->
       <div class="notebook-margin"></div>
       
       <!-- Entries -->
       <div class="notebook-entries">
-        <template v-for="(entry, i) in displayedLog" :key="i">
+        <template v-for="(entry, i) in log" :key="i">
           <!-- Tour separator -->
           <div v-if="isTourHeader(entry)" class="notebook-tour-cartouche">
             <span>{{ getTourLabel(entry) }}</span>
@@ -53,16 +60,12 @@
           </div>
         </template>
       </div>
-      
-      <!-- Fade overlay when collapsed -->
-      <div v-if="!isExpanded && log.length > 5" class="notebook-fade"></div>
     </div>
 
-    <!-- Expand/Collapse CTA -->
-    <button class="notebook-cta" @click="toggleExpand">
-      <span>{{ isExpanded ? 'Replier' : 'Déplier l\'historique' }}</span>
-      <UIIcon :type="isExpanded ? 'chevron-up' : 'chevron-down'" size="sm" />
-    </button>
+    <!-- Collapsed preview (when closed) -->
+    <div v-else-if="log.length > 0" class="notebook-preview">
+      <span class="notebook-preview-text">{{ getLastEntryPreview() }}</span>
+    </div>
   </div>
 </template>
 
@@ -75,7 +78,7 @@ const props = defineProps({
 });
 
 const logContainer = ref(null);
-const isExpanded = ref(false);
+const isExpanded = ref(false);  // Drawer closed by default
 const autoScroll = ref(true);
 
 // Extract current turn from log
@@ -86,12 +89,6 @@ const currentTurn = computed(() => {
     if (match) return parseInt(match[1]);
   }
   return null;
-});
-
-// Show last 6 entries when collapsed, all when expanded
-const displayedLog = computed(() => {
-  if (isExpanded.value) return props.log;
-  return props.log.slice(-6);
 });
 
 function toggleExpand() {
@@ -108,6 +105,13 @@ watch(() => props.log.length, async () => {
 function getEntryText(entry) {
   if (typeof entry === 'string') return entry;
   return entry.message || entry.text || '';
+}
+
+function getLastEntryPreview() {
+  if (props.log.length === 0) return '';
+  const lastEntry = props.log[props.log.length - 1];
+  const text = getCleanText(lastEntry);
+  return text.length > 60 ? text.substring(0, 57) + '...' : text;
 }
 
 function isTourHeader(entry) {
@@ -184,28 +188,35 @@ function getIconClass(entry) {
 
 <style scoped>
 /* ===========================================
-   RACE NOTEBOOK - "Carnet de course" style
+   RACE NOTEBOOK - Drawer "Carnet de course"
+   Phase 14: Closed by default, lighter tones
    =========================================== */
 
 .race-notebook {
-  /* Warm slate background (not black) */
-  background: #3D4147;
-  border: 1px solid rgba(255, 255, 255, 0.05);
+  /* Lighter warm slate (less charcoal) */
+  background: #4A4E54;
+  border: 1px solid rgba(255, 255, 255, 0.06);
   border-radius: var(--radius-card);
   overflow: hidden;
-  box-shadow: 0 6px 24px rgba(31, 35, 40, 0.12);
+  box-shadow: 0 4px 16px rgba(31, 35, 40, 0.10);
   display: flex;
   flex-direction: column;
 }
 
-/* ---- Header ---- */
+/* ---- Header (clickable to toggle) ---- */
 .notebook-header {
   display: flex;
   align-items: center;
   justify-content: space-between;
   padding: var(--space-sm) var(--space-md);
   background: rgba(255, 255, 255, 0.03);
-  border-bottom: 1px solid rgba(255, 255, 255, 0.04);
+  border: none;
+  cursor: pointer;
+  transition: background 0.15s;
+}
+
+.notebook-header:hover {
+  background: rgba(255, 255, 255, 0.06);
 }
 
 .notebook-header-left {
@@ -215,16 +226,25 @@ function getIconClass(entry) {
 }
 
 .notebook-icon {
-  color: rgba(235, 225, 210, 0.50);
+  color: rgba(240, 232, 220, 0.55);
 }
 
 .notebook-title {
   font-family: var(--font-ui);
-  font-size: 11px;
+  font-size: 12px;
   font-weight: 600;
-  color: rgba(235, 225, 210, 0.65);
+  color: rgba(240, 232, 220, 0.70);
   text-transform: uppercase;
-  letter-spacing: 0.8px;
+  letter-spacing: 0.6px;
+}
+
+.notebook-count {
+  font-family: var(--font-mono);
+  font-size: 10px;
+  color: rgba(240, 232, 220, 0.45);
+  background: rgba(255, 255, 255, 0.06);
+  padding: 2px 6px;
+  border-radius: 8px;
 }
 
 .notebook-header-right {
@@ -236,71 +256,95 @@ function getIconClass(entry) {
 .notebook-turn-badge {
   font-family: var(--font-mono);
   font-size: 10px;
-  color: rgba(235, 225, 210, 0.45);
+  color: rgba(240, 232, 220, 0.50);
   background: rgba(255, 255, 255, 0.05);
   padding: 2px 8px;
   border-radius: 10px;
 }
 
+.notebook-expand-hint {
+  font-family: var(--font-ui);
+  font-size: 11px;
+  color: rgba(240, 232, 220, 0.45);
+}
+
+.notebook-chevron {
+  color: rgba(240, 232, 220, 0.50);
+  transition: transform 0.2s;
+}
+
+.race-notebook--expanded .notebook-chevron {
+  transform: rotate(180deg);
+}
+
+/* ---- Collapsed preview ---- */
+.notebook-preview {
+  padding: var(--space-xs) var(--space-md);
+  border-top: 1px solid rgba(255, 255, 255, 0.04);
+}
+
+.notebook-preview-text {
+  font-family: var(--font-ui);
+  font-size: 11px;
+  color: rgba(240, 232, 220, 0.50);
+  font-style: italic;
+}
+
+/* ---- Body (drawer content) ---- */
+.notebook-body {
+  position: relative;
+  display: flex;
+  max-height: 300px;  /* Reduced from 400px */
+  overflow-y: auto;
+  border-top: 1px solid rgba(255, 255, 255, 0.04);
+}
+
+/* Controls bar */
+.notebook-controls {
+  position: absolute;
+  top: var(--space-xs);
+  right: var(--space-sm);
+  z-index: 5;
+}
+
 .notebook-toggle-autoscroll {
-  background: rgba(255, 255, 255, 0.05);
+  display: flex;
+  align-items: center;
+  gap: 3px;
+  background: rgba(255, 255, 255, 0.06);
   border: none;
-  padding: 3px;
+  padding: 3px 8px;
   border-radius: 4px;
   cursor: pointer;
-  color: rgba(235, 225, 210, 0.35);
-  display: flex;
+  font-family: var(--font-ui);
+  font-size: 10px;
+  color: rgba(240, 232, 220, 0.40);
   transition: all 0.15s;
 }
 
 .notebook-toggle-autoscroll:hover {
-  background: rgba(255, 255, 255, 0.08);
-  color: rgba(235, 225, 210, 0.55);
+  background: rgba(255, 255, 255, 0.10);
+  color: rgba(240, 232, 220, 0.60);
 }
 
 .notebook-toggle-autoscroll.active {
-  color: rgba(140, 200, 160, 0.80);
-}
-
-/* ---- Body ---- */
-.notebook-body {
-  position: relative;
-  display: flex;
-  max-height: 160px;
-  overflow: hidden;
-  transition: max-height 0.25s ease;
-}
-
-.race-notebook--expanded .notebook-body {
-  max-height: 400px;
-  overflow-y: auto;
+  color: rgba(140, 200, 160, 0.85);
 }
 
 /* Left margin line (notebook effect) */
 .notebook-margin {
-  width: 18px;
+  width: 16px;
   flex-shrink: 0;
   background: rgba(255, 255, 255, 0.015);
-  border-right: 1px solid rgba(200, 180, 160, 0.12);
+  border-right: 1px solid rgba(210, 190, 170, 0.10);
 }
 
 .notebook-entries {
   flex: 1;
-  padding: var(--space-xs) var(--space-sm);
+  padding: var(--space-sm);
   display: flex;
   flex-direction: column;
-  gap: 1px;
-}
-
-/* Fade overlay when collapsed */
-.notebook-fade {
-  position: absolute;
-  bottom: 0;
-  left: 18px;
-  right: 0;
-  height: 50px;
-  background: linear-gradient(to bottom, transparent, #3D4147);
-  pointer-events: none;
+  gap: 2px;
 }
 
 /* ---- Tour Cartouche ---- */
@@ -315,11 +359,11 @@ function getIconClass(entry) {
   font-family: var(--font-ui);
   font-size: 10px;
   font-weight: 600;
-  color: rgba(220, 200, 160, 0.70);
+  color: rgba(225, 210, 180, 0.70);
   text-transform: uppercase;
   letter-spacing: 1px;
-  background: rgba(255, 255, 255, 0.04);
-  padding: 3px 12px;
+  background: rgba(255, 255, 255, 0.05);
+  padding: 3px 14px;
   border-radius: 10px;
 }
 
@@ -328,22 +372,22 @@ function getIconClass(entry) {
   display: flex;
   align-items: center;
   gap: 6px;
-  padding: 3px 6px;
-  border-radius: 3px;
+  padding: 4px 8px;
+  border-radius: 4px;
   font-family: var(--font-ui);
   font-size: 12px;
   line-height: 1.4;
-  color: rgba(235, 225, 210, 0.65);
+  color: rgba(240, 232, 220, 0.72);
   transition: background 0.1s;
 }
 
 .notebook-entry:hover {
-  background: rgba(255, 255, 255, 0.035);
+  background: rgba(255, 255, 255, 0.04);
 }
 
 .notebook-entry--separator {
   height: 1px;
-  background: rgba(255, 255, 255, 0.03);
+  background: rgba(255, 255, 255, 0.04);
   margin: var(--space-xs) 0;
   padding: 0;
 }
@@ -353,13 +397,13 @@ function getIconClass(entry) {
   width: 5px;
   height: 5px;
   border-radius: 50%;
-  background: rgba(235, 225, 210, 0.35);
+  background: rgba(240, 232, 220, 0.40);
   flex-shrink: 0;
 }
 
-.notebook-entry-marker.marker--success { background: rgba(130, 200, 150, 0.70); }
-.notebook-entry-marker.marker--warning { background: rgba(220, 180, 120, 0.70); }
-.notebook-entry-marker.marker--danger { background: rgba(200, 130, 130, 0.70); }
+.notebook-entry-marker.marker--success { background: rgba(140, 210, 160, 0.75); }
+.notebook-entry-marker.marker--warning { background: rgba(230, 190, 130, 0.75); }
+.notebook-entry-marker.marker--danger { background: rgba(210, 140, 140, 0.75); }
 
 /* Team pip (mini badge) */
 .notebook-team-pip {
@@ -369,22 +413,22 @@ function getIconClass(entry) {
   flex-shrink: 0;
 }
 
-.notebook-team-pip--team_a { background: rgba(201, 100, 100, 0.70); }
-.notebook-team-pip--team_b { background: rgba(100, 130, 201, 0.70); }
-.notebook-team-pip--team_c { background: rgba(100, 170, 120, 0.70); }
-.notebook-team-pip--team_d { background: rgba(200, 175, 90, 0.70); }
+.notebook-team-pip--team_a { background: rgba(201, 100, 100, 0.75); }
+.notebook-team-pip--team_b { background: rgba(100, 130, 201, 0.75); }
+.notebook-team-pip--team_c { background: rgba(100, 175, 125, 0.75); }
+.notebook-team-pip--team_d { background: rgba(210, 185, 100, 0.75); }
 
 /* Entry icon */
 .notebook-entry-icon {
   flex-shrink: 0;
-  opacity: 0.55;
-  color: rgba(235, 225, 210, 0.65);
+  opacity: 0.60;
+  color: rgba(240, 232, 220, 0.70);
 }
 
-.notebook-entry-icon.icon--success { color: rgba(130, 200, 150, 0.80); }
-.notebook-entry-icon.icon--info { color: rgba(140, 180, 220, 0.75); }
-.notebook-entry-icon.icon--warning { color: rgba(220, 180, 120, 0.80); }
-.notebook-entry-icon.icon--danger { color: rgba(200, 130, 130, 0.80); }
+.notebook-entry-icon.icon--success { color: rgba(140, 210, 160, 0.85); }
+.notebook-entry-icon.icon--info { color: rgba(150, 190, 230, 0.80); }
+.notebook-entry-icon.icon--warning { color: rgba(230, 190, 130, 0.85); }
+.notebook-entry-icon.icon--danger { color: rgba(210, 140, 140, 0.85); }
 
 /* Entry text */
 .notebook-entry-text {
@@ -394,31 +438,9 @@ function getIconClass(entry) {
   text-overflow: ellipsis;
 }
 
-/* ---- CTA Button ---- */
-.notebook-cta {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: var(--space-xs);
-  padding: var(--space-xs) var(--space-md);
-  background: rgba(255, 255, 255, 0.03);
-  border: none;
-  border-top: 1px solid rgba(255, 255, 255, 0.04);
-  cursor: pointer;
-  font-family: var(--font-ui);
-  font-size: 11px;
-  color: rgba(235, 225, 210, 0.50);
-  transition: all 0.15s;
-}
-
-.notebook-cta:hover {
-  background: rgba(255, 255, 255, 0.05);
-  color: rgba(235, 225, 210, 0.70);
-}
-
 /* ---- Scrollbar ---- */
 .notebook-body::-webkit-scrollbar {
-  width: 4px;
+  width: 5px;
 }
 
 .notebook-body::-webkit-scrollbar-track {
@@ -426,11 +448,11 @@ function getIconClass(entry) {
 }
 
 .notebook-body::-webkit-scrollbar-thumb {
-  background: rgba(255, 255, 255, 0.10);
-  border-radius: 2px;
+  background: rgba(255, 255, 255, 0.12);
+  border-radius: 3px;
 }
 
 .notebook-body::-webkit-scrollbar-thumb:hover {
-  background: rgba(255, 255, 255, 0.18);
+  background: rgba(255, 255, 255, 0.20);
 }
 </style>

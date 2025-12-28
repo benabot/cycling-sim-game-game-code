@@ -1,7 +1,7 @@
 /**
  * Design Tokens - Cycling Race Board Game
  * Design System: "Plateau Premium" (Option A1)
- * Version: 1.0
+ * Version: 1.1 - Phase 14 consistency pass
  */
 
 :root {
@@ -10,23 +10,40 @@
      ======================================== */
   --color-ink: #1F2328;
   --color-ink-soft: rgba(31, 35, 40, 0.78);
-  --color-ink-muted: rgba(31, 35, 40, 0.60);
-  --color-ink-subtle: rgba(31, 35, 40, 0.40);
+  --color-ink-muted: rgba(31, 35, 40, 0.55);
+  --color-ink-subtle: rgba(31, 35, 40, 0.35);
   
   --color-paper: #FCFBF7;
   --color-surface: #FFFFFF;
   --color-surface-warm: #FFFEFB;
-  --color-board: #ECE6D8;          /* Fond "carton" premium */
+  --color-board: #E8E2D4;          /* Fond "carton" plus chaud */
   --color-canvas: #F5F3ED;         /* Fond sections internes */
   --color-muted: #6B7280;
   
-  --color-line: rgba(31, 35, 40, 0.15);           /* Réduit de #D7D3C8 */
-  --color-line-strong: rgba(31, 35, 40, 0.30);     /* Réduit de 0.40 */
-  --color-line-subtle: rgba(31, 35, 40, 0.12);     /* Réduit de 0.22 */
-  --color-line-focus: rgba(31, 35, 40, 0.40);      /* Pour focus/sélection uniquement */
+  --color-line: rgba(31, 35, 40, 0.12);
+  --color-line-strong: rgba(31, 35, 40, 0.22);
+  --color-line-subtle: rgba(31, 35, 40, 0.08);
+  --color-line-focus: rgba(31, 35, 40, 0.35);
   
-  --color-shadow: rgba(31, 35, 40, 0.12);
-  --color-shadow-strong: rgba(31, 35, 40, 0.18);
+  --color-shadow: rgba(31, 35, 40, 0.10);
+  --color-shadow-strong: rgba(31, 35, 40, 0.16);
+
+  /* ========================================
+     1b. ACCENT COLORS (Phase 14 - Unified)
+     
+     Règle: 
+     - --color-accent = CTA principal partout (bleu)
+     - --color-action = Actions de jeu (vert/or selon contexte)
+     ======================================== */
+  --color-accent: #2F6FED;              /* Bleu UI - boutons, focus, liens */
+  --color-accent-hover: #2560D8;
+  --color-accent-active: #1E50C0;
+  --color-accent-light: rgba(47, 111, 237, 0.12);
+  
+  --color-action: #3AA462;               /* Vert course - avancer, confirmer */
+  --color-action-hover: #328F57;
+  --color-action-active: #2A7A4B;
+  --color-action-light: rgba(58, 164, 98, 0.12);
 
   /* ========================================
      2. TERRAIN COLORS (Pastels)
@@ -37,63 +54,64 @@
   --terrain-descent: #D8E9F7;
   --terrain-sprint: #E6DDF6;
   
-  --track-grid-line: rgba(31, 35, 40, 0.12);      /* Réduit de 0.22 */
-  --track-section-line: rgba(31, 35, 40, 0.25);    /* Réduit de 0.40 */
+  /* Grid lines for track cells */
+  --track-grid-line: rgba(31, 35, 40, 0.10);
+  --track-section-line: rgba(31, 35, 40, 0.20);
 
   /* ========================================
      3. TEAM COLORS (UI = saturé, Print = poussiéreux)
      ======================================== */
   --team-red-ui: #D84A4A;
   --team-red-print: #C94B4B;
-  --team-red-accent: rgba(201, 75, 75, 0.22);
-  --team-red-strip: rgba(201, 75, 75, 0.10);
-  --team-red-light: rgba(216, 74, 74, 0.12);
+  --team-red-accent: rgba(201, 75, 75, 0.18);
+  --team-red-strip: rgba(201, 75, 75, 0.08);
+  --team-red-light: rgba(216, 74, 74, 0.10);
   
   --team-blue-ui: #2F6FED;
   --team-blue-print: #3F60C9;
-  --team-blue-accent: rgba(63, 96, 201, 0.22);
-  --team-blue-strip: rgba(63, 96, 201, 0.10);
-  --team-blue-light: rgba(47, 111, 237, 0.12);
+  --team-blue-accent: rgba(63, 96, 201, 0.18);
+  --team-blue-strip: rgba(63, 96, 201, 0.08);
+  --team-blue-light: rgba(47, 111, 237, 0.10);
   
   --team-green-ui: #35B56A;
   --team-green-print: #3AA462;
-  --team-green-accent: rgba(58, 164, 98, 0.22);
-  --team-green-strip: rgba(58, 164, 98, 0.10);
-  --team-green-light: rgba(53, 181, 106, 0.12);
+  --team-green-accent: rgba(58, 164, 98, 0.18);
+  --team-green-strip: rgba(58, 164, 98, 0.08);
+  --team-green-light: rgba(53, 181, 106, 0.10);
   
-  --team-yellow-ui: #F2C94C;
-  --team-yellow-print: #DDBB4A;
-  --team-yellow-accent: rgba(221, 187, 74, 0.28);
-  --team-yellow-strip: rgba(221, 187, 74, 0.12);
-  --team-yellow-light: rgba(242, 201, 76, 0.15);
+  --team-yellow-ui: #E5B82A;
+  --team-yellow-print: #D4A82A;
+  --team-yellow-accent: rgba(212, 168, 42, 0.22);
+  --team-yellow-strip: rgba(212, 168, 42, 0.10);
+  --team-yellow-light: rgba(229, 184, 42, 0.12);
 
   /* ========================================
      4. SEMANTIC COLORS
      ======================================== */
   --color-gold: #D7A21A;
-  --color-gold-light: rgba(215, 162, 26, 0.15);
+  --color-gold-light: rgba(215, 162, 26, 0.12);
   
-  --preview-without: #F08A24;
+  --preview-without: #E88A24;
   --preview-with: #2DBE7E;
   --preview-same: #2BA6CB;
   --preview-finish: #D7A21A;
   
-  --state-success: #35B56A;
-  --state-warning: #F2C94C;
-  --state-error: #D84A4A;
-  --state-info: #2F6FED;
+  --color-success: #35B56A;
+  --color-warning: #E5B82A;
+  --color-danger: #D84A4A;
+  --color-info: #2F6FED;
   
   --state-disabled-text: rgba(31, 35, 40, 0.40);
-  --state-disabled-bg: rgba(31, 35, 40, 0.08);
+  --state-disabled-bg: rgba(31, 35, 40, 0.06);
 
   /* ========================================
      4b. CARD COLORS (Désaturées "plateau")
      ======================================== */
-  --card-movement-1: #E8E4D8;        /* Relais - gris chaud */
-  --card-movement-2: #E5EDE4;        /* Tempo - vert très pâle */
-  --card-movement-3: #EDE9E4;        /* Effort - beige neutre */
-  --card-attack: #DED8E8;            /* Attaque - violet poudreux */
-  --card-specialty: #D8E8DC;         /* Spécialité - vert poudreux */
+  --card-movement-1: #E8E4D8;
+  --card-movement-2: #E5EDE4;
+  --card-movement-3: #EDE9E4;
+  --card-attack: #DED8E8;
+  --card-specialty: #D8E8DC;
 
   /* ========================================
      5. SPACING (base = 8px)
@@ -120,10 +138,10 @@
   /* ========================================
      7. SHADOWS (Premium, soft - no glow)
      ======================================== */
-  --shadow-sm: 0 3px 10px var(--color-shadow);
-  --shadow-md: 0 8px 24px var(--color-shadow);
-  --shadow-lg: 0 12px 32px var(--color-shadow-strong);
-  --shadow-inset: inset 0 1px 2px rgba(31, 35, 40, 0.08);
+  --shadow-sm: 0 2px 8px var(--color-shadow);
+  --shadow-md: 0 6px 20px var(--color-shadow);
+  --shadow-lg: 0 10px 28px var(--color-shadow-strong);
+  --shadow-inset: inset 0 1px 2px rgba(31, 35, 40, 0.06);
 
   /* ========================================
      8. TRANSITIONS
