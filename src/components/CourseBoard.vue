@@ -9,27 +9,30 @@
         title="Départ (case 0)"
       >
         <span class="track-cell-number">0</span>
-        <div class="track-cell-riders track-cell-riders--start">
+        <div class="track-cell-riders-start">
+          <!-- Group riders by team -->
           <div 
-            v-for="rider in getRidersAt(0)" 
-            :key="rider.id"
-            class="track-rider-wrapper"
-            :class="{ 'track-rider-wrapper--aspiration': getAspirationInfo(rider.id) }"
+            v-for="teamId in getTeamsAtStart()" 
+            :key="teamId"
+            class="track-start-team"
           >
-            <div v-if="getAspirationInfo(rider.id)" class="track-aspiration-badge">
-              Aspiration
+            <div 
+              v-for="rider in getRidersByTeamAt(0, teamId)" 
+              :key="rider.id"
+              class="track-rider-wrapper"
+              :class="{ 'track-rider-wrapper--aspiration': getAspirationInfo(rider.id) }"
+            >
+              <RiderToken 
+                :rider="rider"
+                :isSelected="rider.id === selectedRiderId"
+                :isAnimating="animatingRiders.includes(rider.id)"
+                :isLeader="isLeader(rider, 0)"
+                :hasPlayed="hasPlayed(rider.id)"
+                mini
+              />
             </div>
-            <RiderToken 
-              :rider="rider"
-              :isSelected="rider.id === selectedRiderId"
-              :isAnimating="animatingRiders.includes(rider.id)"
-              :isLeader="isLeader(rider, 0)"
-              :hasPlayed="hasPlayed(rider.id)"
-              compact
-            />
           </div>
         </div>
-        <span v-if="countAt(0) > 1" class="track-cell-count">{{ countAt(0) }}/4</span>
       </div>
       
       <!-- Course cells -->
@@ -68,7 +71,7 @@
           Cible
         </div>
         
-        <!-- Riders -->
+        <!-- Riders in 2x2 grid -->
         <div class="track-cell-riders">
           <div 
             v-for="rider in getRidersAt(index + 1)" 
@@ -85,6 +88,7 @@
               :isAnimating="animatingRiders.includes(rider.id)"
               :isLeader="isLeader(rider, index + 1)"
               :hasPlayed="hasPlayed(rider.id)"
+              compact
             />
           </div>
         </div>
@@ -111,7 +115,7 @@
             :key="rider.id"
             :rider="rider"
             :hasPlayed="hasPlayed(rider.id)"
-            compact
+            mini
           />
         </div>
       </div>
@@ -148,6 +152,20 @@ const isPreviewWithoutFinish = computed(() =>
 const isPreviewWithFinish = computed(() => 
   props.previewPositions?.crossingFinishWith
 );
+
+// Get unique team IDs at start position
+function getTeamsAtStart() {
+  const riders = props.riders.filter(r => r.position === 0);
+  const teamIds = [...new Set(riders.map(r => r.teamId))];
+  return teamIds.sort();
+}
+
+// Get riders by team at a position
+function getRidersByTeamAt(position, teamId) {
+  return props.riders
+    .filter(r => r.position === position && r.teamId === teamId)
+    .sort((a, b) => (a.arrivalOrder || 0) - (b.arrivalOrder || 0));
+}
 
 // Generate cell classes based on terrain and state
 function getCellClasses(cell, index) {
@@ -267,26 +285,65 @@ function getAspirationInfo(riderId) {
 <style scoped>
 /* Local overrides only - main styles in track.css */
 
-/* Fixed height for cells: can fit 2x2 tokens */
-.track-cell {
-  height: 100px;
+/* Track container - no vertical scroll */
+.track-container {
+  overflow-x: auto;
+  overflow-y: hidden;
 }
 
-/* Riders container: 2x2 grid for max 4 tokens */
+/* Fixed height for cells: fit 2x2 compact tokens (28px each) */
+.track-cell {
+  height: 88px;
+  width: 56px;
+}
+
+/* Riders container: 2x2 grid for max 4 compact tokens */
 .track-cell-riders {
   display: grid;
-  grid-template-columns: repeat(2, 1fr);
+  grid-template-columns: repeat(2, 28px);
+  grid-template-rows: repeat(2, 28px);
   gap: 2px;
-  justify-items: center;
-  align-items: center;
+  justify-content: center;
+  align-content: center;
   flex: 1;
+}
+
+/* Start cell: wider, contains teams side by side */
+.track-cell--start {
+  width: auto;
+  min-width: 80px;
+  height: 88px;
+}
+
+/* Start cell riders: teams in columns */
+.track-cell-riders-start {
+  display: flex;
+  gap: 4px;
+  flex: 1;
+  justify-content: center;
+  align-items: center;
   padding: 2px;
 }
 
-/* Start cell: can stack more, compact tokens */
-.track-cell-riders--start {
-  grid-template-columns: repeat(2, 1fr);
-  grid-template-rows: repeat(auto-fill, minmax(28px, 1fr));
+/* Each team column at start */
+.track-start-team {
+  display: grid;
+  grid-template-columns: repeat(2, 20px);
+  grid-template-rows: repeat(3, 20px);
+  gap: 1px;
+  align-content: center;
+}
+
+/* Finish zone: fit mini tokens */
+.track-finish-zone {
+  height: 88px;
+}
+
+.track-finished-riders {
+  display: grid;
+  grid-template-columns: repeat(3, 20px);
+  gap: 2px;
+  justify-content: center;
 }
 
 /* Finish icon */

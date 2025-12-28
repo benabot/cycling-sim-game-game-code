@@ -11,8 +11,9 @@
 
 .track-container {
   overflow-x: auto;
-  padding: var(--space-md) 0;
-  margin-bottom: var(--space-lg);
+  overflow-y: hidden;
+  padding: var(--space-sm) 0;
+  margin-bottom: var(--space-md);
 }
 
 .track-container::-webkit-scrollbar {
@@ -44,15 +45,16 @@
    ======================================== */
 
 .track-cell {
-  width: 52px;
-  min-height: 72px;
+  width: 56px;
+  height: 88px;
   display: flex;
   flex-direction: column;
   align-items: center;
-  padding: var(--space-xs) 3px;
+  padding: 4px 3px;
   border-radius: var(--radius-sm);
   position: relative;
   transition: box-shadow var(--transition-fast), transform var(--transition-fast);
+  flex-shrink: 0;
   
   /* Subtle inner border for "felt" look */
   box-shadow: inset 0 0 0 1px var(--track-grid-line);
@@ -72,14 +74,15 @@
   margin-bottom: 2px;
 }
 
-/* Riders container */
+/* Riders container: 2x2 grid for max 4 tokens */
 .track-cell-riders {
-  display: flex;
-  flex-wrap: wrap;
+  display: grid;
+  grid-template-columns: repeat(2, 28px);
+  grid-template-rows: repeat(2, 28px);
   gap: 2px;
   justify-content: center;
+  align-content: center;
   flex: 1;
-  align-items: center;
 }
 
 /* Cell count badge */
@@ -187,12 +190,14 @@
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  padding: var(--space-md);
+  padding: var(--space-sm);
   background: linear-gradient(135deg, var(--terrain-flat) 0%, #C8EDCE 100%);
   border-radius: var(--radius-md);
   border: 2px solid var(--state-success);
   min-width: 70px;
-  gap: var(--space-sm);
+  height: 88px;
+  gap: 4px;
+  flex-shrink: 0;
 }
 
 .track-finish-flag {
@@ -210,9 +215,9 @@
 }
 
 .track-finished-riders {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 4px;
+  display: grid;
+  grid-template-columns: repeat(3, 20px);
+  gap: 2px;
   justify-content: center;
 }
 
