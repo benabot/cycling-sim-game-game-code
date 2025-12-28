@@ -10,15 +10,17 @@
     stroke-linecap="round" 
     stroke-linejoin="round"
   >
-    <!-- AI Robot -->
+    <!-- AI Chip (minimalist circuit) -->
     <g v-if="type === 'ai'">
-      <rect x="3" y="4" width="18" height="14" rx="3" />
-      <circle cx="8" cy="11" r="1.5" fill="currentColor" stroke="none" />
-      <circle cx="16" cy="11" r="1.5" fill="currentColor" stroke="none" />
-      <path d="M9 15h6" />
-      <path d="M12 4V2" />
-      <path d="M5 18v2" />
-      <path d="M19 18v2" />
+      <rect x="6" y="6" width="12" height="12" rx="2" />
+      <path d="M6 10H3" />
+      <path d="M6 14H3" />
+      <path d="M18 10h3" />
+      <path d="M18 14h3" />
+      <path d="M10 6V3" />
+      <path d="M14 6V3" />
+      <path d="M10 18v3" />
+      <path d="M14 18v3" />
     </g>
 
     <!-- Human -->

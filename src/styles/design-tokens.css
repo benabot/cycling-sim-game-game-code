@@ -42,18 +42,26 @@
      ======================================== */
   --team-red-ui: #D84A4A;
   --team-red-print: #C94B4B;
+  --team-red-accent: rgba(201, 75, 75, 0.22);
+  --team-red-strip: rgba(201, 75, 75, 0.10);
   --team-red-light: rgba(216, 74, 74, 0.12);
   
   --team-blue-ui: #2F6FED;
   --team-blue-print: #3F60C9;
+  --team-blue-accent: rgba(63, 96, 201, 0.22);
+  --team-blue-strip: rgba(63, 96, 201, 0.10);
   --team-blue-light: rgba(47, 111, 237, 0.12);
   
   --team-green-ui: #35B56A;
   --team-green-print: #3AA462;
+  --team-green-accent: rgba(58, 164, 98, 0.22);
+  --team-green-strip: rgba(58, 164, 98, 0.10);
   --team-green-light: rgba(53, 181, 106, 0.12);
   
   --team-yellow-ui: #F2C94C;
   --team-yellow-print: #DDBB4A;
+  --team-yellow-accent: rgba(221, 187, 74, 0.28);
+  --team-yellow-strip: rgba(221, 187, 74, 0.12);
   --team-yellow-light: rgba(242, 201, 76, 0.15);
 
   /* ========================================

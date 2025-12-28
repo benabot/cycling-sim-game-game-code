@@ -89,15 +89,32 @@
   background-color: #c43d3d;
 }
 
-/* Success Button */
+/* Success Button (premium ardoise) */
 .btn-success {
-  background-color: var(--team-green-ui);
-  color: white;
-  border-color: var(--team-green-ui);
+  background-color: var(--color-ink);
+  color: var(--color-paper);
+  border-color: var(--color-ink);
+  box-shadow: var(--shadow-sm);
 }
 
 .btn-success:hover:not(:disabled) {
-  background-color: #2ea35d;
+  background-color: #2A2F35;
+  border-color: #2A2F35;
+}
+
+.btn-success:active:not(:disabled) {
+  background-color: #1A1E22;
+}
+
+/* Success Button - Green variant (opt-in) */
+.btn-success-green {
+  background-color: var(--team-green-print);
+  color: white;
+  border-color: var(--team-green-print);
+}
+
+.btn-success-green:hover:not(:disabled) {
+  background-color: #328f57;
 }
 
 /* Button Sizes */
@@ -427,21 +444,25 @@
   background-color: var(--color-paper);
 }
 
-/* Team-colored card accent */
+/* Team-colored card accent (subtle, premium) */
 .card-team-red {
-  border-left: 6px solid var(--team-red-print);
+  border-left: 6px solid var(--team-red-accent);
+  background: linear-gradient(90deg, var(--team-red-strip) 0%, transparent 100%);
 }
 
 .card-team-blue {
-  border-left: 6px solid var(--team-blue-print);
+  border-left: 6px solid var(--team-blue-accent);
+  background: linear-gradient(90deg, var(--team-blue-strip) 0%, transparent 100%);
 }
 
 .card-team-green {
-  border-left: 6px solid var(--team-green-print);
+  border-left: 6px solid var(--team-green-accent);
+  background: linear-gradient(90deg, var(--team-green-strip) 0%, transparent 100%);
 }
 
 .card-team-yellow {
-  border-left: 6px solid var(--team-yellow-print);
+  border-left: 6px solid var(--team-yellow-accent);
+  background: linear-gradient(90deg, var(--team-yellow-strip) 0%, transparent 100%);
 }
 
 /* ========================================

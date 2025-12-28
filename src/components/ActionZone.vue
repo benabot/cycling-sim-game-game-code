@@ -262,11 +262,15 @@ const targetPosition = computed(() => props.currentPosition + props.totalMovemen
 }
 
 .calc-result {
-  padding: var(--space-xs) var(--space-md);
-  background: var(--color-accent);
-  color: white;
+  padding: var(--space-sm) var(--space-md);
+  background: #1F2328;
+  color: #FCFBF7;
   border-radius: var(--radius-sm);
   font-weight: 700;
+  font-size: 1.25em;
+  box-shadow: 0 2px 6px rgba(31, 35, 40, 0.25);
+  min-width: 40px;
+  text-align: center;
 }
 
 /* Buttons */
