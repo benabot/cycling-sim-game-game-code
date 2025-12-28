@@ -30,6 +30,15 @@ import {
   isAITeam,
   getNextTeam
 } from './teams.js';
+import {
+  createStageRaceState,
+  applyStageResults,
+  advanceStage,
+  isStageRaceComplete,
+  applyStageRecovery,
+  resetRidersForStage,
+  generateStageCourse
+} from './stage-race.js';
 
 /**
  * Constants
@@ -104,16 +113,34 @@ export function createGameState(options = {}) {
   } = options;
   
   // Use gameConfig if provided, otherwise legacy 2-team mode
-  const effectiveCourseLength = gameConfig?.courseLength || courseLength;
+  const baseCourseLength = gameConfig?.courseLength || courseLength;
   const teamIds = gameConfig?.players?.map(p => p.teamId) || [TeamId.TEAM_A, TeamId.TEAM_B];
   const players = gameConfig?.players || [
     { teamId: TeamId.TEAM_A, playerType: PlayerType.HUMAN },
     { teamId: TeamId.TEAM_B, playerType: PlayerType.HUMAN }
   ];
   
-  const course = generateCourse(effectiveCourseLength);
   let riders = createRidersForTeams(teamIds, players);
+  const stageRaceConfig = gameConfig?.stageRace || null;
+  let stageRace = null;
+  let effectiveCourseLength = baseCourseLength;
+  let course = null;
   
+  if (stageRaceConfig) {
+    const stageLength = stageRaceConfig.stageLength || baseCourseLength;
+    stageRace = createStageRaceState({
+      riders,
+      numStages: stageRaceConfig.numStages,
+      profile: stageRaceConfig.profile,
+      stageLength
+    });
+    const currentStage = stageRace.stages[stageRace.currentStageIndex];
+    effectiveCourseLength = stageLength;
+    course = generateStageCourse(currentStage.type, stageLength);
+  } else {
+    course = generateCourse(effectiveCourseLength);
+  }
+
   // All riders start at position 0 with arrival order
   riders = riders.map((r, index) => ({ 
     ...r, 
@@ -135,6 +162,7 @@ export function createGameState(options = {}) {
     teamIds,
     players,
     numTeams: teamIds.length,
+    stageRace,
     
     // Riders
     riders,
@@ -1193,6 +1221,51 @@ export function acknowledgeEndTurnEffects(state) {
     rankings.forEach((rider, index) => {
       rider.finalRank = index + 1;
     });
+
+    let updatedStageRace = null;
+
+    if (state.stageRace) {
+      const completedStage = state.stageRace.stages[state.stageRace.currentStageIndex];
+      updatedStageRace = advanceStage(applyStageResults(state.stageRace, rankings));
+
+      if (!isStageRaceComplete(updatedStageRace)) {
+        const recoveredRiders = resetRidersForStage(applyStageRecovery(ridersReset));
+        const nextStage = updatedStageRace.stages[updatedStageRace.currentStageIndex];
+        const stageWinner = rankings[0];
+        const stageLogs = [
+          `\n══════════ 🏁 ÉTAPE ${completedStage.number} ══════════`,
+          stageWinner ? `🏆 ${stageWinner.name} remporte l'étape` : '🏆 Étape terminée',
+          `➡️ Étape ${nextStage.number} : ${nextStage.name}`
+        ];
+
+        const stageState = {
+          ...state,
+          riders: recoveredRiders,
+          arrivalCounter: recoveredRiders.length,
+          stageRace: updatedStageRace,
+          courseLength: updatedStageRace.stageLength,
+          finishLine: updatedStageRace.stageLength,
+          course: generateStageCourse(nextStage.type, updatedStageRace.stageLength),
+          phase: GamePhase.PLAYING,
+          currentTurn: 1,
+          currentTeam: state.teamIds[Math.floor(Math.random() * state.teamIds.length)],
+          ridersPlayedThisTurn: [],
+          selectedRiderId: null,
+          selectedCardId: null,
+          selectedSpecialtyId: null,
+          lastDiceRoll: null,
+          lastMovement: null,
+          isLastTurn: false,
+          firstFinisher: null,
+          rankings: [],
+          winningTeam: null,
+          endTurnEffects: [],
+          gameLog: [...state.gameLog, ...stageLogs]
+        };
+
+        return startTurn(stageState);
+      }
+    }
     
     // Determine team winner
     const teamAPositions = rankings
@@ -1225,6 +1298,7 @@ export function acknowledgeEndTurnEffects(state) {
     return {
       ...state,
       riders: ridersReset,
+      stageRace: updatedStageRace || state.stageRace,
       phase: GamePhase.FINISHED,
       rankings,
       winningTeam,

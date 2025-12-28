@@ -13,6 +13,8 @@ export { default as RulesSection } from './RulesSection.vue';
 export { default as RulesDrawer } from './RulesDrawer.vue';
 export { default as EnergyBar } from './EnergyBar.vue';
 export { default as SetupScreen } from './SetupScreen.vue';
+export { default as StageRaceConfigurator } from './StageRaceConfigurator.vue';
+export { default as StagePreview } from './StagePreview.vue';
 
 // Icon components
 export * from './icons';
