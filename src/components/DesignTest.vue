@@ -1,7 +1,7 @@
 <template>
   <div class="app-container">
     <div class="content-area">
-      <div class="main-panel p-xl" style="max-width: 1000px; margin: 0 auto;">
+      <div class="main-panel p-xl" style="max-width: 1100px; margin: 0 auto;">
         
         <!-- Section Header Demo -->
         <div class="section-header">
@@ -10,7 +10,7 @@
             <path d="M12 6v6l4 2"></path>
           </svg>
           <h1 class="section-header-title">Design System Test</h1>
-          <span class="section-header-subtitle">Phase 1-3 Complete</span>
+          <span class="section-header-subtitle">Phase 1-5 Complete</span>
         </div>
 
         <!-- Layout Demo -->
@@ -87,14 +87,6 @@
                   <span class="log-entry-time">14:30</span>
                   <span class="log-entry-team log-entry-team-green">Vert</span> bénéficie de l'aspiration
                 </div>
-                <div class="log-entry">
-                  <span class="log-entry-time">14:29</span>
-                  <span class="log-entry-team log-entry-team-yellow">Jaune</span> pénalité vent (-1)
-                </div>
-                <div class="log-entry">
-                  <span class="log-entry-time">14:28</span>
-                  Tour 5 terminé
-                </div>
               </div>
             </div>
 
@@ -115,6 +107,160 @@
             </div>
           </div>
         </div>
+
+        <hr class="divider">
+
+        <!-- NEW: Rider Icons Section -->
+        <section style="margin-bottom: var(--space-xl);">
+          <div class="section-header section-header-compact">
+            <h2 class="section-header-title">Icônes Spécialités</h2>
+          </div>
+          <div class="flex gap-xl flex-wrap">
+            <div v-for="type in riderTypes" :key="type" class="icon-demo">
+              <RiderIcon :type="type" :size="32" />
+              <span class="type-caption">{{ type }}</span>
+            </div>
+          </div>
+        </section>
+
+        <!-- NEW: Terrain Icons Section -->
+        <section style="margin-bottom: var(--space-xl);">
+          <div class="section-header section-header-compact">
+            <h2 class="section-header-title">Icônes Terrain</h2>
+          </div>
+          <div class="flex gap-xl flex-wrap">
+            <div v-for="type in terrainTypes" :key="type" class="icon-demo">
+              <TerrainIcon :type="type" :size="32" />
+              <span class="type-caption">{{ type }}</span>
+            </div>
+          </div>
+        </section>
+
+        <!-- NEW: Rider Tokens Section -->
+        <section style="margin-bottom: var(--space-xl);">
+          <div class="section-header section-header-compact">
+            <h2 class="section-header-title">Tokens Coureurs</h2>
+          </div>
+          
+          <!-- Team A -->
+          <div style="margin-bottom: var(--space-lg);">
+            <span class="type-label" style="color: var(--team-red-ui); margin-bottom: var(--space-sm); display: block;">Équipe Rouge</span>
+            <div class="flex gap-md flex-wrap items-center">
+              <RiderToken 
+                v-for="(type, i) in riderTypes" 
+                :key="`a-${type}`"
+                :rider="{ id: `a-${i}`, name: `Coureur ${i+1}`, type, team: 'team_a', position: 10+i }"
+              />
+            </div>
+          </div>
+          
+          <!-- Team B -->
+          <div style="margin-bottom: var(--space-lg);">
+            <span class="type-label" style="color: var(--team-blue-ui); margin-bottom: var(--space-sm); display: block;">Équipe Bleue</span>
+            <div class="flex gap-md flex-wrap items-center">
+              <RiderToken 
+                v-for="(type, i) in riderTypes" 
+                :key="`b-${type}`"
+                :rider="{ id: `b-${i}`, name: `Coureur ${i+1}`, type, team: 'team_b', position: 8+i }"
+              />
+            </div>
+          </div>
+          
+          <!-- Team C -->
+          <div style="margin-bottom: var(--space-lg);">
+            <span class="type-label" style="color: var(--team-green-ui); margin-bottom: var(--space-sm); display: block;">Équipe Verte</span>
+            <div class="flex gap-md flex-wrap items-center">
+              <RiderToken 
+                v-for="(type, i) in riderTypes" 
+                :key="`c-${type}`"
+                :rider="{ id: `c-${i}`, name: `Coureur ${i+1}`, type, team: 'team_c', position: 6+i }"
+              />
+            </div>
+          </div>
+          
+          <!-- Team D -->
+          <div>
+            <span class="type-label" style="color: var(--team-yellow-print); margin-bottom: var(--space-sm); display: block;">Équipe Jaune</span>
+            <div class="flex gap-md flex-wrap items-center">
+              <RiderToken 
+                v-for="(type, i) in riderTypes" 
+                :key="`d-${type}`"
+                :rider="{ id: `d-${i}`, name: `Coureur ${i+1}`, type, team: 'team_d', position: 4+i }"
+              />
+            </div>
+          </div>
+        </section>
+
+        <!-- Token States -->
+        <section style="margin-bottom: var(--space-xl);">
+          <div class="section-header section-header-compact">
+            <h2 class="section-header-title">États des Tokens</h2>
+          </div>
+          <div class="flex gap-lg flex-wrap items-end">
+            <div class="flex flex-col items-center gap-xs">
+              <RiderToken 
+                :rider="{ id: 'demo1', name: 'Normal', type: 'rouleur', team: 'team_a', position: 1 }"
+              />
+              <span class="type-caption">Normal</span>
+            </div>
+            <div class="flex flex-col items-center gap-xs">
+              <RiderToken 
+                :rider="{ id: 'demo2', name: 'Selected', type: 'climber', team: 'team_b', position: 2 }"
+                :isSelected="true"
+              />
+              <span class="type-caption">Selected</span>
+            </div>
+            <div class="flex flex-col items-center gap-xs">
+              <RiderToken 
+                :rider="{ id: 'demo3', name: 'Leader', type: 'sprinter', team: 'team_c', position: 3 }"
+                :isLeader="true"
+              />
+              <span class="type-caption">Leader</span>
+            </div>
+            <div class="flex flex-col items-center gap-xs">
+              <RiderToken 
+                :rider="{ id: 'demo4', name: 'Played', type: 'puncher', team: 'team_a', position: 4 }"
+                :hasPlayed="true"
+              />
+              <span class="type-caption">Played</span>
+            </div>
+            <div class="flex flex-col items-center gap-xs">
+              <RiderToken 
+                :rider="{ id: 'demo5', name: 'Finished', type: 'versatile', team: 'team_d', position: 81, hasFinished: true }"
+              />
+              <span class="type-caption">Finished</span>
+            </div>
+          </div>
+        </section>
+
+        <!-- Token Sizes -->
+        <section style="margin-bottom: var(--space-xl);">
+          <div class="section-header section-header-compact">
+            <h2 class="section-header-title">Tailles des Tokens</h2>
+          </div>
+          <div class="flex gap-lg items-end">
+            <div class="flex flex-col items-center gap-xs">
+              <RiderToken 
+                :rider="{ id: 'size1', name: 'Default', type: 'climber', team: 'team_b', position: 1 }"
+              />
+              <span class="type-caption">44×44</span>
+            </div>
+            <div class="flex flex-col items-center gap-xs">
+              <RiderToken 
+                :rider="{ id: 'size2', name: 'Compact', type: 'climber', team: 'team_b', position: 1 }"
+                :compact="true"
+              />
+              <span class="type-caption">28×28</span>
+            </div>
+            <div class="flex flex-col items-center gap-xs">
+              <RiderToken 
+                :rider="{ id: 'size3', name: 'Mini', type: 'climber', team: 'team_b', position: 1 }"
+                :mini="true"
+              />
+              <span class="type-caption">20×20</span>
+            </div>
+          </div>
+        </section>
 
         <hr class="divider">
 
@@ -142,7 +288,7 @@
         </section>
 
         <!-- Inputs & Segmented -->
-        <section>
+        <section style="margin-bottom: var(--space-xl);">
           <div class="section-header section-header-compact">
             <h2 class="section-header-title">Formulaires</h2>
           </div>
@@ -191,9 +337,14 @@
 
 <script setup>
 import { ref } from 'vue';
+import { RiderIcon, TerrainIcon } from './icons';
+import RiderToken from './RiderToken.vue';
 
 const selectedTeams = ref(1);
 const teamName = ref('');
+
+const riderTypes = ['climber', 'puncher', 'rouleur', 'sprinter', 'versatile'];
+const terrainTypes = ['flat', 'hill', 'mountain', 'descent', 'sprint', 'refuel'];
 </script>
 
 <style scoped>
@@ -206,5 +357,17 @@ const teamName = ref('');
   display: flex;
   align-items: center;
   justify-content: center;
+}
+
+.icon-demo {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--space-xs);
+  padding: var(--space-md);
+  background: var(--color-surface);
+  border: 1px solid var(--color-line);
+  border-radius: var(--radius-sm);
+  min-width: 80px;
 }
 </style>
