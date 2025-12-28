@@ -3,91 +3,100 @@
     <div 
       v-for="team in displayTeams" 
       :key="team"
-      class="card team-card"
+      class="team-card"
       :class="[getTeamCardClass(team), { 'team-card--active': currentTeam === team }]"
     >
-      <!-- Team Header -->
-      <div class="team-card-header">
-        <RiderToken
-          :rider="{ id: 'header', name: '', type: 'rouleur', team, position: 0 }"
-          :mini="true"
-        />
-        <span class="team-card-name type-body-medium">{{ getTeamConfig(team).name }}</span>
-        <span v-if="isAITeam(team)" class="badge badge-yellow badge-sm">
-          <UIIcon type="ai" size="xs" />
-          <UIIcon v-if="getAIPersonalityType(team)" :type="getAIPersonalityType(team)" size="xs" />
-        </span>
-        <span v-if="currentTeam === team" class="badge badge-blue badge-sm">
-          <UIIcon type="start" size="xs" />
-          Joue
-        </span>
-      </div>
-
-      <!-- Riders List -->
-      <div class="team-riders-list">
-        <div 
-          v-for="rider in getTeamRiders(team)" 
-          :key="rider.id"
-          class="rider-row"
-          :class="getRiderRowClasses(rider, team)"
-          @click="onRiderClick(rider, team)"
-        >
-          <!-- Token -->
+      <!-- Accent Bar (left) -->
+      <div class="team-card-accent" :class="`team-card-accent--${team}`"></div>
+      
+      <!-- Card Content -->
+      <div class="team-card-content">
+        <!-- Team Header -->
+        <div class="team-card-header" :class="`team-card-header--${team}`">
           <RiderToken
-            :rider="rider"
-            :isSelected="rider.id === selectedRiderId"
-            :hasPlayed="playedRiders.includes(rider.id)"
+            :rider="{ id: 'header', name: '', type: 'rouleur', team, position: 0 }"
             :mini="true"
+            :static="true"
           />
+          <span class="team-card-name">{{ getTeamConfig(team).name }}</span>
+          <span v-if="isAITeam(team)" class="team-badge team-badge--ai">
+            <UIIcon type="ai" size="xs" />
+            <UIIcon v-if="getAIPersonalityType(team)" :type="getAIPersonalityType(team)" size="xs" />
+          </span>
+          <span v-if="currentTeam === team" class="team-badge team-badge--active">
+            <UIIcon type="start" size="xs" />
+          </span>
+        </div>
 
-          <!-- Info -->
-          <div class="rider-row-info">
-            <span class="rider-row-name type-body-medium">{{ rider.name }}</span>
-            <span class="rider-row-type type-caption">{{ getRiderTypeName(rider.type) }}</span>
-          </div>
+        <!-- Riders List -->
+        <div class="team-riders-list">
+          <div 
+            v-for="rider in getTeamRiders(team)" 
+            :key="rider.id"
+            class="rider-row"
+            :class="getRiderRowClasses(rider, team)"
+            @click="onRiderClick(rider, team)"
+          >
+            <!-- Token -->
+            <RiderToken
+              :rider="rider"
+              :isSelected="rider.id === selectedRiderId"
+              :hasPlayed="playedRiders.includes(rider.id)"
+              :mini="true"
+              :static="true"
+            />
 
-          <!-- Position -->
-          <span class="rider-row-pos type-numeric">{{ rider.position }}</span>
+            <!-- Info -->
+            <div class="rider-row-info">
+              <span class="rider-row-name">{{ rider.name }}</span>
+              <span class="rider-row-type">{{ getRiderTypeName(rider.type) }}</span>
+            </div>
 
-          <!-- Cards Count -->
-          <div class="rider-row-cards">
-            <span class="card-count" title="Main">
-              <UIIcon type="card" size="xs" />
-              {{ rider.hand?.length || 0 }}
-            </span>
-            <span class="card-count" title="Attaques">
-              <UIIcon type="attack" size="xs" />
-              {{ rider.attackCards?.length || 0 }}
-            </span>
-            <span class="card-count" title="Spécialités">
-              <UIIcon type="star" size="xs" />
-              {{ rider.specialtyCards?.length || 0 }}
-            </span>
-          </div>
+            <!-- Position -->
+            <span class="rider-row-pos">{{ rider.position }}</span>
 
-          <!-- Energy Mini Bar -->
-          <div class="rider-row-energy" :title="'Énergie: ' + (rider.energy || 100) + '%'">
-            <div class="energy-bar-mini">
-              <div 
-                class="energy-fill-mini" 
-                :style="{ 
-                  width: (rider.energy || 100) + '%', 
-                  backgroundColor: getEnergyColor(rider.energy || 100) 
-                }"
-              ></div>
+            <!-- Cards Count -->
+            <div class="rider-row-cards">
+              <span class="card-count" title="Main">
+                <UIIcon type="card" size="xs" />
+                {{ rider.hand?.length || 0 }}
+              </span>
+              <span class="card-count" title="Attaques">
+                <UIIcon type="attack" size="xs" />
+                {{ rider.attackCards?.length || 0 }}
+              </span>
+              <span class="card-count" title="Spécialités">
+                <UIIcon type="star" size="xs" />
+                {{ rider.specialtyCards?.length || 0 }}
+              </span>
+            </div>
+
+            <!-- Energy Mini Bar -->
+            <div class="rider-row-energy" :title="'Énergie: ' + (rider.energy || 100) + '%'">
+              <div class="energy-bar-mini">
+                <div 
+                  class="energy-fill-mini" 
+                  :style="{ 
+                    width: (rider.energy || 100) + '%', 
+                    backgroundColor: getEnergyColor(rider.energy || 100) 
+                  }"
+                ></div>
+              </div>
+            </div>
+
+            <!-- Status Indicator -->
+            <div class="rider-status">
+              <span v-if="rider.hasFinished" class="rider-status-badge rider-status-badge--finish">
+                <UIIcon type="finish" size="xs" />
+              </span>
+              <span v-else-if="rider.turnsToSkip > 0" class="rider-status-badge rider-status-badge--crash">
+                <UIIcon type="crash" size="xs" />
+              </span>
+              <span v-else-if="playedRiders.includes(rider.id)" class="rider-status-badge rider-status-badge--done">
+                <UIIcon type="check" size="xs" />
+              </span>
             </div>
           </div>
-
-          <!-- Status Badge -->
-          <span v-if="rider.hasFinished" class="badge badge-green badge-sm">
-            <UIIcon type="finish" size="xs" />
-          </span>
-          <span v-else-if="rider.turnsToSkip > 0" class="badge badge-red badge-sm">
-            <UIIcon type="crash" size="xs" />
-          </span>
-          <span v-else-if="playedRiders.includes(rider.id)" class="badge badge-muted badge-sm">
-            <UIIcon type="check" size="xs" />
-          </span>
         </div>
       </div>
     </div>
@@ -134,12 +143,7 @@ const gridClass = computed(() => ({
 }));
 
 function getTeamCardClass(teamId) {
-  return {
-    team_a: 'card-team-red',
-    team_b: 'card-team-blue',
-    team_c: 'card-team-green',
-    team_d: 'card-team-yellow'
-  }[teamId] || '';
+  return `team-card--${teamId}`;
 }
 
 function getTeamConfig(teamId) {
@@ -208,28 +212,79 @@ function onRiderClick(rider, team) {
   grid-template-columns: repeat(2, 1fr);
 }
 
-/* Team Card */
+/* Team Card - Premium flat style with accent bar */
 .team-card {
-  padding: 0;
+  display: flex;
+  background: var(--color-surface);
+  border: 1px solid var(--color-line);
+  border-radius: var(--radius-card);
   overflow: hidden;
-  transition: box-shadow 0.2s, border-color 0.2s;
+  box-shadow: var(--shadow-sm);
+  transition: box-shadow 0.2s;
 }
 
 .team-card--active {
-  box-shadow: var(--shadow-md), 0 0 0 2px var(--color-accent);
+  box-shadow: var(--shadow-sm), 0 0 0 2px var(--color-accent);
 }
 
+/* Accent bar (left) */
+.team-card-accent {
+  width: 5px;
+  flex-shrink: 0;
+}
+
+.team-card-accent--team_a { background: var(--team-red-print); opacity: 0.35; }
+.team-card-accent--team_b { background: var(--team-blue-print); opacity: 0.35; }
+.team-card-accent--team_c { background: var(--team-green-print); opacity: 0.35; }
+.team-card-accent--team_d { background: var(--team-yellow-print); opacity: 0.35; }
+
+.team-card-content {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+}
+
+/* Header strip with very light tint */
 .team-card-header {
   display: flex;
   align-items: center;
   gap: var(--space-sm);
-  padding: var(--space-sm) var(--space-md);
-  background: var(--color-canvas);
-  border-bottom: 1px solid var(--color-line);
+  padding: var(--space-xs) var(--space-md);
+  border-bottom: 1px solid var(--color-line-subtle);
 }
+
+.team-card-header--team_a { background: rgba(201, 75, 75, 0.06); }
+.team-card-header--team_b { background: rgba(63, 96, 201, 0.06); }
+.team-card-header--team_c { background: rgba(58, 164, 98, 0.06); }
+.team-card-header--team_d { background: rgba(221, 187, 74, 0.06); }
 
 .team-card-name {
   flex: 1;
+  font-family: var(--font-ui);
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--color-ink);
+}
+
+/* Team badges */
+.team-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 2px;
+  padding: 2px 5px;
+  border-radius: var(--radius-sm);
+  font-size: 10px;
+}
+
+.team-badge--ai {
+  background: var(--color-canvas);
+  color: var(--color-ink-muted);
+  border: 1px solid var(--color-line);
+}
+
+.team-badge--active {
+  background: color-mix(in srgb, var(--color-accent) 12%, transparent);
+  color: var(--color-accent);
 }
 
 /* Riders List */
@@ -243,34 +298,39 @@ function onRiderClick(rider, team) {
   align-items: center;
   gap: var(--space-sm);
   padding: var(--space-xs) var(--space-md);
-  border-bottom: 1px solid var(--color-line-light);
   transition: background 0.15s;
-}
-
-.rider-row:last-child {
-  border-bottom: none;
 }
 
 .rider-row--clickable {
   cursor: pointer;
-  background: color-mix(in srgb, var(--color-success) 5%, transparent);
+  background: color-mix(in srgb, var(--color-success) 4%, transparent);
 }
 
 .rider-row--clickable:hover {
-  background: color-mix(in srgb, var(--color-success) 12%, transparent);
+  background: color-mix(in srgb, var(--color-success) 10%, transparent);
 }
 
 .rider-row--selected {
-  background: color-mix(in srgb, var(--color-gold) 15%, transparent);
+  background: color-mix(in srgb, var(--color-gold) 12%, transparent);
 }
 
-.rider-row--played {
+/* Played/disabled state: lower text/icon opacity, keep background */
+.rider-row--played .rider-row-info,
+.rider-row--played .rider-row-pos,
+.rider-row--played .rider-row-cards,
+.rider-row--played .rider-row-energy {
   opacity: 0.55;
 }
 
 .rider-row--skipping {
-  opacity: 0.5;
-  background: color-mix(in srgb, var(--color-danger) 8%, transparent);
+  background: color-mix(in srgb, var(--color-danger) 5%, transparent);
+}
+
+.rider-row--skipping .rider-row-info,
+.rider-row--skipping .rider-row-pos,
+.rider-row--skipping .rider-row-cards,
+.rider-row--skipping .rider-row-energy {
+  opacity: 0.50;
 }
 
 .rider-row-info {
@@ -281,46 +341,52 @@ function onRiderClick(rider, team) {
 }
 
 .rider-row-name {
+  font-family: var(--font-ui);
+  font-size: 12px;
+  font-weight: 500;
+  color: var(--color-ink);
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
 }
 
 .rider-row-type {
+  font-size: 10px;
   color: var(--color-ink-muted);
 }
 
 .rider-row-pos {
+  font-family: var(--font-mono);
+  font-size: 11px;
   color: var(--color-ink-muted);
-  font-size: 0.85em;
-  min-width: 24px;
+  min-width: 20px;
   text-align: right;
 }
 
 /* Cards Count */
 .rider-row-cards {
   display: flex;
-  gap: var(--space-xs);
+  gap: 4px;
 }
 
 .card-count {
   display: inline-flex;
   align-items: center;
-  gap: 2px;
+  gap: 1px;
   color: var(--color-ink-muted);
-  font-size: 11px;
+  font-size: 10px;
   font-family: var(--font-mono);
 }
 
 /* Energy Mini Bar */
 .rider-row-energy {
-  width: 40px;
+  width: 36px;
 }
 
 .energy-bar-mini {
   width: 100%;
-  height: 5px;
-  background: var(--color-line);
+  height: 4px;
+  background: var(--color-canvas);
   border-radius: 2px;
   overflow: hidden;
 }
@@ -331,15 +397,37 @@ function onRiderClick(rider, team) {
   transition: width 0.3s ease;
 }
 
-/* Badge variants */
-.badge-muted {
-  background: var(--color-ink-muted);
-  color: white;
+/* Status Indicator - Premium mini badge */
+.rider-status {
+  width: 20px;
+  display: flex;
+  justify-content: center;
 }
 
-.badge-sm {
-  font-size: 0.7em;
-  padding: 2px 6px;
+.rider-status-badge {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  background: var(--color-paper);
+  border: 1px solid var(--color-line);
+}
+
+.rider-status-badge--finish {
+  color: var(--color-success);
+  border-color: color-mix(in srgb, var(--color-success) 30%, transparent);
+}
+
+.rider-status-badge--crash {
+  color: var(--color-danger);
+  border-color: color-mix(in srgb, var(--color-danger) 30%, transparent);
+}
+
+.rider-status-badge--done {
+  color: var(--color-ink-muted);
+  border-color: var(--color-line);
 }
 
 /* Responsive */

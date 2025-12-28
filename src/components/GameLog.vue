@@ -1,17 +1,20 @@
 <template>
-  <div class="log-panel">
-    <div class="log-panel-header">
+  <div class="log-panel" :class="{ 'log-panel--expanded': isExpanded }">
+    <div class="log-panel-header" @click="toggleExpand">
       <UIIcon type="history" size="sm" class="log-panel-icon" />
       <span class="log-panel-title">Historique</span>
+      <span class="log-panel-count">{{ log.length }}</span>
+      <button class="log-panel-toggle" :aria-expanded="isExpanded">
+        <UIIcon :type="isExpanded ? 'chevron-down' : 'chevron-up'" size="sm" />
+      </button>
     </div>
     <div class="log-panel-content" ref="logContainer">
       <div 
-        v-for="(entry, i) in log" 
+        v-for="(entry, i) in displayedLog" 
         :key="i" 
         class="log-entry"
         :class="getLogClass(entry)"
       >
-        <span v-if="entry.time" class="log-entry-time">{{ entry.time }}</span>
         <span v-if="entry.team" class="log-entry-team" :class="`log-entry-team-${entry.team}`">
           {{ getTeamLabel(entry.team) }}
         </span>
@@ -23,7 +26,7 @@
 </template>
 
 <script setup>
-import { ref, watch, nextTick } from 'vue';
+import { ref, watch, nextTick, computed } from 'vue';
 import { UIIcon } from './icons';
 
 const props = defineProps({
@@ -31,10 +34,21 @@ const props = defineProps({
 });
 
 const logContainer = ref(null);
+const isExpanded = ref(false);
+
+// Show last 5 entries when collapsed, all when expanded
+const displayedLog = computed(() => {
+  if (isExpanded.value) return props.log;
+  return props.log.slice(-5);
+});
+
+function toggleExpand() {
+  isExpanded.value = !isExpanded.value;
+}
 
 watch(() => props.log.length, async () => {
   await nextTick();
-  if (logContainer.value) {
+  if (logContainer.value && isExpanded.value) {
     logContainer.value.scrollTop = logContainer.value.scrollHeight;
   }
 });
@@ -47,7 +61,6 @@ function getEntryText(entry) {
 // Remove emojis from text for clean display
 function getCleanText(entry) {
   const text = getEntryText(entry);
-  // Remove common emojis used in log messages
   return text
     .replace(/🏁|🏆|💨|🛡️|🌀|⚔️|🍌|🤕|⚠️|🎲|▶️/g, '')
     .replace(/\[FINISH\]|\[WINNER\]|\[WIND\]|\[SHELTER\]|\[ASPIRATION\]|\[ATTACK\]|\[REFUEL\]|\[CRASH\]/g, '')
@@ -56,10 +69,10 @@ function getCleanText(entry) {
 
 function getTeamLabel(teamId) {
   const labels = {
-    team_a: 'Rouge',
-    team_b: 'Bleu',
-    team_c: 'Vert',
-    team_d: 'Jaune'
+    team_a: 'R',
+    team_b: 'B',
+    team_c: 'V',
+    team_d: 'J'
   };
   return labels[teamId] || teamId;
 }
@@ -77,7 +90,7 @@ function getEntryIcon(entry) {
   if (text.includes('🤕') || text.includes('[CRASH]') || text.includes('chute')) return 'crash';
   if (text.includes('case pleine') || text.includes('bloqué')) return 'warning';
   if (text.includes('sommet') || text.includes('montagne')) return 'summit';
-  if (text.includes('Tour') || text.includes('===')) return null; // Headers don't need icon
+  if (text.includes('Tour') || text.includes('===')) return null;
   
   return null;
 }
@@ -101,171 +114,205 @@ function getLogClass(entry) {
 </script>
 
 <style scoped>
-/* Terminal Premium Style */
+/* Slate Premium Style (softer than black) */
 .log-panel {
-  background: #2A2D32;
-  border: 1px solid rgba(255, 255, 255, 0.08);
+  background: #3A3D42;
+  border: 1px solid rgba(255, 255, 255, 0.06);
   border-radius: var(--radius-card);
   overflow: hidden;
   box-shadow: var(--shadow-sm);
+  /* Subtle grain texture */
+  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)'/%3E%3C/svg%3E");
+  background-blend-mode: overlay;
+  background-size: 150px;
 }
 
 .log-panel-header {
   display: flex;
   align-items: center;
   gap: var(--space-sm);
-  padding: var(--space-sm) var(--space-md);
-  background: rgba(255, 255, 255, 0.04);
-  border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+  padding: var(--space-xs) var(--space-md);
+  background: rgba(255, 255, 255, 0.03);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.04);
+  cursor: pointer;
+  user-select: none;
+}
+
+.log-panel-header:hover {
+  background: rgba(255, 255, 255, 0.05);
 }
 
 .log-panel-icon {
-  color: rgba(255, 255, 255, 0.60);
+  color: rgba(255, 255, 255, 0.45);
 }
 
 .log-panel-title {
   font-family: var(--font-ui);
-  font-size: 12px;
+  font-size: 11px;
   font-weight: 500;
-  color: rgba(255, 255, 255, 0.78);
+  color: rgba(255, 255, 255, 0.55);
   text-transform: uppercase;
   letter-spacing: 0.5px;
 }
 
-.log-panel-content {
-  max-height: 300px;
-  overflow-y: auto;
-  padding: var(--space-sm);
+.log-panel-count {
+  font-family: var(--font-mono);
+  font-size: 10px;
+  color: rgba(255, 255, 255, 0.35);
+  background: rgba(255, 255, 255, 0.06);
+  padding: 1px 5px;
+  border-radius: 8px;
 }
 
-/* Log Entry */
+.log-panel-toggle {
+  margin-left: auto;
+  background: none;
+  border: none;
+  padding: 2px;
+  cursor: pointer;
+  color: rgba(255, 255, 255, 0.40);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.log-panel-toggle:hover {
+  color: rgba(255, 255, 255, 0.60);
+}
+
+/* Content: collapsed shows ~5 lines, expanded scrolls */
+.log-panel-content {
+  max-height: 110px;
+  overflow: hidden;
+  padding: var(--space-xs);
+  transition: max-height 0.25s ease;
+}
+
+.log-panel--expanded .log-panel-content {
+  max-height: 280px;
+  overflow-y: auto;
+}
+
+/* Log Entry - compact density */
 .log-entry {
   display: flex;
-  align-items: baseline;
-  gap: var(--space-xs);
-  padding: var(--space-xs) var(--space-sm);
+  align-items: center;
+  gap: 4px;
+  padding: 2px var(--space-xs);
   font-family: var(--font-mono);
-  font-size: 12px;
-  line-height: 1.5;
-  color: rgba(255, 255, 255, 0.70);
-  border-bottom: 1px solid rgba(255, 255, 255, 0.04);
-}
-
-.log-entry:last-child {
-  border-bottom: none;
-}
-
-.log-entry-time {
-  color: rgba(255, 255, 255, 0.40);
   font-size: 10px;
-  min-width: 40px;
+  line-height: 1.35;
+  color: rgba(255, 255, 255, 0.50);
 }
 
 .log-entry-team {
   font-weight: 600;
-  padding: 1px 4px;
+  padding: 0 3px;
   border-radius: 2px;
-  font-size: 10px;
+  font-size: 9px;
   text-transform: uppercase;
-  letter-spacing: 0.3px;
+  letter-spacing: 0.2px;
+  flex-shrink: 0;
 }
 
 .log-entry-team-team_a {
-  background: rgba(201, 75, 75, 0.25);
-  color: #F08A8A;
+  background: rgba(201, 75, 75, 0.20);
+  color: #E08080;
 }
 
 .log-entry-team-team_b {
-  background: rgba(63, 96, 201, 0.25);
-  color: #8AA8F0;
+  background: rgba(63, 96, 201, 0.20);
+  color: #8098E0;
 }
 
 .log-entry-team-team_c {
-  background: rgba(58, 164, 98, 0.25);
-  color: #8AE0A8;
+  background: rgba(58, 164, 98, 0.20);
+  color: #80D098;
 }
 
 .log-entry-team-team_d {
-  background: rgba(221, 187, 74, 0.25);
-  color: #E8D68A;
+  background: rgba(221, 187, 74, 0.20);
+  color: #D8C878;
 }
 
 .log-entry-icon {
   flex-shrink: 0;
-  opacity: 0.75;
+  opacity: 0.60;
 }
 
 .log-entry-text {
   flex: 1;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
-/* Entry Type Styles */
+/* Entry Type Styles - softer colors */
 .log-entry--separator {
-  color: rgba(255, 255, 255, 0.30);
+  color: rgba(255, 255, 255, 0.20);
   justify-content: center;
-  padding: var(--space-xs) 0;
-  border: none;
+  padding: 1px 0;
 }
 
 .log-entry--header {
-  background: rgba(215, 162, 26, 0.12);
-  color: #E8C860;
+  background: rgba(200, 160, 60, 0.10);
+  color: rgba(220, 190, 100, 0.85);
   justify-content: center;
-  font-weight: 600;
+  font-weight: 500;
   font-family: var(--font-ui);
+  font-size: 9px;
   text-transform: uppercase;
-  letter-spacing: 0.5px;
-  padding: var(--space-sm);
+  letter-spacing: 0.4px;
+  padding: var(--space-xs);
   border-radius: var(--radius-sm);
-  margin: var(--space-xs) 0;
-  border: none;
+  margin: 2px 0;
 }
 
 .log-entry--finish .log-entry-text,
-.log-entry--finish .log-entry-icon { color: #6EE7B7; }
+.log-entry--finish .log-entry-icon { color: rgba(110, 200, 150, 0.85); }
 
 .log-entry--winner .log-entry-text,
 .log-entry--winner .log-entry-icon { 
-  color: #F6D55C; 
-  font-weight: 600;
+  color: rgba(220, 190, 100, 0.90); 
+  font-weight: 500;
 }
 
 .log-entry--attack .log-entry-text,
-.log-entry--attack .log-entry-icon { color: #FCA578; }
+.log-entry--attack .log-entry-icon { color: rgba(220, 150, 100, 0.80); }
 
 .log-entry--wind .log-entry-text,
-.log-entry--wind .log-entry-icon { color: #FCD34D; }
+.log-entry--wind .log-entry-icon { color: rgba(220, 190, 100, 0.75); }
 
 .log-entry--shelter .log-entry-text,
-.log-entry--shelter .log-entry-icon { color: #86EFAC; }
+.log-entry--shelter .log-entry-icon { color: rgba(130, 200, 150, 0.80); }
 
 .log-entry--aspiration .log-entry-text,
-.log-entry--aspiration .log-entry-icon { color: #93C5FD; }
+.log-entry--aspiration .log-entry-icon { color: rgba(140, 180, 220, 0.80); }
 
 .log-entry--blocked .log-entry-text,
-.log-entry--blocked .log-entry-icon { color: #FB923C; }
+.log-entry--blocked .log-entry-icon { color: rgba(220, 160, 100, 0.75); }
 
 .log-entry--refuel .log-entry-text,
-.log-entry--refuel .log-entry-icon { color: #FDE047; }
+.log-entry--refuel .log-entry-icon { color: rgba(220, 200, 100, 0.75); }
 
 .log-entry--crash .log-entry-text,
-.log-entry--crash .log-entry-icon { color: #FCA5A5; }
+.log-entry--crash .log-entry-icon { color: rgba(220, 140, 140, 0.80); }
 
-/* Scrollbar styling for dark theme */
+/* Scrollbar styling */
 .log-panel-content::-webkit-scrollbar {
-  width: 6px;
+  width: 4px;
 }
 
 .log-panel-content::-webkit-scrollbar-track {
-  background: rgba(255, 255, 255, 0.04);
+  background: transparent;
 }
 
 .log-panel-content::-webkit-scrollbar-thumb {
-  background: rgba(255, 255, 255, 0.15);
-  border-radius: 3px;
+  background: rgba(255, 255, 255, 0.12);
+  border-radius: 2px;
 }
 
 .log-panel-content::-webkit-scrollbar-thumb:hover {
-  background: rgba(255, 255, 255, 0.25);
+  background: rgba(255, 255, 255, 0.20);
 }
 </style>
