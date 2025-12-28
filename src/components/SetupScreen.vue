@@ -151,7 +151,7 @@
           :active-team-id="activeDraftTeamId"
           :rosters="teamRosters"
           :pool="riderPool"
-          :budget-total="DraftConfig.budgetTotal"
+          :budget-total="activeDraftBudgetTotal"
           :roster-size="DraftConfig.rosterSize"
           :roles="DraftConfig.roles"
           :stat-order="DraftStatOrder"
@@ -217,6 +217,7 @@
 <script setup>
 import { ref, computed, reactive, watch, nextTick } from 'vue';
 import { TeamId, PlayerType, AIDifficulty, getTeamIds, createPlayerConfig } from '../core/teams.js';
+import { AIPersonality } from '../core/ai.js';
 import RiderToken from './RiderToken.vue';
 import { RiderIcon, UIIcon } from './icons';
 import RaceTypeSelector from './RaceTypeSelector.vue';
@@ -224,7 +225,7 @@ import ClassicRaceSelector from './ClassicRaceSelector.vue';
 import StageRaceConfigurator from './StageRaceConfigurator.vue';
 import DraftRosterSection from './DraftRosterSection.vue';
 import { getClassicPreset } from '../config/race-presets.js';
-import { DraftConfig, DraftStatLabels, DraftStatOrder, RiderPool } from '../config/draft.config.js';
+import { DraftConfig, DraftAIConfig, DraftStatLabels, DraftStatOrder, RiderPool } from '../config/draft.config.js';
 
 const emit = defineEmits(['start']);
 
@@ -315,9 +316,22 @@ function getRoster(teamId) {
   return teamRosters.value[teamId] || [];
 }
 
+function getPlayerByTeamId(teamId) {
+  return players.value.find(player => player.teamId === teamId);
+}
+
+function getTeamBudgetTotal(teamId) {
+  if (!teamId) return DraftConfig.budgetTotal;
+  const player = getPlayerByTeamId(teamId);
+  if (player?.playerType === PlayerType.AI) {
+    return DraftAIConfig.budgetByDifficulty[player.difficulty] ?? DraftConfig.budgetTotal;
+  }
+  return DraftConfig.budgetTotal;
+}
+
 function getBudgetRemaining(teamId) {
   const spent = getRoster(teamId).reduce((sum, rider) => sum + rider.price, 0);
-  return Math.max(0, DraftConfig.budgetTotal - spent);
+  return Math.max(0, getTeamBudgetTotal(teamId) - spent);
 }
 
 function isRosterComplete(teamId) {
@@ -351,6 +365,92 @@ function releaseRider({ teamId, rider }) {
   };
   riderPool.value = [...riderPool.value, { ...rider, stats: { ...rider.stats } }];
   sortRiderPool();
+}
+
+function resolveDraftPersonality(player) {
+  if (player?.personality) return player.personality;
+  if (player?.difficulty === AIDifficulty.EASY) return AIPersonality.BALANCED;
+  const personalities = Object.values(AIPersonality);
+  return personalities[Math.floor(Math.random() * personalities.length)];
+}
+
+function getDraftPersonalityWeights(personality) {
+  return DraftAIConfig.personalityWeights[personality] || DraftAIConfig.personalityWeights.balanced;
+}
+
+function getDraftRolePriority(personality) {
+  return DraftAIConfig.personalityRolePriority[personality] || DraftConfig.roles;
+}
+
+function getAIDifficultyTuning(difficulty) {
+  return DraftAIConfig.difficultyTuning[difficulty] || DraftAIConfig.difficultyTuning.normal;
+}
+
+function getCheapestPriceForRole(role) {
+  const candidates = riderPool.value.filter(rider => rider.role === role);
+  if (!candidates.length) return 0;
+  return Math.min(...candidates.map(rider => rider.price || 0));
+}
+
+function scoreDraftRider(rider, weights, tuning) {
+  const stats = rider.stats || {};
+  const baseScore = DraftStatOrder.reduce((sum, key) => {
+    const weight = weights[key] ?? 1;
+    return sum + (stats[key] || 0) * weight;
+  }, 0);
+  const pricePenalty = (rider.price || 0) * tuning.pricePenalty;
+  const jitter = (Math.random() * 2 - 1) * tuning.randomness * 10;
+  return baseScore - pricePenalty + jitter;
+}
+
+function pickDraftRider(role, budgetRemaining, reserveBudget, weights, tuning) {
+  const candidates = riderPool.value.filter(rider => rider.role === role);
+  if (!candidates.length) return null;
+  const scored = candidates
+    .map(rider => ({ rider, score: scoreDraftRider(rider, weights, tuning) }))
+    .sort((a, b) => b.score - a.score);
+  const maxPrice = budgetRemaining - reserveBudget;
+  const affordable = scored.find(entry => entry.rider.price <= maxPrice);
+  if (affordable) return affordable.rider;
+  const withinBudget = scored.find(entry => entry.rider.price <= budgetRemaining);
+  return withinBudget?.rider || scored[0].rider;
+}
+
+function autoDraftTeam(player) {
+  if (!player || player.playerType !== PlayerType.AI) return;
+  const teamId = player.teamId;
+  const roster = getRoster(teamId);
+  const rosterRoles = new Set(roster.map(rider => rider.role));
+  const missingRoles = DraftConfig.roles.filter(role => !rosterRoles.has(role));
+  if (!missingRoles.length) return;
+
+  const personality = resolveDraftPersonality(player);
+  const weights = getDraftPersonalityWeights(personality);
+  const tuning = getAIDifficultyTuning(player.difficulty);
+  const rolePriority = getDraftRolePriority(personality)
+    .filter(role => missingRoles.includes(role));
+
+  let budgetRemaining = getTeamBudgetTotal(teamId) - roster.reduce((sum, rider) => sum + rider.price, 0);
+
+  rolePriority.forEach((role, index) => {
+    const remainingRoles = rolePriority.slice(index + 1);
+    const reserveBudget = remainingRoles.reduce(
+      (sum, remainingRole) => sum + getCheapestPriceForRole(remainingRole),
+      0
+    );
+    const rider = pickDraftRider(role, budgetRemaining, reserveBudget, weights, tuning);
+    if (!rider) return;
+    if (canRecruitRider(teamId, rider)) {
+      recruitRider({ teamId, rider });
+      budgetRemaining -= rider.price;
+    }
+  });
+}
+
+function autoDraftAITeams() {
+  players.value
+    .filter(player => player.playerType === PlayerType.AI)
+    .forEach(player => autoDraftTeam(player));
 }
 
 function setNumTeams(n) {
@@ -391,12 +491,16 @@ const aiCount = computed(() =>
 );
 
 const draftTeamIds = computed(() => players.value.map(player => player.teamId));
+const manualDraftTeamIds = computed(() =>
+  players.value.filter(player => player.playerType === PlayerType.HUMAN).map(player => player.teamId)
+);
 const incompleteDraftTeam = computed(() => 
-  draftTeamIds.value.find(teamId => !isRosterComplete(teamId))
+  manualDraftTeamIds.value.find(teamId => !isRosterComplete(teamId))
 );
 const isDraftComplete = computed(() => 
-  draftTeamIds.value.length > 0 && !incompleteDraftTeam.value
+  manualDraftTeamIds.value.length > 0 && !incompleteDraftTeam.value
 );
+const activeDraftBudgetTotal = computed(() => getTeamBudgetTotal(activeDraftTeamId.value));
 
 const isStageRace = computed(() => raceType.value === 'stage');
 const isClassicRace = computed(() => raceType.value === 'classic');
@@ -485,6 +589,7 @@ function buildDraftRosters() {
 
 function startGame() {
   if (!canStart.value) return;
+  autoDraftAITeams();
   const stageRace = isStageRace.value
     ? {
         numStages: stageConfig.value.numStages,

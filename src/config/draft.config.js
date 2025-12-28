@@ -4,6 +4,31 @@ export const DraftConfig = {
   roles: ['climber', 'puncher', 'rouleur', 'sprinter', 'versatile']
 };
 
+export const DraftAIConfig = {
+  budgetByDifficulty: {
+    easy: 90,
+    normal: 100,
+    hard: 115
+  },
+  difficultyTuning: {
+    easy: { pricePenalty: 4.5, randomness: 0.35 },
+    normal: { pricePenalty: 3, randomness: 0.2 },
+    hard: { pricePenalty: 1.5, randomness: 0.1 }
+  },
+  personalityWeights: {
+    attacker: { force: 1.05, endurance: 0.9, sprint: 1.15, climb: 0.95, punch: 1.2, rolling: 0.9 },
+    conservative: { force: 0.95, endurance: 1.2, sprint: 0.85, climb: 1.05, punch: 0.9, rolling: 1.1 },
+    opportunist: { force: 1.0, endurance: 1.0, sprint: 1.05, climb: 0.95, punch: 1.15, rolling: 1.0 },
+    balanced: { force: 1, endurance: 1, sprint: 1, climb: 1, punch: 1, rolling: 1 }
+  },
+  personalityRolePriority: {
+    attacker: ['sprinter', 'puncher', 'climber', 'rouleur', 'versatile'],
+    conservative: ['rouleur', 'climber', 'versatile', 'puncher', 'sprinter'],
+    opportunist: ['puncher', 'versatile', 'sprinter', 'rouleur', 'climber'],
+    balanced: ['climber', 'puncher', 'rouleur', 'sprinter', 'versatile']
+  }
+};
+
 export const DraftStatOrder = [
   'force',
   'endurance',
