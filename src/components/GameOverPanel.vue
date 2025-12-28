@@ -1,6 +1,9 @@
 <template>
   <div class="game-over-panel">
-    <h2>🏆 Course Terminée!</h2>
+    <h2 class="game-over-title">
+      <UIIcon type="trophy" :size="28" />
+      Course Terminée!
+    </h2>
     <div class="winning-team" v-if="winningTeam">
       <span class="winner-badge" :style="{ background: TeamConfig[winningTeam]?.color }">
         {{ TeamConfig[winningTeam]?.name }} gagne!
@@ -16,17 +19,21 @@
         <span class="rank">{{ getMedal(index) }}</span>
         <span class="rider-name">{{ rider.name }}</span>
         <span class="team-badge" :style="{ background: TeamConfig[rider.team]?.color }">
-          {{ rider.team === 'team_a' ? 'R' : 'B' }}
+          {{ getTeamInitial(rider.team) }}
         </span>
         <span class="final-pos">Case {{ rider.position }}</span>
       </div>
     </div>
-    <button @click="$emit('restart')" class="btn btn-restart">🔄 Nouvelle partie</button>
+    <button @click="$emit('restart')" class="btn btn-restart">
+      <UIIcon type="restart" :size="18" />
+      Nouvelle partie
+    </button>
   </div>
 </template>
 
 <script setup>
 import { TeamConfig, Medals } from '../config/game.config.js';
+import { UIIcon } from './icons';
 
 defineProps({
   winningTeam: { type: String, default: null },
@@ -38,18 +45,37 @@ defineEmits(['restart']);
 function getMedal(index) {
   return Medals[index] || `${index + 1}`;
 }
+
+function getTeamInitial(teamId) {
+  const initials = {
+    team_a: 'R',
+    team_b: 'B',
+    team_c: 'V',
+    team_d: 'J'
+  };
+  return initials[teamId] || '?';
+}
 </script>
 
 <style scoped>
 .game-over-panel {
   text-align: center;
-  background: #f8fafc;
-  border-radius: 12px;
-  padding: 30px;
-  margin-bottom: 20px;
+  background: var(--color-surface, #f8fafc);
+  border-radius: var(--radius-lg, 12px);
+  padding: var(--space-xl, 30px);
+  margin-bottom: var(--space-lg, 20px);
 }
 
-.winning-team { margin: 20px 0; }
+.game-over-title {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-sm, 8px);
+  margin: 0 0 var(--space-lg, 20px) 0;
+  color: var(--color-gold, #d97706);
+}
+
+.winning-team { margin: var(--space-lg, 20px) 0; }
 
 .winner-badge {
   display: inline-block;
@@ -62,23 +88,31 @@ function getMedal(index) {
 
 .final-rankings {
   max-width: 400px;
-  margin: 20px auto;
+  margin: var(--space-lg, 20px) auto;
 }
 
 .ranking-row {
   display: flex;
   align-items: center;
-  gap: 10px;
-  padding: 8px 15px;
+  gap: var(--space-sm, 10px);
+  padding: var(--space-sm, 8px) var(--space-md, 15px);
   background: white;
   margin: 5px 0;
-  border-radius: 6px;
-  border-left: 4px solid #e2e8f0;
+  border-radius: var(--radius-sm, 6px);
+  border-left: 4px solid var(--color-line, #e2e8f0);
 }
-.ranking-row.team_a { border-left-color: #dc2626; }
-.ranking-row.team_b { border-left-color: #2563eb; }
 
-.ranking-row .rank { width: 30px; font-weight: bold; }
+.ranking-row.team_a { border-left-color: var(--team-red-ui, #dc2626); }
+.ranking-row.team_b { border-left-color: var(--team-blue-ui, #2563eb); }
+.ranking-row.team_c { border-left-color: var(--team-green-ui, #16a34a); }
+.ranking-row.team_d { border-left-color: var(--team-yellow-print, #d97706); }
+
+.ranking-row .rank { 
+  width: 30px; 
+  font-weight: bold;
+  font-family: var(--font-mono);
+}
+
 .ranking-row .rider-name { flex: 1; }
 
 .ranking-row .team-badge {
@@ -93,19 +127,28 @@ function getMedal(index) {
   font-weight: bold;
 }
 
-.ranking-row .final-pos { color: #64748b; }
+.ranking-row .final-pos { 
+  color: var(--color-ink-muted, #64748b);
+  font-family: var(--font-mono);
+}
 
 .btn-restart {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-sm, 8px);
   padding: 12px 24px;
   border: none;
-  border-radius: 8px;
-  background: #3b82f6;
+  border-radius: var(--radius-md, 8px);
+  background: var(--color-accent, #3b82f6);
   color: white;
   font-size: 1em;
   font-weight: 500;
   cursor: pointer;
-  margin-top: 20px;
-  transition: all 0.2s;
+  margin-top: var(--space-lg, 20px);
+  transition: all var(--transition-fast, 0.2s);
 }
-.btn-restart:hover { background: #2563eb; }
+
+.btn-restart:hover { 
+  background: var(--color-accent-hover, #2563eb); 
+}
 </style>

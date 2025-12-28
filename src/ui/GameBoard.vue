@@ -1,15 +1,18 @@
 <template>
   <div class="game-container">
     <div class="header-row">
-      <h1>🚴 Course Cycliste - v4.0</h1>
+      <RiderIcon type="rouleur" :size="32" class="header-icon" />
+      <h1>Course Cycliste - v4.0</h1>
       <button v-if="phase === 'finished'" class="btn-back" @click="$emit('backToSetup')">
-        ← Nouvelle partie
+        <UIIcon type="chevron-up" size="sm" style="transform: rotate(-90deg)" />
+        Nouvelle partie
       </button>
     </div>
     
     <!-- AI Thinking Indicator -->
     <div v-if="isAIThinking" class="ai-thinking">
-      🤖 L'IA réfléchit...
+      <UIIcon type="ai" size="md" />
+      L'IA réfléchit...
     </div>
     
     <!-- Status Bar -->
@@ -82,7 +85,7 @@
 
     <!-- No Selection Prompt -->
     <div v-else-if="phase !== 'finished' && !showEffectsOverlay" class="no-selection-prompt">
-      <span class="prompt-icon">👆</span>
+      <UIIcon type="target" size="lg" class="prompt-icon" />
       <span>Cliquez sur un coureur de <strong>{{ currentTeamConfig?.name }}</strong> pour le jouer</span>
     </div>
 
@@ -95,7 +98,7 @@
       >
         <span class="team-color" :style="{ background: getTeamColor(teamId) }"></span>
         {{ getTeamName(teamId) }}
-        <span v-if="isTeamAI(teamId)">🤖</span>
+        <UIIcon v-if="isTeamAI(teamId)" type="ai" size="sm" />
       </div>
     </div>
 
@@ -123,8 +126,8 @@
     <!-- Game Log -->
     <GameLog :log="gameLog" />
 
-    <!-- Rules Section -->
-    <RulesSection />
+    <!-- Rules Drawer (collapsed by default) -->
+    <RulesDrawer :courseLength="course?.length || 80" />
   </div>
 </template>
 
@@ -142,7 +145,9 @@ import {
   TeamsOverview,
   GameOverPanel,
   GameLog,
-  RulesSection
+  RulesDrawer,
+  UIIcon,
+  RiderIcon
 } from '../components';
 
 // Props and emits
@@ -312,79 +317,97 @@ watch(
   max-width: 1200px;
   margin: 0 auto;
   padding: 20px;
-  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+  font-family: var(--font-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif);
 }
 
 h1 {
   text-align: center;
-  margin-bottom: 20px;
-  color: #1e293b;
+  margin: 0;
+  color: var(--color-ink, #1e293b);
 }
 
-.no-selection-prompt {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 10px;
-  padding: 30px;
-  background: #f8fafc;
-  border-radius: 12px;
-  margin-bottom: 20px;
-  color: #64748b;
-  font-size: 1.1em;
-}
-
-.team-legend {
-  display: flex;
-  gap: 30px;
-  justify-content: center;
-  margin-bottom: 15px;
-}
-
-.team-item {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-}
-
-.team-color {
-  width: 20px;
-  height: 20px;
-  border-radius: 4px;
-}
-
-/* v4.0: Header and AI styles */
 .header-row {
   display: flex;
   justify-content: center;
   align-items: center;
-  gap: 20px;
+  gap: 12px;
   margin-bottom: 20px;
 }
 
-.header-row h1 {
-  margin: 0;
+.header-icon {
+  color: var(--team-blue-print, #3F60C9);
 }
 
 .btn-back {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
   padding: 8px 16px;
-  background: #64748b;
+  background: var(--color-muted, #64748b);
   color: white;
   border: none;
-  border-radius: 6px;
+  border-radius: var(--radius-sm, 6px);
   cursor: pointer;
   font-size: 0.9em;
+  transition: background 0.15s;
 }
 
 .btn-back:hover {
   background: #475569;
 }
 
+.no-selection-prompt {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  padding: 30px;
+  background: var(--color-paper, #f8fafc);
+  border: 1px solid var(--color-line, #e2e8f0);
+  border-radius: var(--radius-card, 12px);
+  margin-bottom: 20px;
+  color: var(--color-muted, #64748b);
+  font-size: 1.1em;
+}
+
+.prompt-icon {
+  color: var(--color-ink-muted, rgba(31, 35, 40, 0.5));
+}
+
+.team-legend {
+  display: flex;
+  gap: 24px;
+  justify-content: center;
+  margin-bottom: 15px;
+  flex-wrap: wrap;
+}
+
+.team-item {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 14px;
+  color: var(--color-ink, #1e293b);
+}
+
+.team-color {
+  width: 16px;
+  height: 16px;
+  border-radius: 4px;
+  box-shadow: inset 0 0 0 1px rgba(0,0,0,0.1);
+}
+
+/* AI Thinking indicator */
 .ai-thinking {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
   text-align: center;
-  padding: 10px;
-  background: #fef3c7;
-  border-radius: 8px;
+  padding: 12px 20px;
+  background: var(--team-yellow-light, #fef3c7);
+  border: 1px solid rgba(242, 201, 76, 0.3);
+  border-radius: var(--radius-md, 8px);
   margin-bottom: 15px;
   color: #92400e;
   font-weight: 500;

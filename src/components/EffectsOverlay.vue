@@ -1,11 +1,17 @@
 <template>
   <div class="effects-overlay">
     <div class="effects-panel">
-      <h3>⚡ Fin du tour {{ turn }}</h3>
+      <h3 class="effects-title">
+        <UIIcon type="event" :size="22" />
+        Fin du tour {{ turn }}
+      </h3>
       
       <!-- Aspiration effects -->
       <div v-if="effects.aspiration.length > 0" class="effect-group aspiration-group">
-        <h4>🌀 Aspiration (regroupement)</h4>
+        <h4>
+          <UIIcon type="aspiration" :size="18" />
+          Aspiration (regroupement)
+        </h4>
         <p class="effect-rule">Écart de 1 case → rejoint le groupe devant</p>
         <div class="effect-list">
           <div 
@@ -15,14 +21,17 @@
           >
             <span class="effect-rider">{{ effect.riderName }}</span>
             <span class="effect-detail">case {{ effect.fromPosition }} → {{ effect.toPosition }}</span>
-            <span class="effect-icon">↑</span>
+            <UIIcon type="chevron-up" :size="16" class="effect-icon" />
           </div>
         </div>
       </div>
       
       <!-- Wind effects -->
       <div v-if="effects.wind.length > 0" class="effect-group wind-group">
-        <h4>💨 Relais</h4>
+        <h4>
+          <UIIcon type="wind" :size="18" />
+          Relais
+        </h4>
         <p class="effect-rule">Case vide devant → leader reçoit carte +1 (effort en tête)</p>
         <div class="effect-list">
           <div 
@@ -39,7 +48,10 @@
       
       <!-- Shelter effects -->
       <div v-if="effects.shelter.length > 0" class="effect-group shelter-group">
-        <h4>🎵 Tempo</h4>
+        <h4>
+          <UIIcon type="tempo" :size="18" />
+          Tempo
+        </h4>
         <p class="effect-rule">Protégé, rouleur leader ou montagne → reçoit carte +2</p>
         <div class="effect-list">
           <div 
@@ -56,7 +68,10 @@
       
       <!-- Refuel zone effects (v4.0) -->
       <div v-if="effects.refuel && effects.refuel.length > 0" class="effect-group refuel-group">
-        <h4>⛽ Ravitaillement</h4>
+        <h4>
+          <UIIcon type="refuel" :size="18" />
+          Ravitaillement
+        </h4>
         <p class="effect-rule">Arrêt en zone ravito → récupération d'énergie</p>
         <div class="effect-list">
           <div 
@@ -76,7 +91,8 @@
       </div>
       
       <button @click="$emit('acknowledge')" class="btn btn-continue">
-        Continuer →
+        Continuer
+        <UIIcon type="chevron-down" :size="18" class="icon-forward" />
       </button>
     </div>
   </div>
@@ -84,6 +100,7 @@
 
 <script setup>
 import { computed } from 'vue';
+import { UIIcon } from './icons';
 
 const props = defineProps({
   turn: { type: Number, required: true },
@@ -120,8 +137,8 @@ const noEffects = computed(() =>
 
 .effects-panel {
   background: white;
-  border-radius: 16px;
-  padding: 30px;
+  border-radius: var(--radius-lg, 16px);
+  padding: var(--space-xl, 30px);
   max-width: 500px;
   width: 90%;
   max-height: 80vh;
@@ -129,88 +146,104 @@ const noEffects = computed(() =>
   box-shadow: 0 20px 40px rgba(0,0,0,0.3);
 }
 
-.effects-panel h3 {
-  margin: 0 0 20px 0;
-  text-align: center;
+.effects-title {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-sm, 8px);
+  margin: 0 0 var(--space-lg, 20px) 0;
   font-size: 1.4em;
+  color: var(--color-accent, #3b82f6);
 }
 
 .effect-group {
-  margin-bottom: 20px;
-  padding: 15px;
-  border-radius: 8px;
+  margin-bottom: var(--space-lg, 20px);
+  padding: var(--space-md, 15px);
+  border-radius: var(--radius-md, 8px);
 }
 
 .effect-group h4 {
-  margin: 0 0 10px 0;
+  display: flex;
+  align-items: center;
+  gap: var(--space-sm, 8px);
+  margin: 0 0 var(--space-sm, 10px) 0;
   font-size: 1.1em;
 }
 
 .effect-rule {
   font-size: 0.85em;
-  color: #64748b;
-  margin: 0 0 10px 0;
+  color: var(--color-ink-muted, #64748b);
+  margin: 0 0 var(--space-sm, 10px) 0;
   font-style: italic;
 }
 
 .aspiration-group { background: #eff6ff; }
 .wind-group { background: #fef3c7; }
 .shelter-group { background: #dcfce7; }
+.refuel-group { background: #fffbeb; }
 
 .effect-list { display: flex; flex-direction: column; gap: 8px; }
 
 .effect-item {
   display: flex;
   align-items: center;
-  gap: 10px;
-  padding: 8px 12px;
+  gap: var(--space-sm, 10px);
+  padding: var(--space-sm, 8px) var(--space-md, 12px);
   background: white;
-  border-radius: 6px;
+  border-radius: var(--radius-sm, 6px);
 }
 
 .effect-rider { font-weight: 500; flex: 1; }
-.effect-detail { color: #64748b; font-size: 0.9em; }
-.effect-icon { font-size: 1.2em; }
+.effect-detail { color: var(--color-ink-muted, #64748b); font-size: 0.9em; }
+.effect-icon { color: var(--color-accent, #3b82f6); }
 
 .effect-card {
   padding: 4px 10px;
-  border-radius: 4px;
+  border-radius: var(--radius-xs, 4px);
   font-weight: bold;
+  font-family: var(--font-mono);
 }
 .effect-card.bad { background: #fecaca; color: #dc2626; }
 .effect-card.good { background: #bbf7d0; color: #16a34a; }
 
 .effect-energy {
   padding: 4px 10px;
-  border-radius: 4px;
+  border-radius: var(--radius-xs, 4px);
   font-weight: bold;
+  font-family: var(--font-mono);
   background: #fef3c7;
   color: #d97706;
 }
 
-.refuel-group { background: #fffbeb; }
-
-.effect-desc { color: #64748b; font-size: 0.85em; }
+.effect-desc { color: var(--color-ink-muted, #64748b); font-size: 0.85em; }
 
 .no-effects {
   text-align: center;
-  padding: 30px;
-  color: #64748b;
+  padding: var(--space-xl, 30px);
+  color: var(--color-ink-muted, #64748b);
 }
 
 .btn-continue {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-sm, 8px);
   width: 100%;
-  padding: 15px;
-  margin-top: 20px;
+  padding: var(--space-md, 15px);
+  margin-top: var(--space-lg, 20px);
   font-size: 1.1em;
   border: none;
-  border-radius: 8px;
-  background: #3b82f6;
+  border-radius: var(--radius-md, 8px);
+  background: var(--color-accent, #3b82f6);
   color: white;
   cursor: pointer;
-  transition: background 0.2s;
+  transition: background var(--transition-fast, 0.2s);
 }
-.btn-continue:hover { background: #2563eb; }
+.btn-continue:hover { background: var(--color-accent-hover, #2563eb); }
+
+.icon-forward {
+  transform: rotate(-90deg);
+}
 
 @keyframes fade-in {
   from { opacity: 0; }

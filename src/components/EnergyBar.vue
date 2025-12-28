@@ -1,7 +1,7 @@
 <template>
   <div class="energy-bar-container">
     <div class="energy-header">
-      <span class="energy-icon">⚡</span>
+      <UIIcon type="energy" :size="14" class="energy-icon" />
       <span class="energy-label type-caption">{{ statusLabel }}</span>
       <span class="energy-value type-numeric">{{ energy }}%</span>
     </div>
@@ -16,16 +16,16 @@
     </div>
     <div v-if="showEffects && hasEffects" class="energy-effects">
       <span v-if="effects.bonusDisabled" class="badge badge-red badge-xs">
-        Bonus ❌
+        Bonus <UIIcon type="blocked" :size="10" />
       </span>
       <span v-if="!effects.canUseAttack" class="badge badge-red badge-xs">
-        Attaque ❌
+        Attaque <UIIcon type="blocked" :size="10" />
       </span>
       <span v-else-if="effects.attackPenalty" class="badge badge-yellow badge-xs">
         Attaque {{ effects.attackPenalty }}
       </span>
       <span v-if="!effects.canUseSpecialty" class="badge badge-red badge-xs">
-        Spécialité ❌
+        Spécialité <UIIcon type="blocked" :size="10" />
       </span>
       <span v-else-if="effects.specialtyPenalty" class="badge badge-yellow badge-xs">
         Spécialité {{ effects.specialtyPenalty }}
@@ -40,6 +40,7 @@
 <script setup>
 import { computed } from 'vue';
 import { getEnergyColor, getEnergyLabel, getEnergyEffects } from '../core/energy.js';
+import { UIIcon } from './icons';
 
 const props = defineProps({
   energy: { type: Number, required: true },
@@ -71,7 +72,7 @@ const hasEffects = computed(() => {
 }
 
 .energy-icon {
-  font-size: 14px;
+  color: var(--color-gold, #d97706);
 }
 
 .energy-label {
@@ -114,8 +115,21 @@ const hasEffects = computed(() => {
 
 /* Extra small badge variant */
 .badge-xs {
+  display: inline-flex;
+  align-items: center;
+  gap: 3px;
   font-size: 9px;
   padding: 1px 5px;
   border-radius: 3px;
+}
+
+.badge-red {
+  background: #fecaca;
+  color: #dc2626;
+}
+
+.badge-yellow {
+  background: #fef3c7;
+  color: #d97706;
 }
 </style>

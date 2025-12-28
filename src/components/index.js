@@ -10,5 +10,9 @@ export { default as TeamsOverview } from './TeamsOverview.vue';
 export { default as GameLog } from './GameLog.vue';
 export { default as GameOverPanel } from './GameOverPanel.vue';
 export { default as RulesSection } from './RulesSection.vue';
+export { default as RulesDrawer } from './RulesDrawer.vue';
 export { default as EnergyBar } from './EnergyBar.vue';
 export { default as SetupScreen } from './SetupScreen.vue';
+
+// Icon components
+export * from './icons';

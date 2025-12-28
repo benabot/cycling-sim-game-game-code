@@ -62,7 +62,8 @@
                   class="toggle-checkbox"
                 />
                 <span class="badge" :class="player.playerType === 'human' ? 'badge-blue' : 'badge-yellow'">
-                  {{ player.playerType === 'human' ? '👤 Humain' : '🤖 IA' }}
+                  <UIIcon :type="player.playerType === 'human' ? 'human' : 'ai'" size="sm" />
+                  {{ player.playerType === 'human' ? 'Humain' : 'IA' }}
                 </span>
               </label>
 
@@ -74,11 +75,11 @@
                   <option value="hard">Difficile</option>
                 </select>
                 <select v-model="player.personality" @change="updatePlayer(index)" class="select select--sm">
-                  <option value="">🎲 Aléatoire</option>
-                  <option value="attacker">⚔️ Attaquant</option>
-                  <option value="conservative">🛡️ Conservateur</option>
-                  <option value="opportunist">🎯 Opportuniste</option>
-                  <option value="balanced">⚖️ Équilibré</option>
+                  <option value="">Aléatoire</option>
+                  <option value="attacker">Attaquant</option>
+                  <option value="conservative">Conservateur</option>
+                  <option value="opportunist">Opportuniste</option>
+                  <option value="balanced">Équilibré</option>
                 </select>
               </div>
             </div>
@@ -90,7 +91,8 @@
                 @click="toggleRidersExpand(index)"
               >
                 <RiderIcon type="rouleur" :size="16" />
-                <span>Coureurs {{ expandedTeams[index] ? '▲' : '▼' }}</span>
+                <span>Coureurs</span>
+                <UIIcon :type="expandedTeams[index] ? 'chevron-up' : 'chevron-down'" size="sm" />
               </button>
               
               <div v-if="expandedTeams[index]" class="riders-edit-list">
@@ -134,9 +136,15 @@
 
       <!-- Summary -->
       <div class="setup-summary">
-        <span class="badge badge-blue">{{ humanCount }} joueur(s) humain(s)</span>
+        <span class="badge badge-blue">
+          <UIIcon type="human" size="xs" />
+          {{ humanCount }} joueur(s)
+        </span>
         <span class="type-caption">vs</span>
-        <span class="badge badge-yellow">{{ aiCount }} IA</span>
+        <span class="badge badge-yellow">
+          <UIIcon type="ai" size="xs" />
+          {{ aiCount }} IA
+        </span>
       </div>
 
       <!-- Start button -->
@@ -145,11 +153,13 @@
         @click="startGame" 
         :disabled="humanCount === 0"
       >
-        🏁 Lancer la course !
+        <UIIcon type="finish" size="lg" />
+        Lancer la course !
       </button>
 
       <p v-if="humanCount === 0" class="setup-warning type-caption">
-        ⚠️ Au moins un joueur humain requis
+        <UIIcon type="warning" size="sm" />
+        Au moins un joueur humain requis
       </p>
     </div>
   </div>
@@ -159,7 +169,7 @@
 import { ref, computed, reactive } from 'vue';
 import { TeamId, PlayerType, AIDifficulty, getTeamIds, createPlayerConfig } from '../core/teams.js';
 import RiderToken from './RiderToken.vue';
-import { RiderIcon } from './icons';
+import { RiderIcon, UIIcon } from './icons';
 
 const emit = defineEmits(['start']);
 
@@ -430,6 +440,10 @@ initializePlayers();
 
 /* Warning */
 .setup-warning {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-xs);
   text-align: center;
   color: var(--color-danger);
   margin-top: var(--space-sm);

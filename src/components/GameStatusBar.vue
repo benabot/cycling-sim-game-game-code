@@ -16,17 +16,22 @@
 
     <div class="status-bar-divider"></div>
 
-    <div class="status-bar-item">
+    <div class="status-bar-item status-bar-phase">
       <span class="status-bar-label">Phase</span>
-      <span class="status-bar-value" :title="phaseTooltip">{{ phaseLabel }}</span>
+      <span class="status-bar-value phase-value" :title="phaseTooltip">
+        <UIIcon :type="phaseIcon" :size="16" class="phase-icon" />
+        {{ phaseLabel }}
+      </span>
     </div>
 
     <span v-if="isLastTurn" class="badge badge-gold status-bar-badge">
-      🏁 DERNIER TOUR
+      <UIIcon type="finish" :size="14" />
+      DERNIER TOUR
     </span>
 
     <span v-if="phase === 'finished'" class="badge badge-gold status-bar-badge">
-      🏆 {{ winnerName }}
+      <UIIcon type="trophy" :size="14" />
+      {{ winnerName }}
     </span>
   </div>
 </template>
@@ -34,6 +39,7 @@
 <script setup>
 import { computed } from 'vue';
 import { TeamConfig } from '../config/game.config.js';
+import { UIIcon } from './icons';
 
 const props = defineProps({
   turn: { type: Number, required: true },
@@ -54,14 +60,25 @@ const teamColorClass = computed(() => ({
   'text-team-yellow': props.currentTeam === 'team_d'
 }));
 
+const phaseIcon = computed(() => {
+  const icons = {
+    select_rider: 'cursor',
+    select_card: 'card',
+    roll_dice: 'die',
+    select_specialty: 'star',
+    resolve: 'check'
+  };
+  return icons[props.turnPhase] || 'info';
+});
+
 const phaseLabel = computed(() => {
   if (props.phase === 'finished') return 'Course terminée';
   const labels = {
-    select_rider: '👆 Choisir coureur',
-    select_card: '🃏 Choisir carte',
-    roll_dice: '🎲 Lancer dé',
-    select_specialty: '★ Spécialité ?',
-    resolve: '✓ Valider'
+    select_rider: 'Choisir coureur',
+    select_card: 'Choisir carte',
+    roll_dice: 'Lancer dé',
+    select_specialty: 'Spécialité ?',
+    resolve: 'Valider'
   };
   return labels[props.turnPhase] || '';
 });
@@ -86,7 +103,24 @@ const phaseTooltip = computed(() => {
   border-color: var(--color-gold);
 }
 
+.status-bar-phase {
+  flex: 1;
+}
+
+.phase-value {
+  display: flex;
+  align-items: center;
+  gap: var(--space-xs);
+}
+
+.phase-icon {
+  color: var(--color-accent);
+}
+
 .status-bar-badge {
+  display: flex;
+  align-items: center;
+  gap: var(--space-xs);
   margin-left: auto;
   animation: pulse 1.5s infinite;
 }

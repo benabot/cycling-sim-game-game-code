@@ -24,7 +24,14 @@
         </div>
         <div class="stat-pill" :class="bonusClass">
           <span class="stat-pill-label">Bonus</span>
-          <span class="stat-pill-value">{{ energyEffects.bonusDisabled ? '❌' : formatBonus(terrainBonus) }}</span>
+          <span class="stat-pill-value">
+            <template v-if="energyEffects.bonusDisabled">
+              <UIIcon type="blocked" :size="14" />
+            </template>
+            <template v-else>
+              {{ formatBonus(terrainBonus) }}
+            </template>
+          </span>
         </div>
       </div>
 
@@ -34,7 +41,8 @@
       </div>
 
       <button @click="$emit('cancel')" class="btn btn-ghost btn-sm">
-        ← Changer
+        <UIIcon type="chevron-up" :size="14" class="icon-back" />
+        Changer
       </button>
     </div>
 
@@ -43,7 +51,8 @@
       <!-- Movement Cards -->
       <div class="cards-section">
         <div class="cards-section-header">
-          <span class="type-label">🃏 Cartes Mouvement</span>
+          <UIIcon type="card" :size="16" class="section-icon" />
+          <span class="type-label">Cartes Mouvement</span>
           <span class="badge badge-muted">{{ rider.hand?.length || 0 }}</span>
         </div>
         <div class="cards-list">
@@ -67,9 +76,13 @@
       <!-- Attack Cards -->
       <div class="cards-section cards-section--attack">
         <div class="cards-section-header">
-          <span class="type-label">⚔️ Attaques</span>
+          <UIIcon type="attack" :size="16" class="section-icon" />
+          <span class="type-label">Attaques</span>
           <span class="badge badge-muted">{{ rider.attackCards?.length || 0 }}/2</span>
-          <span v-if="!canUseAttackCard" class="type-caption text-danger">⚡ Énergie insuffisante</span>
+          <span v-if="!canUseAttackCard" class="type-caption text-danger energy-warning">
+            <UIIcon type="energy" :size="12" />
+            Énergie insuffisante
+          </span>
         </div>
         <div class="cards-list">
           <button 
@@ -80,7 +93,10 @@
             :disabled="!canUseAttackCard"
             @click="canUseAttackCard && onCardClick(card, true)"
           >
-            <span class="game-card-value">+{{ canUseAttackCard ? (6 + (energyEffects.attackPenalty || 0)) : '❌' }}</span>
+            <span class="game-card-value">
+              <template v-if="canUseAttackCard">+{{ 6 + (energyEffects.attackPenalty || 0) }}</template>
+              <template v-else><UIIcon type="blocked" :size="16" /></template>
+            </span>
             <span class="game-card-name">Attaque</span>
           </button>
           <span v-if="!rider.attackCards?.length" class="type-caption cards-empty">Épuisées</span>
@@ -90,9 +106,13 @@
       <!-- Specialty Cards -->
       <div class="cards-section cards-section--specialty">
         <div class="cards-section-header">
-          <span class="type-label">★ Spécialités</span>
+          <UIIcon type="star" :size="16" class="section-icon" />
+          <span class="type-label">Spécialités</span>
           <span class="badge badge-muted">{{ rider.specialtyCards?.length || 0 }}/2</span>
-          <span v-if="!energyEffects.canUseSpecialty" class="type-caption text-danger">⚡ Énergie insuffisante</span>
+          <span v-if="!energyEffects.canUseSpecialty" class="type-caption text-danger energy-warning">
+            <UIIcon type="energy" :size="12" />
+            Énergie insuffisante
+          </span>
         </div>
         <div class="cards-list">
           <button 
@@ -102,7 +122,10 @@
             :class="{ 'game-card--disabled': !canUseSpecialtyCard }"
             :disabled="!canUseSpecialtyCard"
           >
-            <span class="game-card-value">+{{ energyEffects.canUseSpecialty ? (2 + (energyEffects.specialtyPenalty || 0)) : '❌' }}</span>
+            <span class="game-card-value">
+              <template v-if="energyEffects.canUseSpecialty">+{{ 2 + (energyEffects.specialtyPenalty || 0) }}</template>
+              <template v-else><UIIcon type="blocked" :size="16" /></template>
+            </span>
             <span class="game-card-name">{{ specialtyTerrainName }}</span>
           </button>
           <span v-if="!rider.specialtyCards?.length" class="type-caption cards-empty">Épuisées</span>
@@ -115,7 +138,8 @@
       <!-- Discard Pile -->
       <div v-if="rider.discard?.length" class="cards-section cards-section--discard">
         <div class="cards-section-header">
-          <span class="type-label text-muted">📥 Défausse</span>
+          <UIIcon type="discard" :size="16" class="section-icon text-muted" />
+          <span class="type-label text-muted">Défausse</span>
           <span class="badge badge-muted">{{ rider.discard.length }}</span>
         </div>
         <div class="discard-preview">
@@ -142,7 +166,7 @@ import { TeamConfig, RiderConfig, TerrainConfig } from '../config/game.config.js
 import { getEnergyEffects } from '../core/energy.js';
 import RiderToken from './RiderToken.vue';
 import EnergyBar from './EnergyBar.vue';
-import { TerrainIcon } from './icons';
+import { TerrainIcon, UIIcon } from './icons';
 
 const props = defineProps({
   rider: { type: Object, required: true },
@@ -271,6 +295,10 @@ function onCardClick(card, isAttack) {
   min-width: 140px;
 }
 
+.icon-back {
+  transform: rotate(-90deg);
+}
+
 /* Cards Grid */
 .rider-panel-cards {
   display: grid;
@@ -284,6 +312,16 @@ function onCardClick(card, isAttack) {
   align-items: center;
   gap: var(--space-sm);
   margin-bottom: var(--space-sm);
+}
+
+.section-icon {
+  color: var(--color-ink-muted);
+}
+
+.energy-warning {
+  display: flex;
+  align-items: center;
+  gap: 4px;
 }
 
 .cards-list {

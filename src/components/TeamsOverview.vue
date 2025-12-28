@@ -14,10 +14,12 @@
         />
         <span class="team-card-name type-body-medium">{{ getTeamConfig(team).name }}</span>
         <span v-if="isAITeam(team)" class="badge badge-yellow badge-sm">
-          🤖{{ getAIPersonalityIcon(team) }}
+          <UIIcon type="ai" size="xs" />
+          <UIIcon v-if="getAIPersonalityType(team)" :type="getAIPersonalityType(team)" size="xs" />
         </span>
         <span v-if="currentTeam === team" class="badge badge-blue badge-sm">
-          ← Joue
+          <UIIcon type="start" size="xs" />
+          Joue
         </span>
       </div>
 
@@ -49,9 +51,18 @@
 
           <!-- Cards Count -->
           <div class="rider-row-cards">
-            <span class="type-caption" title="Main">🃏{{ rider.hand?.length || 0 }}</span>
-            <span class="type-caption" title="Attaques">⚔️{{ rider.attackCards?.length || 0 }}</span>
-            <span class="type-caption" title="Spécialités">★{{ rider.specialtyCards?.length || 0 }}</span>
+            <span class="card-count" title="Main">
+              <UIIcon type="card" size="xs" />
+              {{ rider.hand?.length || 0 }}
+            </span>
+            <span class="card-count" title="Attaques">
+              <UIIcon type="attack" size="xs" />
+              {{ rider.attackCards?.length || 0 }}
+            </span>
+            <span class="card-count" title="Spécialités">
+              <UIIcon type="star" size="xs" />
+              {{ rider.specialtyCards?.length || 0 }}
+            </span>
           </div>
 
           <!-- Energy Mini Bar -->
@@ -68,9 +79,15 @@
           </div>
 
           <!-- Status Badge -->
-          <span v-if="rider.hasFinished" class="badge badge-green badge-sm">🏁</span>
-          <span v-else-if="rider.turnsToSkip > 0" class="badge badge-red badge-sm">🤕</span>
-          <span v-else-if="playedRiders.includes(rider.id)" class="badge badge-muted badge-sm">✓</span>
+          <span v-if="rider.hasFinished" class="badge badge-green badge-sm">
+            <UIIcon type="finish" size="xs" />
+          </span>
+          <span v-else-if="rider.turnsToSkip > 0" class="badge badge-red badge-sm">
+            <UIIcon type="crash" size="xs" />
+          </span>
+          <span v-else-if="playedRiders.includes(rider.id)" class="badge badge-muted badge-sm">
+            <UIIcon type="check" size="xs" />
+          </span>
         </div>
       </div>
     </div>
@@ -83,6 +100,7 @@ import { TeamConfig, RiderConfig } from '../config/game.config.js';
 import { getEnergyColor } from '../core/energy.js';
 import { TeamConfigs, PlayerType } from '../core/teams.js';
 import RiderToken from './RiderToken.vue';
+import { UIIcon } from './icons';
 
 const props = defineProps({
   riders: { type: Array, required: true, default: () => [] },
@@ -96,11 +114,12 @@ const props = defineProps({
 
 const emit = defineEmits(['selectRider']);
 
-const personalityIcons = {
-  attacker: '⚔️',
-  conservative: '🛡️',
-  opportunist: '🎯',
-  balanced: '⚖️'
+// Map personality to icon type
+const personalityIconTypes = {
+  attacker: 'attack',
+  conservative: 'shield',
+  opportunist: 'target',
+  balanced: 'balance'
 };
 
 const displayTeams = computed(() => {
@@ -137,9 +156,9 @@ function isAITeam(teamId) {
   return player?.playerType === PlayerType.AI;
 }
 
-function getAIPersonalityIcon(teamId) {
+function getAIPersonalityType(teamId) {
   const personality = props.aiPersonalities[teamId];
-  return personalityIcons[personality] || '';
+  return personalityIconTypes[personality] || null;
 }
 
 function getTeamRiders(team) {
@@ -278,11 +297,19 @@ function onRiderClick(rider, team) {
   text-align: right;
 }
 
+/* Cards Count */
 .rider-row-cards {
   display: flex;
   gap: var(--space-xs);
+}
+
+.card-count {
+  display: inline-flex;
+  align-items: center;
+  gap: 2px;
   color: var(--color-ink-muted);
-  font-size: 0.75em;
+  font-size: 11px;
+  font-family: var(--font-mono);
 }
 
 /* Energy Mini Bar */
