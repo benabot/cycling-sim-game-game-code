@@ -230,15 +230,24 @@ function scrollToRider(riderId) {
   if (!rider || !courseBoardRef.value) return;
   
   nextTick(() => {
-    const courseEl = courseBoardRef.value.$el?.querySelector('.course');
-    if (!courseEl) return;
+    // Get the track-container (scrollable parent)
+    const container = courseBoardRef.value.$el;
+    if (!container) return;
     
-    // Find the cell at rider's position
-    const cells = courseEl.querySelectorAll('.cell');
+    // Find all track cells (including start cell)
+    const cells = container.querySelectorAll('.track-cell');
     const targetCell = cells[rider.position];
     
-    if (targetCell) {
-      targetCell.scrollIntoView({ behavior: 'smooth', inline: 'center', block: 'nearest' });
+    if (targetCell && container) {
+      // Calculate scroll position to center the cell
+      const containerRect = container.getBoundingClientRect();
+      const cellRect = targetCell.getBoundingClientRect();
+      const scrollLeft = targetCell.offsetLeft - (containerRect.width / 2) + (cellRect.width / 2);
+      
+      container.scrollTo({
+        left: Math.max(0, scrollLeft),
+        behavior: 'smooth'
+      });
     }
   });
 }

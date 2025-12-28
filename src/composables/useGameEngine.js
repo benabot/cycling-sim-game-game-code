@@ -214,14 +214,36 @@ export function useGameEngine() {
   // Actions
   function selectRider(riderId, options = {}) {
     const { viewOnly = false } = options;
-    const newState = selectRiderEngine(gameState.value, riderId);
-    gameState.value = newState;
-    isViewOnlySelection.value = viewOnly;
+    
+    if (viewOnly) {
+      // View-only mode: bypass game engine validation, just set selectedRiderId directly
+      // This allows viewing any rider's info without affecting game state
+      gameState.value = {
+        ...gameState.value,
+        selectedRiderId: riderId
+        // Don't change turnPhase or any other state
+      };
+      isViewOnlySelection.value = true;
+    } else {
+      // Normal mode: use game engine validation
+      const newState = selectRiderEngine(gameState.value, riderId);
+      gameState.value = newState;
+      isViewOnlySelection.value = false;
+    }
   }
 
   function cancelRiderSelection() {
-    gameState.value = deselectRiderEngine(gameState.value);
-    isViewOnlySelection.value = false;
+    if (isViewOnlySelection.value) {
+      // View-only mode: just clear the selection without changing game state
+      gameState.value = {
+        ...gameState.value,
+        selectedRiderId: null
+      };
+      isViewOnlySelection.value = false;
+    } else {
+      // Normal mode: use game engine
+      gameState.value = deselectRiderEngine(gameState.value);
+    }
   }
 
   function selectCard(cardId) {
