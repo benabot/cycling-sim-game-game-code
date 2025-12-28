@@ -243,6 +243,52 @@
       <path d="M12 5c2 0 4 1 4 3" />
     </g>
 
+    <!-- Calendar (stage races) -->
+    <g v-else-if="type === 'calendar'">
+      <rect x="3" y="4" width="18" height="18" rx="2" />
+      <path d="M16 2v4M8 2v4M3 10h18" />
+      <path d="M8 14h.01M12 14h.01M16 14h.01M8 18h.01M12 18h.01" />
+    </g>
+
+    <!-- Laurel (classic races / victory) -->
+    <g v-else-if="type === 'laurel'">
+      <path d="M12 3v18" />
+      <path d="M5 8c2-2 5-2 7 0" />
+      <path d="M19 8c-2-2-5-2-7 0" />
+      <path d="M4 13c2-1 5-1 8 1" />
+      <path d="M20 13c-2-1-5-1-8 1" />
+      <path d="M5 18c2 0 5-1 7-3" />
+      <path d="M19 18c-2 0-5-1-7-3" />
+    </g>
+
+    <!-- Cobbles/Pavés (Nord style) -->
+    <g v-else-if="type === 'cobbles'">
+      <rect x="3" y="3" width="7" height="7" rx="1" />
+      <rect x="14" y="3" width="7" height="7" rx="1" />
+      <rect x="3" y="14" width="7" height="7" rx="1" />
+      <rect x="14" y="14" width="7" height="7" rx="1" />
+    </g>
+
+    <!-- Road (flat/highway) -->
+    <g v-else-if="type === 'road'">
+      <path d="M4 19L8 5h8l4 14" />
+      <path d="M9 19h6" />
+      <path d="M10 8h4M11 12h2M10 16h4" />
+    </g>
+
+    <!-- Hill (small climb / côte) -->
+    <g v-else-if="type === 'hill'">
+      <path d="M3 20L9 10l4 5 8-12" />
+      <path d="M3 20h18" />
+    </g>
+
+    <!-- Mountain (bigger than hill, with peak) -->
+    <g v-else-if="type === 'mountain'">
+      <path d="M8 21l4-10 4 10" />
+      <path d="M2 21l6-12 4 6 6-12" />
+      <path d="M2 21h20" />
+    </g>
+
     <!-- Fallback: question mark -->
     <g v-else>
       <circle cx="12" cy="12" r="10" />
@@ -264,7 +310,8 @@ const props = defineProps({
       'finish', 'aspiration', 'refuel', 'history', 'settings', 'start',
       'check', 'close', 'chevron-down', 'chevron-up', 'info', 'warning',
       'team', 'star', 'crash', 'energy', 'book', 'target', 'shield', 'balance',
-      'trophy', 'restart', 'discard', 'blocked', 'event', 'cursor', 'tempo'
+      'trophy', 'restart', 'discard', 'blocked', 'event', 'cursor', 'tempo',
+      'calendar', 'laurel', 'cobbles', 'road', 'hill', 'mountain'
     ].includes(v)
   },
   size: {

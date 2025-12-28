@@ -448,3 +448,229 @@ export function getTerrainDescription(terrain) {
   };
   return descriptions[terrain] || '';
 }
+
+/**
+ * Generate a course from a preset configuration (v5.0)
+ * Used for predefined classics and stage races
+ * 
+ * @param {Object} preset - Preset configuration with distribution and structure
+ * @param {number} length - Course length (overrides preset default if provided)
+ * @returns {Array} Course array with terrain info
+ */
+export function generateCourseFromPreset(preset, length = null) {
+  const courseLength = length || preset.defaultLength || 80;
+  const distribution = preset.distribution;
+  const structure = preset.structure || {};
+  
+  const course = [];
+  
+  // Calculate actual case counts from percentages
+  const caseCounts = {};
+  let total = 0;
+  
+  for (const [terrain, percentage] of Object.entries(distribution)) {
+    const count = Math.round((percentage / 100) * courseLength);
+    caseCounts[terrain] = count;
+    total += count;
+  }
+  
+  // Adjust for rounding errors
+  if (total !== courseLength) {
+    caseCounts[TerrainType.FLAT] += (courseLength - total);
+  }
+  
+  // Build course structure based on preset rules
+  const courseStructure = createCourseFromPresetStructure(courseLength, caseCounts, structure);
+  
+  // v5.0: Place refuel zones (~30% and ~65% of course)
+  const refuelZone1Start = Math.floor(courseLength * 0.30);
+  const refuelZone2Start = Math.floor(courseLength * 0.65);
+  const refuelZoneLength = 3;
+  
+  for (let i = 0; i < courseLength; i++) {
+    const isInRefuelZone1 = i >= refuelZone1Start && i < refuelZone1Start + refuelZoneLength;
+    const isInRefuelZone2 = i >= refuelZone2Start && i < refuelZone2Start + refuelZoneLength;
+    
+    course.push({
+      index: i,
+      terrain: courseStructure[i],
+      config: TerrainConfig[courseStructure[i]],
+      isRefuelZone: isInRefuelZone1 || isInRefuelZone2
+    });
+  }
+  
+  return course;
+}
+
+/**
+ * Create course structure from preset configuration
+ * More controlled than random generation - follows preset structure rules
+ * 
+ * @param {number} length - Course length
+ * @param {Object} caseCounts - Number of cases per terrain type
+ * @param {Object} structure - Structure rules (startFlat, endSprint, mountainMinLength, hillMaxLength)
+ * @returns {Array} Array of terrain types
+ */
+function createCourseFromPresetStructure(length, caseCounts, structure) {
+  const courseArray = new Array(length);
+  const remaining = { ...caseCounts };
+  
+  // Extract structure parameters with defaults
+  const startFlat = structure.startFlat || 5;
+  const endSprint = structure.endSprint || 8;
+  const mountainMinLength = structure.mountainMinLength || 15;
+  const hillMaxLength = structure.hillMaxLength || 5;
+  
+  // 1. Place start flat zone
+  const actualStartFlat = Math.min(startFlat, remaining[TerrainType.FLAT] || 0);
+  for (let i = 0; i < actualStartFlat; i++) {
+    courseArray[i] = TerrainType.FLAT;
+  }
+  remaining[TerrainType.FLAT] = Math.max(0, (remaining[TerrainType.FLAT] || 0) - actualStartFlat);
+  
+  // 2. Place end sprint zone
+  const sprintStart = length - endSprint;
+  const actualEndSprint = Math.min(endSprint, remaining[TerrainType.SPRINT] || 0);
+  for (let i = 0; i < actualEndSprint; i++) {
+    courseArray[sprintStart + i] = TerrainType.SPRINT;
+  }
+  remaining[TerrainType.SPRINT] = Math.max(0, (remaining[TerrainType.SPRINT] || 0) - actualEndSprint);
+  
+  // Fill remaining sprint zone with flat if needed
+  for (let i = sprintStart + actualEndSprint; i < length; i++) {
+    if (!courseArray[i]) {
+      courseArray[i] = TerrainType.FLAT;
+      remaining[TerrainType.FLAT] = Math.max(0, (remaining[TerrainType.FLAT] || 0) - 1);
+    }
+  }
+  
+  // 3. Build segments for middle section
+  const segments = [];
+  const middleStart = actualStartFlat;
+  const middleEnd = sprintStart;
+  const middleLength = middleEnd - middleStart;
+  
+  // 3a. Create mountain segment (one big climb) if we have mountain cases
+  if (remaining[TerrainType.MOUNTAIN] > 0) {
+    const mountainLen = Math.min(remaining[TerrainType.MOUNTAIN], Math.max(mountainMinLength, remaining[TerrainType.MOUNTAIN]));
+    segments.push({ terrain: TerrainType.MOUNTAIN, length: mountainLen });
+    remaining[TerrainType.MOUNTAIN] -= mountainLen;
+    
+    // Add descent right after mountain
+    if (remaining[TerrainType.DESCENT] > 0) {
+      const descentLen = Math.min(remaining[TerrainType.DESCENT], Math.floor(mountainLen * 0.7));
+      if (descentLen >= 3) {
+        segments.push({ terrain: TerrainType.DESCENT, length: descentLen });
+        remaining[TerrainType.DESCENT] -= descentLen;
+      }
+    }
+  }
+  
+  // 3b. Create hill segments (short punchy climbs)
+  while (remaining[TerrainType.HILL] >= 2) {
+    const hillLen = Math.min(remaining[TerrainType.HILL], hillMaxLength, 2 + Math.floor(Math.random() * 3));
+    segments.push({ terrain: TerrainType.HILL, length: hillLen });
+    remaining[TerrainType.HILL] -= hillLen;
+    
+    // Small descent after some hills
+    if (remaining[TerrainType.DESCENT] >= 2 && Math.random() > 0.5) {
+      const descentLen = Math.min(remaining[TerrainType.DESCENT], 3);
+      segments.push({ terrain: TerrainType.DESCENT, length: descentLen });
+      remaining[TerrainType.DESCENT] -= descentLen;
+    }
+  }
+  
+  // 3c. Add remaining descent
+  if (remaining[TerrainType.DESCENT] > 0) {
+    segments.push({ terrain: TerrainType.DESCENT, length: remaining[TerrainType.DESCENT] });
+    remaining[TerrainType.DESCENT] = 0;
+  }
+  
+  // 3d. Add remaining sprint zones (if any before final)
+  if (remaining[TerrainType.SPRINT] > 0) {
+    segments.push({ terrain: TerrainType.SPRINT, length: remaining[TerrainType.SPRINT] });
+    remaining[TerrainType.SPRINT] = 0;
+  }
+  
+  // 3e. Fill with flat segments
+  const usedBySegments = segments.reduce((sum, s) => sum + s.length, 0);
+  const flatNeeded = middleLength - usedBySegments;
+  
+  if (flatNeeded > 0) {
+    // Create multiple flat segments for variety
+    let flatRemaining = flatNeeded;
+    while (flatRemaining > 0) {
+      const flatLen = Math.min(flatRemaining, 4 + Math.floor(Math.random() * 4)); // 4-7 cases
+      segments.push({ terrain: TerrainType.FLAT, length: flatLen });
+      flatRemaining -= flatLen;
+    }
+  }
+  
+  // 4. Organize segments strategically
+  // Keep mountain+descent pair, shuffle the rest
+  const mountainDescentPair = [];
+  const otherSegments = [];
+  
+  let i = 0;
+  while (i < segments.length) {
+    if (segments[i].terrain === TerrainType.MOUNTAIN) {
+      mountainDescentPair.push(segments[i]);
+      // Check if next segment is descent
+      if (i + 1 < segments.length && segments[i + 1].terrain === TerrainType.DESCENT) {
+        mountainDescentPair.push(segments[i + 1]);
+        i += 2;
+        continue;
+      }
+    } else {
+      otherSegments.push(segments[i]);
+    }
+    i++;
+  }
+  
+  // Shuffle other segments
+  shuffleArray(otherSegments);
+  
+  // Insert mountain pair at ~40-60% of the middle section (if exists)
+  const finalSegments = [...otherSegments];
+  if (mountainDescentPair.length > 0) {
+    const insertPos = Math.floor(finalSegments.length * 0.35) + Math.floor(Math.random() * (finalSegments.length * 0.25));
+    finalSegments.splice(insertPos, 0, ...mountainDescentPair);
+  }
+  
+  // 5. Place segments into course array
+  let pos = middleStart;
+  for (const segment of finalSegments) {
+    for (let j = 0; j < segment.length && pos < middleEnd; j++) {
+      courseArray[pos++] = segment.terrain;
+    }
+  }
+  
+  // Fill any remaining with flat
+  while (pos < middleEnd) {
+    courseArray[pos++] = TerrainType.FLAT;
+  }
+  
+  return courseArray;
+}
+
+/**
+ * Calculate terrain distribution percentages from a course
+ * @param {Array} course - Course array
+ * @returns {Object} Distribution percentages by terrain type
+ */
+export function calculateCourseDistribution(course) {
+  const counts = {};
+  const total = course.length;
+  
+  for (const cell of course) {
+    const terrain = cell.terrain;
+    counts[terrain] = (counts[terrain] || 0) + 1;
+  }
+  
+  const distribution = {};
+  for (const [terrain, count] of Object.entries(counts)) {
+    distribution[terrain] = Math.round((count / total) * 100);
+  }
+  
+  return distribution;
+}
