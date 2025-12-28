@@ -10,17 +10,17 @@
       >
         <span class="track-cell-number">0</span>
         <div class="track-cell-riders-start">
-          <!-- Group riders by team -->
+          <!-- Group riders by team, stacked -->
           <div 
             v-for="teamId in getTeamsAtStart()" 
             :key="teamId"
-            class="track-start-team"
+            class="track-start-stack"
           >
             <div 
-              v-for="rider in getRidersByTeamAt(0, teamId)" 
+              v-for="(rider, idx) in getRidersByTeamAt(0, teamId)" 
               :key="rider.id"
-              class="track-rider-wrapper"
-              :class="{ 'track-rider-wrapper--aspiration': getAspirationInfo(rider.id) }"
+              class="track-start-token"
+              :style="{ '--stack-index': idx }"
             >
               <RiderToken 
                 :rider="rider"
@@ -308,30 +308,40 @@ function getAspirationInfo(riderId) {
   flex: 1;
 }
 
-/* Start cell: wider, contains teams side by side */
+/* Start cell: contains stacked teams */
 .track-cell--start {
-  width: auto;
-  min-width: 80px;
+  width: 70px;
   height: 88px;
 }
 
-/* Start cell riders: teams in columns */
+/* Start cell riders: teams side by side */
 .track-cell-riders-start {
   display: flex;
-  gap: 4px;
+  gap: 6px;
   flex: 1;
   justify-content: center;
   align-items: center;
-  padding: 2px;
+  padding: 4px;
 }
 
-/* Each team column at start */
-.track-start-team {
-  display: grid;
-  grid-template-columns: repeat(2, 20px);
-  grid-template-rows: repeat(3, 20px);
-  gap: 1px;
-  align-content: center;
+/* Each team stack at start - overlapping tokens */
+.track-start-stack {
+  position: relative;
+  width: 20px;
+  height: 68px;
+}
+
+.track-start-token {
+  position: absolute;
+  left: 0;
+  top: calc(var(--stack-index) * 12px);
+  z-index: calc(10 - var(--stack-index));
+  transition: transform 0.15s ease;
+}
+
+.track-start-token:hover {
+  transform: translateY(-2px) scale(1.1);
+  z-index: 20;
 }
 
 /* Finish zone: fit mini tokens */
