@@ -2,7 +2,7 @@
   <div class="game-container">
     <div class="header-row">
       <RiderIcon type="rouleur" :size="32" class="header-icon" />
-      <h1>Course Cycliste - v4.0</h1>
+      <h1>{{ headerTitle }}</h1>
       <button v-if="phase === 'finished'" class="btn-back" @click="$emit('backToSetup')">
         <UIIcon type="chevron-up" size="sm" style="transform: rotate(-90deg)" />
         Nouvelle partie
@@ -142,9 +142,10 @@
 </template>
 
 <script setup>
-import { ref, onMounted, watch, nextTick } from 'vue';
+import { ref, onMounted, watch, nextTick, computed } from 'vue';
 import { useGameEngine } from '../composables/useGameEngine.js';
 import { TeamConfigs, PlayerType } from '../core/teams.js';
+import { getClassicPreset } from '../config/race-presets.js';
 import {
   GameStatusBar,
   TerrainLegend,
@@ -226,6 +227,20 @@ const {
 
 // Ref for course board scrolling
 const courseBoardRef = ref(null);
+const headerTitle = computed(() => {
+  if (stageRace.value) {
+    const stageIndex = stageRace.value.currentStageIndex ?? 0;
+    const stage = stageRace.value.stages?.[stageIndex];
+    if (stage?.name) {
+      const prefix = stage.number ? `Étape ${stage.number} — ` : '';
+      return `${prefix}${stage.name}`;
+    }
+    return 'Course à étapes';
+  }
+
+  const classicPreset = getClassicPreset(props.gameConfig?.classicId);
+  return classicPreset?.name || 'Course Cycliste';
+});
 
 // Scroll to rider position on the course
 function scrollToRider(riderId) {
