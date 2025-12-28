@@ -1,0 +1,134 @@
+/**
+ * Design Tokens - Cycling Race Board Game
+ * Design System: "Plateau Premium" (Option A1)
+ * Version: 1.0
+ */
+
+:root {
+  /* ========================================
+     1. CORE COLORS (Neutrals)
+     ======================================== */
+  --color-ink: #1F2328;
+  --color-ink-soft: rgba(31, 35, 40, 0.78);
+  --color-ink-muted: rgba(31, 35, 40, 0.60);
+  --color-ink-subtle: rgba(31, 35, 40, 0.40);
+  
+  --color-paper: #FCFBF7;
+  --color-surface: #FFFFFF;
+  --color-surface-warm: #FFFEFB;
+  --color-muted: #6B7280;
+  
+  --color-line: #D7D3C8;
+  --color-line-strong: rgba(31, 35, 40, 0.40);
+  --color-line-subtle: rgba(31, 35, 40, 0.22);
+  
+  --color-shadow: rgba(31, 35, 40, 0.12);
+  --color-shadow-strong: rgba(31, 35, 40, 0.18);
+
+  /* ========================================
+     2. TERRAIN COLORS (Pastels)
+     ======================================== */
+  --terrain-flat: #DDF2E2;
+  --terrain-hill: #F4E8B8;
+  --terrain-mountain: #E6D3C7;
+  --terrain-descent: #D8E9F7;
+  --terrain-sprint: #E6DDF6;
+  
+  --track-grid-line: rgba(31, 35, 40, 0.22);
+  --track-section-line: rgba(31, 35, 40, 0.40);
+
+  /* ========================================
+     3. TEAM COLORS (UI = saturé, Print = poussiéreux)
+     ======================================== */
+  --team-red-ui: #D84A4A;
+  --team-red-print: #C94B4B;
+  --team-red-light: rgba(216, 74, 74, 0.12);
+  
+  --team-blue-ui: #2F6FED;
+  --team-blue-print: #3F60C9;
+  --team-blue-light: rgba(47, 111, 237, 0.12);
+  
+  --team-green-ui: #35B56A;
+  --team-green-print: #3AA462;
+  --team-green-light: rgba(53, 181, 106, 0.12);
+  
+  --team-yellow-ui: #F2C94C;
+  --team-yellow-print: #DDBB4A;
+  --team-yellow-light: rgba(242, 201, 76, 0.15);
+
+  /* ========================================
+     4. SEMANTIC COLORS
+     ======================================== */
+  --color-gold: #D7A21A;
+  --color-gold-light: rgba(215, 162, 26, 0.15);
+  
+  --preview-without: #F08A24;
+  --preview-with: #2DBE7E;
+  --preview-same: #2BA6CB;
+  --preview-finish: #D7A21A;
+  
+  --state-success: #35B56A;
+  --state-warning: #F2C94C;
+  --state-error: #D84A4A;
+  --state-info: #2F6FED;
+  
+  --state-disabled-text: rgba(31, 35, 40, 0.40);
+  --state-disabled-bg: rgba(31, 35, 40, 0.08);
+
+  /* ========================================
+     5. SPACING (base = 8px)
+     ======================================== */
+  --space-micro: 4px;
+  --space-xs: 6px;
+  --space-sm: 8px;
+  --space-md: 12px;
+  --space-lg: 16px;
+  --space-xl: 24px;
+  --space-2xl: 32px;
+  --space-3xl: 48px;
+
+  /* ========================================
+     6. BORDER RADIUS
+     ======================================== */
+  --radius-chip: 4px;
+  --radius-sm: 6px;
+  --radius-md: 10px;
+  --radius-card: 14px;
+  --radius-container: 18px;
+  --radius-pill: 999px;
+
+  /* ========================================
+     7. SHADOWS (Premium, soft - no glow)
+     ======================================== */
+  --shadow-sm: 0 3px 10px var(--color-shadow);
+  --shadow-md: 0 8px 24px var(--color-shadow);
+  --shadow-lg: 0 12px 32px var(--color-shadow-strong);
+  --shadow-inset: inset 0 1px 2px rgba(31, 35, 40, 0.08);
+
+  /* ========================================
+     8. TRANSITIONS
+     ======================================== */
+  --transition-fast: 150ms ease;
+  --transition-base: 200ms ease;
+  --transition-slow: 300ms ease;
+  --transition-smooth: 300ms cubic-bezier(0.4, 0, 0.2, 1);
+
+  /* ========================================
+     9. Z-INDEX SCALE
+     ======================================== */
+  --z-base: 0;
+  --z-dropdown: 100;
+  --z-sticky: 200;
+  --z-overlay: 300;
+  --z-modal: 400;
+  --z-popover: 500;
+  --z-tooltip: 600;
+
+  /* ========================================
+     10. TOKEN SIZES (Rider tokens)
+     ======================================== */
+  --token-size-desktop: 44px;
+  --token-size-mobile: 36px;
+  --token-ring-outer: 2px;
+  --token-ring-inner: 1px;
+}
