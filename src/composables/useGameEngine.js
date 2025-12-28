@@ -39,6 +39,9 @@ export function useGameEngine() {
   
   // v3.2.2: Track aspiration animations with position info
   const aspirationAnimations = ref([]);
+  
+  // View-only mode: allows viewing rider info without playing them
+  const isViewOnlySelection = ref(false);
 
   // Initialize with optional game configuration
   function initialize(gameConfig = null) {
@@ -209,13 +212,16 @@ export function useGameEngine() {
   }
 
   // Actions
-  function selectRider(riderId) {
+  function selectRider(riderId, options = {}) {
+    const { viewOnly = false } = options;
     const newState = selectRiderEngine(gameState.value, riderId);
     gameState.value = newState;
+    isViewOnlySelection.value = viewOnly;
   }
 
   function cancelRiderSelection() {
     gameState.value = deselectRiderEngine(gameState.value);
+    isViewOnlySelection.value = false;
   }
 
   function selectCard(cardId) {
@@ -606,6 +612,7 @@ export function useGameEngine() {
     isAnimatingEffects,
     isAIThinking,
     aiMoveFlash,
+    isViewOnlySelection,
     
     // Computed
     course,

@@ -174,7 +174,8 @@ const props = defineProps({
   terrainBonus: { type: Number, default: 0 },
   canUseSpecialty: { type: Boolean, default: false },
   turnPhase: { type: String, required: true },
-  selectedCardId: { type: String, default: null }
+  selectedCardId: { type: String, default: null },
+  viewOnly: { type: Boolean, default: false }
 });
 
 const emit = defineEmits(['cancel', 'selectCard']);
@@ -209,7 +210,7 @@ function formatBonus(value) {
 }
 
 function getCardClasses(card, isAttack) {
-  const isSelectable = props.turnPhase === 'select_card' || props.turnPhase === 'roll_dice';
+  const isSelectable = !props.viewOnly && (props.turnPhase === 'select_card' || props.turnPhase === 'roll_dice');
   return {
     'game-card--selectable': isSelectable && (!isAttack || canUseAttackCard.value),
     'game-card--selected': card.id === props.selectedCardId,
@@ -220,6 +221,7 @@ function getCardClasses(card, isAttack) {
 }
 
 function onCardClick(card, isAttack) {
+  if (props.viewOnly) return;
   if (props.turnPhase !== 'select_card' && props.turnPhase !== 'roll_dice') return;
   emit('selectCard', card.id, isAttack);
 }

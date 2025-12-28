@@ -173,7 +173,7 @@ function getRiderTypeName(type) {
   return RiderConfig[type]?.name || type;
 }
 
-function isRiderClickable(rider, team) {
+function isRiderPlayable(rider, team) {
   if (team !== props.currentTeam) return false;
   if (props.playedRiders.includes(rider.id)) return false;
   if (rider.hasFinished) return false;
@@ -181,9 +181,21 @@ function isRiderClickable(rider, team) {
   return true;
 }
 
+// Allow clicking on any rider for viewing, but only playable ones have green highlight
+function isRiderClickable(rider) {
+  // Can't view finished or crashed riders
+  if (rider.hasFinished) return false;
+  if (rider.turnsToSkip > 0) return false;
+  return true;
+}
+
 function getRiderRowClasses(rider, team) {
+  const playable = isRiderPlayable(rider, team);
+  const clickable = isRiderClickable(rider);
+  
   return {
-    'rider-row--clickable': isRiderClickable(rider, team),
+    'rider-row--playable': playable,
+    'rider-row--clickable': clickable && !playable, // Clickable for viewing only
     'rider-row--selected': rider.id === props.selectedRiderId,
     'rider-row--played': props.playedRiders.includes(rider.id),
     'rider-row--skipping': rider.turnsToSkip > 0
@@ -191,8 +203,10 @@ function getRiderRowClasses(rider, team) {
 }
 
 function onRiderClick(rider, team) {
-  if (isRiderClickable(rider, team)) {
-    emit('selectRider', rider);
+  if (isRiderClickable(rider)) {
+    // Emit with viewOnly flag if not playable
+    const viewOnly = !isRiderPlayable(rider, team);
+    emit('selectRider', { rider, viewOnly });
   }
 }
 </script>
@@ -322,13 +336,22 @@ function onRiderClick(rider, team) {
   transition: background 0.15s;
 }
 
-.rider-row--clickable {
+.rider-row--playable {
   cursor: pointer;
   background: var(--color-action-light);
 }
 
-.rider-row--clickable:hover {
+.rider-row--playable:hover {
   background: rgba(58, 164, 98, 0.15);
+}
+
+/* Clickable but view-only (other team or already played) */
+.rider-row--clickable {
+  cursor: pointer;
+}
+
+.rider-row--clickable:hover {
+  background: rgba(31, 35, 40, 0.04);
 }
 
 .rider-row--selected {

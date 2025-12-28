@@ -59,11 +59,19 @@
         :canUseSpecialty="currentRider.availableCards?.canUseSpecialty"
         :turnPhase="turnPhase"
         :selectedCardId="selectedCardId"
+        :viewOnly="isViewOnlySelection"
         @cancel="cancelRiderSelection"
         @selectCard="selectCard"
       >
         <template #actions>
+          <!-- View-only mode: show info banner instead of actions -->
+          <div v-if="isViewOnlySelection" class="view-only-banner">
+            <UIIcon type="eye" size="sm" />
+            <span>Consultation uniquement</span>
+          </div>
+          <!-- Normal mode: show action zone -->
           <ActionZone 
+            v-else
             :turnPhase="turnPhase"
             :cardValue="getSelectedCardValue()"
             :isAttackCard="isSelectedCardAttack()"
@@ -174,6 +182,7 @@ const {
   endTurnEffects,
   isAIThinking,
   aiMoveFlash,
+  isViewOnlySelection,
   
   // Computed
   course,
@@ -235,25 +244,27 @@ function scrollToRider(riderId) {
 }
 
 // Quick rider selection from TeamsOverview
-function quickSelectRider(rider) {
+// Allows viewing any rider's info (scroll + panel), but only playable riders can be played
+function quickSelectRider({ rider, viewOnly = false }) {
   if (phase.value === 'finished') return;
   if (rider.hasFinished || rider.turnsToSkip > 0) return;
-  if (playedThisTurn.value.includes(rider.id)) return;
-  if (rider.team !== currentTeam.value) return;
   
-  // If already selected, just scroll
+  // Always scroll to rider position
+  scrollToRider(rider.id);
+  
+  // If already selected, just scroll (already done above)
   if (selectedRiderId.value === rider.id) {
-    scrollToRider(rider.id);
     return;
   }
   
-  // Cancel current selection if needed and select new rider
+  // Cancel current selection if in progress
   if (selectedRiderId.value && turnPhase.value !== 'select_rider') {
     cancelRiderSelection();
   }
   
-  selectRider(rider.id);
-  scrollToRider(rider.id);
+  // Select rider for viewing (even if from another team or already played)
+  // The game engine and UI will handle whether actions are available
+  selectRider(rider.id, { viewOnly });
 }
 
 // Card helpers
@@ -416,5 +427,20 @@ h1 {
 @keyframes pulse {
   0%, 100% { opacity: 1; }
   50% { opacity: 0.6; }
+}
+
+/* View-only banner for consulted riders */
+.view-only-banner {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-sm);
+  padding: var(--space-md) var(--space-lg);
+  background: var(--color-canvas, #f1f5f9);
+  border: 1px dashed var(--color-line, #e2e8f0);
+  border-radius: var(--radius-md, 8px);
+  color: var(--color-muted, #64748b);
+  font-size: 0.9em;
+  font-style: italic;
 }
 </style>
