@@ -1,29 +1,5 @@
 <template>
   <div class="track-container">
-    <!-- Terrain Legend -->
-    <div class="track-legend">
-      <div class="track-legend-item">
-        <span class="track-legend-color track-legend-color--flat"></span>
-        <span class="track-legend-label">Plat</span>
-      </div>
-      <div class="track-legend-item">
-        <span class="track-legend-color track-legend-color--hill"></span>
-        <span class="track-legend-label">Côte</span>
-      </div>
-      <div class="track-legend-item">
-        <span class="track-legend-color track-legend-color--mountain"></span>
-        <span class="track-legend-label">Montagne</span>
-      </div>
-      <div class="track-legend-item">
-        <span class="track-legend-color track-legend-color--descent"></span>
-        <span class="track-legend-label">Descente</span>
-      </div>
-      <div class="track-legend-item">
-        <span class="track-legend-color track-legend-color--sprint"></span>
-        <span class="track-legend-label">Sprint</span>
-      </div>
-    </div>
-
     <!-- Track -->
     <div class="track">
       <!-- Start cell (0) -->
@@ -33,7 +9,7 @@
         title="Départ (case 0)"
       >
         <span class="track-cell-number">0</span>
-        <div class="track-cell-riders">
+        <div class="track-cell-riders track-cell-riders--start">
           <div 
             v-for="rider in getRidersAt(0)" 
             :key="rider.id"
@@ -49,6 +25,7 @@
               :isAnimating="animatingRiders.includes(rider.id)"
               :isLeader="isLeader(rider, 0)"
               :hasPlayed="hasPlayed(rider.id)"
+              compact
             />
           </div>
         </div>
@@ -70,13 +47,19 @@
           v-if="isPreviewWithout(index + 1) && !isPreviewWith(index + 1)" 
           class="track-preview-badge track-preview-badge--without"
         >
-          {{ previewPositions?.summitStopWithout ? '⛰️' : '' }} Sans spé
+          <template v-if="previewPositions?.summitStopWithout">
+            <UIIcon type="summit" :size="10" />
+          </template>
+          Sans spé
         </div>
         <div 
           v-if="isPreviewWith(index + 1) && !isPreviewWithout(index + 1)" 
           class="track-preview-badge track-preview-badge--with"
         >
-          {{ previewPositions?.summitStopWith ? '⛰️' : '' }} Avec spé
+          <template v-if="previewPositions?.summitStopWith">
+            <UIIcon type="summit" :size="10" />
+          </template>
+          Avec spé
         </div>
         <div 
           v-if="isPreviewBoth(index + 1)" 
@@ -114,13 +97,13 @@
         class="track-finish-zone"
         :class="{ 'track-finish-zone--preview': isPreviewWithoutFinish || isPreviewWithFinish }"
       >
-        <span class="track-finish-flag">🏁</span>
+        <UIIcon type="finish" :size="28" class="track-finish-icon" />
         <span class="track-finish-label">Arrivée</span>
         <div 
           v-if="isPreviewWithoutFinish || isPreviewWithFinish" 
           class="track-preview-badge track-preview-badge--finish"
         >
-          🏆 Arrivée!
+          <UIIcon type="trophy" :size="12" /> Arrivée!
         </div>
         <div class="track-finished-riders">
           <RiderToken 
@@ -128,6 +111,7 @@
             :key="rider.id"
             :rider="rider"
             :hasPlayed="hasPlayed(rider.id)"
+            compact
           />
         </div>
       </div>
@@ -138,6 +122,7 @@
 <script setup>
 import { computed } from 'vue';
 import RiderToken from './RiderToken.vue';
+import { UIIcon } from './icons';
 import { TerrainConfig, FINISH_LINE } from '../config/game.config.js';
 
 const props = defineProps({
@@ -265,7 +250,7 @@ function getCellTooltip(cell, position) {
   
   let tip = `Case ${position}: ${terrain?.name || cell.terrain} (${count}/4)`;
   if (cell.isRefuelZone) {
-    tip += ' 🍌 RAVITAILLEMENT (+15⚡)';
+    tip += ' RAVITAILLEMENT (+15⚡)';
   }
   if (riders.length > 0) {
     tip += '\n' + riders.map((r, i) => `${i === 0 ? '→ ' : '  '}${r.name}`).join('\n');
@@ -281,7 +266,31 @@ function getAspirationInfo(riderId) {
 
 <style scoped>
 /* Local overrides only - main styles in track.css */
+
+/* Fixed height for cells: can fit 2x2 tokens */
+.track-cell {
+  height: 100px;
+}
+
+/* Riders container: 2x2 grid for max 4 tokens */
 .track-cell-riders {
-  flex-direction: row-reverse;
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 2px;
+  justify-items: center;
+  align-items: center;
+  flex: 1;
+  padding: 2px;
+}
+
+/* Start cell: can stack more, compact tokens */
+.track-cell-riders--start {
+  grid-template-columns: repeat(2, 1fr);
+  grid-template-rows: repeat(auto-fill, minmax(28px, 1fr));
+}
+
+/* Finish icon */
+.track-finish-icon {
+  color: var(--state-success);
 }
 </style>

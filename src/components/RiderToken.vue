@@ -28,7 +28,8 @@ const props = defineProps({
   hasPlayed: { type: Boolean, default: false },
   compact: { type: Boolean, default: false },
   mini: { type: Boolean, default: false },
-  showNumber: { type: Boolean, default: false }
+  showNumber: { type: Boolean, default: false },
+  static: { type: Boolean, default: false }  // Disables all highlight/hover states
 });
 
 const iconSize = computed(() => {
@@ -50,12 +51,17 @@ const tokenClasses = computed(() => {
     classes.push(props.rider.type);
   }
   
-  // States
-  if (props.isSelected) classes.push('selected');
-  if (props.isAnimating) classes.push('animating');
-  if (props.isLeader) classes.push('leader');
+  // States (disabled in static mode except for played/finished)
+  if (!props.static) {
+    if (props.isSelected) classes.push('selected');
+    if (props.isAnimating) classes.push('animating');
+    if (props.isLeader) classes.push('leader');
+  }
   if (props.rider.hasFinished) classes.push('finished');
   if (props.hasPlayed) classes.push('played');
+  
+  // Static mode for panel display
+  if (props.static) classes.push('rider-token--static');
   
   // Size variants
   if (props.compact) classes.push('rider-token--compact');

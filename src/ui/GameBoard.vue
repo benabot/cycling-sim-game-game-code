@@ -316,8 +316,11 @@ watch(
 .game-container {
   max-width: 1200px;
   margin: 0 auto;
-  padding: 20px;
+  padding: var(--space-lg);
   font-family: var(--font-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif);
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-lg);
 }
 
 h1 {
@@ -330,8 +333,7 @@ h1 {
   display: flex;
   justify-content: center;
   align-items: center;
-  gap: 12px;
-  margin-bottom: 20px;
+  gap: var(--space-md);
 }
 
 .header-icon {
@@ -360,12 +362,11 @@ h1 {
   display: flex;
   align-items: center;
   justify-content: center;
-  gap: 12px;
-  padding: 30px;
+  gap: var(--space-md);
+  padding: var(--space-xl);
   background: var(--color-paper, #f8fafc);
   border: 1px solid var(--color-line, #e2e8f0);
   border-radius: var(--radius-card, 12px);
-  margin-bottom: 20px;
   color: var(--color-muted, #64748b);
   font-size: 1.1em;
 }
@@ -376,9 +377,8 @@ h1 {
 
 .team-legend {
   display: flex;
-  gap: 24px;
+  gap: var(--space-lg);
   justify-content: center;
-  margin-bottom: 15px;
   flex-wrap: wrap;
 }
 
@@ -402,13 +402,12 @@ h1 {
   display: flex;
   align-items: center;
   justify-content: center;
-  gap: 10px;
+  gap: var(--space-sm);
   text-align: center;
-  padding: 12px 20px;
+  padding: var(--space-md) var(--space-lg);
   background: var(--team-yellow-light, #fef3c7);
   border: 1px solid rgba(242, 201, 76, 0.3);
   border-radius: var(--radius-md, 8px);
-  margin-bottom: 15px;
   color: #92400e;
   font-weight: 500;
   animation: pulse 1.5s ease-in-out infinite;

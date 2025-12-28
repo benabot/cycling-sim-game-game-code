@@ -5,7 +5,8 @@
       <div class="rider-identity">
         <RiderToken
           :rider="rider"
-          :isSelected="true"
+          :isSelected="false"
+          static
         />
         <div class="rider-identity-info">
           <span class="type-body-medium">{{ rider.name }}</span>
@@ -40,9 +41,8 @@
         <EnergyBar :energy="rider.energy || 100" :showEffects="true" />
       </div>
 
-      <button @click="$emit('cancel')" class="btn btn-ghost btn-sm">
-        <UIIcon type="chevron-up" :size="14" class="icon-back" />
-        Changer
+      <button @click="$emit('cancel')" class="btn-close" title="Changer de coureur">
+        <UIIcon type="close" :size="16" />
       </button>
     </div>
 
@@ -295,8 +295,25 @@ function onCardClick(card, isAttack) {
   min-width: 140px;
 }
 
-.icon-back {
-  transform: rotate(-90deg);
+.btn-close {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  background: var(--color-canvas);
+  border: 1px solid var(--color-line);
+  border-radius: var(--radius-full);
+  cursor: pointer;
+  color: var(--color-ink-muted);
+  transition: all var(--transition-fast);
+  margin-left: auto;
+}
+
+.btn-close:hover {
+  background: var(--color-danger-light, #fef2f2);
+  border-color: var(--color-danger);
+  color: var(--color-danger);
 }
 
 /* Cards Grid */

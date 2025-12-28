@@ -193,6 +193,26 @@
 }
 
 /* ========================================
+   STATIC VERSION (for panels, no hover/effects)
+   ======================================== */
+
+.rider-token--static {
+  cursor: default;
+  pointer-events: none;
+}
+
+/* Remove all selection/leader effects in static mode */
+.rider-token--static,
+.rider-token--static.selected,
+.rider-token--static.leader,
+.rider-token--static:hover {
+  transform: none !important;
+  box-shadow: 
+    inset 0 0 0 1px rgba(246, 244, 239, 0.40),
+    var(--shadow-sm) !important;
+}
+
+/* ========================================
    MINI VERSION (for overview panels)
    ======================================== */
 

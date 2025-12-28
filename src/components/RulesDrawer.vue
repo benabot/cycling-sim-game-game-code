@@ -298,8 +298,8 @@ defineExpose({ toggle, isOpen });
 }
 
 .rule-card--highlight {
-  border-color: var(--team-blue-print);
-  background: var(--team-blue-light);
+  border-left: 3px solid var(--team-blue-print);
+  background: var(--color-paper);
 }
 
 .rule-card-header {
