@@ -2,8 +2,8 @@
   <div class="energy-bar-container">
     <div class="energy-header">
       <span class="energy-icon">⚡</span>
-      <span class="energy-label">{{ statusLabel }}</span>
-      <span class="energy-value">{{ energy }}%</span>
+      <span class="energy-label type-caption">{{ statusLabel }}</span>
+      <span class="energy-value type-numeric">{{ energy }}%</span>
     </div>
     <div class="energy-bar">
       <div 
@@ -11,27 +11,27 @@
         :style="{ width: energy + '%', backgroundColor: barColor }"
       ></div>
       <!-- Threshold markers -->
-      <div class="threshold-marker" style="left: 25%;" title="Épuisé (25%)"></div>
-      <div class="threshold-marker" style="left: 50%;" title="Fatigué (50%)"></div>
+      <div class="energy-threshold" style="left: 25%;" title="Épuisé (25%)"></div>
+      <div class="energy-threshold" style="left: 50%;" title="Fatigué (50%)"></div>
     </div>
     <div v-if="showEffects && hasEffects" class="energy-effects">
-      <span v-if="effects.bonusDisabled" class="effect-badge bad">
-        Bonus terrain ❌
+      <span v-if="effects.bonusDisabled" class="badge badge-red badge-xs">
+        Bonus ❌
       </span>
-      <span v-if="!effects.canUseAttack" class="effect-badge bad">
+      <span v-if="!effects.canUseAttack" class="badge badge-red badge-xs">
         Attaque ❌
       </span>
-      <span v-else-if="effects.attackPenalty" class="effect-badge warn">
+      <span v-else-if="effects.attackPenalty" class="badge badge-yellow badge-xs">
         Attaque {{ effects.attackPenalty }}
       </span>
-      <span v-if="!effects.canUseSpecialty" class="effect-badge bad">
+      <span v-if="!effects.canUseSpecialty" class="badge badge-red badge-xs">
         Spécialité ❌
       </span>
-      <span v-else-if="effects.specialtyPenalty" class="effect-badge warn">
+      <span v-else-if="effects.specialtyPenalty" class="badge badge-yellow badge-xs">
         Spécialité {{ effects.specialtyPenalty }}
       </span>
-      <span v-if="effects.maxMovement" class="effect-badge bad">
-        Max {{ effects.maxMovement }} cases
+      <span v-if="effects.maxMovement" class="badge badge-red badge-xs">
+        Max {{ effects.maxMovement }}
       </span>
     </div>
   </div>
@@ -67,8 +67,7 @@ const hasEffects = computed(() => {
 .energy-header {
   display: flex;
   align-items: center;
-  gap: 6px;
-  font-size: 12px;
+  gap: var(--space-xs);
 }
 
 .energy-icon {
@@ -76,36 +75,34 @@ const hasEffects = computed(() => {
 }
 
 .energy-label {
-  font-weight: 500;
-  color: #64748b;
+  color: var(--color-ink-muted);
 }
 
 .energy-value {
   margin-left: auto;
-  font-weight: bold;
-  font-family: monospace;
+  font-weight: 600;
 }
 
 .energy-bar {
   position: relative;
   height: 8px;
-  background: #e5e7eb;
-  border-radius: 4px;
+  background: var(--color-line);
+  border-radius: var(--radius-xs);
   overflow: hidden;
 }
 
 .energy-fill {
   height: 100%;
-  border-radius: 4px;
+  border-radius: var(--radius-xs);
   transition: width 0.5s ease, background-color 0.3s ease;
 }
 
-.threshold-marker {
+.energy-threshold {
   position: absolute;
   top: 0;
   bottom: 0;
   width: 2px;
-  background: rgba(0, 0, 0, 0.3);
+  background: rgba(0, 0, 0, 0.25);
 }
 
 .energy-effects {
@@ -115,20 +112,10 @@ const hasEffects = computed(() => {
   margin-top: 2px;
 }
 
-.effect-badge {
+/* Extra small badge variant */
+.badge-xs {
   font-size: 9px;
-  padding: 2px 6px;
+  padding: 1px 5px;
   border-radius: 3px;
-  font-weight: 500;
-}
-
-.effect-badge.bad {
-  background: #fecaca;
-  color: #dc2626;
-}
-
-.effect-badge.warn {
-  background: #fef3c7;
-  color: #d97706;
 }
 </style>

@@ -1,14 +1,23 @@
 <template>
-  <div class="game-log">
-    <h3>📜 Historique</h3>
-    <div class="log-entries" ref="logContainer">
+  <div class="log-panel">
+    <div class="log-panel-header">
+      <svg class="log-panel-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <path d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+      </svg>
+      <span class="log-panel-title">Historique</span>
+    </div>
+    <div class="log-panel-content" ref="logContainer">
       <div 
         v-for="(entry, i) in log" 
         :key="i" 
         class="log-entry"
         :class="getLogClass(entry)"
       >
-        {{ entry }}
+        <span v-if="entry.time" class="log-entry-time">{{ entry.time }}</span>
+        <span v-if="entry.team" class="log-entry-team" :class="`log-entry-team-${entry.team}`">
+          {{ getTeamLabel(entry.team) }}
+        </span>
+        <span class="log-entry-text">{{ getEntryText(entry) }}</span>
       </div>
     </div>
   </div>
@@ -30,69 +39,65 @@ watch(() => props.log.length, async () => {
   }
 });
 
+function getEntryText(entry) {
+  if (typeof entry === 'string') return entry;
+  return entry.message || entry.text || '';
+}
+
+function getTeamLabel(teamId) {
+  const labels = {
+    team_a: 'Rouge',
+    team_b: 'Bleu',
+    team_c: 'Vert',
+    team_d: 'Jaune'
+  };
+  return labels[teamId] || teamId;
+}
+
 function getLogClass(entry) {
-  if (entry.includes('---')) return 'turn-separator';
-  if (entry.includes('===')) return 'last-turn-header';
-  if (entry.includes('🏁') || entry.includes('[FINISH]')) return 'finish';
-  if (entry.includes('💨') || entry.includes('[WIND]')) return 'wind';
-  if (entry.includes('🛡️') || entry.includes('[SHELTER]')) return 'shelter';
-  if (entry.includes('🌀') || entry.includes('[ASPIRATION]')) return 'aspiration';
-  if (entry.includes('🏆') || entry.includes('[WINNER]')) return 'winner';
-  if (entry.includes('⚔️') || entry.includes('[ATTACK]')) return 'attack';
-  if (entry.includes('case pleine')) return 'blocked';
+  const text = typeof entry === 'string' ? entry : (entry.message || '');
+  
+  if (text.includes('---')) return 'log-entry--separator';
+  if (text.includes('===')) return 'log-entry--header';
+  if (text.includes('🏁') || text.includes('[FINISH]')) return 'log-entry--finish';
+  if (text.includes('💨') || text.includes('[WIND]')) return 'log-entry--wind';
+  if (text.includes('🛡️') || text.includes('[SHELTER]')) return 'log-entry--shelter';
+  if (text.includes('🌀') || text.includes('[ASPIRATION]')) return 'log-entry--aspiration';
+  if (text.includes('🏆') || text.includes('[WINNER]')) return 'log-entry--winner';
+  if (text.includes('⚔️') || text.includes('[ATTACK]')) return 'log-entry--attack';
+  if (text.includes('case pleine')) return 'log-entry--blocked';
+  if (text.includes('🍌') || text.includes('[REFUEL]')) return 'log-entry--refuel';
   return '';
 }
 </script>
 
 <style scoped>
-.game-log {
-  background: #1f2937;
-  border-radius: 8px;
-  padding: 15px;
-  margin-bottom: 30px;
-}
+/* Uses log-panel classes from layout.css */
 
-.game-log h3 {
-  color: #9ca3af;
-  margin: 0 0 10px 0;
-  font-size: 0.9em;
-}
-
-.log-entries {
-  max-height: 200px;
-  overflow-y: auto;
-  font-family: 'Monaco', 'Menlo', monospace;
-  font-size: 0.8em;
-}
-
-.log-entry {
-  color: #d1d5db;
-  padding: 2px 0;
-  border-bottom: 1px solid #374151;
-}
-
-.log-entry.turn-separator {
-  color: #6b7280;
+/* Additional entry type colors */
+.log-entry--separator {
+  color: var(--log-muted);
   text-align: center;
-  padding: 6px 0;
+  padding: var(--space-sm) 0;
   border: none;
 }
 
-.log-entry.last-turn-header {
-  color: #fbbf24;
+.log-entry--header {
+  color: var(--color-gold);
   text-align: center;
-  padding: 8px 0;
-  font-weight: bold;
-  background: rgba(251, 191, 36, 0.1);
+  padding: var(--space-sm) 0;
+  font-weight: 600;
+  background: rgba(215, 162, 26, 0.1);
   border: none;
+  border-radius: var(--radius-xs);
 }
 
-.log-entry.finish { color: #34d399; }
-.log-entry.fall { color: #f87171; }
-.log-entry.attack { color: #fb923c; }
-.log-entry.wind { color: #fbbf24; }
-.log-entry.shelter { color: #4ade80; }
-.log-entry.aspiration { color: #60a5fa; }
-.log-entry.winner { color: #fbbf24; font-weight: bold; }
-.log-entry.blocked { color: #f97316; }
+.log-entry--finish .log-entry-text { color: #34d399; }
+.log-entry--attack .log-entry-text { color: #fb923c; }
+.log-entry--wind .log-entry-text { color: #fbbf24; }
+.log-entry--shelter .log-entry-text { color: #4ade80; }
+.log-entry--aspiration .log-entry-text { color: #60a5fa; }
+.log-entry--winner .log-entry-text { color: var(--color-gold); font-weight: 600; }
+.log-entry--blocked .log-entry-text { color: #f97316; }
+.log-entry--refuel .log-entry-text { color: #fbbf24; }
 </style>

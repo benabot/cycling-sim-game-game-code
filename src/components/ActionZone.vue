@@ -2,21 +2,23 @@
   <div class="action-zone">
     <!-- Phase: Select Card -->
     <div v-if="turnPhase === 'select_card'" class="action-prompt">
-      <span class="prompt-icon">1️⃣</span>
-      <span class="prompt-text">Choisissez une carte à jouer</span>
+      <span class="action-prompt-icon">1️⃣</span>
+      <span class="type-body">Choisissez une carte à jouer</span>
     </div>
 
     <!-- Phase: Roll Dice -->
     <div v-if="turnPhase === 'roll_dice'" class="action-content">
-      <div class="selected-card-preview">
-        <span>Carte sélectionnée :</span>
-        <span class="selected-value" :class="{ 'attack': isAttackCard }">+{{ cardValue }}</span>
+      <div class="action-preview">
+        <span class="type-caption">Carte sélectionnée</span>
+        <span class="action-preview-value" :class="{ 'action-preview-value--attack': isAttackCard }">
+          +{{ cardValue }}
+        </span>
       </div>
       <div class="action-buttons">
-        <button @click="$emit('rollDice')" class="btn btn-roll">
+        <button @click="$emit('rollDice')" class="btn btn-primary btn-lg">
           2️⃣ 🎲 Lancer le dé
         </button>
-        <button @click="$emit('cancelCard')" class="btn btn-cancel">
+        <button @click="$emit('cancelCard')" class="btn btn-ghost">
           ← Changer de carte
         </button>
       </div>
@@ -24,27 +26,33 @@
 
     <!-- Phase: Select Specialty -->
     <div v-if="turnPhase === 'select_specialty'" class="action-content">
-      <div class="dice-result-display">
-        <span class="dice-icon">🎲</span>
-        <span class="dice-value">{{ diceResult }}</span>
-        <span class="plus">+</span>
-        <span class="card-played">🃏 {{ cardValue }}</span>
-        <span v-if="terrainBonus !== 0" class="terrain-bonus-display">
-          {{ formatBonus(terrainBonus) }}
+      <div class="dice-result">
+        <span class="dice-result-item">
+          <span class="dice-result-icon">🎲</span>
+          <span class="dice-result-value type-numeric-lg">{{ diceResult }}</span>
         </span>
+        <span class="dice-result-op">+</span>
+        <span class="dice-result-item">
+          <span class="dice-result-icon">🃏</span>
+          <span class="dice-result-value type-numeric-lg">{{ cardValue }}</span>
+        </span>
+        <template v-if="terrainBonus !== 0">
+          <span class="dice-result-op">{{ terrainBonus > 0 ? '+' : '' }}</span>
+          <span class="dice-result-item" :class="terrainBonus > 0 ? 'dice-result-item--positive' : 'dice-result-item--negative'">
+            <span class="dice-result-value type-numeric-lg">{{ terrainBonus }}</span>
+          </span>
+        </template>
       </div>
-      <div class="specialty-prompt">
-        Utiliser une carte Spécialité (+2) ?
-      </div>
+      <p class="type-body">Utiliser une carte Spécialité (+2) ?</p>
       <div class="action-buttons">
         <button 
           v-if="hasSpecialtyCards"
           @click="$emit('useSpecialty')" 
-          class="btn btn-specialty"
+          class="btn btn-success"
         >
           ★ Utiliser (+2)
         </button>
-        <button @click="$emit('skipSpecialty')" class="btn btn-skip">
+        <button @click="$emit('skipSpecialty')" class="btn btn-secondary">
           Rouler →
         </button>
       </div>
@@ -52,20 +60,22 @@
 
     <!-- Phase: Resolve -->
     <div v-if="turnPhase === 'resolve'" class="action-content">
-      <div class="movement-calculation">
-        <div class="calc-row">
-          <span class="calc-item dice">🎲 {{ diceResult }}</span>
+      <div class="movement-calc">
+        <span class="calc-item">🎲 {{ diceResult }}</span>
+        <span class="calc-op">+</span>
+        <span class="calc-item">🃏 {{ cardValue }}</span>
+        <template v-if="terrainBonus !== 0">
+          <span class="calc-op">{{ terrainBonus > 0 ? '+' : '' }}</span>
+          <span class="calc-item" :class="terrainBonus > 0 ? 'calc-item--positive' : 'calc-item--negative'">{{ terrainBonus }}</span>
+        </template>
+        <template v-if="useSpecialty">
           <span class="calc-op">+</span>
-          <span class="calc-item card">🃏 {{ cardValue }}</span>
-          <span v-if="terrainBonus !== 0" class="calc-op">{{ terrainBonus > 0 ? '+' : '' }}</span>
-          <span v-if="terrainBonus !== 0" class="calc-item terrain">{{ terrainBonus }}</span>
-          <span v-if="useSpecialty" class="calc-op">+</span>
-          <span v-if="useSpecialty" class="calc-item specialty">★2</span>
-          <span class="calc-op">=</span>
-          <span class="calc-result">{{ totalMovement }}</span>
-        </div>
+          <span class="calc-item calc-item--specialty">★2</span>
+        </template>
+        <span class="calc-op">=</span>
+        <span class="calc-result type-numeric-lg">{{ totalMovement }}</span>
       </div>
-      <button @click="$emit('resolve')" class="btn btn-resolve">
+      <button @click="$emit('resolve')" class="btn btn-success btn-lg">
         ✓ Avancer de {{ totalMovement }} cases (→ case {{ targetPosition }})
       </button>
     </div>
@@ -90,130 +100,137 @@ const props = defineProps({
 defineEmits(['rollDice', 'cancelCard', 'useSpecialty', 'skipSpecialty', 'resolve']);
 
 const targetPosition = computed(() => props.currentPosition + props.totalMovement);
-
-function formatBonus(value) {
-  return value > 0 ? `+${value}` : `${value}`;
-}
 </script>
 
 <style scoped>
 .action-zone {
-  padding: 20px;
-  background: #f8fafc;
-  border-top: 1px solid #e2e8f0;
+  padding: var(--space-lg);
+  background: var(--color-canvas);
+  border-top: 1px solid var(--color-line);
 }
 
 .action-prompt {
   display: flex;
   align-items: center;
   justify-content: center;
-  gap: 10px;
-  padding: 20px;
-  font-size: 1.1em;
-  color: #64748b;
+  gap: var(--space-sm);
+  padding: var(--space-lg);
+  color: var(--color-ink-muted);
+}
+
+.action-prompt-icon {
+  font-size: 1.5em;
 }
 
 .action-content {
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 15px;
+  gap: var(--space-md);
 }
 
-.selected-card-preview {
+/* Preview */
+.action-preview {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--space-xs);
+}
+
+.action-preview-value {
+  font-family: var(--font-mono);
+  font-weight: 700;
+  font-size: 1.5em;
+  padding: var(--space-sm) var(--space-lg);
+  background: var(--color-line);
+  border-radius: var(--radius-md);
+}
+
+.action-preview-value--attack {
+  background: #c4b5fd;
+}
+
+/* Dice Result */
+.dice-result {
   display: flex;
   align-items: center;
-  gap: 10px;
-  font-size: 1.1em;
+  gap: var(--space-sm);
+  padding: var(--space-md);
+  background: var(--color-surface);
+  border-radius: var(--radius-md);
+  box-shadow: var(--shadow-sm);
 }
 
-.selected-value {
-  font-weight: bold;
-  font-size: 1.3em;
-  padding: 5px 15px;
-  background: #e2e8f0;
-  border-radius: 8px;
+.dice-result-item {
+  display: flex;
+  align-items: center;
+  gap: var(--space-xs);
+  padding: var(--space-xs) var(--space-sm);
+  background: var(--color-canvas);
+  border-radius: var(--radius-sm);
 }
-.selected-value.attack { background: #c4b5fd; }
 
+.dice-result-item--positive { background: color-mix(in srgb, var(--color-success) 15%, white); }
+.dice-result-item--negative { background: color-mix(in srgb, var(--color-danger) 15%, white); }
+
+.dice-result-icon {
+  font-size: 1.2em;
+}
+
+.dice-result-op {
+  color: var(--color-ink-muted);
+  font-weight: 500;
+}
+
+/* Movement Calculation */
+.movement-calc {
+  display: flex;
+  align-items: center;
+  gap: var(--space-sm);
+  padding: var(--space-md);
+  background: var(--color-surface);
+  border-radius: var(--radius-md);
+  box-shadow: var(--shadow-sm);
+}
+
+.calc-item {
+  font-family: var(--font-mono);
+  font-weight: 500;
+  padding: var(--space-xs) var(--space-sm);
+  background: var(--color-canvas);
+  border-radius: var(--radius-sm);
+}
+
+.calc-item--positive { color: var(--color-success); }
+.calc-item--negative { color: var(--color-danger); }
+.calc-item--specialty { background: #bbf7d0; }
+
+.calc-op {
+  color: var(--color-ink-muted);
+}
+
+.calc-result {
+  padding: var(--space-xs) var(--space-md);
+  background: var(--color-accent);
+  color: white;
+  border-radius: var(--radius-sm);
+  font-weight: 700;
+}
+
+/* Buttons */
 .action-buttons {
   display: flex;
-  gap: 10px;
+  gap: var(--space-sm);
   flex-wrap: wrap;
   justify-content: center;
 }
 
-.btn {
-  padding: 12px 24px;
-  border: none;
-  border-radius: 8px;
-  font-size: 1em;
-  font-weight: 500;
-  cursor: pointer;
-  transition: all 0.2s;
-}
-.btn:hover { transform: translateY(-2px); box-shadow: 0 4px 6px rgba(0,0,0,0.1); }
-
-.btn-roll { background: #3b82f6; color: white; font-size: 1.1em; }
-.btn-resolve { background: #10b981; color: white; font-size: 1.1em; }
-.btn-specialty { background: #8b5cf6; color: white; }
-.btn-skip { background: #94a3b8; color: white; }
-.btn-cancel { background: #f1f5f9; color: #64748b; }
-
-.dice-result-display {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  font-size: 1.3em;
-  padding: 10px 20px;
-  background: white;
-  border-radius: 8px;
-  box-shadow: 0 2px 8px rgba(0,0,0,0.1);
-}
-
-.dice-icon { font-size: 1.5em; }
-.dice-value { font-weight: bold; color: #3b82f6; }
-.plus { color: #94a3b8; }
-.card-played { font-weight: 500; }
-.terrain-bonus-display { color: #16a34a; font-weight: 500; }
-
-.specialty-prompt {
-  color: #64748b;
-  font-size: 1em;
-}
-
-.movement-calculation {
-  padding: 15px 25px;
-  background: white;
-  border-radius: 8px;
-  box-shadow: 0 2px 8px rgba(0,0,0,0.1);
-}
-
-.calc-row {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  font-size: 1.2em;
-}
-
-.calc-item {
-  padding: 5px 10px;
-  border-radius: 6px;
-  font-weight: 500;
-}
-.calc-item.dice { background: #dbeafe; color: #2563eb; }
-.calc-item.card { background: #fef3c7; color: #d97706; }
-.calc-item.terrain { background: #dcfce7; color: #16a34a; }
-.calc-item.specialty { background: #f3e8ff; color: #7c3aed; }
-
-.calc-op { color: #94a3b8; }
-
-.calc-result {
-  font-size: 1.4em;
-  font-weight: bold;
-  color: #10b981;
-  padding: 5px 15px;
-  background: #dcfce7;
-  border-radius: 8px;
+/* Responsive */
+@media (max-width: 600px) {
+  .dice-result,
+  .movement-calc {
+    flex-wrap: wrap;
+    justify-content: center;
+  }
 }
 </style>

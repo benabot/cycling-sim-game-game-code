@@ -1,63 +1,76 @@
 <template>
-  <div class="teams-overview" :class="{ 'teams-3': displayTeams.length === 3, 'teams-4': displayTeams.length === 4 }">
+  <div class="teams-overview" :class="gridClass">
     <div 
       v-for="team in displayTeams" 
       :key="team"
-      class="team-section"
-      :class="{ 'active': currentTeam === team, 'ai-team': isAITeam(team) }"
+      class="card team-card"
+      :class="[getTeamCardClass(team), { 'team-card--active': currentTeam === team }]"
     >
-      <h3 :style="{ color: getTeamConfig(team).color }">
-        {{ getTeamConfig(team).name }}
-        <span v-if="isAITeam(team)" class="ai-badge">🤖{{ getAIPersonalityIcon(team) }}</span>
-        <span v-if="currentTeam === team" class="active-badge">← Joue</span>
-      </h3>
-      
-      <div class="riders-list">
+      <!-- Team Header -->
+      <div class="team-card-header">
+        <RiderToken
+          :rider="{ id: 'header', name: '', type: 'rouleur', team, position: 0 }"
+          :mini="true"
+        />
+        <span class="team-card-name type-body-medium">{{ getTeamConfig(team).name }}</span>
+        <span v-if="isAITeam(team)" class="badge badge-yellow badge-sm">
+          🤖{{ getAIPersonalityIcon(team) }}
+        </span>
+        <span v-if="currentTeam === team" class="badge badge-blue badge-sm">
+          ← Joue
+        </span>
+      </div>
+
+      <!-- Riders List -->
+      <div class="team-riders-list">
         <div 
           v-for="rider in getTeamRiders(team)" 
           :key="rider.id"
           class="rider-row"
-          :class="{ 
-            'selected': rider.id === selectedRiderId,
-            'played': playedRiders.includes(rider.id),
-            'skipping': rider.turnsToSkip > 0,
-            'clickable': isRiderClickable(rider, team)
-          }"
+          :class="getRiderRowClasses(rider, team)"
           @click="onRiderClick(rider, team)"
         >
-          <span class="rider-emoji">{{ getRiderEmoji(rider.type) }}</span>
-          <div class="rider-info">
-            <span class="rider-name">{{ rider.name }}</span>
-            <span class="rider-type-label">{{ getRiderTypeName(rider.type) }}</span>
+          <!-- Token -->
+          <RiderToken
+            :rider="rider"
+            :isSelected="rider.id === selectedRiderId"
+            :hasPlayed="playedRiders.includes(rider.id)"
+            :mini="true"
+          />
+
+          <!-- Info -->
+          <div class="rider-row-info">
+            <span class="rider-row-name type-body-medium">{{ rider.name }}</span>
+            <span class="rider-row-type type-caption">{{ getRiderTypeName(rider.type) }}</span>
           </div>
-          <span class="rider-pos">Case {{ rider.position }}</span>
-          
-          <div class="rider-cards-mini">
-            <span class="hand-count" :title="'Main: ' + rider.hand.length + ' cartes'">
-              🃏{{ rider.hand.length }}
-            </span>
-            <span class="attack-count" :title="'Attaques: ' + rider.attackCards.length">
-              ⚔️{{ rider.attackCards.length }}
-            </span>
-            <span class="specialty-count" :title="'Spécialités: ' + rider.specialtyCards.length">
-              ★{{ rider.specialtyCards.length }}
-            </span>
+
+          <!-- Position -->
+          <span class="rider-row-pos type-numeric">{{ rider.position }}</span>
+
+          <!-- Cards Count -->
+          <div class="rider-row-cards">
+            <span class="type-caption" title="Main">🃏{{ rider.hand?.length || 0 }}</span>
+            <span class="type-caption" title="Attaques">⚔️{{ rider.attackCards?.length || 0 }}</span>
+            <span class="type-caption" title="Spécialités">★{{ rider.specialtyCards?.length || 0 }}</span>
           </div>
-          
-          <!-- v3.3: Mini energy bar -->
-          <div class="energy-mini" :title="'Énergie: ' + (rider.energy || 100) + '%'">
-            <span class="energy-icon">⚡</span>
+
+          <!-- Energy Mini Bar -->
+          <div class="rider-row-energy" :title="'Énergie: ' + (rider.energy || 100) + '%'">
             <div class="energy-bar-mini">
               <div 
                 class="energy-fill-mini" 
-                :style="{ width: (rider.energy || 100) + '%', backgroundColor: getEnergyColor(rider.energy || 100) }"
+                :style="{ 
+                  width: (rider.energy || 100) + '%', 
+                  backgroundColor: getEnergyColor(rider.energy || 100) 
+                }"
               ></div>
             </div>
           </div>
 
-          <span v-if="rider.hasFinished" class="status-badge finished">🏁</span>
-          <span v-else-if="rider.turnsToSkip > 0" class="status-badge skipping">🤕</span>
-          <span v-else-if="playedRiders.includes(rider.id)" class="status-badge played">✓</span>
+          <!-- Status Badge -->
+          <span v-if="rider.hasFinished" class="badge badge-green badge-sm">🏁</span>
+          <span v-else-if="rider.turnsToSkip > 0" class="badge badge-red badge-sm">🤕</span>
+          <span v-else-if="playedRiders.includes(rider.id)" class="badge badge-muted badge-sm">✓</span>
         </div>
       </div>
     </div>
@@ -69,6 +82,7 @@ import { computed } from 'vue';
 import { TeamConfig, RiderConfig } from '../config/game.config.js';
 import { getEnergyColor } from '../core/energy.js';
 import { TeamConfigs, PlayerType } from '../core/teams.js';
+import RiderToken from './RiderToken.vue';
 
 const props = defineProps({
   riders: { type: Array, required: true, default: () => [] },
@@ -82,27 +96,35 @@ const props = defineProps({
 
 const emit = defineEmits(['selectRider']);
 
-// Personality display names
-const personalityNames = {
+const personalityIcons = {
   attacker: '⚔️',
   conservative: '🛡️',
   opportunist: '🎯',
   balanced: '⚖️'
 };
 
-// Use teamIds prop or fallback to detecting from riders
 const displayTeams = computed(() => {
-  if (props.teamIds && props.teamIds.length > 0) {
-    return props.teamIds;
-  }
-  // Fallback: extract unique teams from riders
+  if (props.teamIds?.length > 0) return props.teamIds;
   const teams = [...new Set(props.riders.map(r => r.team))];
   return teams.length > 0 ? teams : ['team_a', 'team_b'];
 });
 
+const gridClass = computed(() => ({
+  'teams-overview--3': displayTeams.value.length === 3,
+  'teams-overview--4': displayTeams.value.length === 4
+}));
+
+function getTeamCardClass(teamId) {
+  return {
+    team_a: 'card-team-red',
+    team_b: 'card-team-blue',
+    team_c: 'card-team-green',
+    team_d: 'card-team-yellow'
+  }[teamId] || '';
+}
+
 function getTeamConfig(teamId) {
   const baseConfig = TeamConfigs[teamId] || TeamConfig[teamId] || { name: teamId, color: '#666' };
-  // v4.0: Use custom name if provided
   const player = props.players.find(p => p.teamId === teamId);
   if (player?.customName) {
     return { ...baseConfig, name: player.customName };
@@ -117,26 +139,15 @@ function isAITeam(teamId) {
 
 function getAIPersonalityIcon(teamId) {
   const personality = props.aiPersonalities[teamId];
-  return personalityNames[personality] || '';
+  return personalityIcons[personality] || '';
 }
 
 function getTeamRiders(team) {
   return props.riders.filter(r => r.team === team);
 }
 
-function getRiderEmoji(type) {
-  return RiderConfig[type]?.emoji || '🚴';
-}
-
 function getRiderTypeName(type) {
-  const names = {
-    climber: 'Grimpeur',
-    puncher: 'Puncheur',
-    rouleur: 'Rouleur',
-    sprinter: 'Sprinteur',
-    versatile: 'Polyvalent'
-  };
-  return names[type] || type;
+  return RiderConfig[type]?.name || type;
 }
 
 function isRiderClickable(rider, team) {
@@ -145,6 +156,15 @@ function isRiderClickable(rider, team) {
   if (rider.hasFinished) return false;
   if (rider.turnsToSkip > 0) return false;
   return true;
+}
+
+function getRiderRowClasses(rider, team) {
+  return {
+    'rider-row--clickable': isRiderClickable(rider, team),
+    'rider-row--selected': rider.id === props.selectedRiderId,
+    'rider-row--played': props.playedRiders.includes(rider.id),
+    'rider-row--skipping': rider.turnsToSkip > 0
+  };
 }
 
 function onRiderClick(rider, team) {
@@ -157,155 +177,156 @@ function onRiderClick(rider, team) {
 <style scoped>
 .teams-overview {
   display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 20px;
-  margin-bottom: 20px;
+  grid-template-columns: repeat(2, 1fr);
+  gap: var(--space-md);
 }
 
-.team-section {
-  background: #f8fafc;
-  border-radius: 8px;
-  padding: 15px;
-  border: 2px solid #e2e8f0;
-}
-.team-section.active {
-  border-color: #3b82f6;
-  background: #eff6ff;
+.teams-overview--3 {
+  grid-template-columns: repeat(3, 1fr);
 }
 
-.team-section h3 {
-  margin: 0 0 12px 0;
+.teams-overview--4 {
+  grid-template-columns: repeat(2, 1fr);
+}
+
+/* Team Card */
+.team-card {
+  padding: 0;
+  overflow: hidden;
+  transition: box-shadow 0.2s, border-color 0.2s;
+}
+
+.team-card--active {
+  box-shadow: var(--shadow-md), 0 0 0 2px var(--color-accent);
+}
+
+.team-card-header {
   display: flex;
   align-items: center;
-  gap: 10px;
+  gap: var(--space-sm);
+  padding: var(--space-sm) var(--space-md);
+  background: var(--color-canvas);
+  border-bottom: 1px solid var(--color-line);
 }
 
-.active-badge {
-  font-size: 0.7em;
-  background: #3b82f6;
-  color: white;
-  padding: 3px 8px;
-  border-radius: 10px;
+.team-card-name {
+  flex: 1;
 }
 
-.riders-list {
+/* Riders List */
+.team-riders-list {
   display: flex;
   flex-direction: column;
-  gap: 6px;
 }
 
 .rider-row {
   display: flex;
   align-items: center;
-  gap: 10px;
-  padding: 8px 12px;
-  background: white;
-  border-radius: 6px;
-  border: 2px solid transparent;
-  transition: all 0.15s;
+  gap: var(--space-sm);
+  padding: var(--space-xs) var(--space-md);
+  border-bottom: 1px solid var(--color-line-light);
+  transition: background 0.15s;
 }
 
-.rider-row.clickable {
+.rider-row:last-child {
+  border-bottom: none;
+}
+
+.rider-row--clickable {
   cursor: pointer;
-  border-color: #10b981;
-}
-.rider-row.clickable:hover { background: #ecfdf5; }
-.rider-row.selected {
-  border-color: #f59e0b;
-  background: #fef3c7;
-}
-.rider-row.played {
-  opacity: 0.6;
-  background: #f1f5f9;
-}
-.rider-row.skipping {
-  opacity: 0.5;
-  background: #fef2f2;
-  border-color: #fca5a5;
+  background: color-mix(in srgb, var(--color-success) 5%, transparent);
 }
 
-.rider-row .rider-emoji { font-size: 1.2em; }
-.rider-row .rider-info { 
-  flex: 1; 
+.rider-row--clickable:hover {
+  background: color-mix(in srgb, var(--color-success) 12%, transparent);
+}
+
+.rider-row--selected {
+  background: color-mix(in srgb, var(--color-gold) 15%, transparent);
+}
+
+.rider-row--played {
+  opacity: 0.55;
+}
+
+.rider-row--skipping {
+  opacity: 0.5;
+  background: color-mix(in srgb, var(--color-danger) 8%, transparent);
+}
+
+.rider-row-info {
+  flex: 1;
   display: flex;
   flex-direction: column;
-  gap: 1px;
+  min-width: 0;
 }
-.rider-row .rider-name { font-weight: 500; }
-.rider-row .rider-type-label { 
-  font-size: 0.75em; 
-  color: #64748b;
-  font-weight: 400;
-  font-style: italic;
-}
-.rider-row .rider-pos { color: #64748b; font-size: 0.85em; }
 
-.rider-cards-mini {
+.rider-row-name {
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.rider-row-type {
+  color: var(--color-ink-muted);
+}
+
+.rider-row-pos {
+  color: var(--color-ink-muted);
+  font-size: 0.85em;
+  min-width: 24px;
+  text-align: right;
+}
+
+.rider-row-cards {
   display: flex;
-  gap: 8px;
-  font-size: 0.8em;
-  color: #64748b;
-}
-
-.status-badge {
-  padding: 2px 8px;
-  border-radius: 10px;
+  gap: var(--space-xs);
+  color: var(--color-ink-muted);
   font-size: 0.75em;
 }
-.status-badge.finished { background: #10b981; color: white; }
-.status-badge.played { background: #94a3b8; color: white; }
-.status-badge.skipping { background: #ef4444; color: white; }
 
-.energy-mini {
-  display: flex;
-  align-items: center;
-  gap: 4px;
-}
-
-.energy-icon {
-  font-size: 0.8em;
+/* Energy Mini Bar */
+.rider-row-energy {
+  width: 40px;
 }
 
 .energy-bar-mini {
-  width: 40px;
-  height: 6px;
-  background: #e5e7eb;
-  border-radius: 3px;
+  width: 100%;
+  height: 5px;
+  background: var(--color-line);
+  border-radius: 2px;
   overflow: hidden;
 }
 
 .energy-fill-mini {
   height: 100%;
-  border-radius: 3px;
-  transition: width 0.3s ease, background-color 0.3s ease;
+  border-radius: 2px;
+  transition: width 0.3s ease;
 }
 
-/* Multi-team grid layouts */
-.teams-overview.teams-3 {
-  grid-template-columns: repeat(3, 1fr);
+/* Badge variants */
+.badge-muted {
+  background: var(--color-ink-muted);
+  color: white;
 }
 
-.teams-overview.teams-4 {
-  grid-template-columns: repeat(2, 1fr);
-}
-
-/* AI team indicator */
-.ai-badge {
+.badge-sm {
   font-size: 0.7em;
-  opacity: 0.7;
+  padding: 2px 6px;
 }
 
-.team-section.ai-team {
-  opacity: 0.85;
-}
-
-.team-section.ai-team h3 {
-  font-style: italic;
-}
-
+/* Responsive */
 @media (max-width: 900px) {
-  .teams-overview { grid-template-columns: 1fr; }
-  .teams-overview.teams-3 { grid-template-columns: 1fr; }
-  .teams-overview.teams-4 { grid-template-columns: 1fr; }
+  .teams-overview,
+  .teams-overview--3,
+  .teams-overview--4 {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 600px) {
+  .rider-row-cards {
+    display: none;
+  }
 }
 </style>

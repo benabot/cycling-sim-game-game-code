@@ -1,126 +1,129 @@
 <template>
-  <div class="selected-rider-panel">
+  <div class="rider-panel card">
     <!-- Header -->
-    <div class="selected-rider-header" :style="{ background: teamConfig?.bgColor, borderColor: teamConfig?.color }">
+    <div class="rider-panel-header" :class="getTeamClass(rider.team)">
       <div class="rider-identity">
-        <span class="rider-emoji-large">{{ riderEmoji }}</span>
-        <div class="rider-details">
-          <span class="rider-name">{{ rider.name }}</span>
-          <span class="rider-type">{{ riderTypeName }}</span>
+        <RiderToken
+          :rider="rider"
+          :isSelected="true"
+        />
+        <div class="rider-identity-info">
+          <span class="type-body-medium">{{ rider.name }}</span>
+          <span class="type-caption">{{ riderTypeName }}</span>
         </div>
       </div>
-      
+
       <div class="rider-stats">
-        <div class="stat-item">
-          <span class="stat-label">Case</span>
-          <span class="stat-value">{{ rider.position }}</span>
+        <div class="stat-pill">
+          <span class="stat-pill-label">Case</span>
+          <span class="stat-pill-value type-numeric">{{ rider.position }}</span>
         </div>
-        <div class="stat-item terrain-stat" :class="terrain">
-          <span class="stat-label">Terrain</span>
-          <span class="stat-value">{{ terrainEmoji }} {{ terrainName }}</span>
+        <div class="stat-pill" :class="`stat-pill--${terrain}`">
+          <TerrainIcon :type="terrain" :size="16" />
+          <span class="stat-pill-value">{{ terrainName }}</span>
         </div>
-        <div class="stat-item bonus-stat" :class="{ 'positive': terrainBonus > 0, 'negative': terrainBonus < 0, 'disabled': energyEffects.bonusDisabled }">
-          <span class="stat-label">Bonus terrain</span>
-          <span class="stat-value">{{ energyEffects.bonusDisabled ? '❌' : formatBonus(terrainBonus) }}</span>
+        <div class="stat-pill" :class="bonusClass">
+          <span class="stat-pill-label">Bonus</span>
+          <span class="stat-pill-value">{{ energyEffects.bonusDisabled ? '❌' : formatBonus(terrainBonus) }}</span>
         </div>
       </div>
-      
-      <!-- v3.3: Energy Bar -->
-      <div class="energy-section">
+
+      <!-- Energy Bar -->
+      <div class="rider-energy-section">
         <EnergyBar :energy="rider.energy || 100" :showEffects="true" />
       </div>
 
-      <button @click="$emit('cancel')" class="btn-change-rider" title="Changer de coureur">
+      <button @click="$emit('cancel')" class="btn btn-ghost btn-sm">
         ← Changer
       </button>
     </div>
 
-    <!-- Cards -->
-    <div class="selected-rider-cards">
+    <!-- Cards Grid -->
+    <div class="rider-panel-cards">
       <!-- Movement Cards -->
       <div class="cards-section">
-        <h4>🃏 Cartes Mouvement ({{ rider.hand?.length || 0 }})</h4>
+        <div class="cards-section-header">
+          <span class="type-label">🃏 Cartes Mouvement</span>
+          <span class="badge badge-muted">{{ rider.hand?.length || 0 }}</span>
+        </div>
         <div class="cards-list">
-          <div 
+          <button 
             v-for="card in rider.hand" 
             :key="card.id"
-            class="card-item"
-            :class="{ 
-              'selectable': turnPhase === 'select_card' || turnPhase === 'roll_dice',
-              'selected': card.id === selectedCardId,
-              'relais-card': card.name === 'Relais',
-              'tempo-card': card.name === 'Tempo'
-            }"
-            :style="{ background: card.color }"
+            class="game-card"
+            :class="getCardClasses(card, false)"
+            :style="{ '--card-bg': card.color }"
             @click="onCardClick(card, false)"
           >
-            <span class="card-value">+{{ card.value }}</span>
-            <span class="card-name">{{ card.name }}</span>
-          </div>
-          <div v-if="rider.hand?.length === 0" class="empty-cards">
-            Main vide - Recyclage au prochain tour
-          </div>
+            <span class="game-card-value">+{{ card.value }}</span>
+            <span class="game-card-name">{{ card.name }}</span>
+          </button>
+          <span v-if="!rider.hand?.length" class="type-caption cards-empty">
+            Main vide - Recyclage prochain tour
+          </span>
         </div>
       </div>
 
       <!-- Attack Cards -->
-      <div class="cards-section attack-section">
-        <h4>⚔️ Attaques ({{ rider.attackCards?.length || 0 }}/2)
-          <span v-if="!canUseAttackCard" class="energy-warning">⚡ Énergie insuffisante</span>
-        </h4>
+      <div class="cards-section cards-section--attack">
+        <div class="cards-section-header">
+          <span class="type-label">⚔️ Attaques</span>
+          <span class="badge badge-muted">{{ rider.attackCards?.length || 0 }}/2</span>
+          <span v-if="!canUseAttackCard" class="type-caption text-danger">⚡ Énergie insuffisante</span>
+        </div>
         <div class="cards-list">
-          <div 
+          <button 
             v-for="card in rider.attackCards" 
             :key="card.id"
-            class="card-item attack-card"
-            :class="{ 
-              'selectable': canUseAttackCard && (turnPhase === 'select_card' || turnPhase === 'roll_dice'),
-              'selected': card.id === selectedCardId,
-              'disabled': !canUseAttackCard
-            }"
+            class="game-card game-card--attack"
+            :class="getCardClasses(card, true)"
+            :disabled="!canUseAttackCard"
             @click="canUseAttackCard && onCardClick(card, true)"
           >
-            <span class="card-value">+{{ canUseAttackCard ? (6 + (energyEffects.attackPenalty || 0)) : '❌' }}</span>
-            <span class="card-name">Attaque</span>
-          </div>
-          <div v-if="rider.attackCards?.length === 0" class="empty-cards">Épuisées</div>
+            <span class="game-card-value">+{{ canUseAttackCard ? (6 + (energyEffects.attackPenalty || 0)) : '❌' }}</span>
+            <span class="game-card-name">Attaque</span>
+          </button>
+          <span v-if="!rider.attackCards?.length" class="type-caption cards-empty">Épuisées</span>
         </div>
       </div>
 
       <!-- Specialty Cards -->
-      <div class="cards-section specialty-section">
-        <h4>★ Spécialités ({{ rider.specialtyCards?.length || 0 }}/2)
-          <span v-if="!energyEffects.canUseSpecialty" class="energy-warning">⚡ Énergie insuffisante</span>
-        </h4>
+      <div class="cards-section cards-section--specialty">
+        <div class="cards-section-header">
+          <span class="type-label">★ Spécialités</span>
+          <span class="badge badge-muted">{{ rider.specialtyCards?.length || 0 }}/2</span>
+          <span v-if="!energyEffects.canUseSpecialty" class="type-caption text-danger">⚡ Énergie insuffisante</span>
+        </div>
         <div class="cards-list">
-          <div 
+          <button 
             v-for="card in rider.specialtyCards" 
             :key="card.id"
-            class="card-item specialty-card"
-            :class="{ 
-              'selectable': turnPhase === 'select_specialty' && canUseSpecialtyCard,
-              'disabled': !canUseSpecialtyCard
-            }"
+            class="game-card game-card--specialty"
+            :class="{ 'game-card--disabled': !canUseSpecialtyCard }"
+            :disabled="!canUseSpecialtyCard"
           >
-            <span class="card-value">+{{ energyEffects.canUseSpecialty ? (2 + (energyEffects.specialtyPenalty || 0)) : '❌' }}</span>
-            <span class="card-name">{{ specialtyTerrainName }}</span>
-          </div>
-          <div v-if="rider.specialtyCards?.length === 0" class="empty-cards">Épuisées</div>
+            <span class="game-card-value">+{{ energyEffects.canUseSpecialty ? (2 + (energyEffects.specialtyPenalty || 0)) : '❌' }}</span>
+            <span class="game-card-name">{{ specialtyTerrainName }}</span>
+          </button>
+          <span v-if="!rider.specialtyCards?.length" class="type-caption cards-empty">Épuisées</span>
         </div>
-        <div v-if="!canUseSpecialty && rider.specialtyCards?.length > 0 && energyEffects.canUseSpecialty" class="specialty-hint">
+        <p v-if="!canUseSpecialty && rider.specialtyCards?.length && energyEffects.canUseSpecialty" class="type-caption text-muted">
           (Utilisable sur {{ specialtyTerrainName }})
-        </div>
+        </p>
       </div>
 
-      <!-- Discard -->
-      <div class="discard-section" v-if="rider.discard?.length > 0">
-        <h4>📥 Défausse ({{ rider.discard.length }})</h4>
+      <!-- Discard Pile -->
+      <div v-if="rider.discard?.length" class="cards-section cards-section--discard">
+        <div class="cards-section-header">
+          <span class="type-label text-muted">📥 Défausse</span>
+          <span class="badge badge-muted">{{ rider.discard.length }}</span>
+        </div>
         <div class="discard-preview">
           <span 
             v-for="card in rider.discard" 
             :key="card.id"
-            class="discard-card"
-            :class="{ 'relais': card.name === 'Relais' }"
+            class="discard-chip"
+            :class="{ 'discard-chip--relais': card.name === 'Relais' }"
           >
             +{{ card.value }}
           </span>
@@ -128,7 +131,7 @@
       </div>
     </div>
 
-    <!-- Action Zone -->
+    <!-- Action Slot -->
     <slot name="actions"></slot>
   </div>
 </template>
@@ -137,7 +140,9 @@
 import { computed } from 'vue';
 import { TeamConfig, RiderConfig, TerrainConfig } from '../config/game.config.js';
 import { getEnergyEffects } from '../core/energy.js';
+import RiderToken from './RiderToken.vue';
 import EnergyBar from './EnergyBar.vue';
+import { TerrainIcon } from './icons';
 
 const props = defineProps({
   rider: { type: Object, required: true },
@@ -150,17 +155,28 @@ const props = defineProps({
 
 const emit = defineEmits(['cancel', 'selectCard']);
 
-const teamConfig = computed(() => TeamConfig[props.rider.team]);
-const riderEmoji = computed(() => RiderConfig[props.rider.type]?.emoji || '🚴');
 const riderTypeName = computed(() => RiderConfig[props.rider.type]?.name || '');
-const terrainEmoji = computed(() => TerrainConfig[props.terrain]?.emoji || '');
 const terrainName = computed(() => TerrainConfig[props.terrain]?.name || '');
 const specialtyTerrainName = computed(() => RiderConfig[props.rider.type]?.specialtyName || 'Tous terrains');
 
-// v3.3: Energy effects
 const energyEffects = computed(() => getEnergyEffects(props.rider.energy || 100));
 const canUseAttackCard = computed(() => energyEffects.value.canUseAttack);
 const canUseSpecialtyCard = computed(() => props.canUseSpecialty && energyEffects.value.canUseSpecialty);
+
+const bonusClass = computed(() => ({
+  'stat-pill--positive': props.terrainBonus > 0 && !energyEffects.value.bonusDisabled,
+  'stat-pill--negative': props.terrainBonus < 0,
+  'stat-pill--disabled': energyEffects.value.bonusDisabled
+}));
+
+function getTeamClass(teamId) {
+  return {
+    team_a: 'rider-panel-header--red',
+    team_b: 'rider-panel-header--blue',
+    team_c: 'rider-panel-header--green',
+    team_d: 'rider-panel-header--yellow'
+  }[teamId] || '';
+}
 
 function formatBonus(value) {
   if (value > 0) return `+${value}`;
@@ -168,222 +184,207 @@ function formatBonus(value) {
   return '0';
 }
 
+function getCardClasses(card, isAttack) {
+  const isSelectable = props.turnPhase === 'select_card' || props.turnPhase === 'roll_dice';
+  return {
+    'game-card--selectable': isSelectable && (!isAttack || canUseAttackCard.value),
+    'game-card--selected': card.id === props.selectedCardId,
+    'game-card--relais': card.name === 'Relais',
+    'game-card--tempo': card.name === 'Tempo',
+    'game-card--disabled': isAttack && !canUseAttackCard.value
+  };
+}
+
 function onCardClick(card, isAttack) {
-  // Allow card selection during 'select_card' AND 'roll_dice' phases
-  // This lets the player change their card before rolling the dice
   if (props.turnPhase !== 'select_card' && props.turnPhase !== 'roll_dice') return;
   emit('selectCard', card.id, isAttack);
 }
 </script>
 
 <style scoped>
-.selected-rider-panel {
-  background: white;
-  border-radius: 12px;
-  box-shadow: 0 4px 12px rgba(0,0,0,0.1);
-  margin-bottom: 20px;
+.rider-panel {
+  padding: 0;
   overflow: hidden;
 }
 
-.selected-rider-header {
+/* Header */
+.rider-panel-header {
   display: flex;
   align-items: center;
-  gap: 20px;
-  padding: 15px 20px;
-  border-left: 4px solid;
   flex-wrap: wrap;
+  gap: var(--space-md);
+  padding: var(--space-md) var(--space-lg);
+  background: var(--color-canvas);
+  border-bottom: 1px solid var(--color-line);
 }
+
+.rider-panel-header--red { border-left: 4px solid var(--team-red-ui); }
+.rider-panel-header--blue { border-left: 4px solid var(--team-blue-ui); }
+.rider-panel-header--green { border-left: 4px solid var(--team-green-ui); }
+.rider-panel-header--yellow { border-left: 4px solid var(--team-yellow-ui); }
 
 .rider-identity {
   display: flex;
   align-items: center;
-  gap: 12px;
+  gap: var(--space-sm);
 }
 
-.rider-emoji-large { font-size: 2.5em; }
-
-.rider-details {
+.rider-identity-info {
   display: flex;
   flex-direction: column;
-}
-
-.rider-name {
-  font-weight: bold;
-  font-size: 1.2em;
-}
-
-.rider-type {
-  color: #64748b;
-  font-size: 0.9em;
 }
 
 .rider-stats {
   display: flex;
-  gap: 20px;
+  gap: var(--space-sm);
   flex-wrap: wrap;
 }
 
-.stat-item {
+.stat-pill {
   display: flex;
-  flex-direction: column;
   align-items: center;
-  padding: 8px 15px;
-  background: white;
-  border-radius: 8px;
+  gap: var(--space-xs);
+  padding: var(--space-xs) var(--space-sm);
+  background: var(--color-surface);
+  border-radius: var(--radius-sm);
+  font-size: 0.85em;
 }
 
-.stat-label {
+.stat-pill-label {
+  color: var(--color-ink-muted);
   font-size: 0.75em;
-  color: #94a3b8;
   text-transform: uppercase;
 }
 
-.stat-value {
-  font-weight: bold;
-  font-size: 1.1em;
+.stat-pill--positive .stat-pill-value { color: var(--color-success); font-weight: 600; }
+.stat-pill--negative .stat-pill-value { color: var(--color-danger); font-weight: 600; }
+.stat-pill--disabled { opacity: 0.6; }
+
+.stat-pill--flat { background: var(--terrain-flat); }
+.stat-pill--hill { background: var(--terrain-hill); }
+.stat-pill--mountain { background: var(--terrain-mountain); }
+.stat-pill--descent { background: var(--terrain-descent); }
+.stat-pill--sprint { background: var(--terrain-sprint); }
+
+.rider-energy-section {
+  flex: 1;
+  min-width: 140px;
 }
 
-.bonus-stat.positive .stat-value { color: #16a34a; }
-.bonus-stat.negative .stat-value { color: #dc2626; }
-.bonus-stat.disabled .stat-value { color: #dc2626; }
-.bonus-stat.disabled { opacity: 0.7; }
-
-/* v3.3: Energy section */
-.energy-section {
-  min-width: 150px;
-  padding: 8px 12px;
-  background: white;
-  border-radius: 8px;
-}
-
-.energy-warning {
-  font-size: 0.7em;
-  color: #dc2626;
-  font-weight: normal;
-  margin-left: 8px;
-}
-
-.btn-change-rider {
-  margin-left: auto;
-  padding: 8px 16px;
-  background: white;
-  border: 1px solid #e2e8f0;
-  border-radius: 6px;
-  cursor: pointer;
-  transition: all 0.2s;
-}
-.btn-change-rider:hover { background: #f1f5f9; }
-
-.selected-rider-cards {
+/* Cards Grid */
+.rider-panel-cards {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-  gap: 15px;
-  padding: 20px;
+  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+  gap: var(--space-md);
+  padding: var(--space-md);
 }
 
-.cards-section h4 {
-  margin: 0 0 10px 0;
-  font-size: 0.95em;
-  color: #475569;
+.cards-section-header {
+  display: flex;
+  align-items: center;
+  gap: var(--space-sm);
+  margin-bottom: var(--space-sm);
 }
 
 .cards-list {
   display: flex;
   flex-wrap: wrap;
-  gap: 8px;
+  gap: var(--space-xs);
 }
 
-.card-item {
-  padding: 8px 12px;
-  border-radius: 6px;
-  border: 2px solid transparent;
-  transition: all 0.15s;
-  text-align: center;
-  min-width: 60px;
-}
-
-.card-item.selectable {
-  cursor: pointer;
-  border-color: #3b82f6;
-}
-.card-item.selectable:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 4px 8px rgba(0,0,0,0.15);
-}
-.card-item.selected {
-  border-color: #f59e0b;
-  box-shadow: 0 0 0 2px #fbbf24;
-}
-.card-item.disabled {
-  opacity: 0.5;
-  cursor: not-allowed;
-}
-.card-item.relais-card { background: #e5e7eb !important; }
-.card-item.tempo-card { background: #d1fae5 !important; }
-
-.attack-card { background: #c4b5fd; }
-.specialty-card { background: #bbf7d0; }
-
-.card-value {
-  display: block;
-  font-weight: bold;
-  font-size: 1.2em;
-}
-
-.card-name {
-  display: block;
-  font-size: 0.75em;
-  color: #64748b;
-}
-
-.empty-cards {
-  color: #94a3b8;
-  font-size: 0.85em;
+.cards-empty {
+  color: var(--color-ink-muted);
   font-style: italic;
 }
 
-.specialty-hint {
-  font-size: 0.8em;
-  color: #94a3b8;
-  margin-top: 5px;
+/* Game Cards */
+.game-card {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: var(--space-sm) var(--space-md);
+  background: var(--card-bg, var(--color-canvas));
+  border: 2px solid transparent;
+  border-radius: var(--radius-sm);
+  cursor: default;
+  transition: all 0.15s;
+  min-width: 60px;
 }
 
-.discard-section h4 {
-  color: #94a3b8;
+.game-card--selectable {
+  cursor: pointer;
+  border-color: var(--color-accent);
 }
 
+.game-card--selectable:hover {
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-md);
+}
+
+.game-card--selected {
+  border-color: var(--color-gold);
+  box-shadow: 0 0 0 2px var(--color-gold);
+}
+
+.game-card--disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.game-card--relais { background: var(--color-line) !important; }
+.game-card--tempo { background: #d1fae5 !important; }
+.game-card--attack { background: #c4b5fd; }
+.game-card--specialty { background: #bbf7d0; }
+
+.game-card-value {
+  font-family: var(--font-mono);
+  font-weight: 700;
+  font-size: 1.1em;
+}
+
+.game-card-name {
+  font-size: 0.7em;
+  color: var(--color-ink-muted);
+}
+
+/* Discard */
 .discard-preview {
   display: flex;
   flex-wrap: wrap;
   gap: 4px;
 }
 
-.discard-card {
+.discard-chip {
   padding: 2px 8px;
-  background: #f1f5f9;
-  border-radius: 4px;
-  font-size: 0.8em;
-  color: #64748b;
-}
-.discard-card.relais { background: #fecaca; color: #dc2626; }
-
-.energy-section {
-  width: 100%;
-  margin-top: 8px;
-  padding-top: 8px;
-  border-top: 1px solid rgba(0,0,0,0.1);
+  background: var(--color-canvas);
+  border-radius: var(--radius-xs);
+  font-family: var(--font-mono);
+  font-size: 0.75em;
+  color: var(--color-ink-muted);
 }
 
-.energy-warning {
-  font-size: 0.7em;
-  color: #dc2626;
-  font-weight: normal;
-  margin-left: 8px;
+.discard-chip--relais {
+  background: #fecaca;
+  color: var(--color-danger);
 }
 
-@media (max-width: 900px) {
-  .selected-rider-header { flex-direction: column; align-items: flex-start; }
-  .rider-stats { width: 100%; justify-content: flex-start; }
-  .selected-rider-cards { flex-direction: column; }
+/* Utils */
+.text-danger { color: var(--color-danger); }
+.text-muted { color: var(--color-ink-muted); }
+
+/* Responsive */
+@media (max-width: 768px) {
+  .rider-panel-header {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+  
+  .rider-stats {
+    width: 100%;
+  }
+  
+  .rider-energy-section {
+    width: 100%;
+  }
 }
 </style>
