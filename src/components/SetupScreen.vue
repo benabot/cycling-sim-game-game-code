@@ -325,7 +325,7 @@ initializePlayers();
   align-items: center;
   gap: var(--space-sm);
   padding: var(--space-md);
-  background: var(--color-canvas);
+  /* Background déjà géré par .card-team-* gradient */
 }
 
 .team-setup-header .input--inline {
@@ -383,7 +383,7 @@ initializePlayers();
 
 .riders-edit-list {
   padding: var(--space-sm) var(--space-md);
-  background: var(--color-canvas);
+  background-color: var(--color-canvas);
   display: flex;
   flex-direction: column;
   gap: var(--space-xs);
@@ -433,7 +433,8 @@ initializePlayers();
   justify-content: center;
   gap: var(--space-md);
   padding: var(--space-md);
-  background: var(--color-canvas);
+  background-color: var(--color-canvas);
+  border: 1px solid var(--color-line);
   border-radius: var(--radius-md);
   margin-bottom: var(--space-lg);
 }

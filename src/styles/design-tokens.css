@@ -16,6 +16,8 @@
   --color-paper: #FCFBF7;
   --color-surface: #FFFFFF;
   --color-surface-warm: #FFFEFB;
+  --color-board: #ECE6D8;          /* Fond "carton" premium */
+  --color-canvas: #F5F3ED;         /* Fond sections internes */
   --color-muted: #6B7280;
   
   --color-line: #D7D3C8;
