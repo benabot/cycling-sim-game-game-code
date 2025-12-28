@@ -1,0 +1,242 @@
+/**
+ * Rider Tokens - Cycling Race Board Game
+ * Design System: "Plateau Premium" (Option A1)
+ * 
+ * Token/pawn styling for riders on track
+ */
+
+/* ========================================
+   BASE TOKEN
+   ======================================== */
+
+.rider-token {
+  /* Size */
+  width: var(--token-size-desktop);
+  height: var(--token-size-desktop);
+  
+  /* Shape */
+  border-radius: 50%;
+  
+  /* Layout */
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  
+  /* Typography */
+  font-size: 20px;
+  line-height: 1;
+  
+  /* Borders (double ring effect) */
+  border: 2px solid rgba(31, 35, 40, 0.28);
+  box-shadow: 
+    inset 0 0 0 1px rgba(246, 244, 239, 0.40),
+    var(--shadow-sm);
+  
+  /* Interaction */
+  cursor: default;
+  transition: 
+    transform var(--transition-fast),
+    box-shadow var(--transition-fast);
+  
+  /* Positioning */
+  position: relative;
+  z-index: var(--z-base);
+}
+
+/* ========================================
+   TEAM COLORS (using Print palette)
+   ======================================== */
+
+.rider-token--team-a,
+.rider-token.team_a {
+  background-color: var(--team-red-print);
+  color: white;
+}
+
+.rider-token--team-b,
+.rider-token.team_b {
+  background-color: var(--team-blue-print);
+  color: white;
+}
+
+.rider-token--team-c,
+.rider-token.team_c {
+  background-color: var(--team-green-print);
+  color: white;
+}
+
+.rider-token--team-d,
+.rider-token.team_d {
+  background-color: var(--team-yellow-print);
+  color: var(--color-ink);
+}
+
+/* ========================================
+   SPECIALTY INDICATORS (subtle icons)
+   ======================================== */
+
+/* Specialty badge (small icon on token) */
+.rider-token-specialty {
+  position: absolute;
+  bottom: -4px;
+  right: -4px;
+  width: 16px;
+  height: 16px;
+  border-radius: 50%;
+  background-color: var(--color-surface);
+  border: 1px solid var(--color-line);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 10px;
+  box-shadow: var(--shadow-sm);
+}
+
+/* ========================================
+   STATES
+   ======================================== */
+
+/* Selected */
+.rider-token--selected,
+.rider-token.selected {
+  transform: scale(1.25);
+  box-shadow: 
+    inset 0 0 0 1px rgba(246, 244, 239, 0.40),
+    0 0 0 3px var(--color-gold),
+    var(--shadow-md);
+  z-index: var(--z-raised);
+}
+
+/* Leader (front of pack - takes the wind) */
+.rider-token--leader,
+.rider-token.leader {
+  box-shadow: 
+    inset 0 0 0 1px rgba(246, 244, 239, 0.40),
+    0 0 0 2px var(--color-gold),
+    var(--shadow-sm);
+}
+
+/* Played this turn */
+.rider-token--played,
+.rider-token.played {
+  opacity: 0.55;
+  filter: grayscale(40%);
+}
+
+/* Finished */
+.rider-token--finished,
+.rider-token.finished {
+  opacity: 0.70;
+}
+
+/* ========================================
+   ANIMATIONS
+   ======================================== */
+
+/* Aspiration/drafting animation */
+.rider-token--animating,
+.rider-token.animating {
+  animation: token-aspiration 1.2s ease-in-out infinite;
+  z-index: var(--z-dropdown);
+}
+
+@keyframes token-aspiration {
+  0%, 100% { 
+    transform: scale(1); 
+    box-shadow: 
+      inset 0 0 0 1px rgba(246, 244, 239, 0.40),
+      0 0 0 3px var(--team-blue-ui),
+      0 0 8px var(--team-blue-light);
+  }
+  50% { 
+    transform: scale(1.35); 
+    box-shadow: 
+      inset 0 0 0 1px rgba(246, 244, 239, 0.40),
+      0 0 0 5px var(--team-blue-ui),
+      0 0 20px rgba(47, 111, 237, 0.5);
+  }
+}
+
+/* Move animation (when token moves) */
+.rider-token--moving {
+  animation: token-move 0.4s ease-out;
+}
+
+@keyframes token-move {
+  0% { 
+    transform: scale(1.3);
+    opacity: 0.7;
+  }
+  100% { 
+    transform: scale(1);
+    opacity: 1;
+  }
+}
+
+/* ========================================
+   COMPACT VERSION (for lists, not track)
+   ======================================== */
+
+.rider-token--compact {
+  width: 28px;
+  height: 28px;
+  font-size: 14px;
+  border-width: 1.5px;
+}
+
+.rider-token--compact .rider-token-specialty {
+  width: 12px;
+  height: 12px;
+  font-size: 8px;
+  bottom: -2px;
+  right: -2px;
+}
+
+/* ========================================
+   MINI VERSION (for overview panels)
+   ======================================== */
+
+.rider-token--mini {
+  width: 20px;
+  height: 20px;
+  font-size: 11px;
+  border-width: 1px;
+  box-shadow: none;
+}
+
+/* ========================================
+   RESPONSIVE
+   ======================================== */
+
+@media (max-width: 768px) {
+  .rider-token {
+    width: var(--token-size-mobile);
+    height: var(--token-size-mobile);
+    font-size: 16px;
+    border-width: 1.5px;
+  }
+  
+  .rider-token-specialty {
+    width: 14px;
+    height: 14px;
+    font-size: 9px;
+  }
+}
+
+/* ========================================
+   HOVER EFFECTS (desktop only)
+   ======================================== */
+
+@media (hover: hover) {
+  .rider-token:hover:not(.rider-token--played):not(.rider-token.played) {
+    transform: scale(1.1);
+    box-shadow: 
+      inset 0 0 0 1px rgba(246, 244, 239, 0.40),
+      var(--shadow-md);
+  }
+  
+  .rider-token--selected:hover,
+  .rider-token.selected:hover {
+    transform: scale(1.25);
+  }
+}

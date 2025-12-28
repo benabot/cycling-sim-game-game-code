@@ -1,0 +1,524 @@
+/**
+ * Track & Terrain - Cycling Race Board Game
+ * Design System: "Plateau Premium" (Option A1)
+ * 
+ * Course board cells, terrain patterns, special cells
+ */
+
+/* ========================================
+   TRACK CONTAINER
+   ======================================== */
+
+.track-container {
+  overflow-x: auto;
+  padding: var(--space-md) 0;
+  margin-bottom: var(--space-lg);
+}
+
+.track-container::-webkit-scrollbar {
+  height: 8px;
+}
+
+.track-container::-webkit-scrollbar-track {
+  background: var(--color-line);
+  border-radius: 4px;
+}
+
+.track-container::-webkit-scrollbar-thumb {
+  background: var(--color-muted);
+  border-radius: 4px;
+}
+
+.track {
+  display: flex;
+  gap: 3px;
+  min-width: max-content;
+  padding: var(--space-md);
+  background: var(--color-paper);
+  border-radius: var(--radius-card);
+  border: 1px solid var(--color-line);
+}
+
+/* ========================================
+   BASE CELL
+   ======================================== */
+
+.track-cell {
+  width: 52px;
+  min-height: 72px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: var(--space-xs) 3px;
+  border-radius: var(--radius-sm);
+  position: relative;
+  transition: box-shadow var(--transition-fast), transform var(--transition-fast);
+  
+  /* Subtle inner border for "felt" look */
+  box-shadow: inset 0 0 0 1px var(--track-grid-line);
+}
+
+.track-cell:hover {
+  transform: translateY(-1px);
+}
+
+/* Cell number */
+.track-cell-number {
+  font-family: var(--font-mono);
+  font-size: 10px;
+  font-weight: 500;
+  color: var(--color-ink-muted);
+  line-height: 1;
+  margin-bottom: 2px;
+}
+
+/* Riders container */
+.track-cell-riders {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 2px;
+  justify-content: center;
+  flex: 1;
+  align-items: center;
+}
+
+/* Cell count badge */
+.track-cell-count {
+  position: absolute;
+  bottom: 2px;
+  right: 2px;
+  font-family: var(--font-mono);
+  font-size: 9px;
+  font-weight: 500;
+  background: var(--color-ink);
+  color: white;
+  padding: 1px 4px;
+  border-radius: var(--radius-chip);
+}
+
+/* ========================================
+   TERRAIN COLORS (Pastels + Patterns)
+   ======================================== */
+
+/* --- FLAT (Plaine) --- */
+.track-cell--flat {
+  background-color: var(--terrain-flat);
+  background-image: url("data:image/svg+xml,%3Csvg width='32' height='32' viewBox='0 0 32 32' xmlns='http://www.w3.org/2000/svg'%3E%3Ccircle cx='8' cy='8' r='1.5' fill='%231F2328' fill-opacity='0.07'/%3E%3Ccircle cx='24' cy='8' r='1.5' fill='%231F2328' fill-opacity='0.07'/%3E%3Ccircle cx='8' cy='24' r='1.5' fill='%231F2328' fill-opacity='0.07'/%3E%3Ccircle cx='24' cy='24' r='1.5' fill='%231F2328' fill-opacity='0.07'/%3E%3C/svg%3E");
+}
+
+/* --- HILL (Côte) --- */
+.track-cell--hill {
+  background-color: var(--terrain-hill);
+  background-image: url("data:image/svg+xml,%3Csvg width='32' height='32' viewBox='0 0 32 32' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M0 28L14 14M4 32L18 18M8 32L22 18M12 32L26 18M16 32L30 18M20 32L32 20M24 32L32 24M28 32L32 28' stroke='%231F2328' stroke-opacity='0.08' stroke-width='1' fill='none'/%3E%3C/svg%3E");
+}
+
+/* --- MOUNTAIN (Montagne) --- */
+.track-cell--mountain {
+  background-color: var(--terrain-mountain);
+  background-image: url("data:image/svg+xml,%3Csvg width='32' height='32' viewBox='0 0 32 32' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M0 24L8 16M0 32L16 16M8 32L24 16M16 32L32 16M24 32L32 24' stroke='%231F2328' stroke-opacity='0.07' stroke-width='1.5' fill='none'/%3E%3Cpath d='M4 28L12 20M12 32L20 24M20 32L28 24' stroke='%231F2328' stroke-opacity='0.05' stroke-width='1' fill='none'/%3E%3C/svg%3E");
+}
+
+/* --- DESCENT (Descente) --- */
+.track-cell--descent {
+  background-color: var(--terrain-descent);
+  background-image: url("data:image/svg+xml,%3Csvg width='32' height='32' viewBox='0 0 32 32' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M16 4L8 12L16 12L8 20L16 20L8 28' stroke='%231F2328' stroke-opacity='0.08' stroke-width='1.5' fill='none' stroke-linecap='round' stroke-linejoin='round'/%3E%3Cpath d='M24 4L16 12L24 12L16 20L24 20L16 28' stroke='%231F2328' stroke-opacity='0.06' stroke-width='1' fill='none' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");
+}
+
+/* --- SPRINT --- */
+.track-cell--sprint {
+  background-color: var(--terrain-sprint);
+  background-image: url("data:image/svg+xml,%3Csvg width='32' height='32' viewBox='0 0 32 32' xmlns='http://www.w3.org/2000/svg'%3E%3Crect x='0' y='0' width='8' height='8' fill='%231F2328' fill-opacity='0.06'/%3E%3Crect x='16' y='0' width='8' height='8' fill='%231F2328' fill-opacity='0.06'/%3E%3Crect x='8' y='8' width='8' height='8' fill='%231F2328' fill-opacity='0.06'/%3E%3Crect x='24' y='8' width='8' height='8' fill='%231F2328' fill-opacity='0.06'/%3E%3Crect x='0' y='16' width='8' height='8' fill='%231F2328' fill-opacity='0.06'/%3E%3Crect x='16' y='16' width='8' height='8' fill='%231F2328' fill-opacity='0.06'/%3E%3Crect x='8' y='24' width='8' height='8' fill='%231F2328' fill-opacity='0.06'/%3E%3Crect x='24' y='24' width='8' height='8' fill='%231F2328' fill-opacity='0.06'/%3E%3C/svg%3E");
+}
+
+/* ========================================
+   SPECIAL CELLS
+   ======================================== */
+
+/* --- START --- */
+.track-cell--start {
+  background-color: #E8EBF4;
+  border: 2px dashed var(--team-blue-print);
+  box-shadow: none;
+}
+
+.track-cell--start .track-cell-number {
+  color: var(--team-blue-print);
+  font-weight: 600;
+}
+
+/* --- FINISH --- */
+.track-cell--finish {
+  border: 2px solid var(--state-success);
+  background-image: 
+    linear-gradient(45deg, rgba(53, 181, 106, 0.08) 25%, transparent 25%),
+    linear-gradient(-45deg, rgba(53, 181, 106, 0.08) 25%, transparent 25%),
+    linear-gradient(45deg, transparent 75%, rgba(53, 181, 106, 0.08) 75%),
+    linear-gradient(-45deg, transparent 75%, rgba(53, 181, 106, 0.08) 75%);
+  background-size: 8px 8px;
+  background-position: 0 0, 0 4px, 4px -4px, -4px 0px;
+}
+
+.track-cell--finish .track-cell-number {
+  color: var(--state-success);
+  font-weight: 600;
+}
+
+/* --- REFUEL ZONE --- */
+.track-cell--refuel {
+  border: 2px dashed var(--state-warning);
+  position: relative;
+}
+
+.track-cell--refuel::before {
+  content: '🍌';
+  position: absolute;
+  top: -8px;
+  right: -4px;
+  font-size: 12px;
+  z-index: 5;
+}
+
+/* ========================================
+   FINISH ZONE (After track)
+   ======================================== */
+
+.track-finish-zone {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: var(--space-md);
+  background: linear-gradient(135deg, var(--terrain-flat) 0%, #C8EDCE 100%);
+  border-radius: var(--radius-md);
+  border: 2px solid var(--state-success);
+  min-width: 70px;
+  gap: var(--space-sm);
+}
+
+.track-finish-flag {
+  font-size: 28px;
+  line-height: 1;
+}
+
+.track-finish-label {
+  font-family: var(--font-display);
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--state-success);
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+.track-finished-riders {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+  justify-content: center;
+}
+
+
+/* ========================================
+   CELL STATES
+   ======================================== */
+
+/* --- SELECTED (rider on this cell is selected) --- */
+.track-cell--selected {
+  box-shadow: 
+    inset 0 0 0 1px var(--track-grid-line),
+    0 0 0 2px var(--color-gold);
+}
+
+/* --- FULL (4/4 riders) --- */
+.track-cell--full {
+  box-shadow: 
+    inset 0 0 0 2px var(--state-error),
+    inset 0 0 0 1px var(--track-grid-line);
+}
+
+.track-cell--full::after {
+  content: 'FULL';
+  position: absolute;
+  bottom: -6px;
+  left: 50%;
+  transform: translateX(-50%);
+  font-family: var(--font-mono);
+  font-size: 7px;
+  font-weight: 600;
+  color: white;
+  background: var(--state-error);
+  padding: 1px 3px;
+  border-radius: 2px;
+}
+
+/* ========================================
+   PREVIEW STATES (Movement preview)
+   ======================================== */
+
+/* Preview without specialty */
+.track-cell--preview-without:not(.track-cell--preview-with) {
+  animation: preview-pulse-without 1.2s ease-in-out infinite;
+}
+
+/* Preview with specialty */
+.track-cell--preview-with:not(.track-cell--preview-without) {
+  animation: preview-pulse-with 1.2s ease-in-out infinite;
+}
+
+/* Preview both (same position) */
+.track-cell--preview-both {
+  animation: preview-pulse-both 1.2s ease-in-out infinite;
+}
+
+/* Preview indicators */
+.track-preview-badge {
+  position: absolute;
+  top: -10px;
+  left: 50%;
+  transform: translateX(-50%);
+  font-family: var(--font-ui);
+  font-size: 9px;
+  font-weight: 600;
+  padding: 2px 6px;
+  border-radius: var(--radius-chip);
+  white-space: nowrap;
+  z-index: 10;
+  box-shadow: var(--shadow-sm);
+}
+
+.track-preview-badge--without {
+  background: var(--preview-without);
+  color: white;
+}
+
+.track-preview-badge--with {
+  background: var(--preview-with);
+  color: white;
+}
+
+.track-preview-badge--both {
+  background: var(--preview-same);
+  color: white;
+}
+
+.track-preview-badge--finish {
+  background: var(--preview-finish);
+  color: var(--color-ink);
+  font-size: 10px;
+  top: auto;
+  bottom: 100%;
+  margin-bottom: var(--space-xs);
+}
+
+/* Preview animations (soft glow, not aggressive) */
+@keyframes preview-pulse-without {
+  0%, 100% { 
+    box-shadow: 
+      inset 0 0 0 1px var(--track-grid-line),
+      0 0 0 2px var(--preview-without),
+      0 0 12px rgba(240, 138, 36, 0.35);
+  }
+  50% { 
+    box-shadow: 
+      inset 0 0 0 1px var(--track-grid-line),
+      0 0 0 3px var(--preview-without),
+      0 0 18px rgba(240, 138, 36, 0.5);
+  }
+}
+
+@keyframes preview-pulse-with {
+  0%, 100% { 
+    box-shadow: 
+      inset 0 0 0 1px var(--track-grid-line),
+      0 0 0 2px var(--preview-with),
+      0 0 12px rgba(45, 190, 126, 0.35);
+  }
+  50% { 
+    box-shadow: 
+      inset 0 0 0 1px var(--track-grid-line),
+      0 0 0 3px var(--preview-with),
+      0 0 18px rgba(45, 190, 126, 0.5);
+  }
+}
+
+@keyframes preview-pulse-both {
+  0%, 100% { 
+    box-shadow: 
+      inset 0 0 0 1px var(--track-grid-line),
+      0 0 0 2px var(--preview-same),
+      0 0 12px rgba(43, 166, 203, 0.35);
+  }
+  50% { 
+    box-shadow: 
+      inset 0 0 0 1px var(--track-grid-line),
+      0 0 0 3px var(--preview-same),
+      0 0 18px rgba(43, 166, 203, 0.5);
+  }
+}
+
+/* Finish zone preview */
+.track-finish-zone--preview {
+  animation: preview-pulse-finish 1.2s ease-in-out infinite;
+}
+
+@keyframes preview-pulse-finish {
+  0%, 100% { 
+    box-shadow: 
+      0 0 0 3px var(--preview-finish),
+      0 0 15px rgba(215, 162, 26, 0.4);
+  }
+  50% { 
+    box-shadow: 
+      0 0 0 5px var(--preview-finish),
+      0 0 25px rgba(215, 162, 26, 0.6);
+  }
+}
+
+/* ========================================
+   AI MOVE FLASH
+   ======================================== */
+
+.track-cell--ai-flash {
+  animation: ai-move-flash 0.5s ease-out;
+  z-index: 20;
+}
+
+@keyframes ai-move-flash {
+  0% { 
+    transform: scale(1.2);
+    box-shadow: 
+      0 0 15px rgba(255, 255, 255, 0.8),
+      0 0 30px var(--team-blue-light);
+  }
+  100% { 
+    transform: scale(1);
+    box-shadow: inset 0 0 0 1px var(--track-grid-line);
+  }
+}
+
+/* ========================================
+   TERRAIN LEGEND
+   ======================================== */
+
+.track-legend {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-md);
+  padding: var(--space-md);
+  background: var(--color-surface);
+  border-radius: var(--radius-sm);
+  border: 1px solid var(--color-line);
+  margin-bottom: var(--space-md);
+}
+
+.track-legend-item {
+  display: flex;
+  align-items: center;
+  gap: var(--space-xs);
+}
+
+.track-legend-color {
+  width: 20px;
+  height: 20px;
+  border-radius: var(--radius-chip);
+  border: 1px solid var(--color-line);
+}
+
+.track-legend-color--flat { background-color: var(--terrain-flat); }
+.track-legend-color--hill { background-color: var(--terrain-hill); }
+.track-legend-color--mountain { background-color: var(--terrain-mountain); }
+.track-legend-color--descent { background-color: var(--terrain-descent); }
+.track-legend-color--sprint { background-color: var(--terrain-sprint); }
+
+.track-legend-label {
+  font-family: var(--font-ui);
+  font-size: 12px;
+  color: var(--color-ink);
+}
+
+/* ========================================
+   RIDER WRAPPER (Aspiration animation)
+   ======================================== */
+
+.track-rider-wrapper {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.track-rider-wrapper--aspiration {
+  z-index: 100;
+}
+
+.track-aspiration-badge {
+  position: absolute;
+  top: -20px;
+  left: 50%;
+  transform: translateX(-50%);
+  background: var(--team-blue-ui);
+  color: white;
+  font-family: var(--font-ui);
+  font-size: 8px;
+  font-weight: 600;
+  padding: 2px 6px;
+  border-radius: var(--radius-chip);
+  white-space: nowrap;
+  animation: aspiration-badge-pulse 0.8s ease-in-out infinite;
+  box-shadow: var(--shadow-sm);
+  z-index: 101;
+}
+
+@keyframes aspiration-badge-pulse {
+  0%, 100% { 
+    transform: translateX(-50%) scale(1);
+    opacity: 1;
+  }
+  50% { 
+    transform: translateX(-50%) scale(1.08);
+    opacity: 0.9;
+  }
+}
+
+/* ========================================
+   RESPONSIVE
+   ======================================== */
+
+@media (max-width: 768px) {
+  .track-cell {
+    width: 40px;
+    min-height: 58px;
+    padding: 3px 2px;
+  }
+  
+  .track-cell-number {
+    font-size: 9px;
+  }
+  
+  .track-preview-badge {
+    font-size: 7px;
+    padding: 1px 4px;
+  }
+  
+  .track-finish-zone {
+    min-width: 55px;
+    padding: var(--space-sm);
+  }
+  
+  .track-finish-flag {
+    font-size: 22px;
+  }
+  
+  .track-legend {
+    gap: var(--space-sm);
+    padding: var(--space-sm);
+  }
+  
+  .track-legend-color {
+    width: 16px;
+    height: 16px;
+  }
+  
+  .track-legend-label {
+    font-size: 11px;
+  }
+}
