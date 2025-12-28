@@ -386,10 +386,10 @@ function onCardClick(card, isAttack) {
   cursor: not-allowed;
 }
 
-.game-card--relais { background: var(--color-line) !important; }
-.game-card--tempo { background: #d1fae5 !important; }
-.game-card--attack { background: #c4b5fd; }
-.game-card--specialty { background: #bbf7d0; }
+.game-card--relais { background: var(--card-movement-1) !important; }
+.game-card--tempo { background: var(--card-movement-2) !important; }
+.game-card--attack { background: var(--card-attack); }
+.game-card--specialty { background: var(--card-specialty); }
 
 .game-card-value {
   font-family: var(--font-mono);

@@ -87,14 +87,15 @@ const hasEffects = computed(() => {
 .energy-bar {
   position: relative;
   height: 8px;
-  background: var(--color-line);
-  border-radius: var(--radius-xs);
+  background: var(--color-canvas);  /* fond papier chaud */
+  border-radius: var(--radius-sm);
   overflow: hidden;
+  border: 1px solid var(--color-line-subtle);
 }
 
 .energy-fill {
   height: 100%;
-  border-radius: var(--radius-xs);
+  border-radius: var(--radius-sm);
   transition: width 0.5s ease, background-color 0.3s ease;
 }
 
@@ -102,8 +103,8 @@ const hasEffects = computed(() => {
   position: absolute;
   top: 0;
   bottom: 0;
-  width: 2px;
-  background: rgba(0, 0, 0, 0.25);
+  width: 1px;
+  background: rgba(31, 35, 40, 0.12);  /* réduit de 0.25 */
 }
 
 .energy-effects {

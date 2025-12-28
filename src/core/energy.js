@@ -214,13 +214,13 @@ export function applyEnergyChange(currentEnergy, consumed, recovered) {
 /**
  * Get energy bar color based on level
  * @param {number} energy - Energy level
- * @returns {string} CSS color
+ * @returns {string} CSS color (désaturé "plateau premium")
  */
 export function getEnergyColor(energy) {
-  if (energy > 50) return '#22c55e'; // Green
-  if (energy > 25) return '#f59e0b'; // Orange
-  if (energy > 0) return '#ef4444';  // Red
-  return '#7f1d1d';                   // Dark red (fringale)
+  if (energy > 50) return '#5AAA72'; // Vert poudreux (désaturé de #22c55e)
+  if (energy > 25) return '#D4A84A'; // Orange poudreux (désaturé de #f59e0b)
+  if (energy > 0) return '#C46868';  // Rouge poudreux (désaturé de #ef4444)
+  return '#8B4A4A';                   // Rouge sombre poudreux
 }
 
 /**

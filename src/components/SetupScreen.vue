@@ -149,9 +149,10 @@
 
       <!-- Start button -->
       <button 
-        class="btn btn-success btn-lg btn--full-width" 
+        class="btn btn-success btn-lg" 
         @click="startGame" 
         :disabled="humanCount === 0"
+        style="display: flex; margin: 0 auto;"
       >
         <UIIcon type="finish" size="lg" />
         Lancer la course !

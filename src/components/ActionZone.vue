@@ -220,15 +220,16 @@ const targetPosition = computed(() => props.currentPosition + props.totalMovemen
   font-weight: 500;
 }
 
-/* Movement Calculation */
+/* Movement Calculation - Plateau Premium */
 .movement-calc {
   display: flex;
   align-items: center;
   gap: var(--space-sm);
-  padding: var(--space-md);
-  background: var(--color-surface);
-  border-radius: var(--radius-md);
-  box-shadow: var(--shadow-sm);
+  padding: var(--space-md) var(--space-lg);
+  background: var(--color-paper);
+  border-radius: var(--radius-card);
+  box-shadow: 0 4px 20px rgba(31, 35, 40, 0.08);
+  border: 1px solid var(--color-line-subtle);
 }
 
 .calc-item {
@@ -237,39 +238,39 @@ const targetPosition = computed(() => props.currentPosition + props.totalMovemen
   gap: 4px;
   font-family: var(--font-mono);
   font-weight: 600;
-  color: var(--color-ink);
+  color: var(--color-ink-soft);
   padding: var(--space-xs) var(--space-sm);
-  background: var(--color-line);
+  background: var(--color-canvas);
   border-radius: var(--radius-sm);
 }
 
 .calc-op {
-  color: var(--color-ink);
+  color: var(--color-ink-muted);
   font-weight: 500;
 }
 
 .calc-item--positive { 
-  color: var(--state-success); 
-  background: color-mix(in srgb, var(--state-success) 15%, white);
+  color: #3A8A5A;  /* vert désaturé */
+  background: #E5EDE4;
 }
 .calc-item--negative { 
-  color: var(--state-error); 
-  background: color-mix(in srgb, var(--state-error) 15%, white);
+  color: #B55A5A;  /* rouge désaturé */
+  background: #F0E5E5;
 }
 .calc-item--specialty { 
-  color: var(--state-success);
-  background: #bbf7d0; 
+  color: #3A8A5A;
+  background: var(--card-specialty); 
 }
 
 .calc-result {
   padding: var(--space-sm) var(--space-md);
-  background: #1F2328;
-  color: #FCFBF7;
+  background: #3A3D42;  /* ardoise, pas noir */
+  color: var(--color-paper);
   border-radius: var(--radius-sm);
   font-weight: 700;
   font-size: 1.25em;
-  box-shadow: 0 2px 6px rgba(31, 35, 40, 0.25);
-  min-width: 40px;
+  box-shadow: 0 3px 12px rgba(31, 35, 40, 0.15);
+  min-width: 44px;
   text-align: center;
 }
 

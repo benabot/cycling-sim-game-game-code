@@ -20,9 +20,10 @@
   --color-canvas: #F5F3ED;         /* Fond sections internes */
   --color-muted: #6B7280;
   
-  --color-line: #D7D3C8;
-  --color-line-strong: rgba(31, 35, 40, 0.40);
-  --color-line-subtle: rgba(31, 35, 40, 0.22);
+  --color-line: rgba(31, 35, 40, 0.15);           /* Réduit de #D7D3C8 */
+  --color-line-strong: rgba(31, 35, 40, 0.30);     /* Réduit de 0.40 */
+  --color-line-subtle: rgba(31, 35, 40, 0.12);     /* Réduit de 0.22 */
+  --color-line-focus: rgba(31, 35, 40, 0.40);      /* Pour focus/sélection uniquement */
   
   --color-shadow: rgba(31, 35, 40, 0.12);
   --color-shadow-strong: rgba(31, 35, 40, 0.18);
@@ -36,8 +37,8 @@
   --terrain-descent: #D8E9F7;
   --terrain-sprint: #E6DDF6;
   
-  --track-grid-line: rgba(31, 35, 40, 0.22);
-  --track-section-line: rgba(31, 35, 40, 0.40);
+  --track-grid-line: rgba(31, 35, 40, 0.12);      /* Réduit de 0.22 */
+  --track-section-line: rgba(31, 35, 40, 0.25);    /* Réduit de 0.40 */
 
   /* ========================================
      3. TEAM COLORS (UI = saturé, Print = poussiéreux)
@@ -84,6 +85,15 @@
   
   --state-disabled-text: rgba(31, 35, 40, 0.40);
   --state-disabled-bg: rgba(31, 35, 40, 0.08);
+
+  /* ========================================
+     4b. CARD COLORS (Désaturées "plateau")
+     ======================================== */
+  --card-movement-1: #E8E4D8;        /* Relais - gris chaud */
+  --card-movement-2: #E5EDE4;        /* Tempo - vert très pâle */
+  --card-movement-3: #EDE9E4;        /* Effort - beige neutre */
+  --card-attack: #DED8E8;            /* Attaque - violet poudreux */
+  --card-specialty: #D8E8DC;         /* Spécialité - vert poudreux */
 
   /* ========================================
      5. SPACING (base = 8px)
