@@ -1,6 +1,6 @@
 /**
  * Stage race logic - v5.0
- * Handles points, jerseys, and fatigue between stages.
+ * Handles time gaps, jerseys, and fatigue between stages.
  * @module core/stage-race
  */
 
@@ -9,7 +9,6 @@ import {
   StageRaceProfile,
   StageType,
   StageRecovery,
-  getPointsForPosition,
   generateStageProgram,
   getStageTypeDistribution
 } from '../config/race-presets.js';
@@ -25,6 +24,8 @@ export const StageClassification = {
   SPRINT: 'sprint',
   MOUNTAIN: 'mountain'
 };
+
+const STAGE_GAP_SECONDS = 10;
 
 const CATEGORY_STAGE_TYPES = {
   [StageClassification.SPRINT]: [StageType.FLAT, StageType.SPRINT],
@@ -81,33 +82,33 @@ export function applyStageResults(stageRaceState, stageResults = []) {
   const normalizedResults = normalizeStageResults(stageResults);
   if (normalizedResults.length === 0) return stageRaceState;
 
+  const stageRanking = buildStageRanking(normalizedResults);
+  const stageResultsWithGaps = applyStageRanks(stageRanking);
+
   const updatedStandings = {
     ...stageRaceState.standings,
     [StageClassification.GENERAL]: updateClassification(
       stageRaceState.standings[StageClassification.GENERAL],
-      normalizedResults,
-      getPointsForPosition
+      stageResultsWithGaps
     )
   };
 
   if (CATEGORY_STAGE_TYPES[StageClassification.SPRINT].includes(stage.type)) {
     updatedStandings[StageClassification.SPRINT] = updateClassification(
       stageRaceState.standings[StageClassification.SPRINT],
-      normalizedResults,
-      getPointsForPosition
+      stageResultsWithGaps
     );
   }
 
   if (CATEGORY_STAGE_TYPES[StageClassification.MOUNTAIN].includes(stage.type)) {
     updatedStandings[StageClassification.MOUNTAIN] = updateClassification(
       stageRaceState.standings[StageClassification.MOUNTAIN],
-      normalizedResults,
-      getPointsForPosition
+      stageResultsWithGaps
     );
   }
 
   const jerseys = getStageRaceLeaders(updatedStandings);
-  const stageSummary = buildStageSummary(stage, normalizedResults, jerseys, updatedStandings);
+  const stageSummary = buildStageSummary(stage, stageResultsWithGaps, jerseys, updatedStandings);
 
   return {
     ...stageRaceState,
@@ -211,8 +212,8 @@ export function getStageRaceLeaders(standings) {
 function getClassificationLeader(classificationMap) {
   const entries = getClassificationRanking(classificationMap);
   if (entries.length === 0) return null;
-  const hasPoints = entries.some(entry => entry.points > 0 || entry.stagePositions.length > 0);
-  if (!hasPoints) return null;
+  const hasResults = entries.some(entry => entry.stageRanks.length > 0);
+  if (!hasResults) return null;
   return entries[0];
 }
 
@@ -236,10 +237,11 @@ function createClassificationEntry(rider) {
     riderId: rider.id,
     name: rider.name || rider.id,
     team: rider.team || null,
-    points: 0,
-    stageWins: 0,
-    totalPositions: 0,
-    stagePositions: []
+    totalSeconds: 0,
+    stageRanks: [],
+    stagePositions: [],
+    lastStageRank: null,
+    lastStagePosition: null
   };
 }
 
@@ -252,27 +254,50 @@ function normalizeStageResults(stageResults) {
       }
       const riderId = result.id || result.riderId;
       if (!riderId) return null;
+      const position = Number.isFinite(result.position) ? result.position : index + 1;
       return {
         riderId,
         name: result.name,
         team: result.team,
-        position: index + 1
+        position
       };
     })
     .filter(Boolean);
 }
 
-function updateClassification(classification, stageResults, getPoints) {
+function buildStageRanking(stageResults) {
+  const leaderPosition = Math.max(...stageResults.map(result => result.position));
+  const withGaps = stageResults.map(result => ({
+    ...result,
+    leaderPosition,
+    delaySeconds: Math.max(0, (leaderPosition - result.position) * STAGE_GAP_SECONDS)
+  }));
+
+  return withGaps.sort((a, b) => {
+    if (a.delaySeconds !== b.delaySeconds) return a.delaySeconds - b.delaySeconds;
+    if (b.position !== a.position) return b.position - a.position;
+    return String(a.riderId).localeCompare(String(b.riderId));
+  });
+}
+
+function applyStageRanks(stageRanking) {
+  return stageRanking.map((result, index) => ({
+    ...result,
+    stageRank: index + 1
+  }));
+}
+
+function updateClassification(classification, stageResults) {
   const updated = cloneClassification(classification);
 
   stageResults.forEach(result => {
     const entry = ensureClassificationEntry(updated, result);
-    const points = getPoints(result.position);
 
-    entry.points += points;
-    entry.stageWins += result.position === 1 ? 1 : 0;
-    entry.totalPositions += result.position;
+    entry.totalSeconds += result.delaySeconds;
+    entry.stageRanks.push(result.stageRank);
     entry.stagePositions.push(result.position);
+    entry.lastStageRank = result.stageRank;
+    entry.lastStagePosition = result.position;
   });
 
   return updated;
@@ -296,19 +321,21 @@ function ensureClassificationEntry(classification, result) {
       riderId: result.riderId,
       name: result.name || result.riderId,
       team: result.team || null,
-      points: 0,
-      stageWins: 0,
-      totalPositions: 0,
-      stagePositions: []
+      totalSeconds: 0,
+      stageRanks: [],
+      stagePositions: [],
+      lastStageRank: null,
+      lastStagePosition: null
     };
   }
   return classification[result.riderId];
 }
 
 function compareClassificationEntries(a, b) {
-  if (b.points !== a.points) return b.points - a.points;
-  if (b.stageWins !== a.stageWins) return b.stageWins - a.stageWins;
-  if (a.totalPositions !== b.totalPositions) return a.totalPositions - b.totalPositions;
+  if (a.totalSeconds !== b.totalSeconds) return a.totalSeconds - b.totalSeconds;
+  const aLastRank = a.lastStageRank ?? Number.POSITIVE_INFINITY;
+  const bLastRank = b.lastStageRank ?? Number.POSITIVE_INFINITY;
+  if (aLastRank !== bLastRank) return aLastRank - bLastRank;
   return String(a.riderId).localeCompare(String(b.riderId));
 }
 
@@ -317,12 +344,14 @@ function buildStageSummary(stage, results, jerseys, standings) {
     stageNumber: stage.number,
     stageType: stage.type,
     stageName: stage.name,
+    leaderPosition: results[0]?.leaderPosition ?? null,
     results: results.map(result => ({
       riderId: result.riderId,
       name: result.name || standings[StageClassification.GENERAL][result.riderId]?.name,
       team: result.team || standings[StageClassification.GENERAL][result.riderId]?.team,
       position: result.position,
-      points: getPointsForPosition(result.position)
+      delaySeconds: result.delaySeconds,
+      stageRank: result.stageRank
     })),
     jerseys
   };

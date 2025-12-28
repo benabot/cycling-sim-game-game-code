@@ -21,7 +21,7 @@
         <span class="team-badge" :style="{ background: TeamConfig[rider.team]?.color }">
           {{ getTeamInitial(rider.team) }}
         </span>
-        <span class="final-pos">Case {{ rider.position }}</span>
+        <span class="final-pos">{{ getResultLabel(rider) }}</span>
       </div>
     </div>
     <button @click="$emit('restart')" class="btn btn-restart">
@@ -35,9 +35,10 @@
 import { TeamConfig, Medals } from '../config/game.config.js';
 import { UIIcon } from './icons';
 
-defineProps({
+const props = defineProps({
   winningTeam: { type: String, default: null },
-  rankings: { type: Array, default: () => [] }
+  rankings: { type: Array, default: () => [] },
+  stageRace: { type: Object, default: null }
 });
 
 defineEmits(['restart']);
@@ -54,6 +55,14 @@ function getTeamInitial(teamId) {
     team_d: 'J'
   };
   return initials[teamId] || '?';
+}
+
+function getResultLabel(rider) {
+  if (props.stageRace) {
+    const seconds = Number.isFinite(rider.gcSeconds) ? rider.gcSeconds : 0;
+    return seconds === 0 ? '0s' : `+${seconds}s`;
+  }
+  return `Case ${rider.position}`;
 }
 </script>
 

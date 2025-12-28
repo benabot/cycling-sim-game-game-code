@@ -377,6 +377,7 @@ function startGame() {
         stageLength: courseLength.value
       }
     : null;
+  const raceMode = isStageRace.value ? 'STAGE_RACE' : 'CLASSIC';
 
   emit('start', {
     numTeams: numTeams.value,
@@ -384,6 +385,7 @@ function startGame() {
     courseLength: courseLength.value,
     raceType: raceType.value,
     classicId: selectedClassic.value,
+    raceMode,
     stageRace
   });
 }

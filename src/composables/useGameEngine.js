@@ -322,14 +322,15 @@ export function useGameEngine() {
     // Log movement
     const actualPos = newState.riders.find(r => r.id === riderId)?.position;
     const targetPos = startPos + movement;
+    const finishLine = newState.finishLine ?? gameState.value?.finishLine ?? FINISH_LINE;
     
-    if (actualPos < targetPos && actualPos <= FINISH_LINE) {
+    if (actualPos < targetPos && actualPos <= finishLine) {
       log(`${riderName} avance de ${movement} cases → case ${actualPos} (case pleine)`);
     } else {
       log(`${riderName} avance de ${movement} cases → case ${actualPos}`);
     }
 
-    if (actualPos > FINISH_LINE) {
+    if (actualPos > finishLine) {
       log(`🏁 ${riderName} franchit la ligne !`);
     }
 
@@ -535,7 +536,8 @@ export function useGameEngine() {
     const specText = usedSpecialty ? ' + Spécialité' : '';
     log(`🤖 ${rider.name}: ${cardText}${specText}, 🎲${diceResult} → case ${finalPos}`);
     
-    if (finalPos > FINISH_LINE) {
+    const finishLine = gameState.value?.finishLine ?? FINISH_LINE;
+    if (finalPos > finishLine) {
       log(`🏁 ${rider.name} franchit la ligne !`);
     }
     

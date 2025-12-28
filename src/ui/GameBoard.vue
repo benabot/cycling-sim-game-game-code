@@ -129,6 +129,7 @@
       v-if="phase === 'finished'"
       :winningTeam="winningTeam"
       :rankings="rankings"
+      :stageRace="stageRace"
       @restart="restartGame"
     />
 

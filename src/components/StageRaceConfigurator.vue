@@ -87,7 +87,7 @@
 
     <div class="stage-race-configurator__rules">
       <UIIcon type="trophy" size="sm" />
-      <span>Classement général : points cumulés</span>
+      <span>Classement général : retards cumulés (10s par case)</span>
     </div>
   </section>
 </template>

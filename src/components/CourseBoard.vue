@@ -127,7 +127,7 @@
 import { computed } from 'vue';
 import RiderToken from './RiderToken.vue';
 import { UIIcon } from './icons';
-import { TerrainConfig, FINISH_LINE } from '../config/game.config.js';
+import { TerrainConfig } from '../config/game.config.js';
 
 const props = defineProps({
   course: { type: Array, required: true },
@@ -141,9 +141,9 @@ const props = defineProps({
   playedRiders: { type: Array, default: () => [] }
 });
 
-const finishLine = FINISH_LINE;
+const finishLine = computed(() => props.course.length || 0);
 
-const finishedRiders = computed(() => props.riders.filter(r => r.position > FINISH_LINE));
+const finishedRiders = computed(() => props.riders.filter(r => r.position > finishLine.value));
 
 // Preview position checks
 const isPreviewWithoutFinish = computed(() => 

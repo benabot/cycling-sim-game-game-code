@@ -37,7 +37,9 @@ import {
   isStageRaceComplete,
   applyStageRecovery,
   resetRidersForStage,
-  generateStageCourse
+  generateStageCourse,
+  StageClassification,
+  getClassificationRanking
 } from './stage-race.js';
 
 /**
@@ -119,6 +121,7 @@ export function createGameState(options = {}) {
     { teamId: TeamId.TEAM_A, playerType: PlayerType.HUMAN },
     { teamId: TeamId.TEAM_B, playerType: PlayerType.HUMAN }
   ];
+  const raceMode = gameConfig?.raceMode || (gameConfig?.stageRace ? 'STAGE_RACE' : 'CLASSIC');
   
   let riders = createRidersForTeams(teamIds, players);
   const stageRaceConfig = gameConfig?.stageRace || null;
@@ -159,6 +162,7 @@ export function createGameState(options = {}) {
     
     // v4.0: Multi-team configuration
     gameConfig,
+    raceMode,
     teamIds,
     players,
     numTeams: teamIds.length,
@@ -691,8 +695,11 @@ export function calculatePreviewPositions(state) {
     }
   }
   
+  const crossingFinishWithout = targetWithoutSpecialty >= state.finishLine;
   // Find available position (cell capacity)
-  const finalWithoutSpecialty = findAvailablePosition(state, targetWithoutSpecialty);
+  const finalWithoutSpecialty = crossingFinishWithout
+    ? targetWithoutSpecialty
+    : findAvailablePosition(state, targetWithoutSpecialty);
   
   // Calculate position with specialty (+2)
   let targetWithSpecialty = rider.position + baseMovement + 2;
@@ -706,11 +713,10 @@ export function calculatePreviewPositions(state) {
     }
   }
   
-  const finalWithSpecialty = findAvailablePosition(state, targetWithSpecialty);
-  
-  // Check if crossing finish
-  const crossingFinishWithout = finalWithoutSpecialty >= state.finishLine;
-  const crossingFinishWith = finalWithSpecialty >= state.finishLine;
+  const crossingFinishWith = targetWithSpecialty >= state.finishLine;
+  const finalWithSpecialty = crossingFinishWith
+    ? targetWithSpecialty
+    : findAvailablePosition(state, targetWithSpecialty);
   
   // Check if specialty can be used
   const canUseSpecialty = rider.specialtyCards.length > 0 && (
@@ -823,7 +829,7 @@ export function resolveMovement(state) {
     position: crossingFinish ? targetPosition : newPosition,
     arrivalOrder: newArrivalCounter++,
     hasFinished: crossingFinish,
-    finishPosition: crossingFinish ? state.rankings.length + 1 : null,
+    finishPosition: crossingFinish ? targetPosition : null,
     energy: newEnergy // v3.3
   };
   
@@ -862,12 +868,7 @@ export function resolveMovement(state) {
     gameLog: [...state.gameLog, logMessage]
   };
   
-  // Update rankings if finished
-  if (crossingFinish) {
-    newState.rankings = [...newState.rankings, updatedRider];
-  }
-  
-  // Check if first finisher
+  // Check if last turn should start
   if (crossingFinish && !state.isLastTurn && !state.firstFinisher) {
     newState = {
       ...newState,
@@ -876,11 +877,11 @@ export function resolveMovement(state) {
       phase: GamePhase.LAST_TURN,
       gameLog: [
         ...newState.gameLog,
-        `🏁 ${rider.name} franchit la ligne en premier! DERNIER TOUR!`
+        `🏁 ${rider.name} atteint l'arrivée → DERNIER TOUR!`
       ]
     };
   } else if (crossingFinish) {
-    newState.gameLog = [...newState.gameLog, `🏁 ${rider.name} franchit la ligne!`];
+    newState.gameLog = [...newState.gameLog, `🏁 ${rider.name} atteint l'arrivée`];
   }
   
   return moveToNextPlayer(newState);
@@ -1211,27 +1212,29 @@ export function acknowledgeEndTurnEffects(state) {
   
   // If last turn, game is over
   if (state.isLastTurn) {
-    const rankings = [...ridersReset].sort((a, b) => {
+    const stageRankings = [...ridersReset].sort((a, b) => {
       // First by position (higher is better)
       if (b.position !== a.position) return b.position - a.position;
       // Then by arrival order (lower is better - arrived first)
       return a.arrivalOrder - b.arrivalOrder;
     });
     
-    rankings.forEach((rider, index) => {
+    stageRankings.forEach((rider, index) => {
       rider.finalRank = index + 1;
     });
 
     let updatedStageRace = null;
+    let finalRankings = stageRankings;
+    let stageRaceComplete = false;
 
     if (state.stageRace) {
       const completedStage = state.stageRace.stages[state.stageRace.currentStageIndex];
-      updatedStageRace = advanceStage(applyStageResults(state.stageRace, rankings));
+      updatedStageRace = advanceStage(applyStageResults(state.stageRace, stageRankings));
 
       if (!isStageRaceComplete(updatedStageRace)) {
         const recoveredRiders = resetRidersForStage(applyStageRecovery(ridersReset));
         const nextStage = updatedStageRace.stages[updatedStageRace.currentStageIndex];
-        const stageWinner = rankings[0];
+        const stageWinner = stageRankings[0];
         const stageLogs = [
           `\n══════════ 🏁 ÉTAPE ${completedStage.number} ══════════`,
           stageWinner ? `🏆 ${stageWinner.name} remporte l'étape` : '🏆 Étape terminée',
@@ -1265,17 +1268,31 @@ export function acknowledgeEndTurnEffects(state) {
 
         return startTurn(stageState);
       }
+
+      stageRaceComplete = true;
+      const gcRanking = getClassificationRanking(
+        updatedStageRace.standings[StageClassification.GENERAL]
+      );
+      finalRankings = gcRanking.map((entry, index) => ({
+        id: entry.riderId,
+        name: entry.name,
+        team: entry.team,
+        gcSeconds: entry.totalSeconds,
+        lastStageRank: entry.lastStageRank,
+        position: entry.lastStagePosition,
+        finalRank: index + 1
+      }));
     }
     
     // Determine team winner
-    const teamAPositions = rankings
+    const teamAPositions = finalRankings
       .filter(r => r.team === Teams.TEAM_A)
       .slice(0, 3)
-      .map((r, i) => rankings.findIndex(x => x.id === r.id) + 1);
-    const teamBPositions = rankings
+      .map((r, i) => finalRankings.findIndex(x => x.id === r.id) + 1);
+    const teamBPositions = finalRankings
       .filter(r => r.team === Teams.TEAM_B)
       .slice(0, 3)
-      .map((r, i) => rankings.findIndex(x => x.id === r.id) + 1);
+      .map((r, i) => finalRankings.findIndex(x => x.id === r.id) + 1);
     
     const teamAScore = teamAPositions.reduce((a, b) => a + b, 0);
     const teamBScore = teamBPositions.reduce((a, b) => a + b, 0);
@@ -1285,9 +1302,12 @@ export function acknowledgeEndTurnEffects(state) {
     
     const resultsLog = [
       `\n══════════ 🏆 RÉSULTATS ══════════`,
-      ...rankings.slice(0, 10).map((r, i) => {
+      ...finalRankings.slice(0, 10).map((r, i) => {
         const medal = i === 0 ? '🥇' : i === 1 ? '🥈' : i === 2 ? '🥉' : `${i + 1}.`;
-        return `${medal} ${r.name} (${TeamConfig[r.team]?.shortName}) - Case: ${r.position}`;
+        const suffix = stageRaceComplete
+          ? `+${r.gcSeconds ?? 0}s`
+          : `Case: ${r.position}`;
+        return `${medal} ${r.name} (${TeamConfig[r.team]?.shortName}) - ${suffix}`;
       }),
       ``,
       winningTeam 
@@ -1300,7 +1320,7 @@ export function acknowledgeEndTurnEffects(state) {
       riders: ridersReset,
       stageRace: updatedStageRace || state.stageRace,
       phase: GamePhase.FINISHED,
-      rankings,
+      rankings: finalRankings,
       winningTeam,
       endTurnEffects: [],
       gameLog: [...state.gameLog, ...resultsLog]
