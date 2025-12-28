@@ -7,7 +7,7 @@ import { roll1D6, rollFallTest } from './dice.js';
 import { TerrainType, TerrainConfig, DescentRules, MountainRules, getTerrainBonus, generateCourse, hasAspiration, hasWindPenalty, findSummitPosition, isExemptFromSummitStop, isRefuelZone } from './terrain.js';
 import { 
   createRider, createTeamRiders, RiderConfig, CardType, RiderType,
-  playCard, playSpecialtyCard, addFatigueCard, recycleCards, needsRecycle,
+  playCard, playSpecialtyCard, addFatigueCard,
   moveRider, getAvailableCards, getHandStats, createMovementCard
 } from './rider.js';
 import {
@@ -46,6 +46,8 @@ import {
  * Constants
  */
 const MAX_RIDERS_PER_CELL = 4;
+const WIND_PENALTY_DEFAULT = 3;
+const WIND_PENALTY_ROULEUR = 5;
 
 /**
  * Game phases
@@ -331,15 +333,9 @@ export function startTurn(state) {
     ? `\n══════════ 🏁 DERNIER TOUR (Tour ${state.currentTurn}) ══════════`
     : `\n────────── Tour ${state.currentTurn} ──────────`;
   
-  // Recycle cards for riders with empty hands
-  // Also decrement turnsToSkip and reset hasFallenThisTurn
+  // Decrement turnsToSkip and reset hasFallenThisTurn
   let updatedRiders = state.riders.map(rider => {
     let updated = rider;
-    
-    // Recycle if needed
-    if (needsRecycle(updated)) {
-      updated = recycleCards(updated);
-    }
     
     // Decrement turns to skip
     if (updated.turnsToSkip > 0) {
@@ -801,6 +797,7 @@ export function resolveMovement(state) {
   }
   
   // v3.3: Calculate energy consumption
+  const windPenalty = updatedRider.windPenaltyNextMove || 0;
   const energyConsumed = calculateMovementConsumption({
     distance: actualDistance,
     terrain,
@@ -808,15 +805,15 @@ export function resolveMovement(state) {
     usedAttack,
     usedSpecialty,
     isLeading: false // Will be determined at end of turn
-  });
+  }) + windPenalty;
   
   // v3.3: Calculate energy recovery (descent only during movement)
-  // v4.0: Refuel zone recovery moved to end of turn (must stop on zone)
+  const onRefuelZone = isRefuelZone(state.course, newPosition);
   const energyRecovered = calculateRecovery({
     terrain,
     distance: terrain === 'descent' ? actualDistance : 0,
     isSheltered: false, // Determined at end of turn
-    inRefuelZone: false // v4.0: Now applied at end of turn only
+    inRefuelZone: onRefuelZone
   });
   
   // v3.3: Apply energy change
@@ -830,7 +827,8 @@ export function resolveMovement(state) {
     arrivalOrder: newArrivalCounter++,
     hasFinished: crossingFinish,
     finishPosition: crossingFinish ? targetPosition : null,
-    energy: newEnergy // v3.3
+    energy: newEnergy, // v3.3
+    windPenaltyNextMove: 0
   };
   
   // Update riders array
@@ -977,6 +975,10 @@ export function applyEndOfTurnEffects(state) {
       
       // Target position is backPos + 1 (advance by 1 case to fill the gap)
       const targetPos = backPos + 1;
+      const terrainAtTarget = getTerrainAt(state, targetPos);
+      if (!hasAspiration(terrainAtTarget)) {
+        continue;
+      }
       
       // Get riders at back position
       const ridersAtBack = updatedRiders.filter(r => 
@@ -1028,8 +1030,8 @@ export function applyEndOfTurnEffects(state) {
   // ===== PHASE 2: WIND CARDS (prise de vent) =====
   // Calculated AFTER aspiration
   // Rules:
-  // - In MOUNTAIN: everyone gets +2 (no wind penalty)
-  // - Other terrains: empty cell in front → leader gets +1 (wind), others +2 (shelter)
+  // - No wind on mountain/descent
+  // - Empty cell in front → leader takes wind, others sheltered
   
   // Get all unique positions with riders after regrouping
   const finalPositions = [...new Set(
@@ -1052,8 +1054,8 @@ export function applyEndOfTurnEffects(state) {
     
     if (ridersAtPos.length === 0) continue;
     
-    // In mountain: everyone is sheltered (no wind)
-    if (terrain === TerrainType.MOUNTAIN) {
+    // In terrain without wind: everyone is sheltered
+    if (!hasWindPenalty(terrain)) {
       ridersAtPos.forEach(r => shelteredRiderIds.push(r.id));
       continue;
     }
@@ -1065,15 +1067,8 @@ export function applyEndOfTurnEffects(state) {
     
     if (cellInFrontEmpty) {
       // Leader (first arrived = rightmost) takes wind
-      // v3.2: Rouleurs are immune to wind (always get shelter bonus)
       const leader = ridersAtPos[0];
-      
-      if (leader.type === RiderType.ROULEUR) {
-        // Rouleur gets shelter instead of wind (immune to wind)
-        shelteredRiderIds.push(leader.id);
-      } else {
-        windRiderIds.push(leader.id);
-      }
+      windRiderIds.push(leader.id);
       
       // Others at same position are sheltered
       ridersAtPos.slice(1).forEach(r => shelteredRiderIds.push(r.id));
@@ -1083,29 +1078,29 @@ export function applyEndOfTurnEffects(state) {
     }
   }
     
-    // Apply wind cards (+1) to leaders taking wind + v3.3: energy penalty
+    // Apply wind cards to leaders taking wind (penalty applies next move)
     windRiderIds.forEach(riderId => {
       const riderIndex = updatedRiders.findIndex(r => r.id === riderId);
       if (riderIndex !== -1) {
         const rider = updatedRiders[riderIndex];
-        const windCard = createMovementCard(1, 'Relais', '#94a3b8');
-        
-        // v3.3: Wind penalty consumes energy
-        const energyConsumed = EnergyConfig.consumption.windPenalty;
-        const newEnergy = applyEnergyChange(rider.energy, energyConsumed, 0);
+        const windCardValue = rider.type === RiderType.ROULEUR ? 2 : 1;
+        const windPenalty = rider.type === RiderType.ROULEUR
+          ? WIND_PENALTY_ROULEUR
+          : WIND_PENALTY_DEFAULT;
+        const windCard = createMovementCard(windCardValue, 'Relais', '#94a3b8');
         
         updatedRiders[riderIndex] = {
           ...rider,
           hand: [...rider.hand, windCard],
-          energy: newEnergy
+          windPenaltyNextMove: Math.max(rider.windPenaltyNextMove || 0, windPenalty)
         };
         
         effects.push({
           type: 'wind',
           riderId: rider.id,
           riderName: rider.name,
-          cardValue: 1,
-          energyConsumed // v3.3
+          cardValue: windCardValue,
+          windPenalty
         });
       }
     });
@@ -1145,8 +1140,8 @@ export function applyEndOfTurnEffects(state) {
     if (windRiderIds.length > 0) {
       const windRiders = effects
         .filter(e => e.type === 'wind')
-        .map(e => e.riderName);
-      logMessages.push(`💨 Relais: ${windRiders.join(', ')} (carte +1)`);
+        .map(e => `${e.riderName} (+${e.cardValue})`);
+      logMessages.push(`💨 Relais: ${windRiders.join(', ')}`);
     }
     
     if (shelteredRiderIds.length > 0) {
@@ -1156,39 +1151,6 @@ export function applyEndOfTurnEffects(state) {
       logMessages.push(`🎵 Tempo: ${shelterRiders.join(', ')} (carte +2)`);
     }
   
-  // ===== PHASE 3: REFUEL ZONE RECOVERY (v4.0) =====
-  // Riders who END their turn on a refuel zone recover energy
-  const refuelRiderIds = [];
-  updatedRiders.forEach((rider, index) => {
-    if (rider.hasFinished) return;
-    
-    const onRefuelZone = isRefuelZone(state.course, rider.position);
-    if (onRefuelZone) {
-      const energyRecovered = EnergyConfig.recovery.refuelZone;
-      const newEnergy = applyEnergyChange(rider.energy, 0, energyRecovered);
-      
-      updatedRiders[index] = {
-        ...rider,
-        energy: newEnergy
-      };
-      
-      refuelRiderIds.push(rider.id);
-      effects.push({
-        type: 'refuel',
-        riderId: rider.id,
-        riderName: rider.name,
-        energyRecovered
-      });
-    }
-  });
-  
-  if (refuelRiderIds.length > 0) {
-    const refuelRiders = effects
-      .filter(e => e.type === 'refuel')
-      .map(e => e.riderName);
-    logMessages.push(`⛽ Ravitaillement: ${refuelRiders.join(', ')} (+${EnergyConfig.recovery.refuelZone} énergie)`);
-  }
-
   // Return state with effects for animation
   return {
     ...state,

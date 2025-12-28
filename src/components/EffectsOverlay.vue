@@ -32,7 +32,7 @@
           <UIIcon type="wind" :size="18" />
           Relais
         </h4>
-        <p class="effect-rule">Case vide devant → leader reçoit carte +1 (effort en tête)</p>
+        <p class="effect-rule">Case vide devant → leader reçoit carte vent</p>
         <div class="effect-list">
           <div 
             v-for="effect in effects.wind" 
@@ -40,7 +40,7 @@
             class="effect-item wind-effect"
           >
             <span class="effect-rider">{{ effect.riderName }}</span>
-            <span class="effect-card bad">+1</span>
+            <span class="effect-card bad">+{{ effect.cardValue ?? 1 }}</span>
             <span class="effect-desc">carte ajoutée</span>
           </div>
         </div>
@@ -52,7 +52,7 @@
           <UIIcon type="tempo" :size="18" />
           Tempo
         </h4>
-        <p class="effect-rule">Protégé, rouleur leader ou montagne → reçoit carte +2</p>
+        <p class="effect-rule">Protégé ou terrain sans vent → reçoit carte +2</p>
         <div class="effect-list">
           <div 
             v-for="effect in effects.shelter" 
@@ -60,7 +60,7 @@
             class="effect-item shelter-effect"
           >
             <span class="effect-rider">{{ effect.riderName }}</span>
-            <span class="effect-card good">+2</span>
+            <span class="effect-card good">+{{ effect.cardValue ?? 2 }}</span>
             <span class="effect-desc">carte ajoutée</span>
           </div>
         </div>

@@ -157,7 +157,8 @@ export function resetRidersForStage(riders = []) {
     finishPosition: null,
     hasFallenThisTurn: false,
     turnsToSkip: 0,
-    arrivalOrder: index
+    arrivalOrder: index,
+    windPenaltyNextMove: 0
   }));
 }
 

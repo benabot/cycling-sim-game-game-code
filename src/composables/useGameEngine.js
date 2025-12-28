@@ -142,11 +142,13 @@ export function useGameEngine() {
       })),
       wind: effects.filter(e => e.type === 'wind').map(e => ({
         riderId: e.riderId,
-        riderName: e.riderName
+        riderName: e.riderName,
+        cardValue: e.cardValue
       })),
       shelter: effects.filter(e => e.type === 'shelter').map(e => ({
         riderId: e.riderId,
-        riderName: e.riderName
+        riderName: e.riderName,
+        cardValue: e.cardValue
       })),
       refuel: effects.filter(e => e.type === 'refuel').map(e => ({
         riderId: e.riderId,

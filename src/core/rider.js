@@ -160,6 +160,7 @@ export function createRider(id, type, name, team = 'default') {
     finishPosition: null,
     hasFallenThisTurn: false,
     turnsToSkip: 0,
+    windPenaltyNextMove: 0,
     
     // Energy system v3.3
     energy: EnergyConfig.startEnergy,
