@@ -13,21 +13,23 @@
   overflow-y: hidden;
   overscroll-behavior-x: contain;
   -webkit-overflow-scrolling: touch;
+  scrollbar-width: none;
+  -ms-overflow-style: none;
   padding: var(--space-sm) 0;
   margin-bottom: var(--space-md);
 }
 
 .track-container::-webkit-scrollbar {
-  height: 8px;
+  height: 0;
 }
 
 .track-container::-webkit-scrollbar-track {
-  background: var(--color-line);
+  background: transparent;
   border-radius: 4px;
 }
 
 .track-container::-webkit-scrollbar-thumb {
-  background: var(--color-muted);
+  background: transparent;
   border-radius: 4px;
 }
 
