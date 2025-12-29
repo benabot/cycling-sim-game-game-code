@@ -96,8 +96,11 @@
                     class="rider-portrait__fallback"
                   />
                   <span v-if="!hasPortrait(rider.portraitKey)" class="rider-portrait__initials">{{ getInitials(rider.name) }}</span>
-                  <span class="rider-portrait__role">
+                  <span class="rider-portrait__badge rider-portrait__badge--role" :class="`rider-portrait__badge--${rider.role}`">
                     <RiderIcon :type="rider.role" :size="10" />
+                  </span>
+                  <span v-if="rider.price" class="rider-portrait__badge rider-portrait__badge--meta">
+                    {{ rider.price }}
                   </span>
                 </div>
                 <div class="draft-card-identity">
@@ -184,6 +187,13 @@
               <span v-if="activeRoster[slot - 1]" class="rider-portrait__initials">
                 {{ getInitials(activeRoster[slot - 1].name) }}
               </span>
+              <span
+                v-if="activeRoster[slot - 1]?.role"
+                class="rider-portrait__badge rider-portrait__badge--role"
+                :class="`rider-portrait__badge--${activeRoster[slot - 1].role}`"
+              >
+                <RiderIcon :type="activeRoster[slot - 1].role" :size="9" />
+              </span>
             </div>
           </div>
           <div class="draft-roster-metrics">
@@ -228,8 +238,11 @@
                     <span v-if="!hasPortrait(rosterByRole[role].portraitKey)" class="rider-portrait__initials">
                       {{ getInitials(rosterByRole[role].name) }}
                     </span>
-                    <span class="rider-portrait__role">
+                    <span class="rider-portrait__badge rider-portrait__badge--role" :class="`rider-portrait__badge--${rosterByRole[role].role}`">
                       <RiderIcon :type="rosterByRole[role].role" :size="9" />
+                    </span>
+                    <span v-if="rosterByRole[role].price" class="rider-portrait__badge rider-portrait__badge--meta">
+                      {{ rosterByRole[role].price }}
                     </span>
                   </div>
                   <span class="roster-card-name">{{ rosterByRole[role].name }}</span>
@@ -285,6 +298,13 @@
           />
           <span v-if="activeRoster[slot - 1]" class="rider-portrait__initials">
             {{ getInitials(activeRoster[slot - 1].name) }}
+          </span>
+          <span
+            v-if="activeRoster[slot - 1]?.role"
+            class="rider-portrait__badge rider-portrait__badge--role"
+            :class="`rider-portrait__badge--${activeRoster[slot - 1].role}`"
+          >
+            <RiderIcon :type="activeRoster[slot - 1].role" :size="9" />
           </span>
         </div>
       </div>
@@ -718,20 +738,48 @@ function getStatRows(rider) {
   z-index: 3;
 }
 
-.rider-portrait__role {
+.rider-portrait__badge {
   position: absolute;
-  bottom: -2px;
-  right: -2px;
-  width: 16px;
-  height: 16px;
+  bottom: 4px;
+  width: 20px;
+  height: 20px;
   border-radius: 50%;
-  background: var(--color-surface);
-  border: 1px solid var(--color-line);
+  background: rgba(255, 255, 255, 0.85);
+  border: 1px solid rgba(31, 35, 40, 0.2);
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  color: var(--color-ink-soft);
-  z-index: 3;
+  color: var(--color-ink);
+  z-index: 4;
+  box-shadow: 0 2px 6px rgba(31, 35, 40, 0.18);
+  font-family: var(--font-mono);
+  font-size: 10px;
+}
+
+.rider-portrait__badge--role {
+  left: 4px;
+}
+
+.rider-portrait__badge--meta {
+  right: 4px;
+  font-size: 9px;
+  font-weight: 600;
+}
+
+.rider-portrait__badge--climber { background: color-mix(in srgb, #e1f0e6 80%, white); }
+.rider-portrait__badge--puncher { background: color-mix(in srgb, #fde9d6 80%, white); }
+.rider-portrait__badge--rouleur { background: color-mix(in srgb, #ddebf7 80%, white); }
+.rider-portrait__badge--sprinter { background: color-mix(in srgb, #fbe1e1 80%, white); }
+.rider-portrait__badge--versatile { background: color-mix(in srgb, #e8e2f6 80%, white); }
+
+.rider-portrait--sm .rider-portrait__badge {
+  width: 16px;
+  height: 16px;
+  bottom: 2px;
+}
+
+.rider-portrait--sm .rider-portrait__badge--meta {
+  display: none;
 }
 
 .rider-portrait--climber { background: linear-gradient(135deg, #f0f7f2, #e1f0e6); }
