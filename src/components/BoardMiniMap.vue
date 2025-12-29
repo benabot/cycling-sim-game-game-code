@@ -81,7 +81,7 @@ function getCellClass(cell) {
 .board-minimap {
   position: sticky;
   top: var(--space-md);
-  z-index: var(--z-sticky, 20);
+  z-index: var(--z-sticky);
   display: grid;
   grid-template-columns: auto 1fr auto;
   gap: var(--space-md);

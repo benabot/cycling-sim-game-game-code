@@ -35,6 +35,7 @@ html {
 body {
   min-height: 100vh;
   color: var(--color-ink);
+  overflow-x: hidden;
   
   /* Fond carton premium avec grain subtil constant */
   background-color: var(--color-board);
