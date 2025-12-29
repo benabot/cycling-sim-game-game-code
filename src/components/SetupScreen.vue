@@ -312,33 +312,45 @@
           </button>
         </header>
         <div v-show="activeStep === 4" class="setup-step-body">
-          <div class="setup-summary">
-            <span class="setup-summary-label">Résumé</span>
-            <span class="badge badge-blue">
-              <UIIcon type="human" size="xs" />
-              {{ humanCount }} joueur(s)
-            </span>
-            <span class="type-caption">vs</span>
-            <span class="badge badge-yellow">
-              <UIIcon type="ai" size="xs" />
-              {{ aiCount }} IA
-            </span>
+          <div class="start-panel">
+            <div class="start-panel__summary">
+              <span class="start-panel__label">Brief DS</span>
+              <span class="start-panel__text">: {{ briefSummary }}</span>
+            </div>
+
+            <div class="start-panel__body">
+              <ul class="start-panel__checklist">
+                <li
+                  v-for="item in startChecklist"
+                  :key="item.label"
+                  class="start-panel__checklist-item"
+                  :class="{ 'start-panel__checklist-item--ok': item.ok }"
+                >
+                  <span class="start-panel__checklist-label">{{ item.label }}</span>
+                  <span
+                    class="start-panel__checklist-status"
+                    :class="{ 'start-panel__checklist-status--ok': item.ok }"
+                  >
+                    {{ item.ok ? 'OK' : 'À compléter' }}
+                  </span>
+                </li>
+              </ul>
+
+              <div class="start-panel__cta">
+                <button
+                  class="btn btn-primary btn-lg start-panel__cta-button"
+                  @click="startGame"
+                  :disabled="!canStart"
+                >
+                  <UIIcon type="finish" size="sm" />
+                  Lancer la course
+                </button>
+                <p class="start-panel__hint type-caption">
+                  {{ canStart ? 'Brief validé.' : 'Complète les étapes ci-dessus.' }}
+                </p>
+              </div>
+            </div>
           </div>
-
-          <button 
-            class="btn btn-success btn-lg" 
-            @click="startGame" 
-            :disabled="!canStart"
-            style="display: flex; margin: 0 auto;"
-          >
-            <UIIcon type="finish" size="lg" />
-            Lancer la course
-          </button>
-
-          <p v-if="startWarning || canStart" class="setup-warning type-caption" :class="{ 'setup-warning--ok': canStart }">
-            <UIIcon :type="canStart ? 'check' : 'warning'" size="sm" />
-            {{ canStart ? 'Brief validé.' : startWarning }}
-          </p>
         </div>
       </section>
     </div>
@@ -357,7 +369,7 @@ import StageRaceConfigurator from './StageRaceConfigurator.vue';
 import DraftRosterSection from './DraftRosterSection.vue';
 import RaceHeader from './RaceHeader.vue';
 import RulesDrawer from './RulesDrawer.vue';
-import { getClassicPreset } from '../config/race-presets.js';
+import { getClassicPreset, StageRaceConfig } from '../config/race-presets.js';
 import { UIConfig, getRaceHeaderTitle } from '../config/ui.config.js';
 import { DraftConfig, DraftAIConfig, DraftStatLabels, DraftStatOrder, RiderPool } from '../config/draft.config.js';
 
@@ -723,6 +735,26 @@ const canStart = computed(() => startWarning.value === '');
 
 const isTeamsReady = computed(() => humanCount.value > 0);
 
+const briefSummary = computed(() => {
+  const teamLabel = `${numTeams.value} équipe${numTeams.value > 1 ? 's' : ''} (${humanCount.value} humain${humanCount.value > 1 ? 's' : ''}, ${aiCount.value} IA)`;
+  if (isClassicRace.value) {
+    const raceName = selectedClassicPreset.value?.name || 'Classique';
+    return `Classique • ${raceName} • ${teamLabel}`;
+  }
+  if (isStageRace.value) {
+    const stagesLabel = stageConfig.value?.numStages ? `${stageConfig.value.numStages} étapes` : 'Étapes';
+    const profileName = StageRaceConfig.profiles[stageConfig.value?.profile]?.name || 'Profil';
+    return `Course à étapes • ${stagesLabel} • ${profileName} • ${teamLabel}`;
+  }
+  return `Course • ${teamLabel}`;
+});
+
+const startChecklist = computed(() => [
+  { label: 'Épreuve', ok: stepConfirmed.step1 },
+  { label: 'Équipes', ok: stepConfirmed.step2 },
+  { label: 'Coureurs', ok: stepConfirmed.step3 }
+]);
+
 const stepItems = computed(() => [
   {
     id: 1,
@@ -919,6 +951,10 @@ initializePlayers();
     linear-gradient(135deg, rgba(255, 255, 255, 0.9), rgba(248, 245, 239, 0.9)),
     url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='0.05'/%3E%3C/svg%3E");
   border: 1px solid rgba(31, 35, 40, 0.08);
+}
+
+.setup-screen :deep(.btn-primary) {
+  color: #2f2418;
 }
 
 .setup-stepper {
@@ -1180,38 +1216,91 @@ initializePlayers();
 }
 
 /* Summary */
-.setup-summary {
+.start-panel {
   display: flex;
-  align-items: center;
-  justify-content: center;
+  flex-direction: column;
   gap: var(--space-md);
-  padding: var(--space-md);
-  background-color: var(--color-canvas);
+  padding: var(--space-lg);
+  border-radius: var(--radius-lg);
   border: 1px solid var(--color-line);
-  border-radius: var(--radius-md);
-  margin-bottom: var(--space-lg);
+  background: linear-gradient(135deg, rgba(255, 255, 255, 0.85), rgba(245, 241, 234, 0.85));
+  box-shadow: var(--shadow-sm);
 }
 
-.setup-summary-label {
-  font-size: 10px;
-  text-transform: uppercase;
-  letter-spacing: 0.6px;
-  color: var(--color-ink-muted);
+.start-panel__summary {
+  font-size: 13px;
+  color: var(--color-ink-soft);
+}
+
+.start-panel__label {
   font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--color-ink);
 }
 
-.setup-warning {
+.start-panel__body {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: var(--space-lg);
+  align-items: center;
+}
+
+.start-panel__checklist {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-xs);
+  margin: 0;
+  padding: 0;
+}
+
+.start-panel__checklist-item {
   display: flex;
   align-items: center;
-  justify-content: center;
-  gap: var(--space-xs);
-  text-align: center;
-  color: var(--color-danger);
-  margin-top: var(--space-sm);
+  justify-content: space-between;
+  gap: var(--space-md);
+  padding: 6px 10px;
+  border-radius: var(--radius-sm);
+  background: rgba(0, 0, 0, 0.03);
+  font-size: 12px;
+  color: var(--color-ink-muted);
 }
 
-.setup-warning--ok {
+.start-panel__checklist-item--ok {
+  background: rgba(58, 164, 98, 0.08);
+  color: var(--color-ink);
+}
+
+.start-panel__checklist-label {
+  font-weight: 500;
+}
+
+.start-panel__checklist-status {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--color-ink-muted);
+}
+
+.start-panel__checklist-status--ok {
   color: var(--color-success);
+}
+
+.start-panel__cta {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: var(--space-xs);
+}
+
+.start-panel__cta-button {
+  min-width: 210px;
+}
+
+.start-panel__hint {
+  margin: 0;
+  color: var(--color-ink-muted);
 }
 
 /* Race sections */
@@ -1270,6 +1359,19 @@ initializePlayers();
   .draft-placeholder {
     flex-direction: column;
     align-items: flex-start;
+  }
+
+  .start-panel__body {
+    grid-template-columns: 1fr;
+    align-items: stretch;
+  }
+
+  .start-panel__cta {
+    align-items: stretch;
+  }
+
+  .start-panel__cta-button {
+    width: 100%;
   }
 }
 </style>
