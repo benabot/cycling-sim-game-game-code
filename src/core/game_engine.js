@@ -5,6 +5,16 @@
 
 import { roll1D6, rollFallTest } from './dice.js';
 import { TerrainType, TerrainConfig, DescentRules, getTerrainBonus, generateCourse, generateCourseFromPreset, hasAspiration, findSummitPosition, isRefuelZone } from './terrain.js';
+import {
+  RaceWeather,
+  rollRaceEvent,
+  attachRaceEvent,
+  applyRaceEventMovement,
+  getRaceEventEnergyPenalty,
+  getRaceEventCardPenalty,
+  tickRaceEvent,
+  formatRaceEventLog
+} from './race_events.js';
 import { 
   createRider, createRiderFromDraft, createTeamRiders, RiderConfig, CardType, RiderType,
   playCard, playSpecialtyCard, addFatigueCard,
@@ -201,6 +211,10 @@ export function createGameState(options = {}) {
     players,
     numTeams: teamIds.length,
     stageRace,
+    raceEventState: {
+      cooldownTurns: 0,
+      weather: gameConfig?.weather || RaceWeather.CLEAR
+    },
     
     // Riders
     riders,
@@ -675,7 +689,9 @@ export function calculateMovement(state) {
   if (energyEffects.maxMovement !== null) {
     movement = Math.min(movement, energyEffects.maxMovement);
   }
-  
+
+  movement = applyRaceEventMovement(movement, rider);
+
   return Math.max(1, movement);
 }
 
@@ -714,11 +730,12 @@ export function calculatePreviewPositions(state) {
   if (terrain === TerrainType.DESCENT) {
     baseMovement = Math.max(baseMovement, DescentRules.minSpeed);
   }
-  
-  baseMovement = Math.max(1, baseMovement);
+
+  const movementWithoutEvent = Math.max(1, applyRaceEventMovement(baseMovement, rider));
+  const movementWithEvent = Math.max(1, applyRaceEventMovement(baseMovement + 2, rider));
   
   // Calculate position without specialty
-  let targetWithoutSpecialty = rider.position + baseMovement;
+  let targetWithoutSpecialty = rider.position + movementWithoutEvent;
 
   const crossingFinishWithout = targetWithoutSpecialty >= state.finishLine;
   // Find available position (cell capacity)
@@ -727,7 +744,7 @@ export function calculatePreviewPositions(state) {
     : findAvailablePosition(state, targetWithoutSpecialty);
   
   // Calculate position with specialty (+2)
-  let targetWithSpecialty = rider.position + baseMovement + 2;
+  let targetWithSpecialty = rider.position + movementWithEvent;
 
   const crossingFinishWith = targetWithSpecialty >= state.finishLine;
   const finalWithSpecialty = crossingFinishWith
@@ -745,8 +762,8 @@ export function calculatePreviewPositions(state) {
   
   return {
     startPosition: rider.position,
-    movementWithout: baseMovement,
-    movementWith: baseMovement + 2,
+    movementWithout: movementWithoutEvent,
+    movementWith: movementWithEvent,
     positionWithout: finalWithoutSpecialty,
     positionWith: finalWithSpecialty,
     summitStopWithout: false,
@@ -821,6 +838,7 @@ export function resolveMovement(state) {
   const usedAttack = rider.attackCards.some(c => c.id === state.selectedCardId);
   const usedSpecialty = !!state.selectedSpecialtyId;
   const windPenalty = rider.windPenaltyNextMove || 0;
+  const eventPenalty = getRaceEventEnergyPenalty(rider);
   const energyConsumed = Math.max(0, calculateMovementConsumption({
     distance: actualDistance,
     terrain,
@@ -828,7 +846,7 @@ export function resolveMovement(state) {
     usedAttack,
     usedSpecialty,
     isLeading: false // Determined at end of turn
-  }) + windPenalty - summitBonus);
+  }) + windPenalty + eventPenalty - summitBonus);
 
   if (energyConsumed > rider.energy) {
     return {
@@ -1142,10 +1160,12 @@ export function applyEndOfTurnEffects(state) {
       if (riderIndex !== -1) {
         const rider = updatedRiders[riderIndex];
         const windCardValue = rider.type === RiderType.ROULEUR ? 2 : 1;
+        const eventCardPenalty = getRaceEventCardPenalty(rider);
+        const adjustedWindCardValue = Math.max(1, windCardValue - eventCardPenalty);
         const windPenalty = rider.type === RiderType.ROULEUR
           ? WIND_PENALTY_ROULEUR
           : WIND_PENALTY_DEFAULT;
-        const windCard = createMovementCard(windCardValue, 'Relais', '#94a3b8');
+        const windCard = createMovementCard(adjustedWindCardValue, 'Relais', '#94a3b8');
         
         updatedRiders[riderIndex] = {
           ...rider,
@@ -1157,7 +1177,7 @@ export function applyEndOfTurnEffects(state) {
           type: 'wind',
           riderId: rider.id,
           riderName: rider.name,
-          cardValue: windCardValue,
+          cardValue: adjustedWindCardValue,
           windPenalty
         });
       }
@@ -1168,7 +1188,9 @@ export function applyEndOfTurnEffects(state) {
       const riderIndex = updatedRiders.findIndex(r => r.id === riderId);
       if (riderIndex !== -1) {
         const rider = updatedRiders[riderIndex];
-        const bonusCard = createMovementCard(2, 'Tempo', '#86efac');
+        const eventCardPenalty = getRaceEventCardPenalty(rider);
+        const adjustedBonusValue = Math.max(1, 2 - eventCardPenalty);
+        const bonusCard = createMovementCard(adjustedBonusValue, 'Tempo', '#86efac');
         const isAbriEligible = abriEligibleRiderIds.has(rider.id);
         
         // v3.3: Energy recovery for sheltered riders
@@ -1190,7 +1212,7 @@ export function applyEndOfTurnEffects(state) {
           type: 'shelter',
           riderId: rider.id,
           riderName: rider.name,
-          cardValue: 2,
+          cardValue: adjustedBonusValue,
           energyRecovered // v3.3
         });
       }
@@ -1203,12 +1225,45 @@ export function applyEndOfTurnEffects(state) {
       logMessages.push(`💨 Relais: ${windRiders.join(', ')}`);
     }
     
-    if (shelteredRiderIds.size > 0) {
-      const shelterRiders = effects
-        .filter(e => e.type === 'shelter')
-        .map(e => e.riderName);
-      logMessages.push(`🎵 Tempo: ${shelterRiders.join(', ')} (carte +2)`);
+  if (shelteredRiderIds.size > 0) {
+    const shelterRiders = effects
+      .filter(e => e.type === 'shelter')
+      .map(e => e.riderName);
+    logMessages.push(`🎵 Tempo: ${shelterRiders.join(', ')} (cartes fin de tour)`);
+  }
+
+  // Clear race events that were active during this turn
+  updatedRiders = updatedRiders.map(rider => tickRaceEvent(rider));
+
+  // Roll a new race event for next turn (one per global turn max)
+  const raceEventState = state.raceEventState || { cooldownTurns: 0, weather: RaceWeather.CLEAR };
+  const raceEventRoll = rollRaceEvent({
+    riders: updatedRiders,
+    ridersPlayedThisTurn: state.ridersPlayedThisTurn,
+    getTerrainForRider: rider => getTerrainAt(state, rider.position),
+    weather: raceEventState.weather,
+    cooldownTurns: raceEventState.cooldownTurns
+  });
+
+  let updatedRaceEventState = {
+    ...raceEventState,
+    cooldownTurns: raceEventRoll.cooldownTurns
+  };
+
+  if (raceEventRoll.event && raceEventRoll.riderId) {
+    const riderIndex = updatedRiders.findIndex(r => r.id === raceEventRoll.riderId);
+    if (riderIndex !== -1) {
+      updatedRiders[riderIndex] = attachRaceEvent(updatedRiders[riderIndex], raceEventRoll.event);
+      const eventLog = formatRaceEventLog(raceEventRoll.event, updatedRiders[riderIndex].name);
+      logMessages.push(eventLog);
+      effects.push({
+        type: 'race_event',
+        riderId: updatedRiders[riderIndex].id,
+        riderName: updatedRiders[riderIndex].name,
+        eventId: raceEventRoll.event.id
+      });
     }
+  }
   
   // Return state with effects for animation
   return {
@@ -1216,6 +1271,7 @@ export function applyEndOfTurnEffects(state) {
     riders: updatedRiders,
     arrivalCounter,
     endTurnEffects: effects,
+    raceEventState: updatedRaceEventState,
     turnPhase: TurnPhase.END_TURN_EFFECTS,
     gameLog: [...state.gameLog, ...logMessages]
   };

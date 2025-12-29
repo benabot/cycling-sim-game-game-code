@@ -159,7 +159,8 @@ export function resetRidersForStage(riders = []) {
     hasFallenThisTurn: false,
     turnsToSkip: 0,
     arrivalOrder: index,
-    windPenaltyNextMove: 0
+    windPenaltyNextMove: 0,
+    raceEvent: null
   }));
 }
 
