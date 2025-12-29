@@ -22,14 +22,15 @@
               class="track-start-token"
               :style="{ '--stack-index': Math.floor(idx / 2), '--col-index': idx % 2 }"
             >
-              <RiderToken 
-                :rider="rider"
-                :isSelected="rider.id === selectedRiderId"
-                :isAnimating="animatingRiders.includes(rider.id)"
-                :isLeader="isLeader(rider, 0)"
-                :hasPlayed="hasPlayed(rider.id)"
-                mini
-              />
+            <RiderToken 
+              :rider="rider"
+              :isSelected="rider.id === selectedRiderId"
+              :isActive="rider.id === selectedRiderId"
+              :isAnimating="animatingRiders.includes(rider.id)"
+              :isLeader="isLeader(rider, 0)"
+              :hasPlayed="hasPlayed(rider.id)"
+              mini
+            />
             </div>
           </div>
         </div>
@@ -85,6 +86,7 @@
             <RiderToken 
               :rider="rider"
               :isSelected="rider.id === selectedRiderId"
+              :isActive="rider.id === selectedRiderId"
               :isAnimating="animatingRiders.includes(rider.id)"
               :isLeader="isLeader(rider, index + 1)"
               :hasPlayed="hasPlayed(rider.id)"
@@ -114,6 +116,7 @@
             v-for="rider in finishedRiders" 
             :key="rider.id"
             :rider="rider"
+            :isActive="rider.id === selectedRiderId"
             :hasPlayed="hasPlayed(rider.id)"
             mini
           />
@@ -287,6 +290,8 @@ function getAspirationInfo(riderId) {
 .track-container {
   overflow-x: auto;
   overflow-y: hidden;
+  overscroll-behavior-x: contain;
+  -webkit-overflow-scrolling: touch;
 }
 
 /* Fixed height for cells: fit 2x2 tokens (22px each) */

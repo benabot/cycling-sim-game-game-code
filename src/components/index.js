@@ -3,6 +3,7 @@ export { default as GameStatusBar } from './GameStatusBar.vue';
 export { default as TerrainLegend } from './TerrainLegend.vue';
 export { default as RiderToken } from './RiderToken.vue';
 export { default as CourseBoard } from './CourseBoard.vue';
+export { default as BoardMiniMap } from './BoardMiniMap.vue';
 export { default as EffectsOverlay } from './EffectsOverlay.vue';
 export { default as RiderPanel } from './RiderPanel.vue';
 export { default as ActionZone } from './ActionZone.vue';

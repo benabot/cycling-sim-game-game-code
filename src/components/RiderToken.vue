@@ -9,6 +9,9 @@
       :size="iconSize"
       class="rider-token-icon"
     />
+    <span v-if="isActive" class="active-marker active-marker--token" aria-hidden="true">
+      <span class="active-marker__dot"></span>
+    </span>
     <span v-if="showNumber && rider.number" class="rider-token-number">
       {{ rider.number }}
     </span>
@@ -23,6 +26,7 @@ import { RiderConfig } from '../config/game.config.js';
 const props = defineProps({
   rider: { type: Object, required: true },
   isSelected: { type: Boolean, default: false },
+  isActive: { type: Boolean, default: false },
   isAnimating: { type: Boolean, default: false },
   isLeader: { type: Boolean, default: false },
   hasPlayed: { type: Boolean, default: false },
@@ -57,6 +61,7 @@ const tokenClasses = computed(() => {
     if (props.isAnimating) classes.push('animating');
     if (props.isLeader) classes.push('leader');
   }
+  if (props.isActive) classes.push('active');
   if (props.rider.hasFinished) classes.push('finished');
   if (props.hasPlayed) classes.push('played');
   
@@ -117,6 +122,30 @@ const tooltip = computed(() => {
   justify-content: center;
   padding: 0 3px;
   box-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
+}
+
+.rider-token .active-marker--token {
+  position: absolute;
+  top: -4px;
+  left: -4px;
+  z-index: 2;
+}
+
+.rider-token--compact .active-marker--token {
+  top: -3px;
+  left: -3px;
+}
+
+.rider-token--mini .active-marker--token {
+  top: -2px;
+  left: -2px;
+  width: 12px;
+  height: 12px;
+}
+
+.rider-token--mini .active-marker__dot {
+  width: 4px;
+  height: 4px;
 }
 
 .rider-token--compact .rider-token-number {

@@ -41,10 +41,14 @@
             <RiderToken
               :rider="rider"
               :isSelected="rider.id === selectedRiderId"
+              :isActive="rider.id === selectedRiderId"
               :hasPlayed="playedRiders.includes(rider.id)"
               :mini="true"
               :static="true"
             />
+            <span v-if="rider.id === selectedRiderId" class="active-marker active-marker--row" aria-hidden="true">
+              <span class="active-marker__dot"></span>
+            </span>
 
             <!-- Info -->
             <div class="rider-row-info">
@@ -336,6 +340,18 @@ function onRiderClick(rider, team) {
   transition: background 0.15s;
 }
 
+.rider-row .active-marker--row {
+  width: 12px;
+  height: 12px;
+  box-shadow: none;
+  border-color: rgba(31, 35, 40, 0.25);
+}
+
+.rider-row .active-marker--row .active-marker__dot {
+  width: 4px;
+  height: 4px;
+}
+
 .rider-row--playable {
   cursor: pointer;
   background: var(--color-action-light);
@@ -355,7 +371,8 @@ function onRiderClick(rider, team) {
 }
 
 .rider-row--selected {
-  background: var(--color-gold-light);
+  background: color-mix(in srgb, var(--race-yellow) 18%, white);
+  box-shadow: inset 3px 0 0 var(--race-yellow);
 }
 
 /* Played/disabled state */

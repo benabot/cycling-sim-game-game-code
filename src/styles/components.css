@@ -623,3 +623,26 @@
   background-color: rgba(34, 197, 94, 0.1);
   color: #15803d;
 }
+
+/* ========================================
+   ACTIVE MARKER
+   ======================================== */
+
+.active-marker {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 16px;
+  height: 16px;
+  border-radius: 50%;
+  background: var(--race-yellow);
+  border: 1px solid rgba(31, 35, 40, 0.2);
+  box-shadow: 0 2px 6px rgba(31, 35, 40, 0.18);
+}
+
+.active-marker__dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: rgba(47, 36, 24, 0.7);
+}

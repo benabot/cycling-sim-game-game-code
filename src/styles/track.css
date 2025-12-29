@@ -11,6 +11,8 @@
 .track-container {
   overflow-x: auto;
   overflow-y: hidden;
+  overscroll-behavior-x: contain;
+  -webkit-overflow-scrolling: touch;
   padding: var(--space-sm) 0;
   margin-bottom: var(--space-md);
 }

@@ -219,7 +219,7 @@ function getIconClass(entry) {
   border: 1px solid rgba(255, 255, 255, 0.08);
   border-radius: var(--radius-card);
   overflow: hidden;
-  box-shadow: 0 12px 28px rgba(18, 19, 20, 0.35);
+  box-shadow: 0 10px 22px rgba(18, 19, 20, 0.28);
   display: flex;
   flex-direction: column;
   position: relative;
@@ -244,7 +244,7 @@ function getIconClass(entry) {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: var(--space-sm) var(--space-md);
+  padding: 6px var(--space-md);
   background: rgba(0, 0, 0, 0.25);
   border: none;
   cursor: pointer;
@@ -267,7 +267,7 @@ function getIconClass(entry) {
 
 .notebook-title {
   font-family: var(--font-ui);
-  font-size: 12px;
+  font-size: 11px;
   font-weight: 600;
   color: rgba(230, 231, 232, 0.85);
   text-transform: uppercase;
@@ -300,7 +300,7 @@ function getIconClass(entry) {
 
 .notebook-expand-hint {
   font-family: var(--font-ui);
-  font-size: 11px;
+  font-size: 10px;
   color: rgba(181, 184, 188, 0.8);
 }
 
@@ -315,7 +315,7 @@ function getIconClass(entry) {
 
 /* ---- Collapsed preview ---- */
 .notebook-preview {
-  padding: var(--space-xs) var(--space-md);
+  padding: 4px var(--space-md);
   border-top: 1px solid rgba(255, 255, 255, 0.08);
 }
 

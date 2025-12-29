@@ -38,5 +38,6 @@ function backToSetup() {
 <style>
 .app-root {
   min-height: 100vh;
+  overflow-x: hidden;
 }
 </style>

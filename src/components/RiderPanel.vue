@@ -6,6 +6,7 @@
         <RiderToken
           :rider="rider"
           :isSelected="false"
+          :isActive="true"
           static
         />
         <div class="rider-identity-info">
@@ -137,7 +138,7 @@
     </div>
 
     <div class="rider-context">
-      <div v-if="!hasPlayedThisTurn" class="context-panel">
+      <div v-if="!hasPlayedThisTurn" class="context-panel context-panel--secondary">
         <div class="context-header">
           <UIIcon type="cursor" :size="14" class="section-icon" />
           <span class="type-label">Aide à la décision</span>
@@ -481,6 +482,22 @@ function onCardClick(card, isAttack) {
   display: flex;
   flex-direction: column;
   gap: var(--space-sm);
+}
+
+.context-panel--secondary {
+  background: rgba(248, 247, 244, 0.6);
+  border-style: dashed;
+}
+
+.context-panel--secondary .context-chip {
+  background: rgba(255, 255, 255, 0.6);
+  border-color: rgba(31, 35, 40, 0.08);
+  color: var(--color-ink-muted);
+}
+
+.context-panel--secondary .context-note {
+  font-size: 10px;
+  color: var(--color-ink-muted);
 }
 
 .context-header {

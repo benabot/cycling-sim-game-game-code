@@ -29,19 +29,33 @@
     <!-- Terrain Legend -->
     <TerrainLegend />
 
-    <!-- Course Board -->
-    <CourseBoard 
-      ref="courseBoardRef"
+    <BoardMiniMap
       :course="course"
-      :riders="allRiders"
-      :selectedRiderId="selectedRiderId"
-      :animatingRiders="animatingRiders"
-      :aspirationAnimations="aspirationAnimations"
-      :getLeaderAtPosition="getLeaderAt"
-      :previewPositions="previewPositions"
-      :aiMoveFlash="aiMoveFlash"
-      :playedRiders="playedThisTurn"
+      :leaderPosition="leaderPosition"
+      :activePosition="activePosition"
+      @focusCourse="focusCourseBoard"
     />
+
+    <!-- Course Board -->
+    <div
+      id="course-board"
+      ref="courseBoardShellRef"
+      class="course-board-shell"
+      :class="{ 'course-board-shell--focus': isCourseFocusActive }"
+    >
+      <CourseBoard 
+        ref="courseBoardRef"
+        :course="course"
+        :riders="allRiders"
+        :selectedRiderId="selectedRiderId"
+        :animatingRiders="animatingRiders"
+        :aspirationAnimations="aspirationAnimations"
+        :getLeaderAtPosition="getLeaderAt"
+        :previewPositions="previewPositions"
+        :aiMoveFlash="aiMoveFlash"
+        :playedRiders="playedThisTurn"
+      />
+    </div>
 
     <!-- Effects Overlay -->
     <EffectsOverlay 
@@ -145,7 +159,7 @@
 </template>
 
 <script setup>
-import { ref, onMounted, watch, nextTick, computed } from 'vue';
+import { ref, onMounted, onBeforeUnmount, watch, nextTick, computed } from 'vue';
 import { useGameEngine } from '../composables/useGameEngine.js';
 import { TeamConfigs, PlayerType } from '../core/teams.js';
 import { getClassicPreset } from '../config/race-presets.js';
@@ -154,6 +168,7 @@ import { isRefuelZone } from '../core/terrain.js';
 import {
   GameStatusBar,
   TerrainLegend,
+  BoardMiniMap,
   CourseBoard,
   EffectsOverlay,
   RiderPanel,
@@ -233,6 +248,9 @@ const {
 
 // Ref for course board scrolling
 const courseBoardRef = ref(null);
+const courseBoardShellRef = ref(null);
+const isCourseFocusActive = ref(false);
+let courseFocusTimeout = null;
 const headerTitle = computed(() => {
   if (stageRace.value) {
     const stageIndex = stageRace.value.currentStageIndex ?? 0;
@@ -269,6 +287,16 @@ const decisionAid = computed(() => {
   };
 });
 
+const leaderPosition = computed(() => {
+  if (!allRiders.value?.length) return 0;
+  return allRiders.value.reduce((max, rider) => Math.max(max, rider.position ?? 0), 0);
+});
+
+const activePosition = computed(() => {
+  if (!currentRider.value) return leaderPosition.value;
+  return currentRider.value.position ?? leaderPosition.value;
+});
+
 // Scroll to rider position on the course
 function scrollToRider(riderId) {
   const rider = allRiders.value.find(r => r.id === riderId);
@@ -295,6 +323,19 @@ function scrollToRider(riderId) {
       });
     }
   });
+}
+
+function focusCourseBoard() {
+  if (!courseBoardShellRef.value) return;
+  courseBoardShellRef.value.scrollIntoView({ behavior: 'smooth', block: 'center' });
+  isCourseFocusActive.value = true;
+  if (courseFocusTimeout) {
+    clearTimeout(courseFocusTimeout);
+  }
+  courseFocusTimeout = setTimeout(() => {
+    isCourseFocusActive.value = false;
+    courseFocusTimeout = null;
+  }, 1500);
 }
 
 // Quick rider selection from TeamsOverview
@@ -394,6 +435,12 @@ onMounted(() => {
   initialize(props.gameConfig);
 });
 
+onBeforeUnmount(() => {
+  if (courseFocusTimeout) {
+    clearTimeout(courseFocusTimeout);
+  }
+});
+
 // v4.0: Watch for AI turns and execute automatically
 watch(
   [isAITurn, turnPhase, showEffectsOverlay, phase, currentTeam],
@@ -429,6 +476,21 @@ watch(
   display: flex;
   flex-direction: column;
   gap: var(--space-lg);
+}
+
+.course-board-shell {
+  background: var(--color-surface);
+  border-radius: var(--radius-card);
+  box-shadow:
+    0 0 0 1px var(--color-line),
+    0 8px 20px rgba(31, 35, 40, 0.08);
+  scroll-margin-top: 120px;
+}
+
+.course-board-shell--focus {
+  box-shadow:
+    0 0 0 2px color-mix(in srgb, var(--race-yellow) 35%, transparent),
+    0 10px 24px rgba(31, 35, 40, 0.16);
 }
 
 h1 {

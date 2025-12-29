@@ -56,7 +56,11 @@
           <UIIcon type="star" :size="16" />
           Utiliser +2
         </button>
-        <button @click="$emit('skipSpecialty')" class="btn btn-ghost">
+        <button
+          @click="$emit('skipSpecialty')"
+          class="btn"
+          :class="hasSpecialtyCards ? 'btn-ghost' : 'btn-primary'"
+        >
           Sans spécialité
           <UIIcon type="chevron-down" :size="16" class="icon-forward" />
         </button>
