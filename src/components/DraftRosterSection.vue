@@ -71,21 +71,42 @@
 
     <div class="draft-grid">
       <div class="draft-pool">
-        <h3 class="draft-title">Vivier</h3>
+        <div class="draft-pool-header">
+          <div>
+            <h3 class="draft-title">Marché des coureurs</h3>
+            <p class="draft-subtitle">Choisis 5 profils. Budget limité.</p>
+          </div>
+        </div>
         <div v-if="pagedPool.length" class="draft-pool-grid">
           <article v-for="rider in pagedPool" :key="rider.id" class="draft-card draft-card--compact">
             <div class="draft-card-main">
               <div class="draft-card-meta">
                 <div class="rider-portrait" :class="getPortraitClass(rider.role)">
-                  <img v-if="rider.portraitUrl" :src="rider.portraitUrl" :alt="rider.name" />
-                  <span v-else class="rider-portrait__initials">{{ getInitials(rider.name) }}</span>
+                  <img
+                    v-if="hasPortrait(rider.portraitKey)"
+                    :src="getPortraitSrc(rider.portraitKey)"
+                    :alt="rider.name"
+                    class="rider-portrait__image"
+                    @error="onPortraitError(rider.portraitKey)"
+                  />
+                  <img
+                    v-else
+                    :src="PORTRAIT_FALLBACK_URL"
+                    alt=""
+                    class="rider-portrait__fallback"
+                  />
+                  <span v-if="!hasPortrait(rider.portraitKey)" class="rider-portrait__initials">{{ getInitials(rider.name) }}</span>
+                  <span class="rider-portrait__role">
+                    <RiderIcon :type="rider.role" :size="10" />
+                  </span>
                 </div>
-                <div>
+                <div class="draft-card-identity">
                   <p class="draft-card-name">{{ rider.name }}</p>
                   <div class="draft-card-tags">
                     <span class="badge badge-pill draft-role-badge">{{ getRoleLabel(rider.role) }}</span>
                     <span class="badge badge-pill">{{ rider.price }}</span>
                   </div>
+                  <span class="draft-card-style">{{ getRiderStyle(rider) }}</span>
                 </div>
               </div>
               <button
@@ -244,6 +265,7 @@
 <script setup>
 import { computed, ref, watch } from 'vue';
 import { TeamConfigs } from '../core/teams.js';
+import { getRiderPortraitUrl, PORTRAIT_FALLBACK_URL } from '../utils/portraits.js';
 import { UIIcon } from './icons';
 import RiderIcon from './icons/RiderIcon.vue';
 
@@ -290,6 +312,8 @@ const searchQuery = ref('');
 const activeRole = ref('all');
 const page = ref(1);
 const pageSize = 8;
+const portraitErrors = ref({});
+const statDisplayOrder = ['endurance', 'sprint', 'climb', 'punch'];
 
 const roleFilters = computed(() => ['all', ...(props.roles || [])]);
 
@@ -343,6 +367,20 @@ function getInitials(name = '') {
   return `${parts[0][0]}${parts[parts.length - 1][0]}`.toUpperCase();
 }
 
+function hasPortrait(portraitKey) {
+  if (!portraitKey) return false;
+  return !portraitErrors.value[portraitKey];
+}
+
+function getPortraitSrc(portraitKey) {
+  return getRiderPortraitUrl(portraitKey);
+}
+
+function onPortraitError(portraitKey) {
+  if (!portraitKey) return;
+  portraitErrors.value = { ...portraitErrors.value, [portraitKey]: true };
+}
+
 function getPortraitClass(role) {
   if (!role) return 'rider-portrait--neutral';
   return `rider-portrait--${role}`;
@@ -354,6 +392,18 @@ function getTeamBorderStyle(teamId) {
   return { borderColor };
 }
 
+function getRiderStyle(rider) {
+  if (rider?.style) return rider.style;
+  const fallback = {
+    climber: 'Grimpeur pur',
+    puncher: 'Attaquant',
+    rouleur: 'Rouleur',
+    sprinter: 'Finisseur',
+    versatile: 'Équilibré'
+  };
+  return fallback[rider?.role] || 'Profil stable';
+}
+
 function canRecruit(rider) {
   if (!props.activeTeamId) return false;
   if (rosterCount.value >= props.rosterSize) return false;
@@ -363,7 +413,7 @@ function canRecruit(rider) {
 
 function getStatRows(rider) {
   const stats = rider.stats || {};
-  return props.statOrder.map(key => ({
+  return statDisplayOrder.map(key => ({
     key,
     label: props.statLabels[key] || key,
     value: stats[key] ?? 0
@@ -486,6 +536,39 @@ function getStatRows(rider) {
   letter-spacing: 0.6px;
 }
 
+.draft-subtitle {
+  margin: 0;
+  font-size: 12px;
+  color: var(--color-ink-muted);
+}
+
+.draft-pool-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-md);
+  padding: var(--space-md);
+  border-radius: var(--radius-md);
+  background: linear-gradient(135deg, rgba(59, 130, 246, 0.08), rgba(15, 23, 42, 0.02));
+  border: 1px solid var(--color-line);
+  position: relative;
+  overflow: hidden;
+}
+
+.draft-pool-header::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  opacity: 0.08;
+  background-image: url("data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNjAiIGhlaWdodD0iNjAiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+PGZpbHRlciBpZD0ibm9pc2UiIHg9IjAiIHk9IjAiIHdpZHRoPSIxMDAiIGhlaWdodD0iMTAwIj48ZmVUdXJidWxlbmNlIHR5cGU9ImZyYWN0YWxOb2lzZSIgYmFzZUZyZXF1ZW5jeT0iMC45IiBudW1PY3RhdmVzPSIyIiBzdGl0Y2hUaWxlcz0ic3RpdGNoIi8+PC9maWx0ZXI+PHJlY3Qgd2lkdGg9IjYwIiBoZWlnaHQ9IjYwIiBmaWx0ZXI9InVybCgjbm9pc2UpIiBvcGFjaXR5PSIwLjYiLz48L3N2Zz4=");
+  pointer-events: none;
+}
+
+.draft-pool-header > * {
+  position: relative;
+  z-index: 1;
+}
+
 .draft-card {
   border: 1px solid var(--color-line);
   border-radius: var(--radius-md);
@@ -520,10 +603,16 @@ function getStatRows(rider) {
   align-items: flex-start;
 }
 
+.draft-card-identity {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
 .rider-portrait {
-  width: 36px;
-  height: 36px;
-  border-radius: 10px;
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
   border: 1px solid var(--color-line);
   background: var(--color-canvas);
   display: inline-flex;
@@ -534,23 +623,72 @@ function getStatRows(rider) {
   font-weight: 600;
   color: var(--color-ink);
   flex-shrink: 0;
+  position: relative;
+  box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.35);
+}
+
+.rider-portrait::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background-image: url("data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNjAiIGhlaWdodD0iNjAiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+PGZpbHRlciBpZD0ibm9pc2UiIHg9IjAiIHk9IjAiIHdpZHRoPSIxMDAiIGhlaWdodD0iMTAwIj48ZmVUdXJidWxlbmNlIHR5cGU9ImZyYWN0YWxOb2lzZSIgYmFzZUZyZXF1ZW5jeT0iMS4yIiBudW1PY3RhdmVzPSIyIiBzdGl0Y2hUaWxlcz0ic3RpdGNoIi8+PC9maWx0ZXI+PHJlY3Qgd2lkdGg9IjYwIiBoZWlnaHQ9IjYwIiBmaWx0ZXI9InVybCgjbm9pc2UpIiBvcGFjaXR5PSIwLjYiLz48L3N2Zz4=");
+  opacity: 0.08;
+  z-index: 2;
+  pointer-events: none;
+}
+
+.rider-portrait::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: radial-gradient(circle at 40% 35%, rgba(255, 255, 255, 0.1), rgba(0, 0, 0, 0.25));
+  opacity: 0.3;
+  z-index: 2;
+  pointer-events: none;
 }
 
 .rider-portrait--sm {
-  width: 28px;
-  height: 28px;
-  border-radius: 8px;
+  width: 30px;
+  height: 30px;
+  border-radius: 50%;
   font-size: 10px;
 }
 
-.rider-portrait img {
+.rider-portrait__image,
+.rider-portrait__fallback {
   width: 100%;
   height: 100%;
   object-fit: cover;
+  position: relative;
+  z-index: 1;
+}
+
+.rider-portrait__fallback {
+  filter: grayscale(0.3) contrast(0.95);
 }
 
 .rider-portrait__initials {
   letter-spacing: 0.4px;
+  position: absolute;
+  font-size: 9px;
+  color: var(--color-ink-muted);
+  z-index: 3;
+}
+
+.rider-portrait__role {
+  position: absolute;
+  bottom: -2px;
+  right: -2px;
+  width: 16px;
+  height: 16px;
+  border-radius: 50%;
+  background: var(--color-surface);
+  border: 1px solid var(--color-line);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--color-ink-soft);
+  z-index: 3;
 }
 
 .rider-portrait--climber { background: linear-gradient(135deg, #f0f7f2, #e1f0e6); }
@@ -559,6 +697,11 @@ function getStatRows(rider) {
 .rider-portrait--sprinter { background: linear-gradient(135deg, #fdf1f1, #fbe1e1); }
 .rider-portrait--versatile { background: linear-gradient(135deg, #f4f1fb, #e8e2f6); }
 .rider-portrait--neutral { background: var(--color-canvas); }
+.rider-portrait--empty {
+  border-style: dashed;
+  background: var(--color-paper);
+  color: var(--color-ink-muted);
+}
 
 .draft-card-name {
   margin: 0;
@@ -576,6 +719,11 @@ function getStatRows(rider) {
   margin-top: var(--space-xs);
 }
 
+.draft-card-style {
+  font-size: 11px;
+  color: var(--color-ink-muted);
+}
+
 .draft-card-stats--compact {
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
@@ -584,7 +732,7 @@ function getStatRows(rider) {
 
 .stat-row--compact {
   display: grid;
-  grid-template-columns: 56px 1fr 26px;
+  grid-template-columns: 72px 1fr 26px;
   gap: var(--space-xs);
   align-items: center;
   font-size: 10px;
@@ -689,6 +837,11 @@ function getStatRows(rider) {
   gap: var(--space-sm);
 }
 
+.roster-empty {
+  font-size: 12px;
+  color: var(--color-muted);
+}
+
 .roster-card-identity {
   display: flex;
   align-items: center;
@@ -705,11 +858,6 @@ function getStatRows(rider) {
   font-size: 14px;
   font-weight: 600;
   color: var(--color-ink);
-}
-
-.roster-empty {
-  font-size: 12px;
-  color: var(--color-muted);
 }
 
 .draft-role-badge {
