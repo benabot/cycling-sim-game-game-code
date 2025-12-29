@@ -160,7 +160,8 @@ export function resetRidersForStage(riders = []) {
     turnsToSkip: 0,
     arrivalOrder: index,
     windPenaltyNextMove: 0,
-    raceEvent: null
+    raceEvent: null,
+    lastCobblePunctureTurn: null
   }));
 }
 

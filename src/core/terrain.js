@@ -289,7 +289,8 @@ export function generateCourse(length = 80, distribution = null) {
       index: i,
       terrain: courseStructure[i],
       config: TerrainConfig[courseStructure[i]],
-      isRefuelZone: isInRefuelZone1 || isInRefuelZone2
+      isRefuelZone: isInRefuelZone1 || isInRefuelZone2,
+      isCobbles: false
     });
   }
   
@@ -528,12 +529,14 @@ export function generateCourseFromPreset(preset, length = null, options = {}) {
   for (let i = 0; i < courseLength; i++) {
     const isInRefuelZone1 = i >= refuelZone1Start && i < refuelZone1Start + refuelZoneLength;
     const isInRefuelZone2 = i >= refuelZone2Start && i < refuelZone2Start + refuelZoneLength;
+    const isCobbles = presetType && PAVES_PRESETS.has(presetType) && courseStructure[i] === TerrainType.HILL;
     
     course.push({
       index: i,
       terrain: courseStructure[i],
       config: TerrainConfig[courseStructure[i]],
-      isRefuelZone: isInRefuelZone1 || isInRefuelZone2
+      isRefuelZone: isInRefuelZone1 || isInRefuelZone2,
+      isCobbles
     });
   }
   

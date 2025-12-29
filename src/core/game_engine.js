@@ -7,7 +7,10 @@ import { roll1D6, rollFallTest } from './dice.js';
 import { TerrainType, TerrainConfig, DescentRules, getTerrainBonus, generateCourse, generateCourseFromPreset, hasAspiration, findSummitPosition, isRefuelZone } from './terrain.js';
 import {
   RaceWeather,
+  RaceEventDefinitions,
+  RaceEventId,
   rollRaceEvent,
+  rollPunctureOnCobbleStep,
   attachRaceEvent,
   applyRaceEventMovement,
   getRaceEventEnergyPenalty,
@@ -213,7 +216,8 @@ export function createGameState(options = {}) {
     stageRace,
     raceEventState: {
       cooldownTurns: 0,
-      weather: gameConfig?.weather || RaceWeather.CLEAR
+      weather: gameConfig?.weather || RaceWeather.CLEAR,
+      lastCobblePunctureTurn: null
     },
     
     // Riders
@@ -271,6 +275,12 @@ export function getTerrainAt(state, position) {
   // Position 1 = course[0], position N = course[N-1]
   const courseIndex = position - 1;
   return state.course[courseIndex]?.terrain || TerrainType.FLAT;
+}
+
+function isCobbleCell(state, position) {
+  if (position <= 0 || position > state.courseLength) return false;
+  const courseIndex = position - 1;
+  return !!state.course[courseIndex]?.isCobbles;
 }
 
 /**
@@ -834,6 +844,29 @@ export function resolveMovement(state) {
   );
   const summitBonus = summitPosition !== null && rider.type === 'climber' ? 1 : 0;
 
+  const raceEventState = state.raceEventState || {
+    cooldownTurns: 0,
+    weather: RaceWeather.CLEAR,
+    lastCobblePunctureTurn: null
+  };
+  const cobbleRng = raceEventState.rng || Math.random;
+  const cobblePunctureBlocked =
+    raceEventState.lastCobblePunctureTurn === state.currentTurn ||
+    rider.lastCobblePunctureTurn === state.currentTurn;
+  const isSheltered = countRidersAtPosition(state, rider.position) > 1;
+  let cobblePunctureTriggered = false;
+
+  if (!cobblePunctureBlocked && !rider.raceEvent) {
+    const maxPos = Math.min(newPosition, state.courseLength);
+    for (let pos = rider.position + 1; pos <= maxPos; pos++) {
+      if (!isCobbleCell(state, pos)) continue;
+      if (rollPunctureOnCobbleStep(rider, { energy: rider.energy, isSheltered, rng: cobbleRng })) {
+        cobblePunctureTriggered = true;
+        break;
+      }
+    }
+  }
+
   // Energy check before committing the action
   const usedAttack = rider.attackCards.some(c => c.id === state.selectedCardId);
   const usedSpecialty = !!state.selectedSpecialtyId;
@@ -897,6 +930,22 @@ export function resolveMovement(state) {
     energy: newEnergy, // v3.3
     windPenaltyNextMove: 0
   };
+
+  let updatedRaceEventState = raceEventState;
+  const extraLogs = [];
+  if (cobblePunctureTriggered) {
+    updatedRider = attachRaceEvent(
+      updatedRider,
+      RaceEventDefinitions[RaceEventId.PUNCTURE],
+      { turns: 2, source: 'cobbles' }
+    );
+    updatedRider.lastCobblePunctureTurn = state.currentTurn;
+    updatedRaceEventState = {
+      ...raceEventState,
+      lastCobblePunctureTurn: state.currentTurn
+    };
+    extraLogs.push(`🛞 Crevaison (pavés) — ${updatedRider.name}`);
+  }
   
   // Update riders array
   let updatedRiders = state.riders.map(r => 
@@ -928,7 +977,8 @@ export function resolveMovement(state) {
     arrivalCounter: newArrivalCounter,
     lastMovement: { type: 'move', distance: movement, newPosition, energyDelta },
     ridersPlayedThisTurn: [...state.ridersPlayedThisTurn, rider.id],
-    gameLog: [...state.gameLog, logMessage]
+    raceEventState: updatedRaceEventState,
+    gameLog: [...state.gameLog, logMessage, ...extraLogs]
   };
   
   // Check if last turn should start

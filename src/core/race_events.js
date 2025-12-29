@@ -42,6 +42,12 @@ const BASE_EVENT_CHANCE = 0.12;
 const MAX_EVENT_CHANCE = 0.25;
 const MIN_EVENT_CHANCE = 0.05;
 const MAX_ENERGY_PENALTY = 5;
+const COBBLES_PUNCTURE_BASE = 0.1;
+const COBBLES_PUNCTURE_MIN = 0.02;
+const COBBLES_PUNCTURE_MAX = 0.2;
+const COBBLES_LOW_ENERGY_BONUS = 0.03;
+const COBBLES_CRITICAL_ENERGY_BONUS = 0.06;
+const COBBLES_SHELTER_REDUCTION = 0.03;
 
 export function getRaceEventChance({ terrain, weather }) {
   let chance = BASE_EVENT_CHANCE;
@@ -131,7 +137,7 @@ export function rollRaceEvent({
   return { event, riderId: candidate.id, cooldownTurns: 1 };
 }
 
-export function attachRaceEvent(rider, event) {
+export function attachRaceEvent(rider, event, options = {}) {
   if (!event) return rider;
   return {
     ...rider,
@@ -140,7 +146,8 @@ export function attachRaceEvent(rider, event) {
       label: event.label,
       iconKey: event.iconKey,
       effects: { ...event.effects },
-      turnsLeft: 1
+      turnsLeft: options.turns ?? 1,
+      source: options.source || null
     }
   };
 }
@@ -181,6 +188,26 @@ export function tickRaceEvent(rider) {
       turnsLeft: remaining
     }
   };
+}
+
+export function rollPunctureOnCobbleStep(rider, context = {}) {
+  const rng = context.rng || Math.random;
+  const energy = context.energy ?? rider.energy ?? 100;
+  const isSheltered = context.isSheltered || false;
+  const baseChance = context.baseChance ?? COBBLES_PUNCTURE_BASE;
+
+  let chance = baseChance;
+  if (energy < 25) {
+    chance += COBBLES_CRITICAL_ENERGY_BONUS;
+  } else if (energy < 50) {
+    chance += COBBLES_LOW_ENERGY_BONUS;
+  }
+  if (isSheltered) {
+    chance -= COBBLES_SHELTER_REDUCTION;
+  }
+
+  chance = Math.max(COBBLES_PUNCTURE_MIN, Math.min(COBBLES_PUNCTURE_MAX, chance));
+  return rng() < chance;
 }
 
 export function formatRaceEventLog(event, riderName) {
