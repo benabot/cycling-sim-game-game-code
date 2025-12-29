@@ -22,6 +22,8 @@ import {
 import { CyclingAI, createAI } from '../core/ai.js';
 import { PlayerType } from '../core/teams.js';
 import { FINISH_LINE, TeamConfig } from '../config/game.config.js';
+import { EnergyConfig } from '../core/energy.js';
+import { isRefuelZone } from '../core/terrain.js';
 
 export function useGameEngine() {
   // State
@@ -29,6 +31,7 @@ export function useGameEngine() {
   const gameLog = ref([]);
   const animatingRiders = ref([]);
   const isAnimatingEffects = ref(false);
+  const lastActionSummaries = ref({});
   
   // v4.0: AI instances (one per AI team)
   const aiInstances = ref({});
@@ -51,6 +54,7 @@ export function useGameEngine() {
     isAnimatingEffects.value = false;
     aspirationAnimations.value = [];
     isAIThinking.value = false;
+    lastActionSummaries.value = {};
     
     // v4.0: Create AI instances for AI-controlled teams
     aiInstances.value = {};
@@ -209,6 +213,51 @@ export function useGameEngine() {
     gameLog.value.push(message);
   }
 
+  function buildRecoveryBreakdown({ startTerrain, startPosition, endPosition }) {
+    const actualDistance = Number.isFinite(endPosition) ? endPosition - startPosition : 0;
+    const descentRecovery = startTerrain === 'descent' && actualDistance > 0
+      ? actualDistance * EnergyConfig.recovery.descentMovement
+      : 0;
+    const refuelRecovery = Number.isFinite(endPosition) && isRefuelZone(gameState.value?.course || [], endPosition)
+      ? EnergyConfig.recovery.refuelZone
+      : 0;
+    return {
+      descent: descentRecovery,
+      refuel: refuelRecovery,
+      shelter: 0
+    };
+  }
+
+  function recordActionSummary({
+    riderId,
+    type,
+    cardLabel,
+    cardValue,
+    dice,
+    total,
+    usedSpecialty,
+    energyBefore,
+    energyAfter,
+    startTerrain,
+    startPosition,
+    endPosition
+  }) {
+    lastActionSummaries.value = {
+      ...lastActionSummaries.value,
+      [riderId]: {
+        type,
+        cardLabel,
+        cardValue,
+        dice,
+        total,
+        usedSpecialty,
+        energyBefore,
+        energyAfter,
+        recovery: buildRecoveryBreakdown({ startTerrain, startPosition, endPosition })
+      }
+    };
+  }
+
   // Sleep helper
   function sleep(ms) {
     return new Promise(resolve => setTimeout(resolve, ms));
@@ -314,6 +363,14 @@ export function useGameEngine() {
     const riderName = currentRider.value.name;
     const movement = calculatedMovement.value;
     const startPos = currentRider.value.position;
+    const startTerrain = currentRider.value.terrain;
+    const energyBefore = currentRider.value.energy ?? EnergyConfig.startEnergy;
+    const selectedCard = getSelectedCard();
+    const isAttack = currentRider.value.attackCards?.some(c => c.id === selectedCardId.value);
+    const cardLabel = isAttack ? 'Attaque' : selectedCard?.name || 'Carte';
+    const cardValue = selectedCard?.value ?? null;
+    const diceResult = lastDiceRoll.value?.result ?? null;
+    const usedSpecialty = !!selectedSpecialtyId.value;
 
     // Animation du mouvement principal
     animatingRiders.value.push(riderId);
@@ -324,6 +381,21 @@ export function useGameEngine() {
     if (newState.lastMovement?.type === 'recover') {
       const delta = newState.lastMovement.energyDelta ?? 0;
       log(`⚡ ${riderName} récupère (+${delta} énergie)`);
+      const updatedRider = newState.riders.find(r => r.id === riderId);
+      recordActionSummary({
+        riderId,
+        type: 'recover',
+        cardLabel: 'Récupérer',
+        cardValue: null,
+        dice: null,
+        total: 0,
+        usedSpecialty: false,
+        energyBefore,
+        energyAfter: updatedRider?.energy ?? energyBefore,
+        startTerrain,
+        startPosition: startPos,
+        endPosition: null
+      });
       gameState.value = newState;
       animatingRiders.value = animatingRiders.value.filter(id => id !== riderId);
       return;
@@ -333,15 +405,31 @@ export function useGameEngine() {
       const required = newState.lastMovement?.energyRequired;
       const suffix = Number.isFinite(required) ? ` (${required} requis)` : '';
       log(`⚡ ${riderName} manque d'énergie${suffix}`);
+      recordActionSummary({
+        riderId,
+        type: 'invalid',
+        cardLabel,
+        cardValue,
+        dice: diceResult,
+        total: movement || 0,
+        usedSpecialty,
+        energyBefore,
+        energyAfter: energyBefore,
+        startTerrain,
+        startPosition: startPos,
+        endPosition: null
+      });
       gameState.value = newState;
       animatingRiders.value = animatingRiders.value.filter(id => id !== riderId);
       return;
     }
     
     // Log movement
-    const actualPos = newState.riders.find(r => r.id === riderId)?.position;
+    const updatedRider = newState.riders.find(r => r.id === riderId);
+    const actualPos = updatedRider?.position;
     const targetPos = startPos + movement;
     const finishLine = newState.finishLine ?? gameState.value?.finishLine ?? FINISH_LINE;
+    const energyAfter = updatedRider?.energy ?? energyBefore;
     
     if (actualPos < targetPos && actualPos <= finishLine) {
       log(`${riderName} avance de ${movement} cases → case ${actualPos} (case pleine)`);
@@ -352,6 +440,21 @@ export function useGameEngine() {
     if (actualPos > finishLine) {
       log(`🏁 ${riderName} franchit la ligne !`);
     }
+
+    recordActionSummary({
+      riderId,
+      type: 'move',
+      cardLabel,
+      cardValue,
+      dice: diceResult,
+      total: movement,
+      usedSpecialty,
+      energyBefore,
+      energyAfter,
+      startTerrain,
+      startPosition: startPos,
+      endPosition: actualPos ?? startPos
+    });
 
     gameState.value = newState;
 
@@ -456,6 +559,29 @@ export function useGameEngine() {
     }
   }
 
+  watch(
+    () => gameState.value?.endTurnEffects,
+    (effects) => {
+      if (!effects?.length) return;
+      const shelterEffects = effects.filter(effect => effect.type === 'shelter');
+      if (!shelterEffects.length) return;
+      const updates = { ...lastActionSummaries.value };
+      shelterEffects.forEach(effect => {
+        const existing = updates[effect.riderId];
+        if (!existing) return;
+        updates[effect.riderId] = {
+          ...existing,
+          recovery: {
+            ...existing.recovery,
+            shelter: effect.energyRecovered ?? EnergyConfig.recovery.shelterBonus
+          }
+        };
+      });
+      lastActionSummaries.value = updates;
+    },
+    { deep: true }
+  );
+
   function restartGame() {
     initialize();
   }
@@ -547,8 +673,12 @@ export function useGameEngine() {
     
     // 5. Resolve movement (apply position change)
     const startPos = rider.position;
+    const startTerrain = getTerrainAt(gameState.value, rider.position);
+    const energyBefore = rider.energy ?? EnergyConfig.startEnergy;
     const newState = resolveMovementEngine(gameState.value);
-    const finalPos = newState.riders.find(r => r.id === rider.id)?.position || startPos;
+    const updatedRider = newState.riders.find(r => r.id === rider.id);
+    const finalPos = updatedRider?.position || startPos;
+    const energyAfter = updatedRider?.energy ?? energyBefore;
     
     // Log the complete action
     const cardText = isAttack ? `Attaque (+${card?.value || 6})` : `carte +${card?.value || 0}`;
@@ -562,6 +692,21 @@ export function useGameEngine() {
     
     // Trigger flash effect on the target position
     triggerAIMoveFlash(finalPos, rider.team);
+
+    recordActionSummary({
+      riderId: rider.id,
+      type: 'move',
+      cardLabel: isAttack ? 'Attaque' : card?.name || 'Carte',
+      cardValue: card?.value ?? null,
+      dice: diceResult,
+      total: movement,
+      usedSpecialty,
+      energyBefore,
+      energyAfter,
+      startTerrain,
+      startPosition: startPos,
+      endPosition: finalPos
+    });
     
     // Update state
     gameState.value = newState;
@@ -657,6 +802,7 @@ export function useGameEngine() {
     isAIThinking,
     aiMoveFlash,
     isViewOnlySelection,
+    lastActionSummaries,
     
     // Computed
     course,

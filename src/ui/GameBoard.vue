@@ -61,6 +61,9 @@
         :turnPhase="turnPhase"
         :selectedCardId="selectedCardId"
         :viewOnly="isViewOnlySelection"
+        :hasPlayedThisTurn="hasPlayedThisTurn"
+        :decisionAid="decisionAid"
+        :turnSummary="turnSummary"
         @cancel="cancelRiderSelection"
         @selectCard="selectCard"
       >
@@ -146,6 +149,8 @@ import { ref, onMounted, watch, nextTick, computed } from 'vue';
 import { useGameEngine } from '../composables/useGameEngine.js';
 import { TeamConfigs, PlayerType } from '../core/teams.js';
 import { getClassicPreset } from '../config/race-presets.js';
+import { calculateMovementConsumption, calculateRecovery } from '../core/energy.js';
+import { isRefuelZone } from '../core/terrain.js';
 import {
   GameStatusBar,
   TerrainLegend,
@@ -186,6 +191,7 @@ const {
   isAIThinking,
   aiMoveFlash,
   isViewOnlySelection,
+  lastActionSummaries,
   
   // Computed
   course,
@@ -240,6 +246,27 @@ const headerTitle = computed(() => {
 
   const classicPreset = getClassicPreset(props.gameConfig?.classicId);
   return classicPreset?.name || 'Course Cycliste';
+});
+
+const hasPlayedThisTurn = computed(() => {
+  if (!currentRider.value) return false;
+  return playedThisTurn.value.includes(currentRider.value.id);
+});
+
+const turnSummary = computed(() => {
+  if (!currentRider.value) return null;
+  return lastActionSummaries.value?.[currentRider.value.id] || null;
+});
+
+const decisionAid = computed(() => {
+  if (!currentRider.value) return null;
+  const energyEstimate = estimateEnergyAfterMove(currentRider.value);
+  const windRisk = getWindRisk(currentRider.value);
+  return {
+    energyEstimate,
+    windRisk,
+    coachNote: buildCoachNote({ rider: currentRider.value, energyEstimate, windRisk })
+  };
 });
 
 // Scroll to rider position on the course
@@ -317,6 +344,49 @@ function getTeamName(teamId) {
 function isTeamAI(teamId) {
   const player = players.value?.find(p => p.teamId === teamId);
   return player?.playerType === PlayerType.AI;
+}
+
+function getWindRisk(rider) {
+  if (!rider || rider.hasFinished) return null;
+  if (rider.terrain === 'mountain' || rider.terrain === 'descent') return false;
+  const leader = getLeaderAt(rider.position);
+  if (!leader || leader.id !== rider.id) return false;
+  const cellAheadEmpty = !allRiders.value.some(r => r.position === rider.position + 1 && !r.hasFinished);
+  return cellAheadEmpty;
+}
+
+function estimateEnergyAfterMove(rider) {
+  if (!rider || !selectedCardId.value || !lastDiceRoll.value) return null;
+  if (!Number.isFinite(calculatedMovement.value) || calculatedMovement.value <= 0) return null;
+  const usedAttack = rider.attackCards?.some(c => c.id === selectedCardId.value);
+  const usedSpecialty = !!selectedSpecialtyId.value;
+  const energyBefore = rider.energy ?? 100;
+  const energyConsumed = calculateMovementConsumption({
+    distance: calculatedMovement.value,
+    terrain: rider.terrain,
+    riderType: rider.type,
+    usedAttack,
+    usedSpecialty,
+    isLeading: false
+  }) + (rider.windPenaltyNextMove || 0);
+  const targetPosition = rider.position + calculatedMovement.value;
+  const recovery = calculateRecovery({
+    terrain: rider.terrain,
+    distance: rider.terrain === 'descent' ? calculatedMovement.value : 0,
+    isSheltered: false,
+    inRefuelZone: isRefuelZone(course.value || [], targetPosition)
+  });
+  return Math.max(0, Math.min(100, energyBefore - energyConsumed + recovery));
+}
+
+function buildCoachNote({ rider, energyEstimate, windRisk }) {
+  if (!rider) return '';
+  if ((rider.energy ?? 100) <= 25) return 'Priorité à la récupération.';
+  if (windRisk) return 'Rester abrité pour limiter le vent.';
+  if (rider.terrain === 'mountain' && rider.type === 'climber') return 'Montée favorable, garder le tempo.';
+  if (rider.terrain === 'sprint' && rider.type === 'sprinter') return 'Garder de la marge pour le sprint.';
+  if (energyEstimate !== null && energyEstimate <= 30) return 'Gestion prudente de l’énergie.';
+  return 'Construire l’effort sans sur-risque.';
 }
 
 // Initialize on mount with game config

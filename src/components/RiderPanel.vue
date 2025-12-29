@@ -134,23 +134,52 @@
           (Utilisable sur {{ specialtyTerrainName }})
         </p>
       </div>
+    </div>
 
-      <!-- Discard Pile -->
-      <div v-if="rider.discard?.length" class="cards-section cards-section--discard">
-        <div class="cards-section-header">
-          <UIIcon type="discard" :size="16" class="section-icon text-muted" />
-          <span class="type-label text-muted">Défausse</span>
-          <span class="badge badge-muted">{{ rider.discard.length }}</span>
+    <div class="rider-context">
+      <div v-if="!hasPlayedThisTurn" class="context-panel">
+        <div class="context-header">
+          <UIIcon type="cursor" :size="14" class="section-icon" />
+          <span class="type-label">Aide à la décision</span>
         </div>
-        <div class="discard-preview">
-          <span 
-            v-for="card in rider.discard" 
-            :key="card.id"
-            class="discard-chip"
-            :class="{ 'discard-chip--relais': card.name === 'Relais' }"
-          >
-            +{{ card.value }}
-          </span>
+        <div class="context-chips">
+          <span class="context-chip">Terrain: {{ terrainName }}</span>
+          <span class="context-chip">Bonus: {{ formatBonus(terrainBonus) }}</span>
+          <span class="context-chip">Énergie estimée: {{ formatEnergyEstimate(decisionAid?.energyEstimate) }}</span>
+          <span class="context-chip">Vent: {{ formatWindRisk(decisionAid?.windRisk) }}</span>
+        </div>
+        <p class="context-note">{{ decisionAid?.coachNote || '—' }}</p>
+      </div>
+      <div v-else class="context-panel">
+        <div class="context-header">
+          <UIIcon type="history" :size="14" class="section-icon" />
+          <span class="type-label">Résumé du tour</span>
+        </div>
+        <div class="context-summary">
+          <div class="context-row">
+            <span class="context-key">Carte</span>
+            <span class="context-value">{{ formatValue(turnSummary?.cardLabel) }}</span>
+          </div>
+          <div class="context-row">
+            <span class="context-key">Dé</span>
+            <span class="context-value">{{ formatValue(turnSummary?.dice) }}</span>
+          </div>
+          <div class="context-row">
+            <span class="context-key">Total</span>
+            <span class="context-value">{{ formatValue(turnSummary?.total) }}</span>
+          </div>
+          <div class="context-row">
+            <span class="context-key">Énergie</span>
+            <span class="context-value">{{ formatEnergySummary(turnSummary) }}</span>
+          </div>
+          <div class="context-row">
+            <span class="context-key">Récup</span>
+            <span class="context-value">{{ formatRecovery(turnSummary) }}</span>
+          </div>
+          <div class="context-row">
+            <span class="context-key">Spécialité</span>
+            <span class="context-value">{{ turnSummary ? (turnSummary.usedSpecialty ? 'Oui' : 'Non') : '—' }}</span>
+          </div>
         </div>
       </div>
     </div>
@@ -175,7 +204,10 @@ const props = defineProps({
   canUseSpecialty: { type: Boolean, default: false },
   turnPhase: { type: String, required: true },
   selectedCardId: { type: String, default: null },
-  viewOnly: { type: Boolean, default: false }
+  viewOnly: { type: Boolean, default: false },
+  hasPlayedThisTurn: { type: Boolean, default: false },
+  decisionAid: { type: Object, default: null },
+  turnSummary: { type: Object, default: null }
 });
 
 const emit = defineEmits(['cancel', 'selectCard']);
@@ -207,6 +239,38 @@ function formatBonus(value) {
   if (value > 0) return `+${value}`;
   if (value < 0) return `${value}`;
   return '0';
+}
+
+function formatValue(value) {
+  if (value === null || value === undefined || value === '') return '—';
+  return value;
+}
+
+function formatEnergyEstimate(value) {
+  if (!Number.isFinite(value)) return '—';
+  return Math.round(value);
+}
+
+function formatEnergySummary(summary) {
+  const before = summary?.energyBefore;
+  const after = summary?.energyAfter;
+  if (!Number.isFinite(before) || !Number.isFinite(after)) return '—';
+  return `${before} → ${after}`;
+}
+
+function formatRecovery(summary) {
+  const recovery = summary?.recovery;
+  if (!recovery) return '—';
+  const parts = [];
+  if (recovery.descent) parts.push(`Descente +${recovery.descent}`);
+  if (recovery.refuel) parts.push(`Ravito +${recovery.refuel}`);
+  if (recovery.shelter) parts.push(`Abri +${recovery.shelter}`);
+  return parts.length ? parts.join(' · ') : '—';
+}
+
+function formatWindRisk(risk) {
+  if (risk === null || risk === undefined) return '—';
+  return risk ? 'Exposé' : 'Abri';
 }
 
 function getCardClasses(card, isAttack) {
@@ -404,25 +468,67 @@ function onCardClick(card, isAttack) {
   color: var(--color-ink-muted);
 }
 
-/* Discard */
-.discard-preview {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 4px;
+/* Context panel */
+.rider-context {
+  padding: 0 var(--space-md) var(--space-md);
 }
 
-.discard-chip {
-  padding: 2px 8px;
-  background: var(--color-canvas);
-  border-radius: var(--radius-xs);
-  font-family: var(--font-mono);
-  font-size: 0.75em;
+.context-panel {
+  border: 1px solid var(--color-line);
+  border-radius: var(--radius-md);
+  padding: var(--space-md);
+  background: var(--color-paper);
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-sm);
+}
+
+.context-header {
+  display: flex;
+  align-items: center;
+  gap: var(--space-sm);
+}
+
+.context-chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-xs);
+}
+
+.context-chip {
+  padding: 2px var(--space-sm);
+  border-radius: var(--radius-pill);
+  border: 1px solid var(--color-line);
+  background: var(--color-surface);
+  font-size: 11px;
+  color: var(--color-ink-soft);
+}
+
+.context-note {
+  margin: 0;
+  font-size: 12px;
   color: var(--color-ink-muted);
 }
 
-.discard-chip--relais {
-  background: #fecaca;
-  color: var(--color-danger);
+.context-summary {
+  display: grid;
+  gap: var(--space-xs);
+}
+
+.context-row {
+  display: grid;
+  grid-template-columns: 110px 1fr;
+  gap: var(--space-sm);
+  font-size: 12px;
+}
+
+.context-key {
+  color: var(--color-ink-muted);
+}
+
+.context-value {
+  color: var(--color-ink);
+  font-weight: 500;
 }
 
 /* Utils */
@@ -442,6 +548,10 @@ function onCardClick(card, isAttack) {
   
   .rider-energy-section {
     width: 100%;
+  }
+
+  .context-row {
+    grid-template-columns: 90px 1fr;
   }
 }
 </style>
