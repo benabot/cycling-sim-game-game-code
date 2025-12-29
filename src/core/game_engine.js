@@ -1287,12 +1287,32 @@ export function applyEndOfTurnEffects(state) {
 
   // Roll a new race event for next turn (one per global turn max)
   const raceEventState = state.raceEventState || { cooldownTurns: 0, weather: RaceWeather.CLEAR };
+  const getRiderContext = rider => {
+    const pos = rider.position;
+    const courseIndex = pos - 1;
+    const cell = state.course?.[courseIndex];
+    const terrain = cell?.terrain || getTerrainAt(state, pos);
+    const isCobbles = !!cell?.isCobbles;
+    const groupSize = updatedRiders.filter(r => !r.hasFinished && r.position === pos).length;
+    const isIsolated = groupSize <= 1;
+    const isExposed = (rider.windPenaltyNextMove || 0) > 0;
+
+    let weight = 1;
+    if (isIsolated) weight += 0.4;
+    if (isExposed) weight += 0.3;
+    if (terrain === TerrainType.DESCENT) weight += 0.3;
+    if (isCobbles) weight += 0.2;
+
+    return { terrain, isCobbles, weight };
+  };
   const raceEventRoll = rollRaceEvent({
     riders: updatedRiders,
     ridersPlayedThisTurn: state.ridersPlayedThisTurn,
     getTerrainForRider: rider => getTerrainAt(state, rider.position),
+    getRiderContext,
     weather: raceEventState.weather,
-    cooldownTurns: raceEventState.cooldownTurns
+    cooldownTurns: raceEventState.cooldownTurns,
+    rng: raceEventState.rng
   });
 
   let updatedRaceEventState = {

@@ -42,6 +42,8 @@ const BASE_EVENT_CHANCE = 0.12;
 const MAX_EVENT_CHANCE = 0.25;
 const MIN_EVENT_CHANCE = 0.05;
 const MAX_ENERGY_PENALTY = 5;
+const COBBLES_CRASH_BONUS = 0.15;
+const COBBLES_PUNCTURE_BONUS = 0.1;
 const COBBLES_PUNCTURE_BASE = 0.1;
 const COBBLES_PUNCTURE_MIN = 0.02;
 const COBBLES_PUNCTURE_MAX = 0.2;
@@ -62,24 +64,27 @@ export function getRaceEventChance({ terrain, weather }) {
   return Math.max(MIN_EVENT_CHANCE, Math.min(MAX_EVENT_CHANCE, chance));
 }
 
-export function pickRaceEvent({ terrain, weather, rng = Math.random }) {
+export function pickRaceEvent({ terrain, weather, isCobbles = false, rng = Math.random }) {
   const weights = [];
   const add = (id, weight) => {
     if (weight > 0) weights.push({ id, weight });
   };
 
+  const crashBonus = isCobbles ? COBBLES_CRASH_BONUS : 0;
+  const punctureBonus = isCobbles ? COBBLES_PUNCTURE_BONUS : 0;
+
   if (terrain === TerrainType.DESCENT) {
-    add(RaceEventId.CRASH, weather === RaceWeather.RAIN ? 0.7 : 0.55);
-    add(RaceEventId.PUNCTURE, 0.25);
+    add(RaceEventId.CRASH, (weather === RaceWeather.RAIN ? 0.7 : 0.55) + crashBonus);
+    add(RaceEventId.PUNCTURE, 0.25 + punctureBonus);
     add(RaceEventId.MECHANICAL, 0.2);
   } else if (terrain === TerrainType.HILL) {
-    add(RaceEventId.PUNCTURE, 0.5);
+    add(RaceEventId.PUNCTURE, 0.5 + punctureBonus);
     add(RaceEventId.MECHANICAL, 0.3);
-    add(RaceEventId.CRASH, weather === RaceWeather.RAIN ? 0.3 : 0.2);
+    add(RaceEventId.CRASH, (weather === RaceWeather.RAIN ? 0.3 : 0.2) + crashBonus);
   } else {
     add(RaceEventId.MECHANICAL, 0.4);
-    add(RaceEventId.PUNCTURE, 0.4);
-    add(RaceEventId.CRASH, weather === RaceWeather.RAIN ? 0.25 : 0.2);
+    add(RaceEventId.PUNCTURE, 0.4 + punctureBonus);
+    add(RaceEventId.CRASH, (weather === RaceWeather.RAIN ? 0.25 : 0.2) + crashBonus);
   }
 
   const total = weights.reduce((sum, entry) => sum + entry.weight, 0);
@@ -101,6 +106,7 @@ export function rollRaceEvent({
   riders = [],
   ridersPlayedThisTurn = [],
   getTerrainForRider,
+  getRiderContext,
   weather = RaceWeather.CLEAR,
   cooldownTurns = 0,
   rng = Math.random
@@ -121,20 +127,39 @@ export function rollRaceEvent({
     return { event: null, riderId: null, cooldownTurns: 0 };
   }
 
-  const candidate = eligible[Math.floor(rng() * eligible.length)];
-  const terrain = getTerrainForRider ? getTerrainForRider(candidate) : TerrainType.FLAT;
+  const candidatePool = eligible.map(rider => {
+    const context = getRiderContext ? getRiderContext(rider) : null;
+    const weight = Math.max(0.1, context?.weight ?? 1);
+    return { rider, context, weight };
+  });
+  const totalWeight = candidatePool.reduce((sum, entry) => sum + entry.weight, 0);
+  if (totalWeight <= 0) {
+    return { event: null, riderId: null, cooldownTurns: 0 };
+  }
+
+  let roll = rng() * totalWeight;
+  let selected = candidatePool[candidatePool.length - 1];
+  for (const entry of candidatePool) {
+    roll -= entry.weight;
+    if (roll <= 0) {
+      selected = entry;
+      break;
+    }
+  }
+
+  const terrain = selected.context?.terrain || (getTerrainForRider ? getTerrainForRider(selected.rider) : TerrainType.FLAT);
   const chance = getRaceEventChance({ terrain, weather });
 
   if (rng() > chance) {
     return { event: null, riderId: null, cooldownTurns: 0 };
   }
 
-  const event = pickRaceEvent({ terrain, weather, rng });
+  const event = pickRaceEvent({ terrain, weather, isCobbles: selected.context?.isCobbles, rng });
   if (!event) {
     return { event: null, riderId: null, cooldownTurns: 0 };
   }
 
-  return { event, riderId: candidate.id, cooldownTurns: 1 };
+  return { event, riderId: selected.rider.id, cooldownTurns: 1 };
 }
 
 export function attachRaceEvent(rider, event, options = {}) {
