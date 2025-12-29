@@ -10,7 +10,8 @@ import {
   StageType,
   StageRecovery,
   generateStageProgram,
-  getStageTypeDistribution
+  getStageTypeDistribution,
+  getStageTypePreset
 } from '../config/race-presets.js';
 import { EnergyConfig } from './energy.js';
 import { CardType } from './rider.js';
@@ -179,9 +180,14 @@ export function applyStageRecovery(riders = [], recoveryConfig = StageRecovery) 
  * @returns {Array} Course array
  */
 export function generateStageCourse(stageType, length = 80) {
-  const distribution = getStageTypeDistribution(stageType);
-  const preset = { distribution, defaultLength: length };
-  return generateCourseFromPreset(preset, length);
+  const preset = getStageTypePreset(stageType);
+  const withDefaults = {
+    ...preset,
+    distribution: getStageTypeDistribution(stageType),
+    defaultLength: length,
+    presetType: stageType
+  };
+  return generateCourseFromPreset(withDefaults, length);
 }
 
 /**

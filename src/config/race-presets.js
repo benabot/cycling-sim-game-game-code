@@ -74,18 +74,26 @@ export const ClassicPresets = {
     icon: 'hill',
     defaultLength: 80,
     distribution: {
-      [TerrainType.FLAT]: 20,
-      [TerrainType.HILL]: 35,
-      [TerrainType.MOUNTAIN]: 20,
+      [TerrainType.FLAT]: 30,
+      [TerrainType.HILL]: 45,
+      [TerrainType.MOUNTAIN]: 0,
       [TerrainType.DESCENT]: 15,
       [TerrainType.SPRINT]: 10
     },
     // Structure spécifique: alternance plat/côte avec une section montagne
     structure: {
-      startFlat: 4,           // Cases plates au départ
+      startFlat: 5,           // Cases plates au départ
       endSprint: 8,           // Cases de sprint final
-      mountainMinLength: 12,  // Longueur minimale section montagne (réduite vs Lombarde)
-      hillMaxLength: 4        // Côtes courtes et raides
+      segmentPattern: [
+        { terrain: TerrainType.HILL, min: 6, max: 12 },
+        { terrain: TerrainType.FLAT, min: 4, max: 10 },
+        { terrain: TerrainType.HILL, min: 6, max: 12 },
+        { terrain: TerrainType.DESCENT, min: 4, max: 6 },
+        { terrain: TerrainType.FLAT, min: 4, max: 10 },
+        { terrain: TerrainType.HILL, min: 6, max: 12 },
+        { terrain: TerrainType.FLAT, min: 4, max: 10 },
+        { terrain: TerrainType.HILL, min: 6, max: 12 }
+      ]
     }
   },
 
@@ -109,17 +117,26 @@ export const ClassicPresets = {
     icon: 'mountain',
     defaultLength: 80,
     distribution: {
-      [TerrainType.FLAT]: 15,
+      [TerrainType.FLAT]: 20,
       [TerrainType.HILL]: 15,
-      [TerrainType.MOUNTAIN]: 40,
+      [TerrainType.MOUNTAIN]: 35,
       [TerrainType.DESCENT]: 20,
       [TerrainType.SPRINT]: 10
     },
     structure: {
       startFlat: 5,
       endSprint: 8,
-      mountainMinLength: 18,  // Longue montée décisive
-      hillMaxLength: 5
+      sprintFinishChance: 0.15,
+      segmentPattern: [
+        { terrain: TerrainType.FLAT, min: 5, max: 10 },
+        { terrain: TerrainType.HILL, min: 6, max: 8 },
+        { terrain: TerrainType.MOUNTAIN, min: 15, max: 22 },
+        { terrain: TerrainType.DESCENT, min: 6, max: 10 },
+        { terrain: TerrainType.FLAT, min: 4, max: 8 },
+        { terrain: TerrainType.MOUNTAIN, min: 15, max: 22 },
+        { terrain: TerrainType.DESCENT, min: 6, max: 10 },
+        { terrain: TerrainType.FLAT, min: 4, max: 8 }
+      ]
     }
   },
 
@@ -143,17 +160,23 @@ export const ClassicPresets = {
     icon: 'road',
     defaultLength: 80,
     distribution: {
-      [TerrainType.FLAT]: 50,
-      [TerrainType.HILL]: 10,
-      [TerrainType.MOUNTAIN]: 10,
+      [TerrainType.FLAT]: 60,
+      [TerrainType.HILL]: 15,
+      [TerrainType.MOUNTAIN]: 0,
       [TerrainType.DESCENT]: 10,
-      [TerrainType.SPRINT]: 20
+      [TerrainType.SPRINT]: 15
     },
     structure: {
       startFlat: 8,
-      endSprint: 16,          // Long sprint final
-      mountainMinLength: 8,   // Petite montagne (Poggio style)
-      hillMaxLength: 4
+      endSprint: 12,          // Sprint final allongé
+      segmentPattern: [
+        { terrain: TerrainType.FLAT, min: 8, max: 16 },
+        { terrain: TerrainType.FLAT, min: 6, max: 14 },
+        { terrain: TerrainType.HILL, min: 6, max: 8 },
+        { terrain: TerrainType.FLAT, min: 6, max: 12 },
+        { terrain: TerrainType.HILL, min: 6, max: 8 },
+        { terrain: TerrainType.DESCENT, min: 4, max: 6 }
+      ]
     }
   },
 
@@ -178,16 +201,25 @@ export const ClassicPresets = {
     defaultLength: 80,
     distribution: {
       [TerrainType.FLAT]: 45,
-      [TerrainType.HILL]: 20,      // Simule les secteurs pavés (effort intense)
-      [TerrainType.MOUNTAIN]: 5,
+      [TerrainType.HILL]: 30,      // Simule les secteurs pavés (effort intense)
+      [TerrainType.MOUNTAIN]: 0,
       [TerrainType.DESCENT]: 10,
-      [TerrainType.SPRINT]: 20
+      [TerrainType.SPRINT]: 15
     },
     structure: {
       startFlat: 6,
-      endSprint: 16,
-      mountainMinLength: 4,   // Très peu de montagne
-      hillMaxLength: 6        // Secteurs "pavés" un peu plus longs
+      endSprint: 8,
+      segmentPattern: [
+        { terrain: TerrainType.HILL, min: 6, max: 10 },
+        { terrain: TerrainType.FLAT, min: 4, max: 10 },
+        { terrain: TerrainType.HILL, min: 6, max: 10 },
+        { terrain: TerrainType.FLAT, min: 4, max: 10 },
+        { terrain: TerrainType.HILL, min: 6, max: 10 },
+        { terrain: TerrainType.DESCENT, min: 4, max: 6 },
+        { terrain: TerrainType.FLAT, min: 4, max: 10 },
+        { terrain: TerrainType.HILL, min: 6, max: 10 },
+        { terrain: TerrainType.FLAT, min: 4, max: 10 }
+      ]
     }
   }
 };
@@ -256,44 +288,94 @@ export const StageRaceConfig = {
       name: 'Plate',
       icon: 'road',
       distribution: {
-        [TerrainType.FLAT]: 50,
+        [TerrainType.FLAT]: 60,
         [TerrainType.HILL]: 15,
-        [TerrainType.MOUNTAIN]: 5,
+        [TerrainType.MOUNTAIN]: 0,
         [TerrainType.DESCENT]: 10,
-        [TerrainType.SPRINT]: 20
+        [TerrainType.SPRINT]: 15
+      },
+      structure: {
+        startFlat: 6,
+        endSprint: 10,
+        segmentPattern: [
+          { terrain: TerrainType.FLAT, min: 8, max: 16 },
+          { terrain: TerrainType.HILL, min: 6, max: 8 },
+          { terrain: TerrainType.FLAT, min: 6, max: 14 },
+          { terrain: TerrainType.DESCENT, min: 4, max: 6 },
+          { terrain: TerrainType.FLAT, min: 6, max: 12 }
+        ]
       }
     },
     [StageType.HILLY]: {
       name: 'Accidentée',
       icon: 'hill',
       distribution: {
-        [TerrainType.FLAT]: 25,
-        [TerrainType.HILL]: 35,
-        [TerrainType.MOUNTAIN]: 15,
+        [TerrainType.FLAT]: 30,
+        [TerrainType.HILL]: 45,
+        [TerrainType.MOUNTAIN]: 0,
         [TerrainType.DESCENT]: 15,
         [TerrainType.SPRINT]: 10
+      },
+      structure: {
+        startFlat: 5,
+        endSprint: 8,
+        segmentPattern: [
+          { terrain: TerrainType.HILL, min: 6, max: 10 },
+          { terrain: TerrainType.FLAT, min: 4, max: 8 },
+          { terrain: TerrainType.HILL, min: 6, max: 10 },
+          { terrain: TerrainType.FLAT, min: 4, max: 8 },
+          { terrain: TerrainType.HILL, min: 6, max: 10 },
+          { terrain: TerrainType.DESCENT, min: 4, max: 6 },
+          { terrain: TerrainType.FLAT, min: 4, max: 8 }
+        ]
       }
     },
     [StageType.MOUNTAIN]: {
       name: 'Montagne',
       icon: 'summit',
       distribution: {
-        [TerrainType.FLAT]: 15,
-        [TerrainType.HILL]: 15,
-        [TerrainType.MOUNTAIN]: 40,
-        [TerrainType.DESCENT]: 20,
+        [TerrainType.FLAT]: 20,
+        [TerrainType.HILL]: 20,
+        [TerrainType.MOUNTAIN]: 35,
+        [TerrainType.DESCENT]: 15,
         [TerrainType.SPRINT]: 10
+      },
+      structure: {
+        startFlat: 5,
+        endSprint: 8,
+        sprintFinishChance: 0.15,
+        segmentPattern: [
+          { terrain: TerrainType.FLAT, min: 5, max: 10 },
+          { terrain: TerrainType.HILL, min: 6, max: 8 },
+          { terrain: TerrainType.MOUNTAIN, min: 15, max: 22 },
+          { terrain: TerrainType.DESCENT, min: 6, max: 10 },
+          { terrain: TerrainType.FLAT, min: 4, max: 8 },
+          { terrain: TerrainType.MOUNTAIN, min: 15, max: 22 },
+          { terrain: TerrainType.DESCENT, min: 6, max: 10 },
+          { terrain: TerrainType.FLAT, min: 4, max: 8 }
+        ]
       }
     },
     [StageType.SPRINT]: {
       name: 'Sprint',
       icon: 'finish',
       distribution: {
-        [TerrainType.FLAT]: 55,
+        [TerrainType.FLAT]: 65,
         [TerrainType.HILL]: 10,
-        [TerrainType.MOUNTAIN]: 5,
-        [TerrainType.DESCENT]: 5,
-        [TerrainType.SPRINT]: 25
+        [TerrainType.MOUNTAIN]: 0,
+        [TerrainType.DESCENT]: 10,
+        [TerrainType.SPRINT]: 15
+      },
+      structure: {
+        startFlat: 6,
+        endSprint: 12,
+        segmentPattern: [
+          { terrain: TerrainType.FLAT, min: 8, max: 16 },
+          { terrain: TerrainType.HILL, min: 6, max: 8 },
+          { terrain: TerrainType.FLAT, min: 6, max: 14 },
+          { terrain: TerrainType.DESCENT, min: 4, max: 6 },
+          { terrain: TerrainType.FLAT, min: 6, max: 12 }
+        ]
       }
     }
   }
@@ -399,6 +481,16 @@ export function getAllClassicPresets() {
 export function getStageTypeDistribution(stageType) {
   return StageRaceConfig.stageTypeDistributions[stageType]?.distribution || 
          StageRaceConfig.stageTypeDistributions[StageType.FLAT].distribution;
+}
+
+/**
+ * Helper: Obtenir le preset complet d'un type d'étape
+ * @param {string} stageType - Type d'étape (flat, hilly, mountain, sprint)
+ * @returns {Object} Preset complet (distribution + structure)
+ */
+export function getStageTypePreset(stageType) {
+  return StageRaceConfig.stageTypeDistributions[stageType] || 
+         StageRaceConfig.stageTypeDistributions[StageType.FLAT];
 }
 
 /**
