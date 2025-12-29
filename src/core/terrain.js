@@ -63,7 +63,7 @@ export const TerrainConfig = {
  * - Rouleur: +2 flat (was +1), wind immunity (handled in game_engine)
  * - Sprinter: +3 sprint (was +2)
  * - Puncher: +2 hill (was +1), no penalty on short mountain (≤3 cases, handled in game_engine)
- * - Climber: no forced stop at summit (handled in game_engine)
+ * - Climber: summit bonus handled in game_engine
  */
 export const TerrainBonus = {
   [TerrainType.FLAT]: {
@@ -104,13 +104,12 @@ export const TerrainBonus = {
 };
 
 /**
- * Mountain summit stop rules (v3.2)
- * Non-climbers must stop at the last mountain cell if their movement
- * would take them beyond the mountain section
+ * Mountain summit rules (v3.2+)
+ * Summit stop removed; climbers get a light bonus on summit crossing.
  */
 export const MountainRules = {
-  climbersExempt: true,  // Climbers can pass through summits freely
-  stopAtSummit: true     // Non-climbers must stop at summit
+  climbersExempt: true,  // Climbers get summit bonus
+  stopAtSummit: false    // No forced stop at summit
 };
 
 /**
@@ -154,7 +153,7 @@ export function hasWindPenalty(terrain) {
 
 /**
  * Find the last mountain cell before leaving mountain terrain (summit)
- * Used for summit stop rule for non-climbers
+ * Used for summit crossing detection (bonus logic)
  * 
  * IMPORTANT: Positions are 1-based (position 1 = course[0])
  * 
@@ -226,6 +225,27 @@ export const DefaultCourseDistribution = {
   [TerrainType.SPRINT]: 8      // 10%
 };
 
+const COURSE_CONSTRAINTS = {
+  mountainMin: 15,
+  hillMin: 6,
+  refuelMin: 5,
+  refuelMax: 6
+};
+
+const MOUNTAIN_ALLOWED_PRESETS = new Set(['mountain', 'lombarde']);
+const PAVES_PRESETS = new Set(['nord']);
+
+function getTerrainMinLength(terrain) {
+  if (terrain === TerrainType.MOUNTAIN) return COURSE_CONSTRAINTS.mountainMin;
+  if (terrain === TerrainType.HILL) return COURSE_CONSTRAINTS.hillMin;
+  return 1;
+}
+
+function getRefuelZoneLength(rng = Math.random) {
+  const span = COURSE_CONSTRAINTS.refuelMax - COURSE_CONSTRAINTS.refuelMin;
+  return COURSE_CONSTRAINTS.refuelMin + (span > 0 ? Math.floor(rng() * (span + 1)) : 0);
+}
+
 /**
  * Generate a course with terrain segments
  * @param {number} length - Course length (default 80)
@@ -259,7 +279,7 @@ export function generateCourse(length = 80, distribution = null) {
   // v4.0: Place 2 refuel zones of 3 cells each (~30% and ~65% of course)
   const refuelZone1Start = Math.floor(length * 0.30);
   const refuelZone2Start = Math.floor(length * 0.65);
-  const refuelZoneLength = 3;
+  const refuelZoneLength = getRefuelZoneLength();
   
   for (let i = 0; i < length; i++) {
     const isInRefuelZone1 = i >= refuelZone1Start && i < refuelZone1Start + refuelZoneLength;
@@ -426,9 +446,9 @@ function createCourseStructure(length, dist) {
  * Shuffle array in place (Fisher-Yates)
  * @param {Array} array
  */
-function shuffleArray(array) {
+function shuffleArray(array, rng = Math.random) {
   for (let i = array.length - 1; i > 0; i--) {
-    const j = Math.floor(Math.random() * (i + 1));
+    const j = Math.floor(rng() * (i + 1));
     [array[i], array[j]] = [array[j], array[i]];
   }
 }
@@ -457,10 +477,12 @@ export function getTerrainDescription(terrain) {
  * @param {number} length - Course length (overrides preset default if provided)
  * @returns {Array} Course array with terrain info
  */
-export function generateCourseFromPreset(preset, length = null) {
+export function generateCourseFromPreset(preset, length = null, options = {}) {
   const courseLength = length || preset.defaultLength || 80;
   const distribution = preset.distribution;
-  const structure = preset.structure || {};
+  const structure = preset.structure ? { ...preset.structure } : {};
+  const presetType = preset.presetType || preset.id || null;
+  const rng = options.rng || Math.random;
   
   const course = [];
   
@@ -479,13 +501,29 @@ export function generateCourseFromPreset(preset, length = null) {
     caseCounts[TerrainType.FLAT] += (courseLength - total);
   }
   
+  const baseEndSprint = structure.endSprint ?? 8;
+  let allowSprintFinish = baseEndSprint > 0;
+  if (structure.sprintFinishChance !== undefined && structure.sprintFinishChance !== null) {
+    allowSprintFinish = rng() < structure.sprintFinishChance;
+  }
+
+  const adjustedStructure = {
+    ...structure,
+    endSprint: allowSprintFinish ? baseEndSprint : 0
+  };
+
   // Build course structure based on preset rules
-  const courseStructure = createCourseFromPresetStructure(courseLength, caseCounts, structure);
+  const courseStructure = createCourseFromPresetStructure(
+    courseLength,
+    caseCounts,
+    adjustedStructure,
+    { rng, presetType }
+  );
   
   // v5.0: Place refuel zones (~30% and ~65% of course)
   const refuelZone1Start = Math.floor(courseLength * 0.30);
   const refuelZone2Start = Math.floor(courseLength * 0.65);
-  const refuelZoneLength = 3;
+  const refuelZoneLength = getRefuelZoneLength(rng);
   
   for (let i = 0; i < courseLength; i++) {
     const isInRefuelZone1 = i >= refuelZone1Start && i < refuelZone1Start + refuelZoneLength;
@@ -499,6 +537,11 @@ export function generateCourseFromPreset(preset, length = null) {
     });
   }
   
+  const validation = validateCourse(course, presetType, { allowSprintFinish });
+  if (!validation.valid && typeof console !== 'undefined') {
+    console.warn(`[race] preset "${presetType || 'unknown'}" violates V1 constraints:`, validation.issues);
+  }
+
   return course;
 }
 
@@ -511,146 +554,336 @@ export function generateCourseFromPreset(preset, length = null) {
  * @param {Object} structure - Structure rules (startFlat, endSprint, mountainMinLength, hillMaxLength)
  * @returns {Array} Array of terrain types
  */
-function createCourseFromPresetStructure(length, caseCounts, structure) {
+function createCourseFromPresetStructure(length, caseCounts, structure, options = {}) {
+  const rng = options.rng || Math.random;
+  const presetType = options.presetType || null;
   const courseArray = new Array(length);
-  const remaining = { ...caseCounts };
-  
-  // Extract structure parameters with defaults
-  const startFlat = structure.startFlat || 5;
-  const endSprint = structure.endSprint || 8;
-  const mountainMinLength = structure.mountainMinLength || 15;
-  const hillMaxLength = structure.hillMaxLength || 5;
-  
-  // 1. Place start flat zone
-  const actualStartFlat = Math.min(startFlat, remaining[TerrainType.FLAT] || 0);
-  for (let i = 0; i < actualStartFlat; i++) {
-    courseArray[i] = TerrainType.FLAT;
-  }
-  remaining[TerrainType.FLAT] = Math.max(0, (remaining[TerrainType.FLAT] || 0) - actualStartFlat);
-  
-  // 2. Place end sprint zone
-  const sprintStart = length - endSprint;
-  const actualEndSprint = Math.min(endSprint, remaining[TerrainType.SPRINT] || 0);
-  for (let i = 0; i < actualEndSprint; i++) {
-    courseArray[sprintStart + i] = TerrainType.SPRINT;
-  }
-  remaining[TerrainType.SPRINT] = Math.max(0, (remaining[TerrainType.SPRINT] || 0) - actualEndSprint);
-  
-  // Fill remaining sprint zone with flat if needed
-  for (let i = sprintStart + actualEndSprint; i < length; i++) {
-    if (!courseArray[i]) {
-      courseArray[i] = TerrainType.FLAT;
-      remaining[TerrainType.FLAT] = Math.max(0, (remaining[TerrainType.FLAT] || 0) - 1);
+  const segmentPattern = structure.segmentPattern || null;
+
+  let startFlat = structure.startFlat ?? 5;
+  let endSprint = structure.endSprint ?? 8;
+
+  startFlat = Math.max(0, Math.min(startFlat, length));
+  endSprint = Math.max(0, Math.min(endSprint, length - startFlat));
+
+  let middleLength = length - startFlat - endSprint;
+
+  if (segmentPattern && segmentPattern.length > 0) {
+    const minTotal = segmentPattern.reduce((sum, segment) => {
+      const minLength = Math.max(segment.min ?? 1, getTerrainMinLength(segment.terrain));
+      return sum + minLength;
+    }, 0);
+
+    if (middleLength < minTotal) {
+      let shortage = minTotal - middleLength;
+      const startCut = Math.min(startFlat, shortage);
+      startFlat -= startCut;
+      shortage -= startCut;
+      const endCut = Math.min(endSprint, shortage);
+      endSprint -= endCut;
+      middleLength = length - startFlat - endSprint;
     }
   }
-  
-  // 3. Build segments for middle section
-  const segments = [];
-  const middleStart = actualStartFlat;
+
+  // 1. Place start flat zone
+  for (let i = 0; i < startFlat; i++) {
+    courseArray[i] = TerrainType.FLAT;
+  }
+
+  // 2. Place end sprint zone (if any)
+  const sprintStart = length - endSprint;
+  if (endSprint > 0) {
+    for (let i = sprintStart; i < length; i++) {
+      courseArray[i] = TerrainType.SPRINT;
+    }
+  }
+
+  const middleStart = startFlat;
   const middleEnd = sprintStart;
-  const middleLength = middleEnd - middleStart;
-  
-  // 3a. Create mountain segment (one big climb) if we have mountain cases
-  if (remaining[TerrainType.MOUNTAIN] > 0) {
-    const mountainLen = Math.min(remaining[TerrainType.MOUNTAIN], Math.max(mountainMinLength, remaining[TerrainType.MOUNTAIN]));
-    segments.push({ terrain: TerrainType.MOUNTAIN, length: mountainLen });
-    remaining[TerrainType.MOUNTAIN] -= mountainLen;
-    
-    // Add descent right after mountain
-    if (remaining[TerrainType.DESCENT] > 0) {
-      const descentLen = Math.min(remaining[TerrainType.DESCENT], Math.floor(mountainLen * 0.7));
-      if (descentLen >= 3) {
+
+  let segments = [];
+
+  if (segmentPattern && segmentPattern.length > 0) {
+    segments = buildSegmentsFromPattern(segmentPattern, middleLength, rng);
+    segments = normalizeSegments(segments, presetType);
+  } else {
+    const remaining = { ...caseCounts };
+    const mountainMinLength = Math.max(structure.mountainMinLength || COURSE_CONSTRAINTS.mountainMin, COURSE_CONSTRAINTS.mountainMin);
+    const hillMaxLength = Math.max(structure.hillMaxLength || COURSE_CONSTRAINTS.hillMin, COURSE_CONSTRAINTS.hillMin);
+
+    // Adjust remaining counts based on start flat / end sprint
+    remaining[TerrainType.FLAT] = Math.max(0, (remaining[TerrainType.FLAT] || 0) - startFlat);
+    remaining[TerrainType.SPRINT] = Math.max(0, (remaining[TerrainType.SPRINT] || 0) - endSprint);
+
+    // Build segments for middle section (legacy behavior)
+    if (remaining[TerrainType.MOUNTAIN] > 0) {
+      const mountainLen = Math.min(remaining[TerrainType.MOUNTAIN], Math.max(mountainMinLength, remaining[TerrainType.MOUNTAIN]));
+      segments.push({ terrain: TerrainType.MOUNTAIN, length: mountainLen });
+      remaining[TerrainType.MOUNTAIN] -= mountainLen;
+
+      if (remaining[TerrainType.DESCENT] > 0) {
+        const descentLen = Math.min(remaining[TerrainType.DESCENT], Math.floor(mountainLen * 0.7));
+        if (descentLen >= 3) {
+          segments.push({ terrain: TerrainType.DESCENT, length: descentLen });
+          remaining[TerrainType.DESCENT] -= descentLen;
+        }
+      }
+    }
+
+    while (remaining[TerrainType.HILL] >= 2) {
+      const hillLen = Math.min(remaining[TerrainType.HILL], hillMaxLength, 2 + Math.floor(rng() * 3));
+      segments.push({ terrain: TerrainType.HILL, length: hillLen });
+      remaining[TerrainType.HILL] -= hillLen;
+
+      if (remaining[TerrainType.DESCENT] >= 2 && rng() > 0.5) {
+        const descentLen = Math.min(remaining[TerrainType.DESCENT], 3);
         segments.push({ terrain: TerrainType.DESCENT, length: descentLen });
         remaining[TerrainType.DESCENT] -= descentLen;
       }
     }
-  }
-  
-  // 3b. Create hill segments (short punchy climbs)
-  while (remaining[TerrainType.HILL] >= 2) {
-    const hillLen = Math.min(remaining[TerrainType.HILL], hillMaxLength, 2 + Math.floor(Math.random() * 3));
-    segments.push({ terrain: TerrainType.HILL, length: hillLen });
-    remaining[TerrainType.HILL] -= hillLen;
-    
-    // Small descent after some hills
-    if (remaining[TerrainType.DESCENT] >= 2 && Math.random() > 0.5) {
-      const descentLen = Math.min(remaining[TerrainType.DESCENT], 3);
-      segments.push({ terrain: TerrainType.DESCENT, length: descentLen });
-      remaining[TerrainType.DESCENT] -= descentLen;
+
+    if (remaining[TerrainType.DESCENT] > 0) {
+      segments.push({ terrain: TerrainType.DESCENT, length: remaining[TerrainType.DESCENT] });
+      remaining[TerrainType.DESCENT] = 0;
     }
-  }
-  
-  // 3c. Add remaining descent
-  if (remaining[TerrainType.DESCENT] > 0) {
-    segments.push({ terrain: TerrainType.DESCENT, length: remaining[TerrainType.DESCENT] });
-    remaining[TerrainType.DESCENT] = 0;
-  }
-  
-  // 3d. Add remaining sprint zones (if any before final)
-  if (remaining[TerrainType.SPRINT] > 0) {
-    segments.push({ terrain: TerrainType.SPRINT, length: remaining[TerrainType.SPRINT] });
-    remaining[TerrainType.SPRINT] = 0;
-  }
-  
-  // 3e. Fill with flat segments
-  const usedBySegments = segments.reduce((sum, s) => sum + s.length, 0);
-  const flatNeeded = middleLength - usedBySegments;
-  
-  if (flatNeeded > 0) {
-    // Create multiple flat segments for variety
-    let flatRemaining = flatNeeded;
-    while (flatRemaining > 0) {
-      const flatLen = Math.min(flatRemaining, 4 + Math.floor(Math.random() * 4)); // 4-7 cases
-      segments.push({ terrain: TerrainType.FLAT, length: flatLen });
-      flatRemaining -= flatLen;
+
+    if (remaining[TerrainType.SPRINT] > 0) {
+      segments.push({ terrain: TerrainType.SPRINT, length: remaining[TerrainType.SPRINT] });
+      remaining[TerrainType.SPRINT] = 0;
     }
-  }
-  
-  // 4. Organize segments strategically
-  // Keep mountain+descent pair, shuffle the rest
-  const mountainDescentPair = [];
-  const otherSegments = [];
-  
-  let i = 0;
-  while (i < segments.length) {
-    if (segments[i].terrain === TerrainType.MOUNTAIN) {
-      mountainDescentPair.push(segments[i]);
-      // Check if next segment is descent
-      if (i + 1 < segments.length && segments[i + 1].terrain === TerrainType.DESCENT) {
-        mountainDescentPair.push(segments[i + 1]);
-        i += 2;
-        continue;
+
+    const usedBySegments = segments.reduce((sum, s) => sum + s.length, 0);
+    const flatNeeded = middleLength - usedBySegments;
+
+    if (flatNeeded > 0) {
+      let flatRemaining = flatNeeded;
+      while (flatRemaining > 0) {
+        const flatLen = Math.min(flatRemaining, 4 + Math.floor(rng() * 4)); // 4-7 cases
+        segments.push({ terrain: TerrainType.FLAT, length: flatLen });
+        flatRemaining -= flatLen;
       }
-    } else {
-      otherSegments.push(segments[i]);
     }
-    i++;
+
+    segments = normalizeSegments(segments, presetType);
   }
-  
-  // Shuffle other segments
-  shuffleArray(otherSegments);
-  
-  // Insert mountain pair at ~40-60% of the middle section (if exists)
-  const finalSegments = [...otherSegments];
-  if (mountainDescentPair.length > 0) {
-    const insertPos = Math.floor(finalSegments.length * 0.35) + Math.floor(Math.random() * (finalSegments.length * 0.25));
-    finalSegments.splice(insertPos, 0, ...mountainDescentPair);
-  }
-  
-  // 5. Place segments into course array
+
+  // 3. Place segments into course array
   let pos = middleStart;
-  for (const segment of finalSegments) {
+  for (const segment of segments) {
     for (let j = 0; j < segment.length && pos < middleEnd; j++) {
       courseArray[pos++] = segment.terrain;
     }
   }
-  
+
   // Fill any remaining with flat
   while (pos < middleEnd) {
     courseArray[pos++] = TerrainType.FLAT;
   }
-  
+
   return courseArray;
+}
+
+function buildSegmentsFromPattern(pattern, totalLength, rng) {
+  let constraints = pattern.map(segment => {
+    const minLength = Math.max(segment.min ?? 1, getTerrainMinLength(segment.terrain));
+    const maxLength = Math.max(segment.max ?? minLength, minLength);
+    return { terrain: segment.terrain, min: minLength, max: maxLength };
+  });
+
+  let minTotal = constraints.reduce((sum, segment) => sum + segment.min, 0);
+  if (minTotal > totalLength) {
+    const scale = totalLength / minTotal;
+    constraints = constraints.map(segment => {
+      const scaledMin = Math.max(1, Math.floor(segment.min * scale));
+      const scaledMax = Math.max(scaledMin, Math.floor(segment.max * scale));
+      return { ...segment, min: scaledMin, max: Math.max(segment.max, scaledMax) };
+    });
+    minTotal = constraints.reduce((sum, segment) => sum + segment.min, 0);
+  }
+
+  const segments = [];
+  let remaining = totalLength;
+
+  for (let i = 0; i < constraints.length; i++) {
+    const segment = constraints[i];
+    const remainingMin = constraints
+      .slice(i + 1)
+      .reduce((sum, nextSegment) => sum + nextSegment.min, 0);
+    let maxAllowed = Math.min(segment.max, remaining - remainingMin);
+
+    if (maxAllowed < segment.min) {
+      maxAllowed = Math.max(1, remaining - remainingMin);
+    }
+
+    const minAllowed = Math.min(segment.min, maxAllowed);
+    let length = minAllowed;
+    if (maxAllowed > minAllowed) {
+      length = minAllowed + Math.floor(rng() * (maxAllowed - minAllowed + 1));
+    }
+
+    segments.push({ terrain: segment.terrain, length, max: segment.max });
+    remaining -= length;
+  }
+
+  if (remaining > 0 && segments.length > 0) {
+    for (const segment of segments) {
+      const maxLength = segment.max ?? segment.length;
+      const room = Math.max(0, maxLength - segment.length);
+      if (room <= 0) continue;
+      const add = Math.min(room, remaining);
+      segment.length += add;
+      remaining -= add;
+      if (remaining <= 0) break;
+    }
+    if (remaining > 0) {
+      segments[segments.length - 1].length += remaining;
+    }
+  }
+
+  return segments.map(({ terrain, length }) => ({ terrain, length }));
+}
+
+function normalizeSegments(segments, presetType) {
+  const mountainAllowed = presetType ? MOUNTAIN_ALLOWED_PRESETS.has(presetType) : true;
+  const adjusted = segments.map(segment => {
+    let terrain = segment.terrain;
+
+    if (terrain === TerrainType.MOUNTAIN) {
+      if (!mountainAllowed || segment.length < COURSE_CONSTRAINTS.mountainMin) {
+        terrain = TerrainType.HILL;
+      }
+    }
+
+    if (terrain === TerrainType.HILL && segment.length < COURSE_CONSTRAINTS.hillMin) {
+      terrain = TerrainType.FLAT;
+    }
+
+    return { terrain, length: segment.length };
+  });
+
+  return mergeSegments(adjusted);
+}
+
+function mergeSegments(segments) {
+  const merged = [];
+  for (const segment of segments) {
+    if (!segment || segment.length <= 0) continue;
+    const last = merged[merged.length - 1];
+    if (last && last.terrain === segment.terrain) {
+      last.length += segment.length;
+    } else {
+      merged.push({ ...segment });
+    }
+  }
+  return merged;
+}
+
+function extractTerrainSegments(course) {
+  const segments = [];
+  for (const cell of course) {
+    if (!segments.length || segments[segments.length - 1].terrain !== cell.terrain) {
+      segments.push({ terrain: cell.terrain, length: 1 });
+    } else {
+      segments[segments.length - 1].length += 1;
+    }
+  }
+  return segments;
+}
+
+function extractRefuelSegments(course) {
+  const segments = [];
+  for (const cell of course) {
+    const isRefuel = !!cell.isRefuelZone;
+    if (!segments.length || segments[segments.length - 1].isRefuel !== isRefuel) {
+      segments.push({ isRefuel, length: 1 });
+    } else {
+      segments[segments.length - 1].length += 1;
+    }
+  }
+  return segments.filter(segment => segment.isRefuel);
+}
+
+export function validateCourse(course, presetType, options = {}) {
+  const issues = [];
+  if (!course || course.length === 0) {
+    return { valid: false, issues: ['course: empty'] };
+  }
+
+  const segments = extractTerrainSegments(course);
+  const mountainSegments = segments.filter(segment => segment.terrain === TerrainType.MOUNTAIN);
+  const hillSegments = segments.filter(segment => segment.terrain === TerrainType.HILL);
+  const mountainAllowed = presetType ? MOUNTAIN_ALLOWED_PRESETS.has(presetType) : true;
+
+  if (!mountainAllowed && mountainSegments.length > 0) {
+    issues.push('mountain: forbidden in this preset');
+  }
+
+  for (const segment of mountainSegments) {
+    if (segment.length < COURSE_CONSTRAINTS.mountainMin) {
+      issues.push(`mountain: segment < ${COURSE_CONSTRAINTS.mountainMin}`);
+      break;
+    }
+  }
+
+  for (const segment of hillSegments) {
+    if (segment.length < COURSE_CONSTRAINTS.hillMin) {
+      issues.push(`hill: segment < ${COURSE_CONSTRAINTS.hillMin}`);
+      break;
+    }
+  }
+
+  const refuelSegments = extractRefuelSegments(course);
+  for (const segment of refuelSegments) {
+    if (segment.length < COURSE_CONSTRAINTS.refuelMin || segment.length > COURSE_CONSTRAINTS.refuelMax) {
+      issues.push(`refuel: segment length ${segment.length}`);
+      break;
+    }
+  }
+
+  if (presetType && PAVES_PRESETS.has(presetType)) {
+    const lastTerrain = course[course.length - 1]?.terrain;
+    if (lastTerrain !== TerrainType.SPRINT) {
+      issues.push('paves: sprint finish required');
+    }
+
+    const hillFlatSequence = segments
+      .filter(segment => segment.terrain === TerrainType.HILL || segment.terrain === TerrainType.FLAT)
+      .map(segment => segment.terrain);
+
+    for (let i = 1; i < hillFlatSequence.length; i++) {
+      if (hillFlatSequence[i] === hillFlatSequence[i - 1]) {
+        issues.push('paves: hills/flats should alternate');
+        break;
+      }
+    }
+
+    if (!hillFlatSequence.includes(TerrainType.HILL)) {
+      issues.push('paves: missing hill segments');
+    }
+    if (!hillFlatSequence.includes(TerrainType.FLAT)) {
+      issues.push('paves: missing flat segments');
+    }
+  }
+
+  if (presetType && MOUNTAIN_ALLOWED_PRESETS.has(presetType)) {
+    if (mountainSegments.length < 2) {
+      issues.push('mountain: requires at least 2 mountain segments');
+    }
+    if (!segments.some(segment => segment.terrain === TerrainType.DESCENT)) {
+      issues.push('mountain: missing descent segment');
+    }
+    if (!segments.some(segment => segment.terrain === TerrainType.FLAT)) {
+      issues.push('mountain: missing flat segment');
+    }
+
+    const allowSprintFinish = options.allowSprintFinish;
+    const endsWithSprint = course[course.length - 1]?.terrain === TerrainType.SPRINT;
+    if (allowSprintFinish === false && endsWithSprint) {
+      issues.push('mountain: sprint finish not allowed');
+    }
+  }
+
+  return { valid: issues.length === 0, issues };
 }
 
 /**

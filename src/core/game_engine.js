@@ -4,7 +4,7 @@
  */
 
 import { roll1D6, rollFallTest } from './dice.js';
-import { TerrainType, TerrainConfig, DescentRules, MountainRules, getTerrainBonus, generateCourse, hasAspiration, findSummitPosition, isExemptFromSummitStop, isRefuelZone } from './terrain.js';
+import { TerrainType, TerrainConfig, DescentRules, getTerrainBonus, generateCourse, generateCourseFromPreset, hasAspiration, findSummitPosition, isRefuelZone } from './terrain.js';
 import { 
   createRider, createRiderFromDraft, createTeamRiders, RiderConfig, CardType, RiderType,
   playCard, playSpecialtyCard, addFatigueCard,
@@ -41,6 +41,7 @@ import {
   StageClassification,
   getClassificationRanking
 } from './stage-race.js';
+import { getClassicPreset } from '../config/race-presets.js';
 
 /**
  * Constants
@@ -163,6 +164,16 @@ export function createGameState(options = {}) {
     const currentStage = stageRace.stages[stageRace.currentStageIndex];
     effectiveCourseLength = stageLength;
     course = generateStageCourse(currentStage.type, stageLength);
+  } else if (gameConfig?.classicId) {
+    const classicPreset = getClassicPreset(gameConfig.classicId);
+    if (classicPreset) {
+      course = generateCourseFromPreset({
+        ...classicPreset,
+        presetType: classicPreset.id
+      }, effectiveCourseLength);
+    } else {
+      course = generateCourse(effectiveCourseLength);
+    }
   } else {
     course = generateCourse(effectiveCourseLength);
   }
@@ -708,16 +719,7 @@ export function calculatePreviewPositions(state) {
   
   // Calculate position without specialty
   let targetWithoutSpecialty = rider.position + baseMovement;
-  
-  // Check summit stop for non-climbers (without specialty)
-  let summitStopWithout = null;
-  if (!isExemptFromSummitStop(rider.type)) {
-    summitStopWithout = findSummitPosition(state.course, rider.position, targetWithoutSpecialty);
-    if (summitStopWithout !== null) {
-      targetWithoutSpecialty = summitStopWithout;
-    }
-  }
-  
+
   const crossingFinishWithout = targetWithoutSpecialty >= state.finishLine;
   // Find available position (cell capacity)
   const finalWithoutSpecialty = crossingFinishWithout
@@ -726,16 +728,7 @@ export function calculatePreviewPositions(state) {
   
   // Calculate position with specialty (+2)
   let targetWithSpecialty = rider.position + baseMovement + 2;
-  
-  // Check summit stop for non-climbers (with specialty)
-  let summitStopWith = null;
-  if (!isExemptFromSummitStop(rider.type)) {
-    summitStopWith = findSummitPosition(state.course, rider.position, targetWithSpecialty);
-    if (summitStopWith !== null) {
-      targetWithSpecialty = summitStopWith;
-    }
-  }
-  
+
   const crossingFinishWith = targetWithSpecialty >= state.finishLine;
   const finalWithSpecialty = crossingFinishWith
     ? targetWithSpecialty
@@ -756,8 +749,8 @@ export function calculatePreviewPositions(state) {
     movementWith: baseMovement + 2,
     positionWithout: finalWithoutSpecialty,
     positionWith: finalWithSpecialty,
-    summitStopWithout: summitStopWithout !== null,
-    summitStopWith: summitStopWith !== null,
+    summitStopWithout: false,
+    summitStopWith: false,
     crossingFinishWithout,
     crossingFinishWith,
     canUseSpecialty,
@@ -808,18 +801,6 @@ export function resolveMovement(state) {
   // Check if crossing finish
   const crossingFinish = targetPosition >= state.finishLine && !rider.hasFinished;
   
-  // v3.2: Check for summit stop (non-climbers must stop at mountain summit)
-  let stoppedAtSummit = false;
-  let summitPosition = null;
-  if (!crossingFinish && !isExemptFromSummitStop(rider.type)) {
-    summitPosition = findSummitPosition(state.course, rider.position, targetPosition);
-    if (summitPosition !== null) {
-      // Non-climber must stop at summit
-      stoppedAtSummit = true;
-      targetPosition = summitPosition;
-    }
-  }
-  
   // If not crossing finish, check for cell capacity
   let newPosition = targetPosition;
   if (!crossingFinish) {
@@ -829,18 +810,25 @@ export function resolveMovement(state) {
   // Calculate actual distance moved
   const actualDistance = newPosition - rider.position;
 
+  const summitPosition = findSummitPosition(
+    state.course,
+    rider.position,
+    crossingFinish ? targetPosition : newPosition
+  );
+  const summitBonus = summitPosition !== null && rider.type === 'climber' ? 1 : 0;
+
   // Energy check before committing the action
   const usedAttack = rider.attackCards.some(c => c.id === state.selectedCardId);
   const usedSpecialty = !!state.selectedSpecialtyId;
   const windPenalty = rider.windPenaltyNextMove || 0;
-  const energyConsumed = calculateMovementConsumption({
+  const energyConsumed = Math.max(0, calculateMovementConsumption({
     distance: actualDistance,
     terrain,
     riderType: rider.type,
     usedAttack,
     usedSpecialty,
     isLeading: false // Determined at end of turn
-  }) + windPenalty;
+  }) + windPenalty - summitBonus);
 
   if (energyConsumed > rider.energy) {
     return {
@@ -910,9 +898,7 @@ export function resolveMovement(state) {
     logMessage += ` | ⚡${energyDelta > 0 ? '+' : ''}${energyDelta}`;
   }
   
-  if (stoppedAtSummit) {
-    logMessage += ` (⛰️ arrêt au sommet, case ${newPosition})`;
-  } else if (!crossingFinish && newPosition !== targetPosition) {
+  if (!crossingFinish && newPosition !== targetPosition) {
     logMessage += ` (case pleine, arrêt case ${newPosition})`;
   } else {
     logMessage += ` (case ${newPosition})`;
