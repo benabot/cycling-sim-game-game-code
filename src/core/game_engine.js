@@ -224,6 +224,7 @@ export function createGameState(options = {}) {
     raceEventState: {
       cooldownTurns: 0,
       weather,
+      nextWeather: gameConfig?.weatherNext || null,
       lastCobblePunctureTurn: null
     },
     
@@ -854,6 +855,7 @@ export function resolveMovement(state) {
   const raceEventState = state.raceEventState || {
     cooldownTurns: 0,
     weather: RaceWeather.CLEAR,
+    nextWeather: null,
     lastCobblePunctureTurn: null
   };
   const cobbleRng = raceEventState.rng || Math.random;
@@ -1301,7 +1303,11 @@ export function applyEndOfTurnEffects(state) {
   updatedRiders = updatedRiders.map(rider => tickRaceEvent(rider));
 
   // Roll a new race event for next turn (one per global turn max)
-  const raceEventState = state.raceEventState || { cooldownTurns: 0, weather: RaceWeather.CLEAR };
+  const raceEventState = state.raceEventState || {
+    cooldownTurns: 0,
+    weather: RaceWeather.CLEAR,
+    nextWeather: null
+  };
   const getRiderContext = rider => {
     const pos = rider.position;
     const courseIndex = pos - 1;

@@ -312,7 +312,7 @@ const props = defineProps({
     type: String,
     required: true,
     validator: (v) => [
-      'ai', 'human', 'die', 'card', 'attack', 'wind', 'shelter', 'summit',
+      'ai', 'human', 'die', 'card', 'attack', 'wind', 'rain', 'shelter', 'summit',
       'finish', 'aspiration', 'refuel', 'history', 'settings', 'start',
       'check', 'close', 'chevron-down', 'chevron-up', 'info', 'warning',
       'team', 'star', 'crash', 'energy', 'book', 'target', 'shield', 'balance',

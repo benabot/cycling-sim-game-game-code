@@ -110,6 +110,9 @@ export function useGameEngine() {
   const calculatedMovement = computed(() => gameState.value?.calculatedMovement || 0);
   const playedThisTurn = computed(() => gameState.value?.ridersPlayedThisTurn || []);
   const weather = computed(() => gameState.value?.raceEventState?.weather || RaceWeather.CLEAR);
+  const nextWeather = computed(
+    () => gameState.value?.raceEventState?.nextWeather || gameState.value?.gameConfig?.weatherNext || null
+  );
   
   // v4.0: AI computed properties
   const isAITurn = computed(() => {
@@ -827,7 +830,6 @@ export function useGameEngine() {
     lastDiceRoll,
     calculatedMovement,
     playedThisTurn,
-    weather,
     previewPositions,
     currentTeamConfig,
     currentRider,
@@ -838,6 +840,8 @@ export function useGameEngine() {
     players,
     stageRace,
     aiPersonalities,
+    weather,
+    nextWeather,
     
     // Actions
     initialize,

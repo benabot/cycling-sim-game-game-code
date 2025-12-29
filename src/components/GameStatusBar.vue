@@ -26,12 +26,8 @@
 
     <div class="status-bar-divider"></div>
 
-    <div class="status-bar-item status-bar-weather">
-      <span class="status-bar-label">Météo</span>
-      <span class="status-bar-value">
-        <UIIcon :type="weatherIcon" :size="16" class="phase-icon" />
-        {{ weatherLabel }}
-      </span>
+    <div class="status-bar-item status-bar-chips">
+      <WeatherChip :weather="weather" :nextWeather="nextWeather" />
     </div>
 
     <template v-if="hasStageRace">
@@ -81,7 +77,7 @@ import { computed } from 'vue';
 import { TeamConfig } from '../config/game.config.js';
 import { JerseyConfig } from '../config/race-presets.js';
 import { UIIcon } from './icons';
-import { getWeatherIconKey, getWeatherLabel } from '../core/race_weather.js';
+import WeatherChip from './WeatherChip.vue';
 
 const props = defineProps({
   turn: { type: Number, required: true },
@@ -91,7 +87,8 @@ const props = defineProps({
   isLastTurn: { type: Boolean, default: false },
   winningTeam: { type: String, default: null },
   stageRace: { type: Object, default: null },
-  weather: { type: String, default: 'clear' }
+  weather: { type: String, default: 'clear' },
+  nextWeather: { type: String, default: null }
 });
 
 const teamConfig = computed(() => TeamConfig[props.currentTeam]);
@@ -138,8 +135,6 @@ const phaseTooltip = computed(() => {
   return tooltips[props.turnPhase] || '';
 });
 
-const weatherLabel = computed(() => getWeatherLabel(props.weather));
-const weatherIcon = computed(() => getWeatherIconKey(props.weather));
 
 const hasStageRace = computed(() => !!props.stageRace);
 const stageCount = computed(() => props.stageRace?.stages?.length || 0);
@@ -206,6 +201,10 @@ const jerseyDisplay = computed(() => {
 
 .status-bar-jerseys {
   flex: 1.4;
+}
+
+.status-bar-chips {
+  gap: var(--space-sm);
 }
 
 .jersey-list {

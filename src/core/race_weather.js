@@ -16,7 +16,7 @@ const WEATHER_WEIGHTS = [
 ];
 
 const WEATHER_LABELS = {
-  [RaceWeather.CLEAR]: 'Normal',
+  [RaceWeather.CLEAR]: 'Ciel clair',
   [RaceWeather.WIND]: 'Vent latéral',
   [RaceWeather.RAIN]: 'Pluie'
 };
