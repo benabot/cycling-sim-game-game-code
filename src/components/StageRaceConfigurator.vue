@@ -52,6 +52,12 @@
               <div class="profile-card__titles">
                 <h3 class="profile-card__title">{{ profile.name }}</h3>
                 <p class="profile-card__description">{{ profile.description }}</p>
+                <div class="profile-card__profile">
+                  <svg class="profile-line profile-line--sm" viewBox="0 0 100 24" aria-hidden="true">
+                    <path :d="getProfilePath(profile.profile)" class="profile-line__path" />
+                  </svg>
+                  <span class="profile-card__narrative">{{ profile.narrative }}</span>
+                </div>
               </div>
             </div>
 
@@ -149,6 +155,19 @@ function updateProfile(value) {
     profile: value || StageRaceProfile.BALANCED
   });
 }
+
+function getProfilePath(profile = []) {
+  const points = profile.length ? profile : [0.2, 0.4, 0.3, 0.5, 0.2];
+  const width = 100;
+  const height = 20;
+  const step = points.length > 1 ? width / (points.length - 1) : width;
+  const coords = points.map((value, index) => {
+    const x = index * step;
+    const y = height - Math.max(0, Math.min(1, value)) * height;
+    return `${x} ${y}`;
+  });
+  return `M ${coords.join(' L ')}`;
+}
 </script>
 
 <style scoped>
@@ -239,6 +258,31 @@ function updateProfile(value) {
   font-size: 12px;
   line-height: 1.4;
   color: var(--color-muted);
+}
+
+.profile-card__profile {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-xs);
+  margin-top: var(--space-xs);
+}
+
+.profile-line--sm {
+  width: 100%;
+  height: 24px;
+}
+
+.profile-line__path {
+  fill: none;
+  stroke: var(--color-ink-muted);
+  stroke-width: 2;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+.profile-card__narrative {
+  font-size: 11px;
+  color: var(--color-ink-muted);
 }
 
 .profile-card__check {

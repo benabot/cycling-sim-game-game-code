@@ -51,6 +51,7 @@ export const RiderPool = [
   {
     id: 'climber_01',
     name: 'A. Roche',
+    portraitKey: 'climber_01',
     role: 'climber',
     price: 26,
     stats: { force: 72, endurance: 80, sprint: 48, climb: 88, punch: 65, rolling: 54 }
@@ -58,6 +59,7 @@ export const RiderPool = [
   {
     id: 'climber_02',
     name: 'M. Serrat',
+    portraitKey: 'climber_02',
     role: 'climber',
     price: 24,
     stats: { force: 68, endurance: 76, sprint: 45, climb: 85, punch: 62, rolling: 52 }
@@ -65,6 +67,7 @@ export const RiderPool = [
   {
     id: 'climber_03',
     name: 'L. Alpine',
+    portraitKey: 'climber_03',
     role: 'climber',
     price: 22,
     stats: { force: 64, endurance: 72, sprint: 42, climb: 82, punch: 58, rolling: 50 }
@@ -72,6 +75,7 @@ export const RiderPool = [
   {
     id: 'climber_04',
     name: 'R. Dumas',
+    portraitKey: 'climber_04',
     role: 'climber',
     price: 20,
     stats: { force: 60, endurance: 70, sprint: 40, climb: 78, punch: 55, rolling: 48 }
@@ -79,6 +83,7 @@ export const RiderPool = [
   {
     id: 'climber_05',
     name: 'T. Lenoir',
+    portraitKey: 'climber_05',
     role: 'climber',
     price: 18,
     stats: { force: 58, endurance: 68, sprint: 38, climb: 75, punch: 52, rolling: 46 }
@@ -86,6 +91,7 @@ export const RiderPool = [
   {
     id: 'puncher_01',
     name: 'S. Morel',
+    portraitKey: 'puncher_01',
     role: 'puncher',
     price: 24,
     stats: { force: 78, endurance: 70, sprint: 60, climb: 68, punch: 86, rolling: 58 }
@@ -93,6 +99,7 @@ export const RiderPool = [
   {
     id: 'puncher_02',
     name: 'J. Caster',
+    portraitKey: 'puncher_02',
     role: 'puncher',
     price: 22,
     stats: { force: 74, endurance: 68, sprint: 58, climb: 65, punch: 82, rolling: 55 }
@@ -100,6 +107,7 @@ export const RiderPool = [
   {
     id: 'puncher_03',
     name: 'N. Bertin',
+    portraitKey: 'puncher_03',
     role: 'puncher',
     price: 20,
     stats: { force: 70, endurance: 66, sprint: 55, climb: 62, punch: 78, rolling: 52 }
@@ -107,6 +115,7 @@ export const RiderPool = [
   {
     id: 'puncher_04',
     name: 'P. Girard',
+    portraitKey: 'puncher_04',
     role: 'puncher',
     price: 18,
     stats: { force: 66, endurance: 64, sprint: 52, climb: 58, punch: 74, rolling: 50 }
@@ -114,6 +123,7 @@ export const RiderPool = [
   {
     id: 'puncher_05',
     name: 'E. Lang',
+    portraitKey: 'puncher_05',
     role: 'puncher',
     price: 17,
     stats: { force: 64, endurance: 62, sprint: 50, climb: 56, punch: 72, rolling: 48 }
@@ -121,6 +131,7 @@ export const RiderPool = [
   {
     id: 'rouleur_01',
     name: 'C. Martin',
+    portraitKey: 'rouleur_01',
     role: 'rouleur',
     price: 25,
     stats: { force: 76, endurance: 78, sprint: 54, climb: 52, punch: 60, rolling: 88 }
@@ -128,6 +139,7 @@ export const RiderPool = [
   {
     id: 'rouleur_02',
     name: 'H. Renard',
+    portraitKey: 'rouleur_02',
     role: 'rouleur',
     price: 23,
     stats: { force: 72, endurance: 76, sprint: 52, climb: 50, punch: 58, rolling: 84 }
@@ -135,6 +147,7 @@ export const RiderPool = [
   {
     id: 'rouleur_03',
     name: 'D. Perret',
+    portraitKey: 'rouleur_03',
     role: 'rouleur',
     price: 21,
     stats: { force: 68, endurance: 74, sprint: 50, climb: 48, punch: 56, rolling: 80 }
@@ -142,6 +155,7 @@ export const RiderPool = [
   {
     id: 'rouleur_04',
     name: 'F. Colin',
+    portraitKey: 'rouleur_04',
     role: 'rouleur',
     price: 19,
     stats: { force: 64, endurance: 70, sprint: 48, climb: 46, punch: 54, rolling: 76 }
@@ -149,6 +163,7 @@ export const RiderPool = [
   {
     id: 'rouleur_05',
     name: 'G. Aubert',
+    portraitKey: 'rouleur_05',
     role: 'rouleur',
     price: 18,
     stats: { force: 62, endurance: 68, sprint: 46, climb: 44, punch: 52, rolling: 74 }
@@ -156,6 +171,7 @@ export const RiderPool = [
   {
     id: 'sprinter_01',
     name: 'V. March',
+    portraitKey: 'sprinter_01',
     role: 'sprinter',
     price: 26,
     stats: { force: 80, endurance: 66, sprint: 90, climb: 44, punch: 62, rolling: 60 }
@@ -163,6 +179,7 @@ export const RiderPool = [
   {
     id: 'sprinter_02',
     name: 'I. Faure',
+    portraitKey: 'sprinter_02',
     role: 'sprinter',
     price: 23,
     stats: { force: 76, endurance: 64, sprint: 86, climb: 42, punch: 60, rolling: 58 }
@@ -170,6 +187,7 @@ export const RiderPool = [
   {
     id: 'sprinter_03',
     name: 'K. Rolland',
+    portraitKey: 'sprinter_03',
     role: 'sprinter',
     price: 21,
     stats: { force: 72, endurance: 62, sprint: 82, climb: 40, punch: 58, rolling: 56 }
@@ -177,6 +195,7 @@ export const RiderPool = [
   {
     id: 'sprinter_04',
     name: 'O. Denis',
+    portraitKey: 'sprinter_04',
     role: 'sprinter',
     price: 19,
     stats: { force: 68, endurance: 60, sprint: 78, climb: 38, punch: 56, rolling: 54 }
@@ -184,6 +203,7 @@ export const RiderPool = [
   {
     id: 'sprinter_05',
     name: 'Y. Petit',
+    portraitKey: 'sprinter_05',
     role: 'sprinter',
     price: 18,
     stats: { force: 66, endurance: 58, sprint: 74, climb: 36, punch: 54, rolling: 52 }
@@ -191,6 +211,7 @@ export const RiderPool = [
   {
     id: 'versatile_01',
     name: 'B. Laurent',
+    portraitKey: 'versatile_01',
     role: 'versatile',
     price: 24,
     stats: { force: 70, endurance: 74, sprint: 62, climb: 66, punch: 66, rolling: 66 }
@@ -198,6 +219,7 @@ export const RiderPool = [
   {
     id: 'versatile_02',
     name: 'Q. Noel',
+    portraitKey: 'versatile_02',
     role: 'versatile',
     price: 22,
     stats: { force: 68, endurance: 72, sprint: 60, climb: 64, punch: 64, rolling: 64 }
@@ -205,6 +227,7 @@ export const RiderPool = [
   {
     id: 'versatile_03',
     name: 'U. Pascal',
+    portraitKey: 'versatile_03',
     role: 'versatile',
     price: 20,
     stats: { force: 66, endurance: 70, sprint: 58, climb: 62, punch: 62, rolling: 62 }
@@ -212,6 +235,7 @@ export const RiderPool = [
   {
     id: 'versatile_04',
     name: 'W. Thomas',
+    portraitKey: 'versatile_04',
     role: 'versatile',
     price: 18,
     stats: { force: 64, endurance: 68, sprint: 56, climb: 60, punch: 60, rolling: 60 }
@@ -219,6 +243,7 @@ export const RiderPool = [
   {
     id: 'versatile_05',
     name: 'Z. Henry',
+    portraitKey: 'versatile_05',
     role: 'versatile',
     price: 17,
     stats: { force: 62, endurance: 66, sprint: 54, climb: 58, punch: 58, rolling: 58 }

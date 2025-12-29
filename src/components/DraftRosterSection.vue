@@ -76,7 +76,10 @@
           <article v-for="rider in pagedPool" :key="rider.id" class="draft-card draft-card--compact">
             <div class="draft-card-main">
               <div class="draft-card-meta">
-                <RiderIcon :type="rider.role" :size="18" />
+                <div class="rider-portrait" :class="getPortraitClass(rider.role)">
+                  <img v-if="rider.portraitUrl" :src="rider.portraitUrl" :alt="rider.name" />
+                  <span v-else class="rider-portrait__initials">{{ getInitials(rider.name) }}</span>
+                </div>
                 <div>
                   <p class="draft-card-name">{{ rider.name }}</p>
                   <div class="draft-card-tags">
@@ -135,6 +138,27 @@
 
       <div class="draft-roster">
         <h3 class="draft-title">Sélection</h3>
+        <div class="draft-roster-summary">
+          <div class="draft-roster-avatars">
+            <div
+              v-for="slot in rosterSize"
+              :key="`roster-slot-${slot}`"
+              class="rider-portrait rider-portrait--sm"
+              :class="getPortraitClass(activeRoster[slot - 1]?.role)"
+              :style="getTeamBorderStyle(activeTeamId)"
+            >
+              <img
+                v-if="activeRoster[slot - 1]?.portraitUrl"
+                :src="activeRoster[slot - 1]?.portraitUrl"
+                :alt="activeRoster[slot - 1]?.name"
+              />
+              <span v-else class="rider-portrait__initials">
+                {{ activeRoster[slot - 1] ? getInitials(activeRoster[slot - 1].name) : '—' }}
+              </span>
+            </div>
+          </div>
+          <span class="draft-roster-note">{{ rosterTone }}</span>
+        </div>
         <div class="roster-slots">
           <div
             v-for="role in roles"
@@ -149,7 +173,17 @@
 
             <div v-if="rosterByRole[role]" class="roster-card">
               <div class="roster-card-main">
-                <span class="roster-card-name">{{ rosterByRole[role].name }}</span>
+                <div class="roster-card-identity">
+                  <div
+                    class="rider-portrait rider-portrait--sm"
+                    :class="getPortraitClass(rosterByRole[role].role)"
+                    :style="getTeamBorderStyle(activeTeamId)"
+                  >
+                    <img v-if="rosterByRole[role].portraitUrl" :src="rosterByRole[role].portraitUrl" :alt="rosterByRole[role].name" />
+                    <span v-else class="rider-portrait__initials">{{ getInitials(rosterByRole[role].name) }}</span>
+                  </div>
+                  <span class="roster-card-name">{{ rosterByRole[role].name }}</span>
+                </div>
                 <div class="roster-card-tags">
                   <span class="badge badge-pill">{{ rosterByRole[role].price }}</span>
                   <span class="badge badge-pill">Sélectionné</span>
@@ -172,9 +206,28 @@
     </div>
 
     <div class="draft-sticky-summary">
+      <div class="draft-sticky-avatars">
+        <div
+          v-for="slot in rosterSize"
+          :key="`slot-${slot}`"
+          class="rider-portrait rider-portrait--sm"
+          :class="getPortraitClass(activeRoster[slot - 1]?.role)"
+          :style="getTeamBorderStyle(activeTeamId)"
+        >
+          <img
+            v-if="activeRoster[slot - 1]?.portraitUrl"
+            :src="activeRoster[slot - 1]?.portraitUrl"
+            :alt="activeRoster[slot - 1]?.name"
+          />
+          <span v-else class="rider-portrait__initials">
+            {{ activeRoster[slot - 1] ? getInitials(activeRoster[slot - 1].name) : '—' }}
+          </span>
+        </div>
+      </div>
       <div class="draft-sticky-metrics">
         <span>Slots {{ rosterCount }}/{{ rosterSize }}</span>
         <span>Budget {{ budgetRemaining }}</span>
+        <span class="draft-sticky-note">{{ rosterTone }}</span>
       </div>
       <button
         type="button"
@@ -224,6 +277,14 @@ const rosterByRole = computed(() => {
 });
 
 const activeTeamLabel = computed(() => getTeamLabel(props.activeTeamId));
+const rosterTone = computed(() => {
+  if (rosterCount.value < props.rosterSize) return 'Profil en construction';
+  const roles = new Set(activeRoster.value.map(rider => rider.role));
+  if (roles.size === props.roles.length) return 'Équipe équilibrée';
+  if (!roles.has('climber')) return 'Risque montagne';
+  if (roles.has('sprinter') && roles.has('puncher')) return 'Profil offensif';
+  return 'Profil stable';
+});
 
 const searchQuery = ref('');
 const activeRole = ref('all');
@@ -273,6 +334,24 @@ function getRoleLabel(role) {
     versatile: 'Polyvalent'
   };
   return labels[role] || role;
+}
+
+function getInitials(name = '') {
+  const parts = name.trim().split(' ').filter(Boolean);
+  if (!parts.length) return '—';
+  if (parts.length === 1) return parts[0].slice(0, 2).toUpperCase();
+  return `${parts[0][0]}${parts[parts.length - 1][0]}`.toUpperCase();
+}
+
+function getPortraitClass(role) {
+  if (!role) return 'rider-portrait--neutral';
+  return `rider-portrait--${role}`;
+}
+
+function getTeamBorderStyle(teamId) {
+  const borderColor = TeamConfigs[teamId]?.borderColor || TeamConfigs[teamId]?.color;
+  if (!borderColor) return null;
+  return { borderColor };
 }
 
 function canRecruit(rider) {
@@ -441,6 +520,46 @@ function getStatRows(rider) {
   align-items: flex-start;
 }
 
+.rider-portrait {
+  width: 36px;
+  height: 36px;
+  border-radius: 10px;
+  border: 1px solid var(--color-line);
+  background: var(--color-canvas);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--color-ink);
+  flex-shrink: 0;
+}
+
+.rider-portrait--sm {
+  width: 28px;
+  height: 28px;
+  border-radius: 8px;
+  font-size: 10px;
+}
+
+.rider-portrait img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.rider-portrait__initials {
+  letter-spacing: 0.4px;
+}
+
+.rider-portrait--climber { background: linear-gradient(135deg, #f0f7f2, #e1f0e6); }
+.rider-portrait--puncher { background: linear-gradient(135deg, #fef6ee, #fde9d6); }
+.rider-portrait--rouleur { background: linear-gradient(135deg, #eef5fb, #ddebf7); }
+.rider-portrait--sprinter { background: linear-gradient(135deg, #fdf1f1, #fbe1e1); }
+.rider-portrait--versatile { background: linear-gradient(135deg, #f4f1fb, #e8e2f6); }
+.rider-portrait--neutral { background: var(--color-canvas); }
+
 .draft-card-name {
   margin: 0;
   font-family: var(--font-display);
@@ -517,6 +636,23 @@ function getStatRows(rider) {
   gap: var(--space-sm);
 }
 
+.draft-roster-summary {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-xs);
+  margin-bottom: var(--space-sm);
+}
+
+.draft-roster-avatars {
+  display: flex;
+  gap: var(--space-xs);
+}
+
+.draft-roster-note {
+  font-size: 12px;
+  color: var(--color-ink-muted);
+}
+
 .roster-slot {
   border: 1px dashed var(--color-line);
   border-radius: var(--radius-md);
@@ -550,6 +686,12 @@ function getStatRows(rider) {
   display: flex;
   align-items: center;
   justify-content: space-between;
+  gap: var(--space-sm);
+}
+
+.roster-card-identity {
+  display: flex;
+  align-items: center;
   gap: var(--space-sm);
 }
 
@@ -594,12 +736,21 @@ function getStatRows(rider) {
   box-shadow: var(--shadow-md);
 }
 
+.draft-sticky-avatars {
+  display: flex;
+  gap: var(--space-xs);
+}
+
 .draft-sticky-metrics {
   display: flex;
   flex-direction: column;
   gap: 2px;
   font-size: 12px;
   color: var(--color-ink-muted);
+}
+
+.draft-sticky-note {
+  color: var(--color-ink-soft);
 }
 
 @media (max-width: 960px) {

@@ -46,6 +46,14 @@
         
         <!-- Description -->
         <p class="classic-card__description">{{ classic.description }}</p>
+
+        <!-- Profile + narrative -->
+        <div class="classic-card__profile">
+          <svg class="profile-line" viewBox="0 0 100 28" aria-hidden="true">
+            <path :d="getProfilePath(classic.profile)" class="profile-line__path" />
+          </svg>
+          <span class="classic-card__narrative">{{ classic.narrative }}</span>
+        </div>
         
         <!-- Advantage badge -->
         <div class="classic-card__advantage">
@@ -94,6 +102,19 @@ const classics = computed(() => getAllClassicPresets());
 
 function getTerrainName(terrain) {
   return TerrainConfig[terrain]?.name || terrain;
+}
+
+function getProfilePath(profile = []) {
+  const points = profile.length ? profile : [0.2, 0.4, 0.3, 0.5, 0.2];
+  const width = 100;
+  const height = 24;
+  const step = points.length > 1 ? width / (points.length - 1) : width;
+  const coords = points.map((value, index) => {
+    const x = index * step;
+    const y = height - Math.max(0, Math.min(1, value)) * height;
+    return `${x} ${y}`;
+  });
+  return `M ${coords.join(' L ')}`;
 }
 </script>
 
@@ -253,6 +274,30 @@ function getTerrainName(terrain) {
   line-height: 1.5;
   color: var(--color-ink-soft);
   margin: var(--space-xs) 0;
+}
+
+.classic-card__profile {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-xs);
+}
+
+.profile-line {
+  width: 100%;
+  height: 28px;
+}
+
+.profile-line__path {
+  fill: none;
+  stroke: var(--color-ink-muted);
+  stroke-width: 2;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+.classic-card__narrative {
+  font-size: 12px;
+  color: var(--color-ink-muted);
 }
 
 /* Advantage badge */
