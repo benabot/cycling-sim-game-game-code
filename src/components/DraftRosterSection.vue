@@ -96,10 +96,18 @@
                     class="rider-portrait__fallback"
                   />
                   <span v-if="!hasPortrait(rider.portraitKey)" class="rider-portrait__initials">{{ getInitials(rider.name) }}</span>
-                  <span v-if="isKnownRole(rider.role)" class="rider-portrait__badge rider-portrait__badge--role">
+                  <span
+                    v-if="isKnownRole(rider.role)"
+                    class="rider-portrait__badge rider-portrait__badge--role"
+                    :style="getTeamBadgeStyle(activeTeamId)"
+                  >
                     <RiderIcon :type="rider.role" :size="10" />
                   </span>
-                  <span v-else class="rider-portrait__badge rider-portrait__badge--fallback"></span>
+                  <span
+                    v-else
+                    class="rider-portrait__badge rider-portrait__badge--fallback"
+                    :style="getTeamBadgeStyle(activeTeamId)"
+                  ></span>
                 </div>
                 <div class="draft-card-identity">
                   <p class="draft-card-name">{{ rider.name }}</p>
@@ -188,12 +196,14 @@
               <span
                 v-if="activeRoster[slot - 1]?.role && isKnownRole(activeRoster[slot - 1].role)"
                 class="rider-portrait__badge rider-portrait__badge--role"
+                :style="getTeamBadgeStyle(activeTeamId)"
               >
                 <RiderIcon :type="activeRoster[slot - 1].role" :size="9" />
               </span>
               <span
                 v-else-if="activeRoster[slot - 1]?.role"
                 class="rider-portrait__badge rider-portrait__badge--fallback"
+                :style="getTeamBadgeStyle(activeTeamId)"
               ></span>
             </div>
           </div>
@@ -242,10 +252,15 @@
                     <span
                       v-if="isKnownRole(rosterByRole[role].role)"
                       class="rider-portrait__badge rider-portrait__badge--role"
+                      :style="getTeamBadgeStyle(activeTeamId)"
                     >
                       <RiderIcon :type="rosterByRole[role].role" :size="9" />
                     </span>
-                    <span v-else class="rider-portrait__badge rider-portrait__badge--fallback"></span>
+                    <span
+                      v-else
+                      class="rider-portrait__badge rider-portrait__badge--fallback"
+                      :style="getTeamBadgeStyle(activeTeamId)"
+                    ></span>
                   </div>
                   <span class="roster-card-name">{{ rosterByRole[role].name }}</span>
                 </div>
@@ -304,12 +319,14 @@
           <span
             v-if="activeRoster[slot - 1]?.role && isKnownRole(activeRoster[slot - 1].role)"
             class="rider-portrait__badge rider-portrait__badge--role"
+            :style="getTeamBadgeStyle(activeTeamId)"
           >
             <RiderIcon :type="activeRoster[slot - 1].role" :size="9" />
           </span>
           <span
             v-else-if="activeRoster[slot - 1]?.role"
             class="rider-portrait__badge rider-portrait__badge--fallback"
+            :style="getTeamBadgeStyle(activeTeamId)"
           ></span>
         </div>
       </div>
@@ -463,6 +480,22 @@ function getTeamBorderStyle(teamId) {
   const borderColor = TeamConfigs[teamId]?.borderColor || TeamConfigs[teamId]?.color;
   if (!borderColor) return null;
   return { borderColor };
+}
+
+function getTeamBadgeStyle(teamId) {
+  const team = TeamConfigs[teamId];
+  if (!team) {
+    return {
+      '--portrait-badge-bg': 'var(--color-ink)',
+      '--portrait-badge-ring': 'rgba(31, 35, 40, 0.25)',
+      '--portrait-badge-icon': '#ffffff'
+    };
+  }
+  return {
+    '--portrait-badge-bg': team.color,
+    '--portrait-badge-ring': team.borderColor || team.color,
+    '--portrait-badge-icon': '#ffffff'
+  };
 }
 
 function getRiderStyle(rider) {
@@ -688,6 +721,12 @@ function getStatRows(rider) {
   border-radius: 50%;
   border: 1px solid var(--color-line);
   background: var(--color-canvas);
+  --portrait-badge-size: 14px;
+  --portrait-badge-size-sm: 12px;
+  --portrait-badge-offset: -2px;
+  --portrait-badge-bg: var(--color-ink);
+  --portrait-badge-ring: rgba(31, 35, 40, 0.2);
+  --portrait-badge-icon: #ffffff;
   display: inline-flex;
   align-items: center;
   justify-content: center;
@@ -750,23 +789,28 @@ function getStatRows(rider) {
 
 .rider-portrait__badge {
   position: absolute;
-  bottom: 4px;
-  right: 4px;
-  width: 18px;
-  height: 18px;
+  bottom: var(--portrait-badge-offset);
+  right: var(--portrait-badge-offset);
+  width: var(--portrait-badge-size);
+  height: var(--portrait-badge-size);
   border-radius: 50%;
-  background: rgba(248, 248, 246, 0.9);
-  border: 1px solid rgba(31, 35, 40, 0.18);
+  background: var(--portrait-badge-bg);
+  border: 1px solid var(--portrait-badge-ring);
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  color: var(--color-ink);
+  color: var(--portrait-badge-icon);
   z-index: 4;
-  box-shadow: 0 2px 6px rgba(31, 35, 40, 0.16);
+  box-shadow: 0 1px 2px rgba(31, 35, 40, 0.14);
 }
 
 .rider-portrait__badge--role {
   overflow: hidden;
+}
+
+.rider-portrait__badge .rider-icon {
+  fill: currentColor;
+  stroke: currentColor;
 }
 
 .rider-portrait__badge--fallback::before {
@@ -774,14 +818,14 @@ function getStatRows(rider) {
   width: 6px;
   height: 6px;
   border-radius: 50%;
-  background: rgba(31, 35, 40, 0.55);
+  background: var(--portrait-badge-icon);
 }
 
 .rider-portrait--sm .rider-portrait__badge {
-  width: 14px;
-  height: 14px;
-  bottom: 2px;
-  right: 2px;
+  width: var(--portrait-badge-size-sm);
+  height: var(--portrait-badge-size-sm);
+  bottom: calc(var(--portrait-badge-offset) + 1px);
+  right: calc(var(--portrait-badge-offset) + 1px);
 }
 
 .rider-portrait--climber { background: linear-gradient(135deg, #f0f7f2, #e1f0e6); }
