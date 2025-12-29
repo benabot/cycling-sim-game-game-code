@@ -41,10 +41,10 @@
           </div>
           
           <!-- Regular entry -->
-          <div 
+          <div
             v-else
             class="notebook-entry"
-            :class="getEntryClass(entry)"
+            :class="getEntryClass(entry, i)"
           >
             <!-- Event marker (dot) -->
             <span v-if="isImportantEvent(entry)" class="notebook-entry-marker" :class="getMarkerClass(entry)"></span>
@@ -177,10 +177,17 @@ function getEntryIcon(entry) {
   return null;
 }
 
-function getEntryClass(entry) {
+function getEntryClass(entry, index) {
   const text = getEntryText(entry);
-  if (text.includes('---')) return 'notebook-entry--separator';
-  return '';
+  const isSeparator = text.includes('---');
+  const isHeader = /Départ/i.test(text);
+  const isSub = /^\s+/.test(text);
+  return {
+    'notebook-entry--separator': isSeparator,
+    'notebook-entry--header': isHeader,
+    'notebook-entry--sub': isSub,
+    'notebook-entry--latest': !isSeparator && index === props.log.length - 1
+  };
 }
 
 function getMarkerClass(entry) {
@@ -208,14 +215,28 @@ function getIconClass(entry) {
    =========================================== */
 
 .race-notebook {
-  /* Lighter warm slate (less charcoal) */
-  background: #4A4E54;
-  border: 1px solid rgba(255, 255, 255, 0.06);
+  background: #2F3134;
+  border: 1px solid rgba(255, 255, 255, 0.08);
   border-radius: var(--radius-card);
   overflow: hidden;
-  box-shadow: 0 4px 16px rgba(31, 35, 40, 0.10);
+  box-shadow: 0 12px 28px rgba(18, 19, 20, 0.35);
   display: flex;
   flex-direction: column;
+  position: relative;
+}
+
+.race-notebook::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background-image: url("data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNjAiIGhlaWdodD0iNjAiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+PGZpbHRlciBpZD0ibm9pc2UiIHg9IjAiIHk9IjAiIHdpZHRoPSIxMDAiIGhlaWdodD0iMTAwIj48ZmVUdXJidWxlbmNlIHR5cGU9ImZyYWN0YWxOb2lzZSIgYmFzZUZyZXF1ZW5jeT0iMC44IiBudW1PY3RhdmVzPSIyIiBzdGl0Y2hUaWxlcz0ic3RpdGNoIi8+PC9maWx0ZXI+PHJlY3Qgd2lkdGg9IjYwIiBoZWlnaHQ9IjYwIiBmaWx0ZXI9InVybCgjbm9pc2UpIiBvcGFjaXR5PSIwLjYiLz48L3N2Zz4=");
+  opacity: 0.05;
+  pointer-events: none;
+}
+
+.race-notebook > * {
+  position: relative;
+  z-index: 1;
 }
 
 /* ---- Header (clickable to toggle) ---- */
@@ -224,14 +245,14 @@ function getIconClass(entry) {
   align-items: center;
   justify-content: space-between;
   padding: var(--space-sm) var(--space-md);
-  background: rgba(255, 255, 255, 0.03);
+  background: rgba(0, 0, 0, 0.25);
   border: none;
   cursor: pointer;
   transition: background 0.15s;
 }
 
 .notebook-header:hover {
-  background: rgba(255, 255, 255, 0.06);
+  background: rgba(0, 0, 0, 0.35);
 }
 
 .notebook-header-left {
@@ -241,14 +262,14 @@ function getIconClass(entry) {
 }
 
 .notebook-icon {
-  color: rgba(240, 232, 220, 0.55);
+  color: rgba(230, 231, 232, 0.75);
 }
 
 .notebook-title {
   font-family: var(--font-ui);
   font-size: 12px;
   font-weight: 600;
-  color: rgba(240, 232, 220, 0.70);
+  color: rgba(230, 231, 232, 0.85);
   text-transform: uppercase;
   letter-spacing: 0.6px;
 }
@@ -256,8 +277,8 @@ function getIconClass(entry) {
 .notebook-count {
   font-family: var(--font-mono);
   font-size: 10px;
-  color: rgba(240, 232, 220, 0.45);
-  background: rgba(255, 255, 255, 0.06);
+  color: rgba(181, 184, 188, 0.85);
+  background: rgba(255, 255, 255, 0.08);
   padding: 2px 6px;
   border-radius: 8px;
 }
@@ -271,8 +292,8 @@ function getIconClass(entry) {
 .notebook-turn-badge {
   font-family: var(--font-mono);
   font-size: 10px;
-  color: rgba(240, 232, 220, 0.50);
-  background: rgba(255, 255, 255, 0.05);
+  color: rgba(181, 184, 188, 0.85);
+  background: rgba(255, 255, 255, 0.06);
   padding: 2px 8px;
   border-radius: 10px;
 }
@@ -280,11 +301,11 @@ function getIconClass(entry) {
 .notebook-expand-hint {
   font-family: var(--font-ui);
   font-size: 11px;
-  color: rgba(240, 232, 220, 0.45);
+  color: rgba(181, 184, 188, 0.8);
 }
 
 .notebook-chevron {
-  color: rgba(240, 232, 220, 0.50);
+  color: rgba(230, 231, 232, 0.7);
   transition: transform 0.2s;
 }
 
@@ -295,13 +316,13 @@ function getIconClass(entry) {
 /* ---- Collapsed preview ---- */
 .notebook-preview {
   padding: var(--space-xs) var(--space-md);
-  border-top: 1px solid rgba(255, 255, 255, 0.04);
+  border-top: 1px solid rgba(255, 255, 255, 0.08);
 }
 
 .notebook-preview-text {
   font-family: var(--font-ui);
   font-size: 11px;
-  color: rgba(240, 232, 220, 0.50);
+  color: rgba(181, 184, 188, 0.85);
   font-style: italic;
 }
 
@@ -311,7 +332,7 @@ function getIconClass(entry) {
   display: flex;
   max-height: 300px;  /* Reduced from 400px */
   overflow-y: auto;
-  border-top: 1px solid rgba(255, 255, 255, 0.04);
+  border-top: 1px solid rgba(255, 255, 255, 0.08);
 }
 
 /* Controls bar */
@@ -326,32 +347,32 @@ function getIconClass(entry) {
   display: flex;
   align-items: center;
   gap: 3px;
-  background: rgba(255, 255, 255, 0.06);
-  border: none;
+  background: rgba(255, 255, 255, 0.08);
+  border: 1px solid rgba(255, 255, 255, 0.08);
   padding: 3px 8px;
   border-radius: 4px;
   cursor: pointer;
   font-family: var(--font-ui);
   font-size: 10px;
-  color: rgba(240, 232, 220, 0.40);
+  color: rgba(181, 184, 188, 0.85);
   transition: all 0.15s;
 }
 
 .notebook-toggle-autoscroll:hover {
-  background: rgba(255, 255, 255, 0.10);
-  color: rgba(240, 232, 220, 0.60);
+  background: rgba(255, 255, 255, 0.12);
+  color: rgba(230, 231, 232, 0.9);
 }
 
 .notebook-toggle-autoscroll.active {
-  color: rgba(140, 200, 160, 0.85);
+  color: rgba(140, 200, 160, 0.95);
 }
 
 /* Left margin line (notebook effect) */
 .notebook-margin {
   width: 16px;
   flex-shrink: 0;
-  background: rgba(255, 255, 255, 0.015);
-  border-right: 1px solid rgba(210, 190, 170, 0.10);
+  background: rgba(255, 255, 255, 0.02);
+  border-right: 1px solid rgba(255, 255, 255, 0.08);
 }
 
 .notebook-entries {
@@ -374,10 +395,10 @@ function getIconClass(entry) {
   font-family: var(--font-ui);
   font-size: 10px;
   font-weight: 600;
-  color: rgba(225, 210, 180, 0.70);
+  color: rgba(230, 231, 232, 0.85);
   text-transform: uppercase;
   letter-spacing: 1px;
-  background: rgba(255, 255, 255, 0.05);
+  background: rgba(255, 255, 255, 0.08);
   padding: 3px 14px;
   border-radius: 10px;
 }
@@ -392,19 +413,42 @@ function getIconClass(entry) {
   font-family: var(--font-ui);
   font-size: 12px;
   line-height: 1.4;
-  color: rgba(240, 232, 220, 0.72);
+  color: rgba(230, 231, 232, 0.9);
   transition: background 0.1s;
 }
 
 .notebook-entry:hover {
-  background: rgba(255, 255, 255, 0.04);
+  background: rgba(255, 255, 255, 0.05);
 }
 
 .notebook-entry--separator {
   height: 1px;
-  background: rgba(255, 255, 255, 0.04);
+  background: rgba(255, 255, 255, 0.08);
   margin: var(--space-xs) 0;
   padding: 0;
+}
+
+.notebook-entry--header {
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: 0.8px;
+  background: rgba(255, 255, 255, 0.06);
+  color: rgba(230, 231, 232, 0.95);
+}
+
+.notebook-entry--sub {
+  padding-left: 18px;
+  color: rgba(181, 184, 188, 0.9);
+  font-size: 11px;
+}
+
+.notebook-entry--latest {
+  animation: logPulse 1s ease-out;
+}
+
+@keyframes logPulse {
+  0% { background: rgba(255, 255, 255, 0.10); }
+  100% { background: transparent; }
 }
 
 /* Event marker dot */
@@ -412,7 +456,7 @@ function getIconClass(entry) {
   width: 5px;
   height: 5px;
   border-radius: 50%;
-  background: rgba(240, 232, 220, 0.40);
+  background: rgba(230, 231, 232, 0.4);
   flex-shrink: 0;
 }
 
@@ -436,8 +480,8 @@ function getIconClass(entry) {
 /* Entry icon */
 .notebook-entry-icon {
   flex-shrink: 0;
-  opacity: 0.60;
-  color: rgba(240, 232, 220, 0.70);
+  opacity: 0.75;
+  color: rgba(230, 231, 232, 0.85);
 }
 
 .notebook-entry-icon.icon--success { color: rgba(140, 210, 160, 0.85); }
@@ -463,11 +507,11 @@ function getIconClass(entry) {
 }
 
 .notebook-body::-webkit-scrollbar-thumb {
-  background: rgba(255, 255, 255, 0.12);
+  background: rgba(255, 255, 255, 0.18);
   border-radius: 3px;
 }
 
 .notebook-body::-webkit-scrollbar-thumb:hover {
-  background: rgba(255, 255, 255, 0.20);
+  background: rgba(255, 255, 255, 0.28);
 }
 </style>
