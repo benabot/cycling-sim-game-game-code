@@ -41,10 +41,16 @@
             :class="[
               'selection-card',
               'profile-card',
+              `profile-card--${profile.id}`,
               { 'selection-card--selected': selectedProfile === profile.id }
             ]"
             @click="updateProfile(profile.id)"
           >
+            <span
+              class="profile-card__illustration"
+              :class="`profile-card__illustration--${profile.id}`"
+              aria-hidden="true"
+            ></span>
             <div class="profile-card__header">
               <div class="profile-card__icon">
                 <UIIcon :type="profile.icon" size="md" />
@@ -213,6 +219,13 @@ function getProfilePath(profile = []) {
 .profile-card {
   gap: var(--space-sm);
   min-height: 140px;
+  position: relative;
+  overflow: hidden;
+}
+
+.profile-card > * {
+  position: relative;
+  z-index: 1;
 }
 
 .profile-card__header {
@@ -267,6 +280,31 @@ function getProfilePath(profile = []) {
   margin-top: var(--space-xs);
 }
 
+.profile-card__illustration {
+  position: absolute;
+  inset: 12px 16px auto auto;
+  width: 120px;
+  height: 70px;
+  opacity: 0.1;
+  background-repeat: no-repeat;
+  background-position: right top;
+  background-size: contain;
+  pointer-events: none;
+  z-index: 0;
+}
+
+.profile-card__illustration--balanced {
+  background-image: url("data:image/svg+xml,%3Csvg width='140' height='80' viewBox='0 0 140 80' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M8 60c18-12 26-6 38-18 12-12 26-8 40-20 14-12 26-6 38-16' stroke='%23666666' stroke-width='3' fill='none' stroke-linecap='round'/%3E%3Cpath d='M18 68h44' stroke='%23666666' stroke-width='2' stroke-linecap='round'/%3E%3C/svg%3E");
+}
+
+.profile-card__illustration--mountain {
+  background-image: url("data:image/svg+xml,%3Csvg width='140' height='80' viewBox='0 0 140 80' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M8 70l34-46 26 36 30-54 34 64' stroke='%23666666' stroke-width='3' fill='none' stroke-linejoin='round'/%3E%3C/svg%3E");
+}
+
+.profile-card__illustration--sprinters {
+  background-image: url("data:image/svg+xml,%3Csvg width='140' height='80' viewBox='0 0 140 80' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M12 38h96' stroke='%23666666' stroke-width='3' stroke-linecap='round'/%3E%3Cpath d='M26 50h76' stroke='%23666666' stroke-width='2' stroke-linecap='round'/%3E%3Cpath d='M102 30l12 8-12 8' stroke='%23666666' stroke-width='2' fill='none' stroke-linecap='round'/%3E%3C/svg%3E");
+}
+
 .profile-line--sm {
   width: 100%;
   height: 24px;
@@ -297,6 +335,7 @@ function getProfilePath(profile = []) {
   background-color: var(--color-accent);
   color: white;
   border-radius: 50%;
+  z-index: 2;
 }
 
 .stage-race-configurator__preview {

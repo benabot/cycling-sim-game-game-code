@@ -26,10 +26,16 @@
         type="button"
         :class="[
           'classic-card',
+          `classic-card--${classic.id}`,
           { 'classic-card--selected': modelValue === classic.id }
         ]"
         @click="$emit('update:modelValue', classic.id)"
       >
+        <span
+          class="classic-card__illustration"
+          :class="`classic-card__illustration--${classic.id}`"
+          aria-hidden="true"
+        ></span>
         <!-- Header with icon and difficulty -->
         <div class="classic-card__header">
           <div class="classic-card__icon">
@@ -184,6 +190,12 @@ function getProfilePath(profile = []) {
   cursor: pointer;
   transition: var(--transition-fast);
   text-align: left;
+  overflow: hidden;
+}
+
+.classic-card > * {
+  position: relative;
+  z-index: 1;
 }
 
 .classic-card:hover {
@@ -236,18 +248,23 @@ function getProfilePath(profile = []) {
 }
 
 .classic-card__difficulty--hard {
-  background-color: rgba(220, 38, 38, 0.1);
-  color: #b91c1c;
+  background-color: color-mix(in srgb, var(--race-yellow) 20%, white);
+  color: #8a6a14;
 }
 
 .classic-card__difficulty--medium {
-  background-color: rgba(245, 158, 11, 0.1);
-  color: #b45309;
+  background-color: color-mix(in srgb, var(--race-sky) 20%, white);
+  color: #4b5b6d;
 }
 
 .classic-card__difficulty--fast {
-  background-color: rgba(34, 197, 94, 0.1);
-  color: #15803d;
+  background-color: color-mix(in srgb, var(--race-road) 25%, white);
+  color: #5f5243;
+}
+
+.classic-card__difficulty--balanced {
+  background-color: color-mix(in srgb, var(--race-sky) 18%, white);
+  color: #3f4b5c;
 }
 
 /* Name and subtitle */
@@ -274,6 +291,35 @@ function getProfilePath(profile = []) {
   line-height: 1.5;
   color: var(--color-ink-soft);
   margin: var(--space-xs) 0;
+}
+
+.classic-card__illustration {
+  position: absolute;
+  inset: 10px 16px auto auto;
+  width: 150px;
+  height: 90px;
+  opacity: 0.12;
+  background-repeat: no-repeat;
+  background-position: right top;
+  background-size: contain;
+  pointer-events: none;
+  z-index: 0;
+}
+
+.classic-card__illustration--ardennaise {
+  background-image: url("data:image/svg+xml,%3Csvg width='160' height='90' viewBox='0 0 160 90' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M6 70c14-10 24-8 36-22 12-14 22-8 34-18 12-10 22-6 34-16 12-10 26-10 42-18' stroke='%23666666' stroke-width='3' fill='none' stroke-linecap='round'/%3E%3Ccircle cx='46' cy='48' r='3' fill='%23666666'/%3E%3Ccircle cx='92' cy='28' r='3' fill='%23666666'/%3E%3C/svg%3E");
+}
+
+.classic-card__illustration--lombarde {
+  background-image: url("data:image/svg+xml,%3Csvg width='160' height='90' viewBox='0 0 160 90' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M10 78l34-48 30 40 30-58 36 66' stroke='%23666666' stroke-width='3' fill='none' stroke-linejoin='round'/%3E%3Cpath d='M44 30h14' stroke='%23666666' stroke-width='3' stroke-linecap='round'/%3E%3C/svg%3E");
+}
+
+.classic-card__illustration--riviera {
+  background-image: url("data:image/svg+xml,%3Csvg width='160' height='90' viewBox='0 0 160 90' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M12 40h120' stroke='%23666666' stroke-width='3' stroke-linecap='round'/%3E%3Cpath d='M32 50h92' stroke='%23666666' stroke-width='2' stroke-linecap='round'/%3E%3Cpath d='M110 32l10 8-10 8' stroke='%23666666' stroke-width='2' fill='none' stroke-linecap='round'/%3E%3C/svg%3E");
+}
+
+.classic-card__illustration--nord {
+  background-image: url("data:image/svg+xml,%3Csvg width='160' height='90' viewBox='0 0 160 90' xmlns='http://www.w3.org/2000/svg'%3E%3Crect x='18' y='26' width='124' height='38' rx='6' fill='none' stroke='%23666666' stroke-width='3'/%3E%3Cpath d='M42 26v38M68 26v38M94 26v38M120 26v38' stroke='%23666666' stroke-width='2'/%3E%3C/svg%3E");
 }
 
 .classic-card__profile {
@@ -320,15 +366,17 @@ function getProfilePath(profile = []) {
 .classic-card__terrain {
   display: flex;
   height: 6px;
-  border-radius: 3px;
+  border-radius: 999px;
   overflow: hidden;
-  background-color: var(--color-line);
+  background-color: rgba(31, 35, 40, 0.06);
+  border: 1px solid rgba(31, 35, 40, 0.08);
   margin-top: var(--space-sm);
 }
 
 .classic-card__terrain-bar {
   height: 100%;
   transition: width 0.3s ease;
+  background-image: linear-gradient(180deg, rgba(255, 255, 255, 0.35), transparent);
 }
 
 .classic-card__terrain-bar--flat {
@@ -364,5 +412,6 @@ function getProfilePath(profile = []) {
   background-color: var(--color-accent);
   color: white;
   border-radius: 50%;
+  z-index: 2;
 }
 </style>

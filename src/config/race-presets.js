@@ -70,7 +70,7 @@ export const ClassicPresets = {
     advantage: 'puncher',
     advantageLabel: 'Puncheurs',
     difficulty: 'hard',
-    difficultyLabel: 'Difficile',
+    difficultyLabel: 'Dur',
     icon: 'hill',
     defaultLength: 80,
     distribution: {
@@ -105,7 +105,7 @@ export const ClassicPresets = {
     advantage: 'climber',
     advantageLabel: 'Grimpeurs',
     difficulty: 'hard',
-    difficultyLabel: 'Difficile',
+    difficultyLabel: 'Sec',
     icon: 'mountain',
     defaultLength: 80,
     distribution: {
@@ -139,7 +139,7 @@ export const ClassicPresets = {
     advantage: 'sprinter',
     advantageLabel: 'Sprinteurs',
     difficulty: 'fast',
-    difficultyLabel: 'Rapide',
+    difficultyLabel: 'Vif',
     icon: 'road',
     defaultLength: 80,
     distribution: {
@@ -173,7 +173,7 @@ export const ClassicPresets = {
     advantage: 'rouleur',
     advantageLabel: 'Rouleurs',
     difficulty: 'balanced',
-    difficultyLabel: 'Équilibrée',
+    difficultyLabel: 'Piégeux',
     icon: 'cobbles',
     defaultLength: 80,
     distribution: {
