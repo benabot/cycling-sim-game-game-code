@@ -44,8 +44,8 @@ export const RulesUIContent = {
       icon: 'card',
       lines: [
         'Main initiale: +2, +3, +3, +4, +4, +5.',
-        'Défausse: aucune carte recyclée.',
-        'Fin de tour: +2 (sous vent +1, Rouleur +2).'
+        'Fin de tour: 1 carte générée (deck infini): +2, sous vent +1, Rouleur +2.',
+        'Défausse: toutes les cartes, jamais recyclées.'
       ]
     },
     {
@@ -53,9 +53,10 @@ export const RulesUIContent = {
       title: 'Énergie (seuils)',
       icon: 'energy',
       lines: [
+        'Déplacement possible si coût <= énergie restante.',
         'Fatigué 26-50: Attaque -1, Spécialité -1.',
-        'Épuisé 1-25: Attaque, Spécialité, Bonus spécialité indisponibles.',
-        'Fringale 0: Récupérer uniquement (+10).'
+        'Épuisé 1-25: Attaque, Spécialité, Bonus spécialité indisponibles (bonus terrain ok).',
+        'Fringale 0: Récupérer uniquement (0 déplacement, +10).'
       ]
     },
     {
@@ -65,7 +66,8 @@ export const RulesUIContent = {
       lines: [
         'Descente: +1 énergie/case si départ en descente.',
         'Abri: +3 énergie fin de tour si pas sous vent.',
-        'Ravitaillement: +25 énergie case finale (après dépense).'
+        'Ravitaillement: case finale du déplacement, +25 après dépense.',
+        'Cumulable: descente, abri, ravito (cap 100).'
       ]
     },
     {
@@ -84,6 +86,7 @@ export const RulesUIContent = {
       icon: 'aspiration',
       lines: [
         "Écart d'1 case vide: avance d'1 case.",
+        'Ne rejoint pas la case du groupe devant.',
         'Pas en descente.',
         'Montagne: possible si le coureur derrière termine hors montagne.',
         'Résolution en cascade (arrière vers avant).'
@@ -105,7 +108,8 @@ export const RulesUIContent = {
       title: 'Fin de tour',
       icon: 'info',
       lines: [
-        'Ordre: aspiration, vent, cartes fin de tour.',
+        'Ordre: action, aspiration, vent, cartes fin de tour, abri.',
+        'Ravitaillement: pendant le mouvement, pas en fin de tour.',
         'Abri: +3 énergie si pas sous vent.'
       ]
     },
