@@ -46,13 +46,81 @@ function makeResolveState(baseState, riderId, cardValue, diceResult) {
 }
 
 describe('Wind rules', () => {
-  it('applies wind on mountain/descent for rouleur and non-rouleur, penalty on next move', () => {
+  it('no wind on mountain', () => {
     // Arrange
     const course = makeCourse([
       TerrainType.MOUNTAIN,
       TerrainType.FLAT,
-      TerrainType.FLAT,
+      TerrainType.FLAT
+    ]);
+    const state = createGameState({ courseLength: course.length });
+    const rider = {
+      ...state.riders[0],
+      type: 'climber',
+      position: 1,
+      arrivalOrder: 0,
+      hand: [],
+      energy: 100
+    };
+
+    state.course = course;
+    state.courseLength = course.length;
+    state.finishLine = course.length;
+    state.riders = [rider];
+    state.ridersPlayedThisTurn = [];
+    state.arrivalCounter = 1;
+
+    // Act
+    const after = applyEndOfTurnEffects(state);
+    const windEffects = after.endTurnEffects.filter(effect => effect.type === 'wind');
+    const updatedRider = after.riders.find(r => r.id === rider.id);
+
+    // Assert
+    expect(windEffects).toHaveLength(0);
+    expect(updatedRider.windPenaltyNextMove).toBe(0);
+    expect(updatedRider.hand).toHaveLength(1);
+    expect(updatedRider.hand[0].value).toBe(2);
+  });
+
+  it('no wind on descent', () => {
+    // Arrange
+    const course = makeCourse([
       TerrainType.DESCENT,
+      TerrainType.FLAT,
+      TerrainType.FLAT
+    ]);
+    const state = createGameState({ courseLength: course.length });
+    const rider = {
+      ...state.riders[0],
+      type: 'sprinter',
+      position: 1,
+      arrivalOrder: 0,
+      hand: [],
+      energy: 100
+    };
+
+    state.course = course;
+    state.courseLength = course.length;
+    state.finishLine = course.length;
+    state.riders = [rider];
+    state.ridersPlayedThisTurn = [];
+    state.arrivalCounter = 1;
+
+    // Act
+    const after = applyEndOfTurnEffects(state);
+    const windEffects = after.endTurnEffects.filter(effect => effect.type === 'wind');
+    const updatedRider = after.riders.find(r => r.id === rider.id);
+
+    // Assert
+    expect(windEffects).toHaveLength(0);
+    expect(updatedRider.windPenaltyNextMove).toBe(0);
+    expect(updatedRider.hand).toHaveLength(1);
+    expect(updatedRider.hand[0].value).toBe(2);
+  });
+
+  it('wind on flat still works for rouleur and non-rouleur', () => {
+    // Arrange
+    const course = makeCourse([
       TerrainType.FLAT,
       TerrainType.FLAT,
       TerrainType.FLAT,
@@ -63,18 +131,18 @@ describe('Wind rules', () => {
       TerrainType.FLAT
     ]);
     const state = createGameState({ courseLength: course.length });
-    const riderMountain = {
+    const nonRouleur = {
       ...state.riders[0],
       type: 'climber',
-      position: 1,
+      position: 2,
       arrivalOrder: 0,
       hand: [],
       energy: 100
     };
-    const riderDescent = {
+    const rouleur = {
       ...state.riders[1],
       type: 'rouleur',
-      position: 4,
+      position: 5,
       arrivalOrder: 1,
       hand: [],
       energy: 100
@@ -83,7 +151,7 @@ describe('Wind rules', () => {
     state.course = course;
     state.courseLength = course.length;
     state.finishLine = course.length;
-    state.riders = [riderMountain, riderDescent];
+    state.riders = [nonRouleur, rouleur];
     state.ridersPlayedThisTurn = [];
     state.arrivalCounter = 2;
 
@@ -94,71 +162,69 @@ describe('Wind rules', () => {
     // Assert
     expect(windEffects).toHaveLength(2);
 
-    const mountainEffect = windEffects.find(effect => effect.riderId === riderMountain.id);
-    const descentEffect = windEffects.find(effect => effect.riderId === riderDescent.id);
+    const nonRouleurEffect = windEffects.find(effect => effect.riderId === nonRouleur.id);
+    const rouleurEffect = windEffects.find(effect => effect.riderId === rouleur.id);
 
-    expect(mountainEffect.cardValue).toBe(1);
-    expect(mountainEffect.windPenalty).toBe(3);
-    expect(descentEffect.cardValue).toBe(2);
-    expect(descentEffect.windPenalty).toBe(5);
+    expect(nonRouleurEffect.cardValue).toBe(1);
+    expect(nonRouleurEffect.windPenalty).toBe(3);
+    expect(rouleurEffect.cardValue).toBe(2);
+    expect(rouleurEffect.windPenalty).toBe(5);
 
-    const updatedMountain = after.riders.find(r => r.id === riderMountain.id);
-    const updatedDescent = after.riders.find(r => r.id === riderDescent.id);
+    const updatedNonRouleur = after.riders.find(r => r.id === nonRouleur.id);
+    const updatedRouleur = after.riders.find(r => r.id === rouleur.id);
 
-    expect(updatedMountain.windPenaltyNextMove).toBe(3);
-    expect(updatedDescent.windPenaltyNextMove).toBe(5);
+    expect(updatedNonRouleur.windPenaltyNextMove).toBe(3);
+    expect(updatedRouleur.windPenaltyNextMove).toBe(5);
+    expect(updatedNonRouleur.hand).toHaveLength(1);
+    expect(updatedRouleur.hand).toHaveLength(1);
+    expect(updatedNonRouleur.hand[0].value).toBe(1);
+    expect(updatedRouleur.hand[0].value).toBe(2);
 
-    const mountainState = makeResolveState(after, riderMountain.id, 2, 1);
-    const descentState = makeResolveState(after, riderDescent.id, 2, 1);
+    const nonRouleurState = makeResolveState(after, nonRouleur.id, 2, 1);
+    const rouleurState = makeResolveState(after, rouleur.id, 2, 1);
 
-    const resolvedMountain = resolveMovement(mountainState);
-    const resolvedDescent = resolveMovement(descentState);
+    const resolvedNonRouleur = resolveMovement(nonRouleurState);
+    const resolvedRouleur = resolveMovement(rouleurState);
 
-    const mountainAfter = resolvedMountain.riders.find(r => r.id === riderMountain.id);
-    const descentAfter = resolvedDescent.riders.find(r => r.id === riderDescent.id);
+    const nonRouleurAfter = resolvedNonRouleur.riders.find(r => r.id === nonRouleur.id);
+    const rouleurAfter = resolvedRouleur.riders.find(r => r.id === rouleur.id);
 
-    const mountainDistance = mountainAfter.position - riderMountain.position;
-    const descentDistance = descentAfter.position - riderDescent.position;
+    const nonRouleurDistance = nonRouleurAfter.position - nonRouleur.position;
+    const rouleurDistance = rouleurAfter.position - rouleur.position;
 
-    const mountainConsumed = calculateMovementConsumption({
-      distance: mountainDistance,
-      terrain: TerrainType.MOUNTAIN,
-      riderType: riderMountain.type,
+    const nonRouleurConsumed = calculateMovementConsumption({
+      distance: nonRouleurDistance,
+      terrain: TerrainType.FLAT,
+      riderType: nonRouleur.type,
       usedAttack: false,
       usedSpecialty: false,
       isLeading: false
     }) + 3;
 
-    const descentConsumed = calculateMovementConsumption({
-      distance: descentDistance,
-      terrain: TerrainType.DESCENT,
-      riderType: riderDescent.type,
+    const rouleurConsumed = calculateMovementConsumption({
+      distance: rouleurDistance,
+      terrain: TerrainType.FLAT,
+      riderType: rouleur.type,
       usedAttack: false,
       usedSpecialty: false,
       isLeading: false
     }) + 5;
 
-    const mountainExpected = applyEnergyChange(
-      riderMountain.energy,
-      mountainConsumed,
+    const nonRouleurExpected = applyEnergyChange(
+      nonRouleur.energy,
+      nonRouleurConsumed,
       0
     );
-    const descentRecovered = calculateRecovery({
-      terrain: TerrainType.DESCENT,
-      distance: descentDistance,
-      isSheltered: false,
-      inRefuelZone: false
-    });
-    const descentExpected = applyEnergyChange(
-      riderDescent.energy,
-      descentConsumed,
-      descentRecovered
+    const rouleurExpected = applyEnergyChange(
+      rouleur.energy,
+      rouleurConsumed,
+      0
     );
 
-    expect(mountainAfter.windPenaltyNextMove).toBe(0);
-    expect(descentAfter.windPenaltyNextMove).toBe(0);
-    expect(mountainAfter.energy).toBe(mountainExpected);
-    expect(descentAfter.energy).toBe(descentExpected);
+    expect(nonRouleurAfter.windPenaltyNextMove).toBe(0);
+    expect(rouleurAfter.windPenaltyNextMove).toBe(0);
+    expect(nonRouleurAfter.energy).toBe(nonRouleurExpected);
+    expect(rouleurAfter.energy).toBe(rouleurExpected);
   });
 
   it('consumes wind penalty once on the next move', () => {
@@ -237,6 +303,7 @@ describe('Wind rules', () => {
     const expectedAfterFirst = applyEnergyChange(rider.energy, firstConsumed, 0);
     const expectedAfterSecond = applyEnergyChange(expectedAfterFirst, secondConsumed, 0);
 
+    expect(windyRider.windPenaltyNextMove).toBe(3);
     expect(firstAfter.windPenaltyNextMove).toBe(0);
     expect(secondAfter.windPenaltyNextMove).toBe(0);
     expect(firstAfter.energy).toBe(expectedAfterFirst);
