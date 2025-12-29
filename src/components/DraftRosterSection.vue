@@ -723,7 +723,7 @@ function getStatRows(rider) {
   background: var(--color-canvas);
   --portrait-badge-size: 14px;
   --portrait-badge-size-sm: 12px;
-  --portrait-badge-offset: -2px;
+  --portrait-badge-offset: 2px;
   --portrait-badge-bg: var(--color-ink);
   --portrait-badge-ring: rgba(31, 35, 40, 0.2);
   --portrait-badge-icon: #ffffff;
@@ -808,7 +808,8 @@ function getStatRows(rider) {
   overflow: hidden;
 }
 
-.rider-portrait__badge .rider-icon {
+.rider-portrait__badge :deep(.rider-icon) {
+  color: var(--portrait-badge-icon);
   fill: currentColor;
   stroke: currentColor;
 }
@@ -824,8 +825,8 @@ function getStatRows(rider) {
 .rider-portrait--sm .rider-portrait__badge {
   width: var(--portrait-badge-size-sm);
   height: var(--portrait-badge-size-sm);
-  bottom: calc(var(--portrait-badge-offset) + 1px);
-  right: calc(var(--portrait-badge-offset) + 1px);
+  bottom: calc(var(--portrait-badge-offset) - 1px);
+  right: calc(var(--portrait-badge-offset) - 1px);
 }
 
 .rider-portrait--climber { background: linear-gradient(135deg, #f0f7f2, #e1f0e6); }
