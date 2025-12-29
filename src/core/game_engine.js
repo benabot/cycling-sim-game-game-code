@@ -1091,8 +1091,8 @@ export function applyEndOfTurnEffects(state) {
   // ===== PHASE 2: WIND CARDS (prise de vent) =====
   // Calculated AFTER aspiration
   // Rules:
-  // - Wind applies on all terrains
-  // - Empty cell in front → leader takes wind, others sheltered
+  // - No wind on mountain/descent (end-turn card is +2 there)
+  // - Empty cell in front → leader takes wind, others sheltered (outside mountain/descent)
   
   // Get all unique positions with riders after regrouping
   const finalPositions = [...new Set(
@@ -1101,9 +1101,10 @@ export function applyEndOfTurnEffects(state) {
       .map(r => r.position)
   )].sort((a, b) => b - a); // Descending (front to back)
   
-  // Identify who takes wind and who is sheltered
-  const windRiderIds = [];
-  const shelteredRiderIds = [];
+  // Identify who takes wind, who gets end-turn cards, and who is eligible for shelter recovery
+  const windRiderIds = new Set();
+  const shelteredRiderIds = new Set();
+  const abriEligibleRiderIds = new Set();
   
   for (const pos of finalPositions) {
     // Get riders at this position sorted by arrival order
@@ -1113,6 +1114,18 @@ export function applyEndOfTurnEffects(state) {
     
     if (ridersAtPos.length === 0) continue;
     
+    const terrain = getTerrainAt(state, pos);
+    const isMountain = terrain === TerrainType.MOUNTAIN;
+    const isDescent = terrain === TerrainType.DESCENT;
+
+    if (isMountain || isDescent) {
+      ridersAtPos.forEach(rider => shelteredRiderIds.add(rider.id));
+      if (isDescent) {
+        ridersAtPos.forEach(rider => abriEligibleRiderIds.add(rider.id));
+      }
+      continue;
+    }
+
     // Check if cell in front (pos + 1) is empty
     const cellInFrontEmpty = !updatedRiders.some(r => 
       r.position === pos + 1 && !r.hasFinished
@@ -1121,18 +1134,24 @@ export function applyEndOfTurnEffects(state) {
     if (cellInFrontEmpty) {
       // Leader (first arrived = rightmost) takes wind
       const leader = ridersAtPos[0];
-      windRiderIds.push(leader.id);
+      windRiderIds.add(leader.id);
       
       // Others at same position are sheltered
-      ridersAtPos.slice(1).forEach(r => shelteredRiderIds.push(r.id));
+      ridersAtPos.slice(1).forEach(rider => {
+        shelteredRiderIds.add(rider.id);
+        abriEligibleRiderIds.add(rider.id);
+      });
     } else {
       // Cell in front occupied - everyone here is sheltered
-      ridersAtPos.forEach(r => shelteredRiderIds.push(r.id));
+      ridersAtPos.forEach(rider => {
+        shelteredRiderIds.add(rider.id);
+        abriEligibleRiderIds.add(rider.id);
+      });
     }
   }
     
     // Apply wind cards to leaders taking wind (penalty applies next move)
-    windRiderIds.forEach(riderId => {
+    Array.from(windRiderIds).forEach(riderId => {
       const riderIndex = updatedRiders.findIndex(r => r.id === riderId);
       if (riderIndex !== -1) {
         const rider = updatedRiders[riderIndex];
@@ -1159,17 +1178,18 @@ export function applyEndOfTurnEffects(state) {
     });
     
     // Apply tempo cards (+2) to sheltered riders + v3.3: energy recovery
-    shelteredRiderIds.forEach(riderId => {
+    Array.from(shelteredRiderIds).forEach(riderId => {
       const riderIndex = updatedRiders.findIndex(r => r.id === riderId);
       if (riderIndex !== -1) {
         const rider = updatedRiders[riderIndex];
         const bonusCard = createMovementCard(2, 'Tempo', '#86efac');
+        const isAbriEligible = abriEligibleRiderIds.has(rider.id);
         
         // v3.3: Energy recovery for sheltered riders
         const energyRecovered = calculateRecovery({
           terrain: getTerrainAt(state, rider.position),
           distance: 0,
-          isSheltered: true,
+          isSheltered: isAbriEligible,
           inRefuelZone: false
         });
         const newEnergy = applyEnergyChange(rider.energy, 0, energyRecovered);
@@ -1190,14 +1210,14 @@ export function applyEndOfTurnEffects(state) {
       }
     });
     
-    if (windRiderIds.length > 0) {
+    if (windRiderIds.size > 0) {
       const windRiders = effects
         .filter(e => e.type === 'wind')
         .map(e => `${e.riderName} (+${e.cardValue})`);
       logMessages.push(`💨 Relais: ${windRiders.join(', ')}`);
     }
     
-    if (shelteredRiderIds.length > 0) {
+    if (shelteredRiderIds.size > 0) {
       const shelterRiders = effects
         .filter(e => e.type === 'shelter')
         .map(e => e.riderName);
