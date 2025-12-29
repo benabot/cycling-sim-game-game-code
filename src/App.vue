@@ -1,5 +1,5 @@
 <template>
-  <div class="app-root">
+  <div class="app-root app-container">
     <!-- Setup Screen -->
     <SetupScreen 
       v-if="gameScreen === 'setup'"
