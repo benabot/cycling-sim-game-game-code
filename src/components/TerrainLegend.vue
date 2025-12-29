@@ -6,31 +6,26 @@
       <span class="terrain-badge terrain-badge--flat">
         <TerrainIcon type="flat" :size="14" />
         <span>Plaine</span>
-        <span class="terrain-pct">{{ terrainStats.flat }}%</span>
       </span>
       
       <span class="terrain-badge terrain-badge--hill">
         <TerrainIcon type="hill" :size="14" />
         <span>Côte</span>
-        <span class="terrain-pct">{{ terrainStats.hill }}%</span>
       </span>
       
       <span class="terrain-badge terrain-badge--mountain">
         <TerrainIcon type="mountain" :size="14" />
         <span>Montagne</span>
-        <span class="terrain-pct">{{ terrainStats.mountain }}%</span>
       </span>
       
       <span class="terrain-badge terrain-badge--descent">
         <TerrainIcon type="descent" :size="14" />
         <span>Descente</span>
-        <span class="terrain-pct">{{ terrainStats.descent }}%</span>
       </span>
       
       <span class="terrain-badge terrain-badge--sprint">
         <TerrainIcon type="sprint" :size="14" />
         <span>Sprint</span>
-        <span class="terrain-pct">{{ terrainStats.sprint }}%</span>
       </span>
       
       <span class="terrain-badge terrain-badge--refuel">
@@ -44,48 +39,10 @@
 </template>
 
 <script setup>
-import { computed } from 'vue';
 import { TerrainIcon } from './icons';
 
-const props = defineProps({
+defineProps({
   course: { type: Array, default: () => [] }
-});
-
-// Calculate terrain percentages from course data
-const terrainStats = computed(() => {
-  if (!props.course || props.course.length === 0) {
-    // Default percentages for typical course
-    return {
-      flat: 31,
-      hill: 19,
-      mountain: 25,
-      descent: 15,
-      sprint: 10
-    };
-  }
-  
-  const counts = {
-    flat: 0,
-    hill: 0,
-    mountain: 0,
-    descent: 0,
-    sprint: 0
-  };
-  
-  props.course.forEach(cell => {
-    if (counts.hasOwnProperty(cell.terrain)) {
-      counts[cell.terrain]++;
-    }
-  });
-  
-  const total = props.course.length;
-  return {
-    flat: Math.round((counts.flat / total) * 100),
-    hill: Math.round((counts.hill / total) * 100),
-    mountain: Math.round((counts.mountain / total) * 100),
-    descent: Math.round((counts.descent / total) * 100),
-    sprint: Math.round((counts.sprint / total) * 100)
-  };
 });
 </script>
 
@@ -148,15 +105,8 @@ const terrainStats = computed(() => {
 }
 
 .terrain-badge--refuel {
-  background: var(--terrain-hill);
-  border: 2px dashed var(--state-warning);
-}
-
-.terrain-pct {
-  font-family: var(--font-mono);
-  font-size: 11px;
-  color: var(--color-ink-muted);
-  font-weight: 400;
+  background: var(--color-paper);
+  border: 2px dashed var(--color-warning);
 }
 
 .legend-info {
