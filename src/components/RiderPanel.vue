@@ -12,6 +12,10 @@
         <div class="rider-identity-info">
           <span class="type-body-medium">{{ rider.name }}</span>
           <span class="type-caption">{{ riderTypeName }}</span>
+          <span v-if="rider.raceEvent" class="badge badge-pill badge-yellow rider-event-badge">
+            <UIIcon :type="rider.raceEvent.iconKey || 'event'" :size="12" />
+            {{ rider.raceEvent.label }}
+          </span>
         </div>
       </div>
 
@@ -323,6 +327,14 @@ function onCardClick(card, isAttack) {
 .rider-identity-info {
   display: flex;
   flex-direction: column;
+}
+
+.rider-event-badge {
+  margin-top: 4px;
+  align-self: flex-start;
+  font-size: 10px;
+  line-height: 12px;
+  padding: 2px 6px;
 }
 
 .rider-stats {

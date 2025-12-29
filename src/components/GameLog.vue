@@ -153,24 +153,27 @@ function getCleanText(entry) {
 }
 
 function isImportantEvent(entry) {
-  const text = getEntryText(entry);
+  const text = getEntryText(entry).toLowerCase();
   return text.includes('franchit') || 
          text.includes('gagne') || 
          text.includes('attaque') ||
-         text.includes('chute');
+         text.includes('chute') ||
+         text.includes('crevaison') ||
+         text.includes('incident');
 }
 
 function getEntryIcon(entry) {
-  const text = getEntryText(entry);
+  const text = getEntryText(entry).toLowerCase();
   
-  if (text.includes('franchit') || text.includes('[FINISH]')) return 'finish';
-  if (text.includes('gagne') || text.includes('[WINNER]')) return 'trophy';
-  if (text.includes('vent') || text.includes('relais') || text.includes('[WIND]')) return 'wind';
-  if (text.includes('abri') || text.includes('tempo') || text.includes('[SHELTER]')) return 'shelter';
-  if (text.includes('aspiration') || text.includes('[ASPIRATION]')) return 'aspiration';
-  if (text.includes('attaque') || text.includes('[ATTACK]')) return 'attack';
-  if (text.includes('ravitaillement') || text.includes('[REFUEL]')) return 'refuel';
-  if (text.includes('chute') || text.includes('[CRASH]')) return 'crash';
+  if (text.includes('franchit') || text.includes('[finish]')) return 'finish';
+  if (text.includes('gagne') || text.includes('[winner]')) return 'trophy';
+  if (text.includes('vent') || text.includes('relais') || text.includes('[wind]')) return 'wind';
+  if (text.includes('abri') || text.includes('tempo') || text.includes('[shelter]')) return 'shelter';
+  if (text.includes('aspiration') || text.includes('[aspiration]')) return 'aspiration';
+  if (text.includes('attaque') || text.includes('[attack]')) return 'attack';
+  if (text.includes('ravitaillement') || text.includes('[refuel]')) return 'refuel';
+  if (text.includes('chute') || text.includes('[crash]')) return 'crash';
+  if (text.includes('crevaison') || text.includes('incident') || text.includes('[event]')) return 'event';
   if (text.includes('bloqué') || text.includes('case pleine')) return 'warning';
   if (text.includes('sommet')) return 'summit';
   
@@ -191,19 +194,21 @@ function getEntryClass(entry, index) {
 }
 
 function getMarkerClass(entry) {
-  const text = getEntryText(entry);
+  const text = getEntryText(entry).toLowerCase();
   if (text.includes('gagne') || text.includes('franchit')) return 'marker--success';
   if (text.includes('attaque')) return 'marker--warning';
   if (text.includes('chute')) return 'marker--danger';
+  if (text.includes('crevaison') || text.includes('incident')) return 'marker--warning';
   return '';
 }
 
 function getIconClass(entry) {
-  const text = getEntryText(entry);
+  const text = getEntryText(entry).toLowerCase();
   if (text.includes('gagne') || text.includes('franchit')) return 'icon--success';
   if (text.includes('abri') || text.includes('tempo') || text.includes('aspiration')) return 'icon--info';
   if (text.includes('attaque') || text.includes('vent') || text.includes('relais')) return 'icon--warning';
   if (text.includes('chute') || text.includes('bloqué')) return 'icon--danger';
+  if (text.includes('crevaison') || text.includes('incident')) return 'icon--warning';
   return '';
 }
 </script>
