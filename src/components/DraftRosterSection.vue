@@ -96,12 +96,10 @@
                     class="rider-portrait__fallback"
                   />
                   <span v-if="!hasPortrait(rider.portraitKey)" class="rider-portrait__initials">{{ getInitials(rider.name) }}</span>
-                  <span class="rider-portrait__badge rider-portrait__badge--role" :class="`rider-portrait__badge--${rider.role}`">
+                  <span v-if="isKnownRole(rider.role)" class="rider-portrait__badge rider-portrait__badge--role">
                     <RiderIcon :type="rider.role" :size="10" />
                   </span>
-                  <span v-if="rider.price" class="rider-portrait__badge rider-portrait__badge--meta">
-                    {{ rider.price }}
-                  </span>
+                  <span v-else class="rider-portrait__badge rider-portrait__badge--fallback"></span>
                 </div>
                 <div class="draft-card-identity">
                   <p class="draft-card-name">{{ rider.name }}</p>
@@ -188,12 +186,15 @@
                 {{ getInitials(activeRoster[slot - 1].name) }}
               </span>
               <span
-                v-if="activeRoster[slot - 1]?.role"
+                v-if="activeRoster[slot - 1]?.role && isKnownRole(activeRoster[slot - 1].role)"
                 class="rider-portrait__badge rider-portrait__badge--role"
-                :class="`rider-portrait__badge--${activeRoster[slot - 1].role}`"
               >
                 <RiderIcon :type="activeRoster[slot - 1].role" :size="9" />
               </span>
+              <span
+                v-else-if="activeRoster[slot - 1]?.role"
+                class="rider-portrait__badge rider-portrait__badge--fallback"
+              ></span>
             </div>
           </div>
           <div class="draft-roster-metrics">
@@ -238,12 +239,13 @@
                     <span v-if="!hasPortrait(rosterByRole[role].portraitKey)" class="rider-portrait__initials">
                       {{ getInitials(rosterByRole[role].name) }}
                     </span>
-                    <span class="rider-portrait__badge rider-portrait__badge--role" :class="`rider-portrait__badge--${rosterByRole[role].role}`">
+                    <span
+                      v-if="isKnownRole(rosterByRole[role].role)"
+                      class="rider-portrait__badge rider-portrait__badge--role"
+                    >
                       <RiderIcon :type="rosterByRole[role].role" :size="9" />
                     </span>
-                    <span v-if="rosterByRole[role].price" class="rider-portrait__badge rider-portrait__badge--meta">
-                      {{ rosterByRole[role].price }}
-                    </span>
+                    <span v-else class="rider-portrait__badge rider-portrait__badge--fallback"></span>
                   </div>
                   <span class="roster-card-name">{{ rosterByRole[role].name }}</span>
                 </div>
@@ -300,12 +302,15 @@
             {{ getInitials(activeRoster[slot - 1].name) }}
           </span>
           <span
-            v-if="activeRoster[slot - 1]?.role"
+            v-if="activeRoster[slot - 1]?.role && isKnownRole(activeRoster[slot - 1].role)"
             class="rider-portrait__badge rider-portrait__badge--role"
-            :class="`rider-portrait__badge--${activeRoster[slot - 1].role}`"
           >
             <RiderIcon :type="activeRoster[slot - 1].role" :size="9" />
           </span>
+          <span
+            v-else-if="activeRoster[slot - 1]?.role"
+            class="rider-portrait__badge rider-portrait__badge--fallback"
+          ></span>
         </div>
       </div>
       <div class="draft-sticky-metrics">
@@ -377,6 +382,7 @@ const page = ref(1);
 const pageSize = 8;
 const portraitErrors = ref({});
 const statDisplayOrder = ['endurance', 'sprint', 'climb', 'punch'];
+const knownRoleTypes = new Set(['climber', 'puncher', 'rouleur', 'sprinter', 'versatile']);
 
 const roleFilters = computed(() => ['all', ...(props.roles || [])]);
 
@@ -437,6 +443,10 @@ function hasPortrait(portraitKey) {
 
 function getPortraitSrc(portraitKey) {
   return getRiderPortraitUrl(portraitKey);
+}
+
+function isKnownRole(role) {
+  return knownRoleTypes.has(role);
 }
 
 function onPortraitError(portraitKey) {
@@ -741,45 +751,37 @@ function getStatRows(rider) {
 .rider-portrait__badge {
   position: absolute;
   bottom: 4px;
-  width: 20px;
-  height: 20px;
+  right: 4px;
+  width: 18px;
+  height: 18px;
   border-radius: 50%;
-  background: rgba(255, 255, 255, 0.85);
-  border: 1px solid rgba(31, 35, 40, 0.2);
+  background: rgba(248, 248, 246, 0.9);
+  border: 1px solid rgba(31, 35, 40, 0.18);
   display: inline-flex;
   align-items: center;
   justify-content: center;
   color: var(--color-ink);
   z-index: 4;
-  box-shadow: 0 2px 6px rgba(31, 35, 40, 0.18);
-  font-family: var(--font-mono);
-  font-size: 10px;
+  box-shadow: 0 2px 6px rgba(31, 35, 40, 0.16);
 }
 
 .rider-portrait__badge--role {
-  left: 4px;
+  overflow: hidden;
 }
 
-.rider-portrait__badge--meta {
-  right: 4px;
-  font-size: 9px;
-  font-weight: 600;
+.rider-portrait__badge--fallback::before {
+  content: '';
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: rgba(31, 35, 40, 0.55);
 }
-
-.rider-portrait__badge--climber { background: color-mix(in srgb, #e1f0e6 80%, white); }
-.rider-portrait__badge--puncher { background: color-mix(in srgb, #fde9d6 80%, white); }
-.rider-portrait__badge--rouleur { background: color-mix(in srgb, #ddebf7 80%, white); }
-.rider-portrait__badge--sprinter { background: color-mix(in srgb, #fbe1e1 80%, white); }
-.rider-portrait__badge--versatile { background: color-mix(in srgb, #e8e2f6 80%, white); }
 
 .rider-portrait--sm .rider-portrait__badge {
-  width: 16px;
-  height: 16px;
+  width: 14px;
+  height: 14px;
   bottom: 2px;
-}
-
-.rider-portrait--sm .rider-portrait__badge--meta {
-  display: none;
+  right: 2px;
 }
 
 .rider-portrait--climber { background: linear-gradient(135deg, #f0f7f2, #e1f0e6); }
