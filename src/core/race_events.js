@@ -4,12 +4,11 @@
  */
 
 import { TerrainType } from './terrain.js';
-
-export const RaceWeather = {
-  CLEAR: 'clear',
-  RAIN: 'rain',
-  WIND: 'wind'
-};
+import {
+  RaceWeather,
+  getCobbleCrashWeatherBonus,
+  getCobblePunctureWeatherBonus
+} from './race_weather.js';
 
 export const RaceEventId = {
   PUNCTURE: 'puncture',
@@ -70,8 +69,8 @@ export function pickRaceEvent({ terrain, weather, isCobbles = false, rng = Math.
     if (weight > 0) weights.push({ id, weight });
   };
 
-  const crashBonus = isCobbles ? COBBLES_CRASH_BONUS : 0;
-  const punctureBonus = isCobbles ? COBBLES_PUNCTURE_BONUS : 0;
+  const crashBonus = isCobbles ? COBBLES_CRASH_BONUS + getCobbleCrashWeatherBonus(weather) : 0;
+  const punctureBonus = isCobbles ? COBBLES_PUNCTURE_BONUS + getCobblePunctureWeatherBonus(weather) : 0;
 
   if (terrain === TerrainType.DESCENT) {
     add(RaceEventId.CRASH, (weather === RaceWeather.RAIN ? 0.7 : 0.55) + crashBonus);
@@ -219,9 +218,10 @@ export function rollPunctureOnCobbleStep(rider, context = {}) {
   const rng = context.rng || Math.random;
   const energy = context.energy ?? rider.energy ?? 100;
   const isSheltered = context.isSheltered || false;
+  const weather = context.weather || RaceWeather.CLEAR;
   const baseChance = context.baseChance ?? COBBLES_PUNCTURE_BASE;
 
-  let chance = baseChance;
+  let chance = baseChance + getCobblePunctureWeatherBonus(weather);
   if (energy < 25) {
     chance += COBBLES_CRITICAL_ENERGY_BONUS;
   } else if (energy < 50) {

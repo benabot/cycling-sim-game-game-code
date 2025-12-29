@@ -6,7 +6,6 @@
 import { roll1D6, rollFallTest } from './dice.js';
 import { TerrainType, TerrainConfig, DescentRules, getTerrainBonus, generateCourse, generateCourseFromPreset, hasAspiration, findSummitPosition, isRefuelZone } from './terrain.js';
 import {
-  RaceWeather,
   RaceEventDefinitions,
   RaceEventId,
   rollRaceEvent,
@@ -18,6 +17,12 @@ import {
   tickRaceEvent,
   formatRaceEventLog
 } from './race_events.js';
+import {
+  RaceWeather,
+  rollRaceWeather,
+  applyWindPenaltyModifier,
+  applyShelterRecoveryModifier
+} from './race_weather.js';
 import { 
   createRider, createRiderFromDraft, createTeamRiders, RiderConfig, CardType, RiderType,
   playCard, playSpecialtyCard, addFatigueCard,
@@ -201,6 +206,8 @@ export function createGameState(options = {}) {
   // Random starting team from available teams
   const startingTeam = teamIds[Math.floor(Math.random() * teamIds.length)];
   
+  const weather = rollRaceWeather({ presetWeather: gameConfig?.weather, rng: gameConfig?.weatherRng });
+
   return {
     // Game configuration
     courseLength: effectiveCourseLength,
@@ -216,7 +223,7 @@ export function createGameState(options = {}) {
     stageRace,
     raceEventState: {
       cooldownTurns: 0,
-      weather: gameConfig?.weather || RaceWeather.CLEAR,
+      weather,
       lastCobblePunctureTurn: null
     },
     
@@ -860,7 +867,12 @@ export function resolveMovement(state) {
     const maxPos = Math.min(newPosition, state.courseLength);
     for (let pos = rider.position + 1; pos <= maxPos; pos++) {
       if (!isCobbleCell(state, pos)) continue;
-      if (rollPunctureOnCobbleStep(rider, { energy: rider.energy, isSheltered, rng: cobbleRng })) {
+      if (rollPunctureOnCobbleStep(rider, {
+        energy: rider.energy,
+        isSheltered,
+        weather: raceEventState.weather,
+        rng: cobbleRng
+      })) {
         cobblePunctureTriggered = true;
         break;
       }
@@ -1051,6 +1063,7 @@ export function applyEndOfTurnEffects(state) {
   let effects = [];
   let logMessages = [];
   let arrivalCounter = state.arrivalCounter;
+  const weather = state.raceEventState?.weather || RaceWeather.CLEAR;
   
   // ===== PHASE 1: ASPIRATION (regroupement) =====
   // v3.3 FIX: Corrected aspiration rules
@@ -1212,9 +1225,10 @@ export function applyEndOfTurnEffects(state) {
         const windCardValue = rider.type === RiderType.ROULEUR ? 2 : 1;
         const eventCardPenalty = getRaceEventCardPenalty(rider);
         const adjustedWindCardValue = Math.max(1, windCardValue - eventCardPenalty);
-        const windPenalty = rider.type === RiderType.ROULEUR
+        const baseWindPenalty = rider.type === RiderType.ROULEUR
           ? WIND_PENALTY_ROULEUR
           : WIND_PENALTY_DEFAULT;
+        const windPenalty = applyWindPenaltyModifier(baseWindPenalty, weather);
         const windCard = createMovementCard(adjustedWindCardValue, 'Relais', '#94a3b8');
         
         updatedRiders[riderIndex] = {
@@ -1244,12 +1258,13 @@ export function applyEndOfTurnEffects(state) {
         const isAbriEligible = abriEligibleRiderIds.has(rider.id);
         
         // v3.3: Energy recovery for sheltered riders
-        const energyRecovered = calculateRecovery({
+        let energyRecovered = calculateRecovery({
           terrain: getTerrainAt(state, rider.position),
           distance: 0,
           isSheltered: isAbriEligible,
           inRefuelZone: false
         });
+        energyRecovered = applyShelterRecoveryModifier(energyRecovered, weather, isAbriEligible);
         const newEnergy = applyEnergyChange(rider.energy, 0, energyRecovered);
         
         updatedRiders[riderIndex] = {
