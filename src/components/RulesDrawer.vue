@@ -7,7 +7,7 @@
       @click="toggle"
     >
       <UIIcon type="book" size="sm" />
-      <span>Règles v3.2</span>
+      <span>{{ rulesContent.drawerLabel }}</span>
       <UIIcon :type="isOpen ? 'chevron-up' : 'chevron-down'" size="sm" />
     </button>
 
@@ -19,122 +19,39 @@
       <div class="rules-drawer-inner">
         <!-- Quick Reference Cards -->
         <div class="rules-grid">
-          <div class="rule-card">
+          <div
+            v-for="card in rulesContent.cards"
+            :key="card.id"
+            class="rule-card"
+            :class="{ 'rule-card--highlight': card.highlight }"
+          >
             <div class="rule-card-header">
-              <UIIcon type="target" size="sm" />
-              <span>Objectif</span>
+              <UIIcon :type="card.icon" size="sm" />
+              <span>{{ card.title }}</span>
             </div>
-            <p>Franchir la ligne d'arrivée en premier. Départ case 0, arrivée au-delà de {{ courseLength }}.</p>
-          </div>
 
-          <div class="rule-card">
-            <div class="rule-card-header">
-              <UIIcon type="die" size="sm" />
-              <span>Séquence</span>
-            </div>
-            <ol>
-              <li>Choisir une carte</li>
-              <li>Lancer 1d6</li>
-              <li>Voir aperçu → Spécialité?</li>
-              <li>Avancer du total</li>
+            <ol v-if="card.list">
+              <li v-for="item in card.list" :key="item">{{ item }}</li>
             </ol>
-          </div>
 
-          <div class="rule-card">
-            <div class="rule-card-header">
-              <UIIcon type="card" size="sm" />
-              <span>Cartes Mouvement</span>
-            </div>
-            <p class="type-numeric">+2, +3, +3, +4, +4, +5</p>
-            <p class="type-caption">Recyclées quand épuisées</p>
-          </div>
-
-          <div class="rule-card">
-            <div class="rule-card-header">
-              <UIIcon type="attack" size="sm" />
-              <span>Cartes Attaque</span>
-            </div>
-            <p class="type-numeric">+6 (×2, usage unique)</p>
-            <p class="type-caption">Ne sont pas recyclées</p>
-          </div>
-
-          <div class="rule-card rule-card--highlight">
-            <div class="rule-card-header">
-              <UIIcon type="star" size="sm" />
-              <span>Spécialités (+2)</span>
-            </div>
-            <div class="specialty-list">
-              <div class="specialty-item">
-                <RiderIcon type="climber" :size="14" />
-                <span>Grimpeur</span>
-                <span class="type-caption">Montagne + pas d'arrêt sommet</span>
+            <template v-else-if="card.profiles">
+              <p v-if="card.intro">{{ card.intro }}</p>
+              <div class="specialty-list">
+                <div
+                  v-for="profile in card.profiles"
+                  :key="profile.type"
+                  class="specialty-item"
+                >
+                  <RiderIcon :type="profile.type" :size="14" />
+                  <span>{{ profile.label }}</span>
+                  <span v-if="profile.note" class="type-caption">{{ profile.note }}</span>
+                </div>
               </div>
-              <div class="specialty-item">
-                <RiderIcon type="puncher" :size="14" />
-                <span>Puncheur</span>
-                <span class="type-caption">Côte (+2)</span>
-              </div>
-              <div class="specialty-item">
-                <RiderIcon type="rouleur" :size="14" />
-                <span>Rouleur</span>
-                <span class="type-caption">Plat (+2) + immunité vent</span>
-              </div>
-              <div class="specialty-item">
-                <RiderIcon type="sprinter" :size="14" />
-                <span>Sprinteur</span>
-                <span class="type-caption">Sprint (+3)</span>
-              </div>
-              <div class="specialty-item">
-                <RiderIcon type="versatile" :size="14" />
-                <span>Polyvalent</span>
-                <span class="type-caption">Partout</span>
-              </div>
-            </div>
-          </div>
+            </template>
 
-          <div class="rule-card">
-            <div class="rule-card-header">
-              <UIIcon type="team" size="sm" />
-              <span>Cases (Max 4)</span>
-            </div>
-            <p>Max 4 coureurs par case. Premier arrivé = leader (droite).</p>
-            <p class="type-caption">Si pleine → arrêt derrière</p>
-          </div>
-
-          <div class="rule-card rule-card--highlight">
-            <div class="rule-card-header">
-              <UIIcon type="summit" size="sm" />
-              <span>Arrêt au Sommet</span>
-            </div>
-            <p>Les <strong>non-grimpeurs</strong> s'arrêtent à la dernière case montagne.</p>
-            <p class="type-caption">Les grimpeurs passent librement.</p>
-          </div>
-
-          <div class="rule-card">
-            <div class="rule-card-header">
-              <UIIcon type="aspiration" size="sm" />
-              <span>Aspiration</span>
-            </div>
-            <p>Fin de tour : 1 case d'écart → avancer d'1 case.</p>
-            <p class="type-caption">Pas en montagne/descente. Dès tour 1.</p>
-          </div>
-
-          <div class="rule-card">
-            <div class="rule-card-header">
-              <UIIcon type="wind" size="sm" />
-              <span>Relais (+1)</span>
-            </div>
-            <p>Case vide devant → leader reçoit carte +1.</p>
-            <p class="type-caption">Pas en montagne. Rouleurs immunisés (+2).</p>
-          </div>
-
-          <div class="rule-card">
-            <div class="rule-card-header">
-              <UIIcon type="shelter" size="sm" />
-              <span>Tempo (+2)</span>
-            </div>
-            <p>Tous les autres coureurs reçoivent +2.</p>
-            <p class="type-caption">En montagne : tous reçoivent +2.</p>
+            <template v-else>
+              <p v-for="line in card.lines" :key="line">{{ line }}</p>
+            </template>
           </div>
         </div>
 
@@ -142,7 +59,7 @@
         <details class="bonus-details">
           <summary class="bonus-summary">
             <UIIcon type="info" size="sm" />
-            <span>Tableau des bonus terrain</span>
+            <span>{{ bonusTable.title }}</span>
             <UIIcon type="chevron-down" size="sm" class="chevron-icon" />
           </summary>
           <div class="bonus-table-wrapper">
@@ -150,53 +67,24 @@
               <thead>
                 <tr>
                   <th>Type</th>
-                  <th><TerrainIcon type="flat" :size="14" /> Plat</th>
-                  <th><TerrainIcon type="hill" :size="14" /> Côte</th>
-                  <th><TerrainIcon type="mountain" :size="14" /> Montagne</th>
-                  <th><TerrainIcon type="descent" :size="14" /> Descente</th>
-                  <th><TerrainIcon type="sprint" :size="14" /> Sprint</th>
+                  <th
+                    v-for="header in bonusTable.headers"
+                    :key="header.id"
+                  >
+                    <TerrainIcon :type="header.icon" :size="14" /> {{ header.label }}
+                  </th>
                 </tr>
               </thead>
               <tbody>
-                <tr>
-                  <td><RiderIcon type="climber" :size="14" /> Grimpeur</td>
-                  <td>0</td>
-                  <td>+1</td>
-                  <td class="bonus">+2</td>
-                  <td>+2</td>
-                  <td class="malus">-1</td>
-                </tr>
-                <tr>
-                  <td><RiderIcon type="puncher" :size="14" /> Puncheur</td>
-                  <td>0</td>
-                  <td class="bonus">+2</td>
-                  <td>+1</td>
-                  <td>+2</td>
-                  <td>0</td>
-                </tr>
-                <tr>
-                  <td><RiderIcon type="rouleur" :size="14" /> Rouleur</td>
-                  <td class="bonus">+2</td>
-                  <td>0</td>
-                  <td class="malus">-1</td>
-                  <td>+3</td>
-                  <td>0</td>
-                </tr>
-                <tr>
-                  <td><RiderIcon type="sprinter" :size="14" /> Sprinteur</td>
-                  <td>0</td>
-                  <td class="malus">-1</td>
-                  <td class="malus">-2</td>
-                  <td>+3</td>
-                  <td class="bonus">+3</td>
-                </tr>
-                <tr>
-                  <td><RiderIcon type="versatile" :size="14" /> Polyvalent</td>
-                  <td>0</td>
-                  <td>0</td>
-                  <td>0</td>
-                  <td>+2</td>
-                  <td>0</td>
+                <tr v-for="row in bonusTable.rows" :key="row.id">
+                  <td><RiderIcon :type="row.icon" :size="14" /> {{ row.label }}</td>
+                  <td
+                    v-for="(value, index) in row.values"
+                    :key="`${row.id}-${bonusTable.headers[index].id}`"
+                    :class="getBonusClass(value)"
+                  >
+                    {{ formatBonusValue(value) }}
+                  </td>
                 </tr>
               </tbody>
             </table>
@@ -209,19 +97,34 @@
 
 <script setup>
 import { ref } from 'vue';
+import { RulesUIContent } from '../ui/rules/ui_rules.js';
 import { UIIcon, RiderIcon, TerrainIcon } from './icons';
 
-const props = defineProps({
+defineProps({
   courseLength: {
     type: Number,
     default: 80
   }
 });
 
+const rulesContent = RulesUIContent;
+const bonusTable = RulesUIContent.bonusTable;
+
 const isOpen = ref(false);
 
 function toggle() {
   isOpen.value = !isOpen.value;
+}
+
+function formatBonusValue(value) {
+  if (value > 0) return `+${value}`;
+  return `${value}`;
+}
+
+function getBonusClass(value) {
+  if (value > 0) return 'bonus';
+  if (value < 0) return 'malus';
+  return '';
 }
 
 // Expose for parent component control

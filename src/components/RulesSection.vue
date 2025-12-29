@@ -1,149 +1,90 @@
 <template>
   <div class="rules-section">
-    <h2>📖 Règles v3.2 - Système de Cartes Équilibré</h2>
-    
+    <h2>Règles</h2>
+
     <div class="rules-grid">
-      <div class="rule-card">
-        <h3>🎯 Objectif</h3>
-        <p>Franchir la ligne d'arrivée en premier. Départ à la case 0, arrivée au-delà de la case 80.</p>
-      </div>
+      <div
+        v-for="card in rulesContent.cards"
+        :key="card.id"
+        class="rule-card"
+        :class="{ highlight: card.highlight }"
+      >
+        <div class="rule-card-header">
+          <UIIcon :type="card.icon" size="sm" />
+          <span>{{ card.title }}</span>
+        </div>
 
-      <div class="rule-card">
-        <h3>🎮 Séquence</h3>
-        <ol>
-          <li>Choisir une carte</li>
-          <li>Lancer 1d6</li>
-          <li>Voir aperçu → Utiliser Spécialité?</li>
-          <li>Avancer du total</li>
+        <ol v-if="card.list">
+          <li v-for="item in card.list" :key="item">{{ item }}</li>
         </ol>
-      </div>
 
-      <div class="rule-card">
-        <h3>🃏 Cartes Mouvement</h3>
-        <p>+2, +3, +3, +4, +4, +5</p>
-        <p><em>Recyclées quand épuisées</em></p>
-      </div>
+        <template v-else-if="card.profiles">
+          <p v-if="card.intro">{{ card.intro }}</p>
+          <div class="profile-list">
+            <div
+              v-for="profile in card.profiles"
+              :key="profile.type"
+              class="profile-item"
+            >
+              <RiderIcon :type="profile.type" :size="14" />
+              <span>{{ profile.label }}</span>
+              <span v-if="profile.note" class="type-caption">{{ profile.note }}</span>
+            </div>
+          </div>
+        </template>
 
-      <div class="rule-card">
-        <h3>⚔️ Cartes Attaque</h3>
-        <p>+6 (×2, usage unique)</p>
-        <p><em>Ne sont pas recyclées</em></p>
-      </div>
-
-      <div class="rule-card highlight">
-        <h3>★ Cartes Spécialité (+2)</h3>
-        <p><strong>Grimpeur</strong>: Montagne + pas d'arrêt au sommet</p>
-        <p><strong>Puncheur</strong>: Côte (+2 bonus terrain)</p>
-        <p><strong>Rouleur</strong>: Plaine (+2) + immunité au vent</p>
-        <p><strong>Sprinteur</strong>: Sprint (+3 bonus terrain)</p>
-        <p><strong>Polyvalent</strong>: Partout</p>
-      </div>
-
-      <div class="rule-card">
-        <h3>👥 Cases (Max 4)</h3>
-        <p>Max 4 coureurs par case. Premier arrivé = droite (leader).</p>
-        <p><em>Si case pleine → arrêt derrière</em></p>
-      </div>
-
-      <div class="rule-card highlight">
-        <h3>⛰️ Arrêt au Sommet</h3>
-        <p>Les <strong>non-grimpeurs</strong> doivent s'arrêter à la dernière case de montagne.</p>
-        <p><em>Les grimpeurs peuvent passer librement.</em></p>
-      </div>
-
-      <div class="rule-card highlight">
-        <h3>🔮 Aperçu Position</h3>
-        <p>Après le dé, voir où vous irez :</p>
-        <p>🟠 <strong>Sans</strong> spécialité</p>
-        <p>🟢 <strong>Avec</strong> spécialité</p>
-        <p>🔵 <strong>Les deux</strong> = même case</p>
-      </div>
-
-      <div class="rule-card">
-        <h3>🌀 Aspiration</h3>
-        <p>Fin de tour : si 1 case d'écart → avancer d'1 case.</p>
-        <p><em>Pas en montagne ni descente. Dès le tour 1.</em></p>
-      </div>
-
-      <div class="rule-card">
-        <h3>💨 Relais (+1)</h3>
-        <p>Après aspiration : si <strong>case vide devant</strong>, le leader reçoit une carte +1.</p>
-        <p><em>Pas de vent en montagne. Rouleurs immunisés (reçoivent +2).</em></p>
-      </div>
-
-      <div class="rule-card">
-        <h3>🎵 Tempo (+2)</h3>
-        <p>Tous les autres coureurs reçoivent une carte +2.</p>
-        <p><em>En montagne : tous reçoivent +2.</em></p>
-      </div>
-
-      <div class="rule-card">
-        <h3>🎿 Descente - Chute</h3>
-        <p>🎲 = 1 → Test de chute (1d6).</p>
-        <p>Si 1-2 : <strong>Chute !</strong> Recule 3 cases, +2 fatigue, passe le tour suivant.</p>
-        <p><em>Vitesse minimum garantie : 4 cases.</em></p>
+        <template v-else>
+          <p v-for="line in card.lines" :key="line">{{ line }}</p>
+        </template>
       </div>
     </div>
 
     <div class="bonus-table">
-      <h3>📊 Bonus Terrain v3.2</h3>
+      <h3>{{ bonusTable.title }}</h3>
       <table>
         <thead>
           <tr>
             <th>Type</th>
-            <th>🟩 Plat</th>
-            <th>🟨 Côte</th>
-            <th>🟫 Montagne</th>
-            <th>🟦 Descente</th>
-            <th>🟪 Sprint</th>
+            <th v-for="header in bonusTable.headers" :key="header.id">
+              <TerrainIcon :type="header.icon" :size="14" /> {{ header.label }}
+            </th>
           </tr>
         </thead>
         <tbody>
-          <tr>
-            <td>🧗 Grimpeur</td>
-            <td>0</td>
-            <td>+1</td>
-            <td class="bonus">+2</td>
-            <td>+2</td>
-            <td class="malus">-1</td>
-          </tr>
-          <tr>
-            <td>💥 Puncheur</td>
-            <td>0</td>
-            <td class="bonus">+2</td>
-            <td>+1</td>
-            <td>+2</td>
-            <td>0</td>
-          </tr>
-          <tr>
-            <td>🚴 Rouleur</td>
-            <td class="bonus">+2</td>
-            <td>0</td>
-            <td class="malus">-1</td>
-            <td>+3</td>
-            <td>0</td>
-          </tr>
-          <tr>
-            <td>⚡ Sprinteur</td>
-            <td>0</td>
-            <td class="malus">-1</td>
-            <td class="malus">-2</td>
-            <td>+3</td>
-            <td class="bonus">+3</td>
-          </tr>
-          <tr>
-            <td>🎯 Polyvalent</td>
-            <td>0</td>
-            <td>0</td>
-            <td>0</td>
-            <td>+2</td>
-            <td>0</td>
+          <tr v-for="row in bonusTable.rows" :key="row.id">
+            <td><RiderIcon :type="row.icon" :size="14" /> {{ row.label }}</td>
+            <td
+              v-for="(value, index) in row.values"
+              :key="`${row.id}-${bonusTable.headers[index].id}`"
+              :class="getBonusClass(value)"
+            >
+              {{ formatBonusValue(value) }}
+            </td>
           </tr>
         </tbody>
       </table>
     </div>
   </div>
 </template>
+
+<script setup>
+import { RulesUIContent } from '../ui/rules/ui_rules.js';
+import { UIIcon, RiderIcon, TerrainIcon } from './icons';
+
+const rulesContent = RulesUIContent;
+const bonusTable = RulesUIContent.bonusTable;
+
+function formatBonusValue(value) {
+  if (value > 0) return `+${value}`;
+  return `${value}`;
+}
+
+function getBonusClass(value) {
+  if (value > 0) return 'bonus';
+  if (value < 0) return 'malus';
+  return '';
+}
+</script>
 
 <style scoped>
 .rules-section {
@@ -177,8 +118,12 @@
   background: #eff6ff;
 }
 
-.rule-card h3 {
+.rule-card-header {
+  display: flex;
+  align-items: center;
+  gap: 6px;
   margin: 0 0 8px 0;
+  font-weight: 600;
   font-size: 0.95em;
 }
 
@@ -194,6 +139,24 @@
 .rule-card ul, .rule-card ol { padding-left: 18px; }
 .rule-card li { margin: 3px 0; }
 .rule-card em { font-size: 0.9em; color: #64748b; }
+
+.profile-list {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.profile-item {
+  display: grid;
+  grid-template-columns: 16px 1fr auto;
+  align-items: center;
+  gap: 6px;
+  font-size: 0.85em;
+}
+
+.profile-item .type-caption {
+  color: #64748b;
+}
 
 /* Bonus table */
 .bonus-table {
@@ -230,6 +193,9 @@
 .bonus-table td:first-child {
   text-align: left;
   font-weight: 500;
+  display: flex;
+  align-items: center;
+  gap: 6px;
 }
 
 .bonus-table .bonus {
