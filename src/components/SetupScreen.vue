@@ -2,18 +2,11 @@
   <div class="setup-screen">
     <div class="setup-panel">
       <!-- Header -->
-      <div class="section-header section-header--centered">
-        <svg class="section-header-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-          <circle cx="12" cy="12" r="10"></circle>
-          <path d="M12 6v6l4 2"></path>
-        </svg>
-        <h1 class="section-header-title type-display-h1">Course Cycliste</h1>
-        <span class="section-header-subtitle">Préparation de course · Brief</span>
-      </div>
-
-      <div class="setup-header-actions">
-        <RulesDrawer />
-      </div>
+      <RaceHeader :title="raceHeaderTitle" :subtitle="raceHeaderSubtitle" :theme="raceHeaderTheme">
+        <template #actions>
+          <RulesDrawer />
+        </template>
+      </RaceHeader>
 
       <div class="setup-stepper">
         <button
@@ -362,8 +355,10 @@ import RaceTypeSelector from './RaceTypeSelector.vue';
 import ClassicRaceSelector from './ClassicRaceSelector.vue';
 import StageRaceConfigurator from './StageRaceConfigurator.vue';
 import DraftRosterSection from './DraftRosterSection.vue';
+import RaceHeader from './RaceHeader.vue';
 import RulesDrawer from './RulesDrawer.vue';
 import { getClassicPreset } from '../config/race-presets.js';
+import { UIConfig, getRaceHeaderTitle } from '../config/ui.config.js';
 import { DraftConfig, DraftAIConfig, DraftStatLabels, DraftStatOrder, RiderPool } from '../config/draft.config.js';
 
 const emit = defineEmits(['start']);
@@ -391,6 +386,9 @@ const riderPool = ref([]);
 const teamRosters = ref({});
 const activeDraftTeamId = ref(null);
 const riderPoolIndex = new Map(RiderPool.map((rider, index) => [rider.id, index]));
+const raceHeaderTitle = getRaceHeaderTitle(UIConfig.titleVariant);
+const raceHeaderSubtitle = UIConfig.subtitle;
+const raceHeaderTheme = UIConfig.raceTheme;
 
 // Get team card class
 function getTeamCardClass(teamId) {
@@ -740,7 +738,7 @@ const stepItems = computed(() => [
     title: 'Équipes',
     status: stepConfirmed.step2
       ? 'Validé'
-      : (isTeamsReady.value ? 'À confirmer' : 'À compléter'),
+      : (isTeamsReady.value ? 'Prêt' : 'À compléter'),
     complete: stepConfirmed.step2,
     locked: !stepConfirmed.step1
   },
@@ -749,7 +747,7 @@ const stepItems = computed(() => [
     title: 'Coureurs',
     status: stepConfirmed.step3
       ? 'Validé'
-      : (isDraftReady.value ? 'À confirmer' : 'Vivier'),
+      : (isDraftReady.value ? 'Prêt' : 'Vivier'),
     complete: stepConfirmed.step3,
     locked: !stepConfirmed.step2
   },
@@ -889,6 +887,20 @@ initializePlayers();
   justify-content: center;
   min-height: 100vh;
   padding: var(--space-lg);
+  position: relative;
+  --color-accent: var(--race-yellow);
+  --color-accent-hover: color-mix(in srgb, var(--race-yellow) 86%, #000 14%);
+  --color-accent-active: color-mix(in srgb, var(--race-yellow) 72%, #000 28%);
+  --color-accent-light: color-mix(in srgb, var(--race-yellow) 16%, transparent);
+}
+
+.setup-screen::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.8' numOctaves='2' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='0.06'/%3E%3C/svg%3E");
+  opacity: 0.4;
+  pointer-events: none;
 }
 
 .setup-panel {
@@ -901,22 +913,12 @@ initializePlayers();
   display: flex;
   flex-direction: column;
   gap: var(--space-xl);
-}
-
-.section-header--centered {
-  flex-direction: column;
-  text-align: center;
-}
-
-.section-header--centered .section-header-icon {
-  width: 48px;
-  height: 48px;
-  margin-bottom: var(--space-sm);
-}
-
-.setup-header-actions {
-  display: flex;
-  justify-content: center;
+  position: relative;
+  z-index: 1;
+  background-image:
+    linear-gradient(135deg, rgba(255, 255, 255, 0.9), rgba(248, 245, 239, 0.9)),
+    url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='0.05'/%3E%3C/svg%3E");
+  border: 1px solid rgba(31, 35, 40, 0.08);
 }
 
 .setup-stepper {

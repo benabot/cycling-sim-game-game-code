@@ -46,6 +46,13 @@
   --color-action-light: rgba(58, 164, 98, 0.12);
 
   /* ========================================
+     1c. RACE THEME TOKENS
+     ======================================== */
+  --race-road: #CBB8A2;                /* Gris chaud route */
+  --race-yellow: #E3B54A;              /* Accent "maillot" */
+  --race-sky: #8FA7C2;                 /* Bleu désaturé */
+
+  /* ========================================
      2. TERRAIN COLORS (Pastels)
      ======================================== */
   --terrain-flat: #DDF2E2;

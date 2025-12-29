@@ -16,6 +16,7 @@ export { default as SetupScreen } from './SetupScreen.vue';
 export { default as StageRaceConfigurator } from './StageRaceConfigurator.vue';
 export { default as StagePreview } from './StagePreview.vue';
 export { default as DraftRosterSection } from './DraftRosterSection.vue';
+export { default as RaceHeader } from './RaceHeader.vue';
 
 // Icon components
 export * from './icons';
