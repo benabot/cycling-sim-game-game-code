@@ -326,12 +326,15 @@
                   class="start-panel__checklist-item"
                   :class="{ 'start-panel__checklist-item--ok': item.ok }"
                 >
-                  <span class="start-panel__checklist-label">{{ item.label }}</span>
+                  <span class="start-panel__checklist-label">
+                    <UIIcon :type="item.ok ? 'check' : 'warning'" size="sm" />
+                    {{ item.label }}
+                  </span>
                   <span
                     class="start-panel__checklist-status"
                     :class="{ 'start-panel__checklist-status--ok': item.ok }"
                   >
-                    {{ item.ok ? 'OK' : 'À compléter' }}
+                    {{ item.ok ? 'Validé' : 'À compléter' }}
                   </span>
                 </li>
               </ul>
@@ -346,7 +349,7 @@
                   Lancer la course
                 </button>
                 <p class="start-panel__hint type-caption">
-                  {{ canStart ? 'Brief validé.' : 'Complète les étapes ci-dessus.' }}
+                  {{ canStart ? 'Brief validé.' : 'Complète les étapes 1–3.' }}
                 </p>
               </div>
             </div>
@@ -1259,20 +1262,23 @@ initializePlayers();
   align-items: center;
   justify-content: space-between;
   gap: var(--space-md);
-  padding: 6px 10px;
+  padding: 4px 10px;
   border-radius: var(--radius-sm);
   background: rgba(0, 0, 0, 0.03);
   font-size: 12px;
   color: var(--color-ink-muted);
 }
 
+.start-panel__checklist-label {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-xs);
+  font-weight: 500;
+}
+
 .start-panel__checklist-item--ok {
   background: rgba(58, 164, 98, 0.08);
   color: var(--color-ink);
-}
-
-.start-panel__checklist-label {
-  font-weight: 500;
 }
 
 .start-panel__checklist-status {
@@ -1295,7 +1301,10 @@ initializePlayers();
 }
 
 .start-panel__cta-button {
-  min-width: 210px;
+  min-width: 230px;
+  font-weight: 600;
+  border-radius: 14px;
+  box-shadow: 0 8px 18px rgba(31, 35, 40, 0.12);
 }
 
 .start-panel__hint {
