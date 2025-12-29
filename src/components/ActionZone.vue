@@ -51,12 +51,12 @@
         <button 
           v-if="hasSpecialtyCards"
           @click="$emit('useSpecialty')" 
-          class="btn btn-success"
+          class="btn btn-primary"
         >
           <UIIcon type="star" :size="16" />
           Utiliser +2
         </button>
-        <button @click="$emit('skipSpecialty')" class="btn btn-secondary">
+        <button @click="$emit('skipSpecialty')" class="btn btn-ghost">
           Sans spécialité
           <UIIcon type="chevron-down" :size="16" class="icon-forward" />
         </button>
@@ -89,7 +89,7 @@
         <span class="calc-op">=</span>
         <span class="calc-result type-numeric-lg">{{ totalMovement }}</span>
       </div>
-      <button @click="$emit('resolve')" class="btn btn-success btn-lg">
+      <button @click="$emit('resolve')" class="btn btn-primary btn-lg">
         <UIIcon type="check" :size="18" />
         Valider : {{ totalMovement }} cases (case {{ targetPosition }})
       </button>
@@ -121,8 +121,15 @@ const targetPosition = computed(() => props.currentPosition + props.totalMovemen
 <style scoped>
 .action-zone {
   padding: var(--space-lg);
-  background: var(--color-canvas);
-  border-top: 1px solid var(--color-line);
+  margin: 0 var(--space-md) var(--space-md);
+  background: var(--color-surface);
+  border: 1px solid var(--color-line);
+  border-radius: var(--radius-card);
+  box-shadow: 0 10px 26px rgba(31, 35, 40, 0.12);
+  --color-accent: var(--race-yellow);
+  --color-accent-hover: color-mix(in srgb, var(--race-yellow) 86%, #000 14%);
+  --color-accent-active: color-mix(in srgb, var(--race-yellow) 72%, #000 28%);
+  --color-accent-light: color-mix(in srgb, var(--race-yellow) 16%, transparent);
 }
 
 .action-prompt {
@@ -130,7 +137,7 @@ const targetPosition = computed(() => props.currentPosition + props.totalMovemen
   align-items: center;
   justify-content: center;
   gap: var(--space-sm);
-  padding: var(--space-lg);
+  padding: var(--space-md);
   color: var(--color-ink-muted);
 }
 
@@ -140,8 +147,8 @@ const targetPosition = computed(() => props.currentPosition + props.totalMovemen
   justify-content: center;
   width: 28px;
   height: 28px;
-  background: var(--color-accent);
-  color: white;
+  background: var(--race-yellow);
+  color: #2f2418;
   border-radius: 50%;
   font-weight: 600;
   font-family: var(--font-mono);
@@ -180,7 +187,8 @@ const targetPosition = computed(() => props.currentPosition + props.totalMovemen
   font-weight: 700;
   font-size: 1.5em;
   padding: var(--space-sm) var(--space-lg);
-  background: var(--color-line);
+  background: color-mix(in srgb, var(--race-yellow) 18%, white);
+  border: 1px solid rgba(31, 35, 40, 0.08);
   border-radius: var(--radius-md);
 }
 
@@ -280,6 +288,28 @@ const targetPosition = computed(() => props.currentPosition + props.totalMovemen
   gap: var(--space-sm);
   flex-wrap: wrap;
   justify-content: center;
+}
+
+.action-zone .btn {
+  border-radius: 14px;
+  box-shadow: 0 6px 14px rgba(31, 35, 40, 0.12);
+  border: 1px solid rgba(31, 35, 40, 0.12);
+  font-weight: 600;
+}
+
+.action-zone .btn-primary {
+  color: #2f2418;
+}
+
+.action-zone .btn-ghost {
+  border-color: transparent;
+  box-shadow: none;
+  color: var(--color-ink-muted);
+}
+
+.action-zone .btn-ghost:hover:not(:disabled) {
+  background: rgba(31, 35, 40, 0.06);
+  color: var(--color-ink);
 }
 
 .icon-back {

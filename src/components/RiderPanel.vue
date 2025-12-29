@@ -474,10 +474,10 @@ function onCardClick(card, isAttack) {
 }
 
 .context-panel {
-  border: 1px solid var(--color-line);
+  border: 1px solid var(--color-line-subtle);
   border-radius: var(--radius-md);
-  padding: var(--space-md);
-  background: var(--color-paper);
+  padding: var(--space-sm) var(--space-md);
+  background: var(--color-canvas);
   display: flex;
   flex-direction: column;
   gap: var(--space-sm);
@@ -498,15 +498,15 @@ function onCardClick(card, isAttack) {
 .context-chip {
   padding: 2px var(--space-sm);
   border-radius: var(--radius-pill);
-  border: 1px solid var(--color-line);
-  background: var(--color-surface);
+  border: 1px solid var(--color-line-subtle);
+  background: rgba(255, 255, 255, 0.7);
   font-size: 11px;
   color: var(--color-ink-soft);
 }
 
 .context-note {
   margin: 0;
-  font-size: 12px;
+  font-size: 11px;
   color: var(--color-ink-muted);
 }
 

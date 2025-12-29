@@ -323,9 +323,10 @@
   display: flex;
   align-items: center;
   gap: var(--space-lg);
-  padding: var(--space-md) var(--space-lg);
-  background-color: var(--color-surface);
-  border-bottom: 1px solid var(--color-line);
+  padding: var(--space-sm) var(--space-md);
+  background-color: color-mix(in srgb, var(--color-surface) 70%, transparent);
+  border-bottom: 1px solid var(--color-line-subtle);
+  border-radius: var(--radius-md);
 }
 
 .status-bar-item {
@@ -336,22 +337,26 @@
 
 .status-bar-label {
   font-family: var(--font-ui);
-  font-size: 12px;
+  font-size: 11px;
   font-weight: 500;
-  color: var(--color-muted);
+  color: var(--color-ink-subtle);
   text-transform: uppercase;
   letter-spacing: 0.04em;
 }
 
 .status-bar-value {
   font-family: var(--font-mono);
-  font-size: 14px;
+  font-size: 13px;
   font-weight: 600;
-  color: var(--color-ink);
+  color: var(--color-ink-soft);
 }
 
 .status-bar-divider {
   width: 1px;
-  height: 24px;
-  background-color: var(--color-line);
+  height: 20px;
+  background-color: var(--color-line-subtle);
+}
+
+.status-bar .type-numeric-lg {
+  font-size: 16px;
 }
