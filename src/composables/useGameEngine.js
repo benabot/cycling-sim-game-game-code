@@ -24,6 +24,7 @@ import { PlayerType } from '../core/teams.js';
 import { FINISH_LINE, TeamConfig } from '../config/game.config.js';
 import { EnergyConfig } from '../core/energy.js';
 import { isRefuelZone } from '../core/terrain.js';
+import { RaceWeather, getWeatherLogLine } from '../core/race_weather.js';
 
 export function useGameEngine() {
   // State
@@ -49,7 +50,12 @@ export function useGameEngine() {
   // Initialize with optional game configuration
   function initialize(gameConfig = null) {
     gameState.value = createGameState({ gameConfig });
-    gameLog.value = ['🏁 Départ de la course !', '=== Tour 1 ==='];
+    const weatherLog = getWeatherLogLine(gameState.value?.raceEventState?.weather);
+    gameLog.value = ['🏁 Départ de la course !'];
+    if (weatherLog) {
+      gameLog.value.push(weatherLog);
+    }
+    gameLog.value.push('=== Tour 1 ===');
     animatingRiders.value = [];
     isAnimatingEffects.value = false;
     aspirationAnimations.value = [];
@@ -103,6 +109,7 @@ export function useGameEngine() {
   const aiPersonalities = computed(() => gameState.value?.aiPersonalities || {});
   const calculatedMovement = computed(() => gameState.value?.calculatedMovement || 0);
   const playedThisTurn = computed(() => gameState.value?.ridersPlayedThisTurn || []);
+  const weather = computed(() => gameState.value?.raceEventState?.weather || RaceWeather.CLEAR);
   
   // v4.0: AI computed properties
   const isAITurn = computed(() => {
@@ -820,6 +827,7 @@ export function useGameEngine() {
     lastDiceRoll,
     calculatedMovement,
     playedThisTurn,
+    weather,
     previewPositions,
     currentTeamConfig,
     currentRider,

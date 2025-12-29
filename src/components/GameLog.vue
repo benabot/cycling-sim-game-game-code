@@ -172,6 +172,7 @@ function getEntryIcon(entry) {
   if (text.includes('aspiration') || text.includes('[aspiration]')) return 'aspiration';
   if (text.includes('attaque') || text.includes('[attack]')) return 'attack';
   if (text.includes('ravitaillement') || text.includes('[refuel]')) return 'refuel';
+  if (text.includes('pluie')) return 'rain';
   if (text.includes('chute') || text.includes('[crash]')) return 'crash';
   if (text.includes('crevaison') || text.includes('incident') || text.includes('[event]')) return 'event';
   if (text.includes('bloqué') || text.includes('case pleine')) return 'warning';

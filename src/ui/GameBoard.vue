@@ -24,6 +24,7 @@
       :isLastTurn="isLastTurn"
       :winningTeam="winningTeam"
       :stageRace="stageRace"
+      :weather="weather"
     />
 
     <!-- Terrain Legend -->
@@ -226,6 +227,7 @@ const {
   players,
   aiPersonalities,
   stageRace,
+  weather,
   
   // Actions
   initialize,
