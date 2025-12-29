@@ -1,5 +1,5 @@
 <template>
-  <div class="app-container app-container--centered">
+  <div class="setup-screen">
     <div class="setup-panel">
       <!-- Header -->
       <div class="section-header section-header--centered">
@@ -11,134 +11,196 @@
         <span class="section-header-subtitle">Préparation de course · Brief</span>
       </div>
 
-      <!-- Race type -->
-      <section class="setup-section">
-        <RaceTypeSelector v-model="raceType" />
-      </section>
-
-      <!-- Race format -->
-      <section ref="raceFormatSection" class="setup-section">
-        <div v-if="raceType === 'classic'" class="race-config-block">
-          <ClassicRaceSelector v-model="selectedClassic" />
-          <div v-if="selectedClassicPreset" class="race-summary">
-            <UIIcon :type="selectedClassicPreset.icon" size="sm" />
-            <span>Sélection : {{ selectedClassicPreset.name }} — avantage {{ selectedClassicPreset.advantageLabel.toLowerCase() }}</span>
+      <div class="setup-stepper">
+        <button
+          v-for="step in stepItems"
+          :key="step.id"
+          type="button"
+          class="stepper-item"
+          :class="{
+            'stepper-item--active': activeStep === step.id,
+            'stepper-item--complete': step.complete,
+            'stepper-item--locked': step.locked
+          }"
+          :disabled="step.locked"
+          @click="setActiveStep(step.id)"
+        >
+          <span class="stepper-index">{{ step.id }}</span>
+          <div class="stepper-text">
+            <span class="stepper-title">{{ step.title }}</span>
+            <span class="stepper-status">{{ step.status }}</span>
           </div>
-        </div>
-        <div v-else-if="raceType === 'stage'" class="race-config-block">
-          <StageRaceConfigurator
-            v-model="stageConfig"
-            :stageLength="courseLength"
-          />
-        </div>
-        <div v-else class="race-placeholder">
-          <UIIcon type="info" size="sm" />
-          <span>Choisissez un format.</span>
-        </div>
-      </section>
+          <UIIcon v-if="step.complete" type="check" size="sm" class="stepper-check" />
+        </button>
+      </div>
 
-      <!-- Number of teams -->
-      <section ref="teamsSection" class="setup-section">
-        <label class="form-label">Nombre d'équipes</label>
-        <p class="form-hint">Jusqu'à 4 équipes.</p>
-        <div class="segmented segmented--stretch">
-          <button 
-            v-for="n in [2, 3, 4]" 
-            :key="n"
-            class="segmented-item"
-            :class="{ 'segmented-item-active': numTeams === n }"
-            @click="setNumTeams(n)"
-          >
-            {{ n }} équipes
-          </button>
-        </div>
-      </section>
-
-      <!-- Team configuration -->
-      <section class="setup-section">
-        <label class="form-label">Équipes</label>
-        <p class="form-hint">Définissez humain / IA.</p>
-        <div class="teams-grid">
-          <div 
-            v-for="(player, index) in players" 
-            :key="player.teamId"
-            class="card team-setup-card"
-            :class="getTeamCardClass(player.teamId)"
-          >
-            <!-- Team Header -->
-            <div class="team-setup-header">
-              <RiderToken
-                :rider="{ id: 'icon', name: '', type: 'rouleur', team: player.teamId, position: 0 }"
-                :compact="true"
-              />
-              <input 
-                type="text" 
-                v-model="player.customName" 
-                :placeholder="player.name"
-                aria-label="Nom d'équipe"
-                class="input input--inline"
-                @input="updatePlayer(index)"
-              />
+      <!-- Step 1: Race -->
+      <section ref="raceStepRef" class="setup-step" :class="getStepClass(1)">
+        <header class="setup-step-header">
+          <div class="setup-step-heading">
+            <span class="setup-step-index">1</span>
+            <div>
+              <h2 class="setup-step-title">Choisir l'épreuve</h2>
+              <p class="setup-step-subtitle">Type de course et parcours.</p>
             </div>
+          </div>
+          <button v-if="activeStep !== 1" type="button" class="btn btn-ghost btn-sm" @click="setActiveStep(1)">
+            Modifier
+          </button>
+        </header>
+        <div v-show="activeStep === 1" class="setup-step-body">
+          <RaceTypeSelector v-model="raceType" />
 
-            <!-- Player Type -->
-            <div class="team-setup-controls">
-              <label class="toggle-row">
-                <input 
-                  type="checkbox" 
-                  :checked="player.playerType === 'ai'"
-                  @change="togglePlayerType(index)"
-                  class="toggle-checkbox"
-                />
-                <span class="badge" :class="player.playerType === 'human' ? 'badge-blue' : 'badge-yellow'">
-                  <UIIcon :type="player.playerType === 'human' ? 'human' : 'ai'" size="sm" />
-                  {{ player.playerType === 'human' ? 'Humain' : 'IA' }}
-                </span>
-              </label>
-
-              <!-- AI Options -->
-              <div v-if="player.playerType === 'ai'" class="ai-options">
-                <select v-model="player.difficulty" @change="updatePlayer(index)" class="select select--sm">
-                  <option value="easy">Facile</option>
-                  <option value="normal">Normal</option>
-                  <option value="hard">Difficile</option>
-                </select>
-                <select v-model="player.personality" @change="updatePlayer(index)" class="select select--sm">
-                  <option value="">Aléatoire</option>
-                  <option value="attacker">Attaquant</option>
-                  <option value="conservative">Conservateur</option>
-                  <option value="opportunist">Opportuniste</option>
-                  <option value="balanced">Équilibré</option>
-                </select>
+          <div class="race-config-block">
+            <div v-if="raceType === 'classic'" class="race-config-block">
+              <ClassicRaceSelector v-model="selectedClassic" />
+              <div v-if="selectedClassicPreset" class="race-summary">
+                <UIIcon :type="selectedClassicPreset.icon" size="sm" />
+                <span>Sélection : {{ selectedClassicPreset.name }} — avantage {{ selectedClassicPreset.advantageLabel.toLowerCase() }}</span>
               </div>
             </div>
+            <div v-else-if="raceType === 'stage'" class="race-config-block">
+              <StageRaceConfigurator
+                v-model="stageConfig"
+                :stageLength="courseLength"
+              />
+            </div>
+            <div v-else class="race-placeholder">
+              <UIIcon type="info" size="sm" />
+              <span>Choisissez un format.</span>
+            </div>
+          </div>
 
-            <!-- Riders Expand -->
-            <div class="team-riders-section">
+          <div class="course-length">
+            <label class="form-label">{{ lengthLabel }}</label>
+            <div class="segmented segmented--stretch">
               <button 
-                class="btn btn-ghost btn-sm btn--full-width" 
-                @click="toggleRidersExpand(index)"
+                v-for="len in courseLengths" 
+                :key="len.value"
+                class="segmented-item segmented-item--col"
+                :class="{ 'segmented-item-active': courseLength === len.value }"
+                @click="courseLength = len.value"
               >
-                <RiderIcon type="rouleur" :size="16" />
-                <span>Coureurs</span>
-                <UIIcon :type="expandedTeams[index] ? 'chevron-up' : 'chevron-down'" size="sm" />
+                <span class="type-body-medium">{{ len.value }} cases</span>
+                <span class="type-caption">
+                  ~{{ len.duration }}<span v-if="isStageRace"> par étape</span>
+                </span>
               </button>
-              
-              <div v-if="expandedTeams[index]" class="riders-edit-list">
-                <div 
-                  v-for="(rider, riderIndex) in riderTypes" 
-                  :key="riderIndex"
-                  class="rider-edit-row"
-                >
-                  <RiderIcon :type="rider.type" :size="18" class="rider-edit-icon" />
-                  <input 
-                    type="text" 
-                    v-model="player.riderNames[riderIndex]"
-                    :placeholder="rider.defaultName"
-                    class="input input--sm"
-                    @input="updatePlayer(index)"
-                  />
-                  <span class="type-caption">{{ rider.label }}</span>
+            </div>
+            <p v-if="lengthHint" class="form-hint">{{ lengthHint }}</p>
+          </div>
+        </div>
+      </section>
+
+      <!-- Step 2: Teams -->
+      <section ref="teamsStepRef" class="setup-step" :class="getStepClass(2)">
+        <header class="setup-step-header">
+          <div class="setup-step-heading">
+            <span class="setup-step-index">2</span>
+            <div>
+              <h2 class="setup-step-title">Choisir les équipes</h2>
+              <p class="setup-step-subtitle">Humain ou IA, niveau et style.</p>
+            </div>
+          </div>
+          <button v-if="activeStep !== 2" type="button" class="btn btn-ghost btn-sm" @click="setActiveStep(2)">
+            Modifier
+          </button>
+        </header>
+        <div v-show="activeStep === 2" class="setup-step-body">
+          <div class="teams-count">
+            <label class="form-label">Nombre d'équipes</label>
+            <p class="form-hint">Jusqu'à 4 équipes.</p>
+            <div class="segmented segmented--stretch">
+              <button 
+                v-for="n in [2, 3, 4]" 
+                :key="n"
+                class="segmented-item"
+                :class="{ 'segmented-item-active': numTeams === n }"
+                @click="setNumTeams(n)"
+              >
+                {{ n }} équipes
+              </button>
+            </div>
+          </div>
+
+          <div class="teams-grid">
+            <div 
+              v-for="(player, index) in players" 
+              :key="player.teamId"
+              class="card team-setup-card"
+              :class="getTeamCardClass(player.teamId)"
+            >
+              <div class="team-setup-header">
+                <RiderToken
+                  :rider="{ id: 'icon', name: '', type: 'rouleur', team: player.teamId, position: 0 }"
+                  :compact="true"
+                />
+                <div class="team-setup-header-text">
+                  <span class="team-setup-title">{{ getTeamLabel(player.teamId) }}</span>
+                  <span class="team-setup-meta">{{ player.playerType === 'human' ? 'Humain' : 'IA (recommandé)' }}</span>
+                </div>
+              </div>
+
+              <div class="team-setup-body">
+                <div class="segmented segmented--stretch team-toggle">
+                  <button
+                    type="button"
+                    class="segmented-item"
+                    :class="{ 'segmented-item-active': player.playerType === 'ai' }"
+                    @click="setPlayerType(index, PlayerType.AI)"
+                  >
+                    IA (recommandé)
+                  </button>
+                  <button
+                    type="button"
+                    class="segmented-item"
+                    :class="{ 'segmented-item-active': player.playerType === 'human' }"
+                    @click="setPlayerType(index, PlayerType.HUMAN)"
+                  >
+                    Humain
+                  </button>
+                </div>
+
+                <p v-if="player.playerType === 'ai'" class="team-microcopy">
+                  Auto-sélection des coureurs selon difficulté.
+                </p>
+                <p v-else class="team-microcopy">
+                  Sélection manuelle requise.
+                </p>
+
+                <div v-if="player.playerType === 'ai'" class="ai-options">
+                  <div class="ai-field">
+                    <span class="type-caption">Niveau IA</span>
+                    <select v-model="player.difficulty" @change="updatePlayer(index)" class="select select--sm">
+                      <option value="easy">Facile</option>
+                      <option value="normal">Normal</option>
+                      <option value="hard">Difficile</option>
+                    </select>
+                  </div>
+                  <div class="ai-field">
+                    <span class="type-caption">Comportement</span>
+                    <select v-model="player.personality" @change="updatePlayer(index)" class="select select--sm">
+                      <option value="">Aléatoire</option>
+                      <option value="attacker">Attaquant</option>
+                      <option value="conservative">Conservateur</option>
+                      <option value="opportunist">Opportuniste</option>
+                      <option value="balanced">Équilibré</option>
+                    </select>
+                  </div>
+                  <div class="team-ai-summary">
+                    <span class="badge badge-pill">Budget {{ getTeamBudgetTotal(player.teamId) }}</span>
+                    <span class="badge badge-pill">Profils 5/5</span>
+                  </div>
+                </div>
+
+                <div v-else class="team-human-actions">
+                  <div class="team-human-summary">
+                    <span class="badge badge-pill">Coureurs {{ getRoster(player.teamId).length }}/{{ DraftConfig.rosterSize }}</span>
+                    <span class="badge badge-pill">Budget {{ getTeamBudgetTotal(player.teamId) }}</span>
+                  </div>
+                  <button type="button" class="btn btn-secondary btn-sm" @click="focusDraftTeam(player.teamId)">
+                    Gérer l'équipe (achat)
+                  </button>
                 </div>
               </div>
             </div>
@@ -146,84 +208,105 @@
         </div>
       </section>
 
-      <!-- Draft riders -->
-      <section class="setup-section">
-        <DraftRosterSection
-          :team-ids="draftTeamIds"
-          :players="players"
-          :active-team-id="activeDraftTeamId"
-          :rosters="teamRosters"
-          :pool="riderPool"
-          :budget-total="activeDraftBudgetTotal"
-          :roster-size="DraftConfig.rosterSize"
-          :roles="DraftConfig.roles"
-          :stat-order="DraftStatOrder"
-          :stat-labels="DraftStatLabels"
-          @selectTeam="activeDraftTeamId = $event"
-          @recruit="recruitRider"
-          @release="releaseRider"
-        />
-      </section>
-
-      <!-- Course length -->
-      <section class="setup-section">
-        <label class="form-label">{{ lengthLabel }}</label>
-        <div class="segmented segmented--stretch">
-          <button 
-            v-for="len in courseLengths" 
-            :key="len.value"
-            class="segmented-item segmented-item--col"
-            :class="{ 'segmented-item-active': courseLength === len.value }"
-            @click="courseLength = len.value"
-          >
-            <span class="type-body-medium">{{ len.value }} cases</span>
-            <span class="type-caption">
-              ~{{ len.duration }}<span v-if="isStageRace"> par étape</span>
-            </span>
+      <!-- Step 3: Draft -->
+      <section ref="draftStepRef" class="setup-step" :class="getStepClass(3)">
+        <header class="setup-step-header">
+          <div class="setup-step-heading">
+            <span class="setup-step-index">3</span>
+            <div>
+              <h2 class="setup-step-title">Composer l'équipe</h2>
+              <p class="setup-step-subtitle">Vivier et budget.</p>
+            </div>
+          </div>
+          <button v-if="activeStep !== 3" type="button" class="btn btn-ghost btn-sm" @click="setActiveStep(3)">
+            Modifier
           </button>
+        </header>
+        <div v-show="activeStep === 3" class="setup-step-body">
+          <div v-if="manualDraftTeamIds.length === 0" class="draft-placeholder">
+            <UIIcon type="ai" size="sm" />
+            <div>
+              <p>Auto-sélection active pour les équipes IA.</p>
+              <p class="type-caption">Passez une équipe en Humain pour composer.</p>
+            </div>
+            <button type="button" class="btn btn-ghost btn-sm" @click="setActiveStep(2)">
+              Modifier
+            </button>
+          </div>
+          <DraftRosterSection
+            v-else
+            :team-ids="manualDraftTeamIds"
+            :players="players"
+            :active-team-id="activeDraftTeamId"
+            :rosters="teamRosters"
+            :pool="riderPool"
+            :budget-total="activeDraftBudgetTotal"
+            :roster-size="DraftConfig.rosterSize"
+            :roles="DraftConfig.roles"
+            :stat-order="DraftStatOrder"
+            :stat-labels="DraftStatLabels"
+            @selectTeam="activeDraftTeamId = $event"
+            @recruit="recruitRider"
+            @release="releaseRider"
+            @confirm="setActiveStep(4)"
+          />
         </div>
-        <p v-if="lengthHint" class="form-hint">{{ lengthHint }}</p>
       </section>
 
-      <!-- Summary -->
-      <div class="setup-summary">
-        <span class="setup-summary-label">Résumé</span>
-        <span class="badge badge-blue">
-          <UIIcon type="human" size="xs" />
-          {{ humanCount }} joueur(s)
-        </span>
-        <span class="type-caption">vs</span>
-        <span class="badge badge-yellow">
-          <UIIcon type="ai" size="xs" />
-          {{ aiCount }} IA
-        </span>
-      </div>
+      <!-- Step 4: Launch -->
+      <section ref="launchStepRef" class="setup-step" :class="getStepClass(4)">
+        <header class="setup-step-header">
+          <div class="setup-step-heading">
+            <span class="setup-step-index">4</span>
+            <div>
+              <h2 class="setup-step-title">Lancer la course</h2>
+              <p class="setup-step-subtitle">Brief final.</p>
+            </div>
+          </div>
+          <button v-if="activeStep !== 4" type="button" class="btn btn-ghost btn-sm" @click="setActiveStep(4)">
+            Ouvrir
+          </button>
+        </header>
+        <div v-show="activeStep === 4" class="setup-step-body">
+          <div class="setup-summary">
+            <span class="setup-summary-label">Résumé</span>
+            <span class="badge badge-blue">
+              <UIIcon type="human" size="xs" />
+              {{ humanCount }} joueur(s)
+            </span>
+            <span class="type-caption">vs</span>
+            <span class="badge badge-yellow">
+              <UIIcon type="ai" size="xs" />
+              {{ aiCount }} IA
+            </span>
+          </div>
 
-      <!-- Start button -->
-      <button 
-        class="btn btn-success btn-lg" 
-        @click="startGame" 
-        :disabled="!canStart"
-        style="display: flex; margin: 0 auto;"
-      >
-        <UIIcon type="finish" size="lg" />
-        Lancer la course
-      </button>
+          <button 
+            class="btn btn-success btn-lg" 
+            @click="startGame" 
+            :disabled="!canStart"
+            style="display: flex; margin: 0 auto;"
+          >
+            <UIIcon type="finish" size="lg" />
+            Lancer la course
+          </button>
 
-      <p v-if="startWarning || canStart" class="setup-warning type-caption" :class="{ 'setup-warning--ok': canStart }">
-        <UIIcon :type="canStart ? 'check' : 'warning'" size="sm" />
-        {{ canStart ? 'Brief validé.' : startWarning }}
-      </p>
+          <p v-if="startWarning || canStart" class="setup-warning type-caption" :class="{ 'setup-warning--ok': canStart }">
+            <UIIcon :type="canStart ? 'check' : 'warning'" size="sm" />
+            {{ canStart ? 'Brief validé.' : startWarning }}
+          </p>
+        </div>
+      </section>
     </div>
   </div>
 </template>
 
 <script setup>
-import { ref, computed, reactive, watch, nextTick } from 'vue';
-import { TeamId, PlayerType, AIDifficulty, getTeamIds, createPlayerConfig } from '../core/teams.js';
+import { ref, computed, watch, nextTick } from 'vue';
+import { PlayerType, AIDifficulty, TeamConfigs, getTeamIds, createPlayerConfig } from '../core/teams.js';
 import { AIPersonality } from '../core/ai.js';
 import RiderToken from './RiderToken.vue';
-import { RiderIcon, UIIcon } from './icons';
+import { UIIcon } from './icons';
 import RaceTypeSelector from './RaceTypeSelector.vue';
 import ClassicRaceSelector from './ClassicRaceSelector.vue';
 import StageRaceConfigurator from './StageRaceConfigurator.vue';
@@ -232,15 +315,6 @@ import { getClassicPreset } from '../config/race-presets.js';
 import { DraftConfig, DraftAIConfig, DraftStatLabels, DraftStatOrder, RiderPool } from '../config/draft.config.js';
 
 const emit = defineEmits(['start']);
-
-// Rider types configuration
-const riderTypes = [
-  { type: 'climber', label: 'Grimpeur', defaultName: 'Grimpeur', desc: 'Fort en montagne' },
-  { type: 'puncher', label: 'Puncheur', defaultName: 'Puncheur', desc: 'Fort en côte' },
-  { type: 'rouleur', label: 'Rouleur', defaultName: 'Rouleur', desc: 'Fort sur le plat' },
-  { type: 'sprinter', label: 'Sprinteur', defaultName: 'Sprinteur', desc: 'Fort au sprint' },
-  { type: 'versatile', label: 'Polyvalent', defaultName: 'Polyvalent', desc: 'Équilibré' }
-];
 
 const courseLengths = [
   { value: 60, duration: '18 min' },
@@ -255,9 +329,11 @@ const stageConfig = ref({ numStages: null, profile: null });
 const numTeams = ref(2);
 const courseLength = ref(80);
 const players = ref([]);
-const expandedTeams = reactive({});
-const raceFormatSection = ref(null);
-const teamsSection = ref(null);
+const activeStep = ref(1);
+const raceStepRef = ref(null);
+const teamsStepRef = ref(null);
+const draftStepRef = ref(null);
+const launchStepRef = ref(null);
 const riderPool = ref([]);
 const teamRosters = ref({});
 const activeDraftTeamId = ref(null);
@@ -291,7 +367,6 @@ function initializePlayers() {
       personality: ''
     };
   });
-  Object.keys(expandedTeams).forEach(k => delete expandedTeams[k]);
   initializeDraftState(teamIds);
 }
 
@@ -322,6 +397,13 @@ function getRoster(teamId) {
 
 function getPlayerByTeamId(teamId) {
   return players.value.find(player => player.teamId === teamId);
+}
+
+function getTeamLabel(teamId) {
+  const player = getPlayerByTeamId(teamId);
+  const customName = player?.customName?.trim();
+  if (customName) return customName;
+  return player?.name || TeamConfigs[teamId]?.name || teamId;
 }
 
 function getTeamBudgetTotal(teamId) {
@@ -368,6 +450,21 @@ function releaseRider({ teamId, rider }) {
     [teamId]: roster.filter(entry => entry.id !== rider.id)
   };
   riderPool.value = [...riderPool.value, { ...rider, stats: { ...rider.stats } }];
+  sortRiderPool();
+}
+
+function clearTeamRoster(teamId) {
+  if (!teamId) return;
+  const roster = getRoster(teamId);
+  if (!roster.length) return;
+  teamRosters.value = {
+    ...teamRosters.value,
+    [teamId]: []
+  };
+  riderPool.value = [
+    ...riderPool.value,
+    ...roster.map(rider => ({ ...rider, stats: { ...rider.stats } }))
+  ];
   sortRiderPool();
 }
 
@@ -462,17 +559,14 @@ function setNumTeams(n) {
   initializePlayers();
 }
 
-function toggleRidersExpand(index) {
-  expandedTeams[index] = !expandedTeams[index];
-}
-
-function togglePlayerType(index) {
+function setPlayerType(index, type) {
   const player = players.value[index];
-  const newType = player.playerType === PlayerType.HUMAN ? PlayerType.AI : PlayerType.HUMAN;
+  if (!player || player.playerType === type) return;
+  const difficulty = type === PlayerType.AI ? (player.difficulty || AIDifficulty.NORMAL) : null;
   const newConfig = createPlayerConfig(
     player.teamId,
-    newType,
-    newType === PlayerType.AI ? AIDifficulty.NORMAL : null
+    type,
+    difficulty
   );
   players.value[index] = {
     ...newConfig,
@@ -480,6 +574,12 @@ function togglePlayerType(index) {
     riderNames: player.riderNames,
     personality: player.personality || ''
   };
+  if (type === PlayerType.AI) {
+    clearTeamRoster(player.teamId);
+  }
+  if (type === PlayerType.HUMAN) {
+    activeDraftTeamId.value = player.teamId;
+  }
 }
 
 function updatePlayer(index) {
@@ -504,7 +604,11 @@ const incompleteDraftTeam = computed(() =>
 const isDraftComplete = computed(() => 
   manualDraftTeamIds.value.length > 0 && !incompleteDraftTeam.value
 );
-const activeDraftBudgetTotal = computed(() => getTeamBudgetTotal(activeDraftTeamId.value));
+const activeManualTeamId = computed(() => {
+  if (manualDraftTeamIds.value.includes(activeDraftTeamId.value)) return activeDraftTeamId.value;
+  return manualDraftTeamIds.value[0] || null;
+});
+const activeDraftBudgetTotal = computed(() => getTeamBudgetTotal(activeManualTeamId.value));
 
 const isStageRace = computed(() => raceType.value === 'stage');
 const isClassicRace = computed(() => raceType.value === 'classic');
@@ -547,6 +651,70 @@ const startWarning = computed(() => {
 
 const canStart = computed(() => startWarning.value === '');
 
+const isTeamsReady = computed(() => humanCount.value > 0);
+
+const stepItems = computed(() => [
+  {
+    id: 1,
+    title: 'Épreuve',
+    status: isRaceConfigComplete.value ? 'Validé' : 'À compléter',
+    complete: isRaceConfigComplete.value,
+    locked: false
+  },
+  {
+    id: 2,
+    title: 'Équipes',
+    status: isTeamsReady.value ? 'Validé' : 'Humain/IA',
+    complete: isTeamsReady.value,
+    locked: !isRaceConfigComplete.value
+  },
+  {
+    id: 3,
+    title: 'Coureurs',
+    status: isDraftComplete.value ? 'Validé' : 'Vivier',
+    complete: isDraftComplete.value,
+    locked: !isRaceConfigComplete.value || !isTeamsReady.value
+  },
+  {
+    id: 4,
+    title: 'Lancer',
+    status: canStart.value ? 'Prêt' : 'Brief',
+    complete: canStart.value,
+    locked: !isRaceConfigComplete.value || !isTeamsReady.value || !isDraftComplete.value
+  }
+]);
+
+function getStepRef(step) {
+  if (step === 1) return raceStepRef;
+  if (step === 2) return teamsStepRef;
+  if (step === 3) return draftStepRef;
+  if (step === 4) return launchStepRef;
+  return null;
+}
+
+function isStepLocked(step) {
+  return stepItems.value.find(item => item.id === step)?.locked ?? false;
+}
+
+function getStepClass(step) {
+  return {
+    'setup-step--active': activeStep.value === step,
+    'setup-step--locked': isStepLocked(step)
+  };
+}
+
+function setActiveStep(step) {
+  if (isStepLocked(step)) return;
+  activeStep.value = step;
+  scrollToSection(getStepRef(step));
+}
+
+function focusDraftTeam(teamId) {
+  if (!teamId) return;
+  activeDraftTeamId.value = teamId;
+  setActiveStep(3);
+}
+
 function scrollToSection(sectionRef) {
   if (!sectionRef?.value) return;
   nextTick(() => {
@@ -554,26 +722,43 @@ function scrollToSection(sectionRef) {
   });
 }
 
-watch(raceType, (value) => {
-  if (value) {
-    scrollToSection(raceFormatSection);
-  }
-});
-
 watch(selectedClassic, (classicId) => {
   const preset = getClassicPreset(classicId);
   if (preset?.defaultLength) {
     courseLength.value = preset.defaultLength;
   }
+});
 
-  if (classicId && raceType.value === 'classic') {
-    scrollToSection(teamsSection);
+watch(manualDraftTeamIds, (teamIds) => {
+  if (!teamIds.includes(activeDraftTeamId.value)) {
+    activeDraftTeamId.value = teamIds[0] || null;
   }
 });
 
-watch(isStageConfigComplete, (complete) => {
-  if (complete && raceType.value === 'stage') {
-    scrollToSection(teamsSection);
+watch(isRaceConfigComplete, (complete) => {
+  if (complete) {
+    activeStep.value = 2;
+    scrollToSection(teamsStepRef);
+  } else if (activeStep.value > 1) {
+    activeStep.value = 1;
+  }
+});
+
+watch(isTeamsReady, (ready) => {
+  if (ready && isRaceConfigComplete.value) {
+    activeStep.value = 3;
+    scrollToSection(draftStepRef);
+  } else if (!ready && activeStep.value > 2) {
+    activeStep.value = 2;
+  }
+});
+
+watch(isDraftComplete, (complete) => {
+  if (complete) {
+    activeStep.value = 4;
+    scrollToSection(launchStepRef);
+  } else if (activeStep.value > 3) {
+    activeStep.value = 3;
   }
 });
 
@@ -619,7 +804,7 @@ initializePlayers();
 </script>
 
 <style scoped>
-.app-container--centered {
+.setup-screen {
   display: flex;
   align-items: center;
   justify-content: center;
@@ -631,15 +816,17 @@ initializePlayers();
   background: var(--color-surface);
   border-radius: var(--radius-lg);
   padding: var(--space-2xl);
-  max-width: 980px;
+  max-width: 1100px;
   width: 100%;
   box-shadow: var(--shadow-lg);
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-xl);
 }
 
 .section-header--centered {
   flex-direction: column;
   text-align: center;
-  margin-bottom: var(--space-xl);
 }
 
 .section-header--centered .section-header-icon {
@@ -648,12 +835,137 @@ initializePlayers();
   margin-bottom: var(--space-sm);
 }
 
-.setup-section {
-  margin-bottom: var(--space-xl);
-  scroll-margin-top: var(--space-xl);
+.setup-stepper {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: var(--space-sm);
 }
 
-/* Teams Grid */
+.stepper-item {
+  display: flex;
+  align-items: center;
+  gap: var(--space-sm);
+  padding: var(--space-sm) var(--space-md);
+  border: 1px solid var(--color-line);
+  border-radius: var(--radius-md);
+  background: var(--color-paper);
+  text-align: left;
+  transition: var(--transition-fast);
+}
+
+.stepper-item--active {
+  border-color: var(--color-accent);
+  box-shadow: 0 0 0 2px var(--color-accent-light);
+}
+
+.stepper-item--complete .stepper-index {
+  background: var(--color-accent);
+  color: white;
+}
+
+.stepper-item--locked {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.stepper-index {
+  width: 28px;
+  height: 28px;
+  border-radius: var(--radius-full);
+  background: var(--color-canvas);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 600;
+  font-size: 13px;
+}
+
+.stepper-text {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.stepper-title {
+  font-size: 13px;
+  font-weight: 600;
+}
+
+.stepper-status {
+  font-size: 11px;
+  color: var(--color-ink-muted);
+}
+
+.stepper-check {
+  margin-left: auto;
+  color: var(--color-success);
+}
+
+.setup-step {
+  border: 1px solid var(--color-line);
+  border-radius: var(--radius-lg);
+  overflow: hidden;
+  scroll-margin-top: var(--space-xl);
+  background: var(--color-surface);
+}
+
+.setup-step--locked {
+  opacity: 0.6;
+}
+
+.setup-step-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-md);
+  padding: var(--space-md) var(--space-lg);
+  background: var(--color-paper);
+  border-bottom: 1px solid var(--color-line);
+}
+
+.setup-step-heading {
+  display: flex;
+  align-items: center;
+  gap: var(--space-sm);
+}
+
+.setup-step-index {
+  width: 28px;
+  height: 28px;
+  border-radius: var(--radius-full);
+  background: var(--color-canvas);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 600;
+  font-size: 13px;
+}
+
+.setup-step-title {
+  margin: 0;
+  font-size: 16px;
+  font-weight: 600;
+}
+
+.setup-step-subtitle {
+  margin: 0;
+  font-size: 12px;
+  color: var(--color-ink-muted);
+}
+
+.setup-step-body {
+  padding: var(--space-lg);
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-lg);
+}
+
+.teams-count {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-sm);
+}
+
 .teams-grid {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
@@ -670,89 +982,77 @@ initializePlayers();
   align-items: center;
   gap: var(--space-sm);
   padding: var(--space-md);
-  /* Background déjà géré par .card-team-* gradient */
 }
 
-.team-setup-header .input--inline {
-  flex: 1;
-  background: transparent;
-  border-color: transparent;
-  font-weight: 500;
+.team-setup-header-text {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
 }
 
-.team-setup-header .input--inline:focus {
-  background: var(--color-surface);
-  border-color: var(--color-line);
+.team-setup-title {
+  font-weight: 600;
+  font-size: 14px;
 }
 
-.team-setup-controls {
+.team-setup-meta {
+  font-size: 12px;
+  color: var(--color-ink-muted);
+}
+
+.team-setup-body {
   padding: var(--space-md);
   display: flex;
   flex-direction: column;
   gap: var(--space-sm);
+  border-top: 1px solid var(--color-line);
+  background: var(--color-surface);
 }
 
-.toggle-row {
-  display: flex;
-  align-items: center;
-  gap: var(--space-sm);
-  cursor: pointer;
+.team-toggle {
+  width: 100%;
 }
 
-.toggle-checkbox {
-  width: 18px;
-  height: 18px;
-  accent-color: var(--color-accent);
+.team-microcopy {
+  margin: 0;
+  font-size: 12px;
+  color: var(--color-ink-muted);
 }
 
 .ai-options {
-  display: flex;
-  gap: var(--space-xs);
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+  gap: var(--space-sm);
 }
 
-.ai-options .select--sm {
-  flex: 1;
-  font-size: 0.85em;
-}
-
-/* Riders Section */
-.team-riders-section {
-  border-top: 1px solid var(--color-line);
-}
-
-.team-riders-section .btn--full-width {
-  border-radius: 0;
-  justify-content: center;
-  gap: var(--space-xs);
-}
-
-.riders-edit-list {
-  padding: var(--space-sm) var(--space-md);
-  background-color: var(--color-canvas);
+.ai-field {
   display: flex;
   flex-direction: column;
   gap: var(--space-xs);
 }
 
-.rider-edit-row {
+.team-ai-summary,
+.team-human-summary {
   display: flex;
-  align-items: center;
+  flex-wrap: wrap;
+  gap: var(--space-xs);
+}
+
+.team-human-actions {
+  display: flex;
+  flex-direction: column;
   gap: var(--space-sm);
 }
 
-.rider-edit-icon {
-  color: var(--color-ink-muted);
-  flex-shrink: 0;
-}
-
-.rider-edit-row .input--sm {
-  flex: 1;
-}
-
-.rider-edit-row .type-caption {
-  width: 70px;
-  text-align: right;
-  color: var(--color-ink-muted);
+.draft-placeholder {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-md);
+  padding: var(--space-md);
+  border: 1px dashed var(--color-line);
+  border-radius: var(--radius-md);
+  background: var(--color-canvas);
 }
 
 /* Segmented Variants */
@@ -769,6 +1069,12 @@ initializePlayers();
   flex-direction: column;
   padding: var(--space-md) var(--space-sm);
   gap: 2px;
+}
+
+.course-length {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-sm);
 }
 
 /* Summary */
@@ -792,7 +1098,6 @@ initializePlayers();
   font-weight: 600;
 }
 
-/* Warning */
 .setup-warning {
   display: flex;
   align-items: center;
@@ -841,18 +1146,28 @@ initializePlayers();
   width: fit-content;
 }
 
-/* Responsive */
+@media (max-width: 900px) {
+  .setup-stepper {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
 @media (max-width: 600px) {
   .setup-panel {
     padding: var(--space-lg);
   }
-  
+
+  .setup-stepper {
+    grid-template-columns: 1fr;
+  }
+
   .teams-grid {
     grid-template-columns: 1fr;
   }
-  
-  .ai-options {
+
+  .draft-placeholder {
     flex-direction: column;
+    align-items: flex-start;
   }
 }
 </style>

@@ -40,12 +40,41 @@
       </div>
     </div>
 
+    <div class="draft-toolbar">
+      <div class="draft-search">
+        <label class="type-caption" for="draft-search-input">Rechercher</label>
+        <input
+          id="draft-search-input"
+          v-model="searchQuery"
+          type="text"
+          class="input input-sm"
+          placeholder="Nom du coureur"
+        />
+      </div>
+      <div class="draft-filters">
+        <span class="type-caption">Filtres</span>
+        <div class="draft-filter-row">
+          <button
+            v-for="role in roleFilters"
+            :key="role"
+            type="button"
+            class="draft-filter"
+            :class="{ 'draft-filter--active': activeRole === role }"
+            @click="activeRole = role"
+          >
+            {{ role === 'all' ? 'Tous' : getRoleLabel(role) }}
+          </button>
+        </div>
+      </div>
+      <span class="draft-count type-caption">{{ filteredCount }} coureurs</span>
+    </div>
+
     <div class="draft-grid">
       <div class="draft-pool">
         <h3 class="draft-title">Vivier</h3>
-        <div class="draft-pool-list">
-          <article v-for="rider in pool" :key="rider.id" class="draft-card">
-            <header class="draft-card-header">
+        <div v-if="pagedPool.length" class="draft-pool-grid">
+          <article v-for="rider in pagedPool" :key="rider.id" class="draft-card draft-card--compact">
+            <div class="draft-card-main">
               <div class="draft-card-meta">
                 <RiderIcon :type="rider.role" :size="18" />
                 <div>
@@ -62,14 +91,14 @@
                 :disabled="!canRecruit(rider)"
                 @click="$emit('recruit', { teamId: activeTeamId, rider })"
               >
-                Recruter
+                Ajouter
               </button>
-            </header>
-            <div class="draft-card-stats">
+            </div>
+            <div class="draft-card-stats draft-card-stats--compact">
               <div
                 v-for="stat in getStatRows(rider)"
                 :key="stat.key"
-                class="stat-row"
+                class="stat-row stat-row--compact"
               >
                 <span class="stat-label">{{ stat.label }}</span>
                 <div class="stat-bar">
@@ -79,6 +108,28 @@
               </div>
             </div>
           </article>
+        </div>
+        <div v-else class="draft-empty">
+          <span>Aucun coureur disponible.</span>
+        </div>
+        <div class="draft-pagination">
+          <button
+            type="button"
+            class="btn btn-ghost btn-sm"
+            :disabled="page <= 1"
+            @click="page = Math.max(1, page - 1)"
+          >
+            Précédent
+          </button>
+          <span class="type-caption">Page {{ page }} / {{ totalPages }}</span>
+          <button
+            type="button"
+            class="btn btn-ghost btn-sm"
+            :disabled="page >= totalPages"
+            @click="page = Math.min(totalPages, page + 1)"
+          >
+            Suivant
+          </button>
         </div>
       </div>
 
@@ -119,11 +170,26 @@
         </div>
       </div>
     </div>
+
+    <div class="draft-sticky-summary">
+      <div class="draft-sticky-metrics">
+        <span>Slots {{ rosterCount }}/{{ rosterSize }}</span>
+        <span>Budget {{ budgetRemaining }}</span>
+      </div>
+      <button
+        type="button"
+        class="btn btn-primary btn-sm"
+        :disabled="rosterCount < rosterSize"
+        @click="$emit('confirm')"
+      >
+        {{ rosterCount === rosterSize ? "Valider l'équipe" : `À compléter : ${rosterCount}/${rosterSize}` }}
+      </button>
+    </div>
   </section>
 </template>
 
 <script setup>
-import { computed } from 'vue';
+import { computed, ref, watch } from 'vue';
 import { TeamConfigs } from '../core/teams.js';
 import { UIIcon } from './icons';
 import RiderIcon from './icons/RiderIcon.vue';
@@ -141,7 +207,7 @@ const props = defineProps({
   statLabels: { type: Object, default: () => ({}) }
 });
 
-defineEmits(['selectTeam', 'recruit', 'release']);
+defineEmits(['selectTeam', 'recruit', 'release', 'confirm']);
 
 const activeRoster = computed(() => props.rosters?.[props.activeTeamId] || []);
 const rosterCount = computed(() => activeRoster.value.length);
@@ -158,6 +224,37 @@ const rosterByRole = computed(() => {
 });
 
 const activeTeamLabel = computed(() => getTeamLabel(props.activeTeamId));
+
+const searchQuery = ref('');
+const activeRole = ref('all');
+const page = ref(1);
+const pageSize = 8;
+
+const roleFilters = computed(() => ['all', ...(props.roles || [])]);
+
+const filteredPool = computed(() => {
+  const query = searchQuery.value.trim().toLowerCase();
+  return (props.pool || []).filter(rider => {
+    if (activeRole.value !== 'all' && rider.role !== activeRole.value) return false;
+    if (!query) return true;
+    return rider.name?.toLowerCase().includes(query);
+  });
+});
+
+const filteredCount = computed(() => filteredPool.value.length);
+const totalPages = computed(() => Math.max(1, Math.ceil(filteredPool.value.length / pageSize)));
+const pagedPool = computed(() => {
+  const start = (page.value - 1) * pageSize;
+  return filteredPool.value.slice(start, start + pageSize);
+});
+
+watch([searchQuery, activeRole], () => {
+  page.value = 1;
+});
+
+watch(totalPages, (value) => {
+  if (page.value > value) page.value = value;
+});
 
 function getTeamLabel(teamId) {
   if (!teamId) return '—';
@@ -254,6 +351,46 @@ function getStatRows(rider) {
   color: var(--color-ink);
 }
 
+.draft-toolbar {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 2fr) auto;
+  gap: var(--space-md);
+  align-items: end;
+}
+
+.draft-search,
+.draft-filters {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-xs);
+}
+
+.draft-filter-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-xs);
+}
+
+.draft-filter {
+  padding: 4px 10px;
+  border-radius: var(--radius-pill);
+  border: 1px solid var(--color-line);
+  background: var(--color-paper);
+  font-size: 12px;
+  color: var(--color-ink-muted);
+  transition: var(--transition-fast);
+}
+
+.draft-filter--active {
+  border-color: var(--color-accent);
+  background: var(--color-accent-light);
+  color: var(--color-accent);
+}
+
+.draft-count {
+  justify-self: end;
+}
+
 .draft-grid {
   display: grid;
   grid-template-columns: minmax(0, 1.6fr) minmax(0, 1fr);
@@ -270,12 +407,6 @@ function getStatRows(rider) {
   letter-spacing: 0.6px;
 }
 
-.draft-pool-list {
-  display: flex;
-  flex-direction: column;
-  gap: var(--space-sm);
-}
-
 .draft-card {
   border: 1px solid var(--color-line);
   border-radius: var(--radius-md);
@@ -287,7 +418,17 @@ function getStatRows(rider) {
   box-shadow: var(--shadow-sm);
 }
 
-.draft-card-header {
+.draft-card--compact {
+  gap: var(--space-sm);
+}
+
+.draft-pool-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: var(--space-sm);
+}
+
+.draft-card-main {
   display: flex;
   align-items: flex-start;
   justify-content: space-between;
@@ -316,18 +457,18 @@ function getStatRows(rider) {
   margin-top: var(--space-xs);
 }
 
-.draft-card-stats {
-  display: flex;
-  flex-direction: column;
-  gap: 6px;
+.draft-card-stats--compact {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 6px var(--space-sm);
 }
 
-.stat-row {
+.stat-row--compact {
   display: grid;
-  grid-template-columns: 70px 1fr 28px;
+  grid-template-columns: 56px 1fr 26px;
   gap: var(--space-xs);
   align-items: center;
-  font-size: 11px;
+  font-size: 10px;
   color: var(--color-ink-soft);
 }
 
@@ -352,6 +493,22 @@ function getStatRows(rider) {
   text-align: right;
   font-family: var(--font-mono);
   color: var(--color-ink);
+}
+
+.draft-pagination {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-top: var(--space-sm);
+}
+
+.draft-empty {
+  padding: var(--space-md);
+  border: 1px dashed var(--color-line);
+  border-radius: var(--radius-md);
+  background: var(--color-canvas);
+  font-size: 12px;
+  color: var(--color-ink-muted);
 }
 
 .roster-slots {
@@ -417,9 +574,58 @@ function getStatRows(rider) {
   background: var(--color-paper);
 }
 
+.draft-roster {
+  position: sticky;
+  top: var(--space-lg);
+  align-self: start;
+}
+
+.draft-sticky-summary {
+  display: none;
+  position: sticky;
+  bottom: var(--space-md);
+  gap: var(--space-sm);
+  align-items: center;
+  justify-content: space-between;
+  padding: var(--space-sm) var(--space-md);
+  border: 1px solid var(--color-line);
+  border-radius: var(--radius-md);
+  background: var(--color-surface);
+  box-shadow: var(--shadow-md);
+}
+
+.draft-sticky-metrics {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  font-size: 12px;
+  color: var(--color-ink-muted);
+}
+
 @media (max-width: 960px) {
   .draft-grid {
     grid-template-columns: 1fr;
+  }
+
+  .draft-pool-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .draft-toolbar {
+    grid-template-columns: 1fr;
+    align-items: start;
+  }
+
+  .draft-count {
+    justify-self: start;
+  }
+
+  .draft-roster {
+    position: static;
+  }
+
+  .draft-sticky-summary {
+    display: flex;
   }
 }
 </style>
