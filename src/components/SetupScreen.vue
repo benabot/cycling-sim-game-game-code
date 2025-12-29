@@ -11,6 +11,10 @@
         <span class="section-header-subtitle">Préparation de course · Brief</span>
       </div>
 
+      <div class="setup-header-actions">
+        <RulesDrawer />
+      </div>
+
       <div class="setup-stepper">
         <button
           v-for="step in stepItems"
@@ -89,6 +93,17 @@
             </div>
             <p v-if="lengthHint" class="form-hint">{{ lengthHint }}</p>
           </div>
+
+          <div class="setup-step-actions">
+            <button
+              type="button"
+              class="btn btn-primary btn-sm"
+              :disabled="!isRaceConfigComplete"
+              @click="confirmStep(1)"
+            >
+              Continuer
+            </button>
+          </div>
         </div>
       </section>
 
@@ -137,11 +152,24 @@
                 />
                 <div class="team-setup-header-text">
                   <span class="team-setup-title">{{ getTeamLabel(player.teamId) }}</span>
-                  <span class="team-setup-meta">{{ player.playerType === 'human' ? 'Humain' : 'IA (recommandé)' }}</span>
+                  <span class="team-setup-meta">{{ player.playerType === 'human' ? 'Humain' : 'IA' }}</span>
                 </div>
               </div>
 
               <div class="team-setup-body">
+                <div class="team-name-field">
+                  <label class="type-caption" :for="`team-name-${player.teamId}`">Nom d'équipe</label>
+                  <input
+                    :id="`team-name-${player.teamId}`"
+                    v-model="player.customName"
+                    type="text"
+                    class="input input-sm"
+                    :placeholder="getTeamDefaultName(player.teamId)"
+                    maxlength="24"
+                    @input="updatePlayer(index)"
+                    @blur="sanitizeTeamName(index)"
+                  />
+                </div>
                 <div class="segmented segmented--stretch team-toggle">
                   <button
                     type="button"
@@ -149,7 +177,7 @@
                     :class="{ 'segmented-item-active': player.playerType === 'ai' }"
                     @click="setPlayerType(index, PlayerType.AI)"
                   >
-                    IA (recommandé)
+                    IA
                   </button>
                   <button
                     type="button"
@@ -205,6 +233,17 @@
               </div>
             </div>
           </div>
+
+          <div class="setup-step-actions">
+            <button
+              type="button"
+              class="btn btn-primary btn-sm"
+              :disabled="!isTeamsReady"
+              @click="confirmStep(2)"
+            >
+              Continuer
+            </button>
+          </div>
         </div>
       </section>
 
@@ -229,9 +268,14 @@
               <p>Auto-sélection active pour les équipes IA.</p>
               <p class="type-caption">Passez une équipe en Humain pour composer.</p>
             </div>
-            <button type="button" class="btn btn-ghost btn-sm" @click="setActiveStep(2)">
-              Modifier
-            </button>
+            <div class="draft-placeholder-actions">
+              <button type="button" class="btn btn-ghost btn-sm" @click="setActiveStep(2)">
+                Modifier
+              </button>
+              <button type="button" class="btn btn-primary btn-sm" @click="confirmStep(3)">
+                Continuer
+              </button>
+            </div>
           </div>
           <DraftRosterSection
             v-else
@@ -248,8 +292,18 @@
             @selectTeam="activeDraftTeamId = $event"
             @recruit="recruitRider"
             @release="releaseRider"
-            @confirm="setActiveStep(4)"
+            @confirm="confirmStep(3)"
           />
+          <div v-if="manualDraftTeamIds.length > 0" class="setup-step-actions">
+            <button
+              type="button"
+              class="btn btn-primary btn-sm"
+              :disabled="!isDraftReady"
+              @click="confirmStep(3)"
+            >
+              Continuer
+            </button>
+          </div>
         </div>
       </section>
 
@@ -302,7 +356,7 @@
 </template>
 
 <script setup>
-import { ref, computed, watch, nextTick } from 'vue';
+import { ref, computed, watch, nextTick, reactive } from 'vue';
 import { PlayerType, AIDifficulty, TeamConfigs, getTeamIds, createPlayerConfig } from '../core/teams.js';
 import { AIPersonality } from '../core/ai.js';
 import RiderToken from './RiderToken.vue';
@@ -311,6 +365,7 @@ import RaceTypeSelector from './RaceTypeSelector.vue';
 import ClassicRaceSelector from './ClassicRaceSelector.vue';
 import StageRaceConfigurator from './StageRaceConfigurator.vue';
 import DraftRosterSection from './DraftRosterSection.vue';
+import RulesDrawer from './RulesDrawer.vue';
 import { getClassicPreset } from '../config/race-presets.js';
 import { DraftConfig, DraftAIConfig, DraftStatLabels, DraftStatOrder, RiderPool } from '../config/draft.config.js';
 
@@ -330,6 +385,7 @@ const numTeams = ref(2);
 const courseLength = ref(80);
 const players = ref([]);
 const activeStep = ref(1);
+const stepConfirmed = reactive({ step1: false, step2: false, step3: false });
 const raceStepRef = ref(null);
 const teamsStepRef = ref(null);
 const draftStepRef = ref(null);
@@ -362,7 +418,7 @@ function initializePlayers() {
     );
     return {
       ...config,
-      customName: '',
+      customName: getTeamDefaultName(teamId),
       riderNames: ['', '', '', '', ''],
       personality: ''
     };
@@ -399,11 +455,15 @@ function getPlayerByTeamId(teamId) {
   return players.value.find(player => player.teamId === teamId);
 }
 
+function getTeamDefaultName(teamId) {
+  return TeamConfigs[teamId]?.name || 'Équipe';
+}
+
 function getTeamLabel(teamId) {
   const player = getPlayerByTeamId(teamId);
   const customName = player?.customName?.trim();
   if (customName) return customName;
-  return player?.name || TeamConfigs[teamId]?.name || teamId;
+  return TeamConfigs[teamId]?.name || player?.name || teamId;
 }
 
 function getTeamBudgetTotal(teamId) {
@@ -433,6 +493,7 @@ function canRecruitRider(teamId, rider) {
 
 function recruitRider({ teamId, rider }) {
   if (!canRecruitRider(teamId, rider)) return;
+  resetSteps(3);
   const roster = getRoster(teamId);
   teamRosters.value = {
     ...teamRosters.value,
@@ -445,6 +506,7 @@ function releaseRider({ teamId, rider }) {
   if (!teamId || !rider) return;
   const roster = getRoster(teamId);
   if (!roster.some(entry => entry.id === rider.id)) return;
+  resetSteps(3);
   teamRosters.value = {
     ...teamRosters.value,
     [teamId]: roster.filter(entry => entry.id !== rider.id)
@@ -457,6 +519,7 @@ function clearTeamRoster(teamId) {
   if (!teamId) return;
   const roster = getRoster(teamId);
   if (!roster.length) return;
+  resetSteps(3);
   teamRosters.value = {
     ...teamRosters.value,
     [teamId]: []
@@ -556,12 +619,14 @@ function autoDraftAITeams() {
 
 function setNumTeams(n) {
   numTeams.value = n;
+  resetSteps(2);
   initializePlayers();
 }
 
 function setPlayerType(index, type) {
   const player = players.value[index];
   if (!player || player.playerType === type) return;
+  resetSteps(2);
   const difficulty = type === PlayerType.AI ? (player.difficulty || AIDifficulty.NORMAL) : null;
   const newConfig = createPlayerConfig(
     player.teamId,
@@ -586,6 +651,13 @@ function updatePlayer(index) {
   // v-model handles the update
 }
 
+function sanitizeTeamName(index) {
+  const player = players.value[index];
+  if (!player) return;
+  const trimmed = player.customName?.trim().slice(0, 24) || '';
+  player.customName = trimmed || getTeamDefaultName(player.teamId);
+}
+
 const humanCount = computed(() => 
   players.value.filter(p => p.playerType === PlayerType.HUMAN).length
 );
@@ -603,6 +675,9 @@ const incompleteDraftTeam = computed(() =>
 );
 const isDraftComplete = computed(() => 
   manualDraftTeamIds.value.length > 0 && !incompleteDraftTeam.value
+);
+const isDraftReady = computed(() =>
+  manualDraftTeamIds.value.length === 0 || isDraftComplete.value
 );
 const activeManualTeamId = computed(() => {
   if (manualDraftTeamIds.value.includes(activeDraftTeamId.value)) return activeDraftTeamId.value;
@@ -657,30 +732,36 @@ const stepItems = computed(() => [
   {
     id: 1,
     title: 'Épreuve',
-    status: isRaceConfigComplete.value ? 'Validé' : 'À compléter',
-    complete: isRaceConfigComplete.value,
+    status: stepConfirmed.step1
+      ? 'Validé'
+      : (isRaceConfigComplete.value ? 'Prêt' : 'À compléter'),
+    complete: stepConfirmed.step1,
     locked: false
   },
   {
     id: 2,
     title: 'Équipes',
-    status: isTeamsReady.value ? 'Validé' : 'Humain/IA',
-    complete: isTeamsReady.value,
-    locked: !isRaceConfigComplete.value
+    status: stepConfirmed.step2
+      ? 'Validé'
+      : (isTeamsReady.value ? 'À confirmer' : 'À compléter'),
+    complete: stepConfirmed.step2,
+    locked: !stepConfirmed.step1
   },
   {
     id: 3,
     title: 'Coureurs',
-    status: isDraftComplete.value ? 'Validé' : 'Vivier',
-    complete: isDraftComplete.value,
-    locked: !isRaceConfigComplete.value || !isTeamsReady.value
+    status: stepConfirmed.step3
+      ? 'Validé'
+      : (isDraftReady.value ? 'À confirmer' : 'Vivier'),
+    complete: stepConfirmed.step3,
+    locked: !stepConfirmed.step2
   },
   {
     id: 4,
     title: 'Lancer',
     status: canStart.value ? 'Prêt' : 'Brief',
-    complete: canStart.value,
-    locked: !isRaceConfigComplete.value || !isTeamsReady.value || !isDraftComplete.value
+    complete: false,
+    locked: !stepConfirmed.step3
   }
 ]);
 
@@ -709,6 +790,30 @@ function setActiveStep(step) {
   scrollToSection(getStepRef(step));
 }
 
+function confirmStep(step) {
+  if (step === 1 && isRaceConfigComplete.value) {
+    stepConfirmed.step1 = true;
+    activeStep.value = 2;
+    scrollToSection(teamsStepRef);
+  }
+  if (step === 2 && isTeamsReady.value) {
+    stepConfirmed.step2 = true;
+    activeStep.value = 3;
+    scrollToSection(draftStepRef);
+  }
+  if (step === 3 && isDraftReady.value) {
+    stepConfirmed.step3 = true;
+    activeStep.value = 4;
+    scrollToSection(launchStepRef);
+  }
+}
+
+function resetSteps(fromStep) {
+  if (fromStep <= 1) stepConfirmed.step1 = false;
+  if (fromStep <= 2) stepConfirmed.step2 = false;
+  if (fromStep <= 3) stepConfirmed.step3 = false;
+}
+
 function focusDraftTeam(teamId) {
   if (!teamId) return;
   activeDraftTeamId.value = teamId;
@@ -729,36 +834,13 @@ watch(selectedClassic, (classicId) => {
   }
 });
 
+watch([raceType, selectedClassic, courseLength, () => stageConfig.value?.numStages, () => stageConfig.value?.profile], () => {
+  resetSteps(1);
+});
+
 watch(manualDraftTeamIds, (teamIds) => {
   if (!teamIds.includes(activeDraftTeamId.value)) {
     activeDraftTeamId.value = teamIds[0] || null;
-  }
-});
-
-watch(isRaceConfigComplete, (complete) => {
-  if (complete) {
-    activeStep.value = 2;
-    scrollToSection(teamsStepRef);
-  } else if (activeStep.value > 1) {
-    activeStep.value = 1;
-  }
-});
-
-watch(isTeamsReady, (ready) => {
-  if (ready && isRaceConfigComplete.value) {
-    activeStep.value = 3;
-    scrollToSection(draftStepRef);
-  } else if (!ready && activeStep.value > 2) {
-    activeStep.value = 2;
-  }
-});
-
-watch(isDraftComplete, (complete) => {
-  if (complete) {
-    activeStep.value = 4;
-    scrollToSection(launchStepRef);
-  } else if (activeStep.value > 3) {
-    activeStep.value = 3;
   }
 });
 
@@ -833,6 +915,11 @@ initializePlayers();
   width: 48px;
   height: 48px;
   margin-bottom: var(--space-sm);
+}
+
+.setup-header-actions {
+  display: flex;
+  justify-content: center;
 }
 
 .setup-stepper {
@@ -960,6 +1047,11 @@ initializePlayers();
   gap: var(--space-lg);
 }
 
+.setup-step-actions {
+  display: flex;
+  justify-content: flex-end;
+}
+
 .teams-count {
   display: flex;
   flex-direction: column;
@@ -1009,6 +1101,12 @@ initializePlayers();
   background: var(--color-surface);
 }
 
+.team-name-field {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-xs);
+}
+
 .team-toggle {
   width: 100%;
 }
@@ -1053,6 +1151,11 @@ initializePlayers();
   border: 1px dashed var(--color-line);
   border-radius: var(--radius-md);
   background: var(--color-canvas);
+}
+
+.draft-placeholder-actions {
+  display: flex;
+  gap: var(--space-sm);
 }
 
 /* Segmented Variants */
