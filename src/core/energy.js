@@ -15,8 +15,8 @@ export const EnergyConfig = {
   thresholds: {
     normal: { min: 51, max: 100 },
     tired: { min: 26, max: 50 },    // Attaque/Spécialité : -1
-    exhausted: { min: 1, max: 25 }, // Attaque/Spécialité interdites, bonus terrain annulé
-    fringale: { min: 0, max: 0 }    // Max 3 cases/tour
+    exhausted: { min: 1, max: 25 }, // Attaque/Spécialité interdites
+    fringale: { min: 0, max: 0 }    // Récupération uniquement
   },
   
   // Consumption costs
@@ -35,12 +35,14 @@ export const EnergyConfig = {
     shelterBonus: 3,      // +3 when sheltered at end of turn
     refuelZone: 25        // +25 in refuel zone
   },
+
+  // Fringale recovery (action only)
+  fringaleRecovery: 10,
   
   // Terrain adaptation reduces consumption by 50%
   terrainAdaptationReduction: 0.5,
   
-  // Fringale max movement
-  fringaleMaxMovement: 3
+  // Fringale movement is disabled (recover only)
 };
 
 /**
@@ -68,8 +70,8 @@ export function getEnergyEffects(energy) {
       return {
         attackPenalty: null,      // Can't use
         specialtyPenalty: null,   // Can't use
-        bonusDisabled: true,
-        maxMovement: EnergyConfig.fringaleMaxMovement,
+        bonusDisabled: false,
+        maxMovement: null,
         canUseAttack: false,
         canUseSpecialty: false
       };
@@ -77,7 +79,7 @@ export function getEnergyEffects(energy) {
       return {
         attackPenalty: null,
         specialtyPenalty: null,
-        bonusDisabled: true,
+        bonusDisabled: false,
         maxMovement: null,
         canUseAttack: false,
         canUseSpecialty: false

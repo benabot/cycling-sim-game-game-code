@@ -4,7 +4,7 @@
  */
 
 import { roll1D6, rollFallTest } from './dice.js';
-import { TerrainType, TerrainConfig, DescentRules, MountainRules, getTerrainBonus, generateCourse, hasAspiration, hasWindPenalty, findSummitPosition, isExemptFromSummitStop, isRefuelZone } from './terrain.js';
+import { TerrainType, TerrainConfig, DescentRules, MountainRules, getTerrainBonus, generateCourse, hasAspiration, findSummitPosition, isExemptFromSummitStop, isRefuelZone } from './terrain.js';
 import { 
   createRider, createRiderFromDraft, createTeamRiders, RiderConfig, CardType, RiderType,
   playCard, playSpecialtyCard, addFatigueCard,
@@ -611,6 +611,8 @@ export function calculateMovement(state) {
   const rider = getCurrentRider(state);
   if (!rider || !state.lastDiceRoll || !state.selectedCardId) return 0;
   
+  if (getEnergyStatus(rider.energy) === 'fringale') return 0;
+
   const terrain = getTerrainAt(state, rider.position);
   const energyEffects = getEnergyEffects(rider.energy);
   
@@ -675,6 +677,10 @@ export function calculateMovement(state) {
 export function calculatePreviewPositions(state) {
   const rider = getCurrentRider(state);
   if (!rider || !state.lastDiceRoll || !state.selectedCardId) {
+    return null;
+  }
+
+  if (getEnergyStatus(rider.energy) === 'fringale') {
     return null;
   }
   
@@ -773,6 +779,27 @@ export function resolveMovement(state) {
       ridersPlayedThisTurn: [...state.ridersPlayedThisTurn, rider.id]
     });
   }
+
+  if (getEnergyStatus(rider.energy) === 'fringale') {
+    const recovered = EnergyConfig.fringaleRecovery ?? 10;
+    const newEnergy = applyEnergyChange(rider.energy, 0, recovered);
+    const updatedRiders = state.riders.map(r =>
+      r.id === rider.id ? { ...r, energy: newEnergy } : r
+    );
+
+    const recoverState = {
+      ...state,
+      riders: updatedRiders,
+      selectedCardId: null,
+      selectedSpecialtyId: null,
+      lastDiceRoll: null,
+      lastMovement: { type: 'recover', distance: 0, energyDelta: newEnergy - rider.energy },
+      ridersPlayedThisTurn: [...state.ridersPlayedThisTurn, rider.id],
+      gameLog: [...state.gameLog, `⚡ ${rider.name} récupère (+${newEnergy - rider.energy} énergie)`]
+    };
+
+    return moveToNextPlayer(recoverState);
+  }
   
   const movement = calculateMovement(state);
   let targetPosition = rider.position + movement;
@@ -801,32 +828,45 @@ export function resolveMovement(state) {
   
   // Calculate actual distance moved
   const actualDistance = newPosition - rider.position;
-  
-  // Play the selected card
-  let updatedRider = rider;
-  const { rider: riderAfterCard, card: playedCard } = playCard(rider, state.selectedCardId);
-  updatedRider = riderAfterCard;
-  
-  // Check if attack card was used
+
+  // Energy check before committing the action
   const usedAttack = rider.attackCards.some(c => c.id === state.selectedCardId);
-  
-  // Play specialty card if selected
   const usedSpecialty = !!state.selectedSpecialtyId;
-  if (usedSpecialty) {
-    const { rider: riderAfterSpecialty } = playSpecialtyCard(updatedRider, state.selectedSpecialtyId);
-    updatedRider = riderAfterSpecialty;
-  }
-  
-  // v3.3: Calculate energy consumption
-  const windPenalty = updatedRider.windPenaltyNextMove || 0;
+  const windPenalty = rider.windPenaltyNextMove || 0;
   const energyConsumed = calculateMovementConsumption({
     distance: actualDistance,
     terrain,
     riderType: rider.type,
     usedAttack,
     usedSpecialty,
-    isLeading: false // Will be determined at end of turn
+    isLeading: false // Determined at end of turn
   }) + windPenalty;
+
+  if (energyConsumed > rider.energy) {
+    return {
+      ...state,
+      selectedCardId: null,
+      selectedSpecialtyId: null,
+      lastDiceRoll: null,
+      lastMovement: { type: 'invalid', energyRequired: energyConsumed },
+      turnPhase: TurnPhase.SELECT_CARD,
+      gameLog: [
+        ...state.gameLog,
+        `⚡ ${rider.name} manque d'énergie (${energyConsumed} requis)`
+      ]
+    };
+  }
+  
+  // Play the selected card
+  let updatedRider = rider;
+  const { rider: riderAfterCard, card: playedCard } = playCard(rider, state.selectedCardId);
+  updatedRider = riderAfterCard;
+  
+  // Play specialty card if selected
+  if (usedSpecialty) {
+    const { rider: riderAfterSpecialty } = playSpecialtyCard(updatedRider, state.selectedSpecialtyId);
+    updatedRider = riderAfterSpecialty;
+  }
   
   // v3.3: Calculate energy recovery (descent only during movement)
   const onRefuelZone = isRefuelZone(state.course, newPosition);
@@ -1051,7 +1091,7 @@ export function applyEndOfTurnEffects(state) {
   // ===== PHASE 2: WIND CARDS (prise de vent) =====
   // Calculated AFTER aspiration
   // Rules:
-  // - No wind on mountain/descent
+  // - Wind applies on all terrains
   // - Empty cell in front → leader takes wind, others sheltered
   
   // Get all unique positions with riders after regrouping
@@ -1066,8 +1106,6 @@ export function applyEndOfTurnEffects(state) {
   const shelteredRiderIds = [];
   
   for (const pos of finalPositions) {
-    const terrain = getTerrainAt(state, pos);
-    
     // Get riders at this position sorted by arrival order
     const ridersAtPos = updatedRiders
       .filter(r => r.position === pos && !r.hasFinished)
@@ -1075,13 +1113,7 @@ export function applyEndOfTurnEffects(state) {
     
     if (ridersAtPos.length === 0) continue;
     
-    // In terrain without wind: everyone is sheltered
-    if (!hasWindPenalty(terrain)) {
-      ridersAtPos.forEach(r => shelteredRiderIds.push(r.id));
-      continue;
-    }
-    
-    // Other terrains: check if cell in front (pos + 1) is empty
+    // Check if cell in front (pos + 1) is empty
     const cellInFrontEmpty = !updatedRiders.some(r => 
       r.position === pos + 1 && !r.hasFinished
     );

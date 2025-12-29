@@ -320,6 +320,23 @@ export function useGameEngine() {
     
     // Apply movement
     const newState = resolveMovementEngine(gameState.value);
+
+    if (newState.lastMovement?.type === 'recover') {
+      const delta = newState.lastMovement.energyDelta ?? 0;
+      log(`⚡ ${riderName} récupère (+${delta} énergie)`);
+      gameState.value = newState;
+      animatingRiders.value = animatingRiders.value.filter(id => id !== riderId);
+      return;
+    }
+
+    if (newState.lastMovement?.type === 'invalid' || newState.turnPhase === TurnPhase.SELECT_CARD) {
+      const required = newState.lastMovement?.energyRequired;
+      const suffix = Number.isFinite(required) ? ` (${required} requis)` : '';
+      log(`⚡ ${riderName} manque d'énergie${suffix}`);
+      gameState.value = newState;
+      animatingRiders.value = animatingRiders.value.filter(id => id !== riderId);
+      return;
+    }
     
     // Log movement
     const actualPos = newState.riders.find(r => r.id === riderId)?.position;

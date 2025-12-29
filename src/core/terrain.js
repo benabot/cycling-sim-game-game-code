@@ -37,14 +37,14 @@ export const TerrainConfig = {
     emoji: '🟫',
     color: '#d4a574',
     hasAspiration: false,
-    hasWindPenalty: false
+    hasWindPenalty: true
   },
   [TerrainType.DESCENT]: {
     name: 'Descente',
     emoji: '🟦',
     color: '#87CEEB',
     hasAspiration: false,
-    hasWindPenalty: false
+    hasWindPenalty: true
   },
   [TerrainType.SPRINT]: {
     name: 'Sprint',
