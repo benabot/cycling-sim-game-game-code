@@ -24,6 +24,28 @@ function makeRider(id) {
 }
 
 describe('race events V2', () => {
+  it('uses weighted selection when rider context is provided', () => {
+    const riders = [makeRider('r1'), makeRider('r2')];
+    const rolls = [0.95, 0, 0];
+    const rng = () => (rolls.length ? rolls.shift() : 0);
+
+    const result = rollRaceEvent({
+      riders,
+      ridersPlayedThisTurn: ['r1', 'r2'],
+      getTerrainForRider: () => TerrainType.FLAT,
+      getRiderContext: rider => ({
+        terrain: TerrainType.FLAT,
+        weight: rider.id === 'r2' ? 1 : 0.1
+      }),
+      weather: RaceWeather.CLEAR,
+      cooldownTurns: 0,
+      rng
+    });
+
+    expect(result.riderId).toBe('r2');
+    expect(result.event).not.toBeNull();
+  });
+
   it('respects cooldown and triggers after a pause', () => {
     const riders = [makeRider('r1')];
     const terrainFn = () => TerrainType.FLAT;

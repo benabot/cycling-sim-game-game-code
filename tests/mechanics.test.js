@@ -311,6 +311,34 @@ describe('Wind rules', () => {
   });
 });
 
+describe('Race events', () => {
+  it('applies at most one event per global turn', () => {
+    const course = makeCourse([
+      TerrainType.FLAT,
+      TerrainType.FLAT,
+      TerrainType.FLAT
+    ]);
+    const state = createGameState({ courseLength: course.length });
+    const riders = [
+      { ...state.riders[0], position: 1, arrivalOrder: 0, hand: [], energy: 100 },
+      { ...state.riders[1], position: 1, arrivalOrder: 1, hand: [], energy: 100 }
+    ];
+
+    state.course = course;
+    state.courseLength = course.length;
+    state.finishLine = course.length;
+    state.riders = riders;
+    state.ridersPlayedThisTurn = riders.map(r => r.id);
+    state.arrivalCounter = riders.length;
+    state.raceEventState = { cooldownTurns: 0, weather: 'clear', rng: () => 0 };
+
+    const after = applyEndOfTurnEffects(state);
+    const ridersWithEvent = after.riders.filter(r => r.raceEvent);
+
+    expect(ridersWithEvent).toHaveLength(1);
+  });
+});
+
 describe('Energy thresholds - fringale', () => {
   it('recovers only at 0 energy with no movement', () => {
     // Arrange
