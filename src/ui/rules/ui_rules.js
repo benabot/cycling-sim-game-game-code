@@ -44,7 +44,7 @@ export const RulesUIContent = {
       icon: 'card',
       lines: [
         'Main initiale: +2, +3, +3, +4, +4, +5.',
-        'Fin de tour: 1 carte générée (deck infini): +2, sous vent +1, Rouleur +2.',
+        'Fin de tour (deck infini): Montagne/Descente +2 ; sinon +2, sous vent +1 (Rouleur +2).',
         'Défausse: toutes les cartes, jamais recyclées.'
       ]
     },
@@ -65,7 +65,7 @@ export const RulesUIContent = {
       icon: 'shelter',
       lines: [
         'Descente: +1 énergie/case si départ en descente.',
-        'Abri: +3 énergie fin de tour si pas sous vent.',
+        'Abri: +3 énergie fin de tour si pas sous vent et position finale ≠ montagne.',
         'Ravitaillement: case finale du déplacement, +25 après dépense.',
         'Cumulable: descente, abri, ravito (cap 100).'
       ]
@@ -98,7 +98,7 @@ export const RulesUIContent = {
       icon: 'wind',
       lines: [
         'Seul ou plus à droite + case devant vide.',
-        'Tous terrains, évalué après aspiration.',
+        'Hors Montagne/Descente, évalué après aspiration.',
         'Carte fin de tour: +1 (+2 rouleur).',
         'Surcoût énergie au tour suivant: +3 / +5 rouleur.'
       ]
@@ -108,9 +108,9 @@ export const RulesUIContent = {
       title: 'Fin de tour',
       icon: 'info',
       lines: [
-        'Ordre: action, aspiration, vent, cartes fin de tour, abri.',
+        'Ordre: action, aspiration, vent (hors Montagne/Descente), cartes fin de tour, abri.',
         'Ravitaillement: pendant le mouvement, pas en fin de tour.',
-        'Abri: +3 énergie si pas sous vent.'
+        'Abri: +3 énergie si pas sous vent et position finale ≠ montagne.'
       ]
     },
     {
