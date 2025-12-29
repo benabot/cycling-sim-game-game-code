@@ -226,9 +226,6 @@
                     <span class="badge badge-pill">Coureurs {{ getRoster(player.teamId).length }}/{{ DraftConfig.rosterSize }}</span>
                     <span class="badge badge-pill">Budget {{ getTeamBudgetTotal(player.teamId) }}</span>
                   </div>
-                  <button type="button" class="btn btn-secondary btn-sm" @click="focusDraftTeam(player.teamId)">
-                    Gérer l'équipe (achat)
-                  </button>
                 </div>
               </div>
             </div>

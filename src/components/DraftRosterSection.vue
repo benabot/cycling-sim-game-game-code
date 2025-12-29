@@ -169,16 +169,28 @@
               :style="getTeamBorderStyle(activeTeamId)"
             >
               <img
-                v-if="activeRoster[slot - 1]?.portraitUrl"
-                :src="activeRoster[slot - 1]?.portraitUrl"
+                v-if="hasPortrait(activeRoster[slot - 1]?.portraitKey)"
+                :src="getPortraitSrc(activeRoster[slot - 1]?.portraitKey)"
                 :alt="activeRoster[slot - 1]?.name"
+                class="rider-portrait__image"
+                @error="onPortraitError(activeRoster[slot - 1]?.portraitKey)"
               />
-              <span v-else class="rider-portrait__initials">
-                {{ activeRoster[slot - 1] ? getInitials(activeRoster[slot - 1].name) : '—' }}
+              <img
+                v-else
+                :src="PORTRAIT_FALLBACK_URL"
+                alt=""
+                class="rider-portrait__fallback"
+              />
+              <span v-if="activeRoster[slot - 1]" class="rider-portrait__initials">
+                {{ getInitials(activeRoster[slot - 1].name) }}
               </span>
             </div>
           </div>
-          <span class="draft-roster-note">{{ rosterTone }}</span>
+          <div class="draft-roster-metrics">
+            <span>Slots {{ rosterCount }}/{{ rosterSize }}</span>
+            <span>Budget {{ budgetRemaining }}</span>
+          </div>
+          <span class="draft-roster-note">Profil équipe : {{ rosterTone }}</span>
         </div>
         <div class="roster-slots">
           <div
@@ -200,8 +212,25 @@
                     :class="getPortraitClass(rosterByRole[role].role)"
                     :style="getTeamBorderStyle(activeTeamId)"
                   >
-                    <img v-if="rosterByRole[role].portraitUrl" :src="rosterByRole[role].portraitUrl" :alt="rosterByRole[role].name" />
-                    <span v-else class="rider-portrait__initials">{{ getInitials(rosterByRole[role].name) }}</span>
+                    <img
+                      v-if="hasPortrait(rosterByRole[role].portraitKey)"
+                      :src="getPortraitSrc(rosterByRole[role].portraitKey)"
+                      :alt="rosterByRole[role].name"
+                      class="rider-portrait__image"
+                      @error="onPortraitError(rosterByRole[role].portraitKey)"
+                    />
+                    <img
+                      v-else
+                      :src="PORTRAIT_FALLBACK_URL"
+                      alt=""
+                      class="rider-portrait__fallback"
+                    />
+                    <span v-if="!hasPortrait(rosterByRole[role].portraitKey)" class="rider-portrait__initials">
+                      {{ getInitials(rosterByRole[role].name) }}
+                    </span>
+                    <span class="rider-portrait__role">
+                      <RiderIcon :type="rosterByRole[role].role" :size="9" />
+                    </span>
                   </div>
                   <span class="roster-card-name">{{ rosterByRole[role].name }}</span>
                 </div>
@@ -219,7 +248,13 @@
               </button>
             </div>
             <div v-else class="roster-empty">
-              <span>Non sélectionné</span>
+              <div class="rider-portrait rider-portrait--sm rider-portrait--empty">
+                <img :src="PORTRAIT_FALLBACK_URL" alt="" class="rider-portrait__fallback" />
+              </div>
+              <div class="roster-empty-text">
+                <span>À recruter</span>
+                <span class="type-caption">{{ getRoleLabel(role) }}</span>
+              </div>
             </div>
           </div>
         </div>
@@ -236,19 +271,27 @@
           :style="getTeamBorderStyle(activeTeamId)"
         >
           <img
-            v-if="activeRoster[slot - 1]?.portraitUrl"
-            :src="activeRoster[slot - 1]?.portraitUrl"
+            v-if="hasPortrait(activeRoster[slot - 1]?.portraitKey)"
+            :src="getPortraitSrc(activeRoster[slot - 1]?.portraitKey)"
             :alt="activeRoster[slot - 1]?.name"
+            class="rider-portrait__image"
+            @error="onPortraitError(activeRoster[slot - 1]?.portraitKey)"
           />
-          <span v-else class="rider-portrait__initials">
-            {{ activeRoster[slot - 1] ? getInitials(activeRoster[slot - 1].name) : '—' }}
+          <img
+            v-else
+            :src="PORTRAIT_FALLBACK_URL"
+            alt=""
+            class="rider-portrait__fallback"
+          />
+          <span v-if="activeRoster[slot - 1]" class="rider-portrait__initials">
+            {{ getInitials(activeRoster[slot - 1].name) }}
           </span>
         </div>
       </div>
       <div class="draft-sticky-metrics">
         <span>Slots {{ rosterCount }}/{{ rosterSize }}</span>
         <span>Budget {{ budgetRemaining }}</span>
-        <span class="draft-sticky-note">{{ rosterTone }}</span>
+        <span class="draft-sticky-note">Profil équipe : {{ rosterTone }}</span>
       </div>
       <button
         type="button"
@@ -801,6 +844,13 @@ function getStatRows(rider) {
   color: var(--color-ink-muted);
 }
 
+.draft-roster-metrics {
+  display: flex;
+  gap: var(--space-md);
+  font-size: 12px;
+  color: var(--color-ink-muted);
+}
+
 .roster-slot {
   border: 1px dashed var(--color-line);
   border-radius: var(--radius-md);
@@ -838,8 +888,17 @@ function getStatRows(rider) {
 }
 
 .roster-empty {
+  display: flex;
+  align-items: center;
+  gap: var(--space-sm);
   font-size: 12px;
   color: var(--color-muted);
+}
+
+.roster-empty-text {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
 }
 
 .roster-card-identity {
