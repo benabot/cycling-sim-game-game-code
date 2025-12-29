@@ -9,7 +9,7 @@
       </div>
       <div class="notebook-header-right">
         <span v-if="currentTurn" class="notebook-turn-badge">Tour {{ currentTurn }}</span>
-        <span class="notebook-expand-hint">{{ isExpanded ? 'Replier' : 'Déplier' }}</span>
+        <span class="notebook-expand-hint">{{ isExpanded ? 'Fermer' : 'Ouvrir' }}</span>
         <UIIcon :type="isExpanded ? 'chevron-up' : 'chevron-down'" size="sm" class="notebook-chevron" />
       </div>
     </button>
@@ -22,10 +22,10 @@
           class="notebook-toggle-autoscroll"
           :class="{ 'active': autoScroll }"
           @click.stop="autoScroll = !autoScroll"
-          title="Auto-scroll vers le bas"
+          title="Suivre le bas"
         >
           <UIIcon type="chevron-down" size="xs" />
-          <span>Auto</span>
+          <span>Suivi</span>
         </button>
       </div>
       
@@ -127,14 +127,29 @@ function getTourLabel(entry) {
 }
 
 // Remove emojis and markers from text
-function getCleanText(entry) {
-  const text = getEntryText(entry);
-  return text
-    .replace(/🏁|🏆|💨|🛡️|🌀|⚔️|🍌|🤕|⚠️|🎲|▶️/g, '')
+function normalizeLogText(text) {
+  let cleaned = text
+    .replace(/🏁|🏆|💨|🛡️|🌀|⚔️|🍌|🤕|⚠️|🎲|▶️|➡️/g, '')
     .replace(/\[FINISH\]|\[WINNER\]|\[WIND\]|\[SHELTER\]|\[ASPIRATION\]|\[ATTACK\]|\[REFUEL\]|\[CRASH\]/g, '')
-    .replace(/={3,}|-{3,}/g, '')
-    .replace(/Tour\s+\d+/i, '')
+    .replace(/[=═-]{3,}/g, '')
+    .replace(/!+/g, '')
     .trim();
+
+  cleaned = cleaned
+    .replace(/lance le dé\s*:\s*(\d+)/i, 'dé $1')
+    .replace(/utilise sa carte spécialité \(\+2\)/i, 'spécialité (+2)')
+    .replace(/avance de (\d+) cases → case (\d+)(?: \(case pleine\))?/i, 'déplacement $1 → case $2')
+    .replace(/rejoint le groupe \((\d+) → (\d+)\)/i, 'aspiration $1 → $2')
+    .replace(/fait le relais/i, 'vent')
+    .replace(/tempo/i, 'cartes fin de tour');
+
+  cleaned = cleaned.replace(/\s+/g, ' ').trim();
+  cleaned = cleaned.replace(/Tour\s+\d+/i, '').trim();
+  return cleaned;
+}
+
+function getCleanText(entry) {
+  return normalizeLogText(getEntryText(entry));
 }
 
 function isImportantEvent(entry) {
@@ -150,8 +165,8 @@ function getEntryIcon(entry) {
   
   if (text.includes('franchit') || text.includes('[FINISH]')) return 'finish';
   if (text.includes('gagne') || text.includes('[WINNER]')) return 'trophy';
-  if (text.includes('vent') || text.includes('[WIND]')) return 'wind';
-  if (text.includes('abri') || text.includes('[SHELTER]')) return 'shelter';
+  if (text.includes('vent') || text.includes('relais') || text.includes('[WIND]')) return 'wind';
+  if (text.includes('abri') || text.includes('tempo') || text.includes('[SHELTER]')) return 'shelter';
   if (text.includes('aspiration') || text.includes('[ASPIRATION]')) return 'aspiration';
   if (text.includes('attaque') || text.includes('[ATTACK]')) return 'attack';
   if (text.includes('ravitaillement') || text.includes('[REFUEL]')) return 'refuel';
@@ -179,8 +194,8 @@ function getMarkerClass(entry) {
 function getIconClass(entry) {
   const text = getEntryText(entry);
   if (text.includes('gagne') || text.includes('franchit')) return 'icon--success';
-  if (text.includes('abri') || text.includes('aspiration')) return 'icon--info';
-  if (text.includes('attaque') || text.includes('vent')) return 'icon--warning';
+  if (text.includes('abri') || text.includes('tempo') || text.includes('aspiration')) return 'icon--info';
+  if (text.includes('attaque') || text.includes('vent') || text.includes('relais')) return 'icon--warning';
   if (text.includes('chute') || text.includes('bloqué')) return 'icon--danger';
   return '';
 }

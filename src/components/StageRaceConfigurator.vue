@@ -8,12 +8,15 @@
       <div class="race-section-header__icon">
         <UIIcon type="calendar" size="md" />
       </div>
-      <h2 class="race-section-header__title">Configurer la course à étapes</h2>
+      <div class="race-section-header__content">
+        <h2 class="race-section-header__title">Plan de course</h2>
+        <p class="race-section-header__subtitle">Étapes et profil.</p>
+      </div>
     </header>
 
     <div class="stage-race-configurator__controls">
       <div class="form-group">
-        <label class="form-label">Nombre d'étapes</label>
+        <label class="form-label">Étapes</label>
         <div class="segmented segmented--stretch">
           <button
             v-for="option in stageOptions"
@@ -29,7 +32,7 @@
       </div>
 
       <div class="form-group">
-        <label class="form-label">Profil global</label>
+        <label class="form-label">Profil</label>
         <div class="profile-grid">
           <button
             v-for="profile in profileOptions"
@@ -64,7 +67,7 @@
       <div class="preview-header">
         <div class="preview-header__title">
           <UIIcon type="info" size="sm" />
-          <span>Aperçu des étapes</span>
+          <span>Aperçu</span>
         </div>
         <span v-if="isConfigComplete" class="preview-header__summary">
           {{ selectedNumStages }} étapes • {{ selectedProfileName }}
@@ -81,13 +84,13 @@
       </div>
       <div v-else class="preview-placeholder">
         <UIIcon type="cursor" size="sm" />
-        <span>Sélectionnez un nombre d'étapes et un profil pour voir l'aperçu.</span>
+        <span>Choisissez des étapes et un profil.</span>
       </div>
     </div>
 
     <div class="stage-race-configurator__rules">
       <UIIcon type="trophy" size="sm" />
-      <span>Classement général : retards cumulés (10s par case)</span>
+      <span>Classement général : retards cumulés (10 s / case)</span>
     </div>
   </section>
 </template>
@@ -153,6 +156,18 @@ function updateProfile(value) {
   display: flex;
   flex-direction: column;
   gap: var(--space-xl);
+}
+
+.race-section-header__content {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.race-section-header__subtitle {
+  margin: 0;
+  font-size: 12px;
+  color: var(--color-ink-muted);
 }
 
 .stage-race-configurator__controls {

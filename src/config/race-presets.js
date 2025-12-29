@@ -61,9 +61,9 @@ export const ClassicPresets = {
    */
   [ClassicId.ARDENNAISE]: {
     id: ClassicId.ARDENNAISE,
-    name: 'Ardennaise',
-    subtitle: 'Les murs des Ardennes',
-    description: 'Course accidentée avec de nombreuses côtes courtes et explosives.',
+    name: 'Flandrien / Bosses',
+    subtitle: 'Bosses courtes.',
+    description: 'Relances nerveuses.',
     inspiration: 'Flèche Wallonne / Liège-Bastogne-Liège',
     advantage: 'puncher',
     advantageLabel: 'Puncheurs',
@@ -94,9 +94,9 @@ export const ClassicPresets = {
    */
   [ClassicId.LOMBARDE]: {
     id: ClassicId.LOMBARDE,
-    name: 'Lombarde',
-    subtitle: 'La classique des feuilles mortes',
-    description: 'Course de haute montagne avec de longues ascensions décisives.',
+    name: 'Montagne / Longs cols',
+    subtitle: 'Longs cols.',
+    description: 'Avantage grimpeurs.',
     inspiration: 'Tour de Lombardie',
     advantage: 'climber',
     advantageLabel: 'Grimpeurs',
@@ -126,9 +126,9 @@ export const ClassicPresets = {
    */
   [ClassicId.RIVIERA]: {
     id: ClassicId.RIVIERA,
-    name: 'Riviera',
-    subtitle: 'La Primavera',
-    description: 'Course rapide et plate avec un final explosif pour les sprinteurs.',
+    name: 'Plat / Vent',
+    subtitle: 'Course rapide.',
+    description: 'Avantage sprinteurs.',
     inspiration: 'Milan-San Remo',
     advantage: 'sprinter',
     advantageLabel: 'Sprinteurs',
@@ -158,9 +158,9 @@ export const ClassicPresets = {
    */
   [ClassicId.NORD]: {
     id: ClassicId.NORD,
-    name: 'Nord',
-    subtitle: 'L\'Enfer du Nord',
-    description: 'Course plate et technique où les rouleurs excellent.',
+    name: 'Nord / Pavés',
+    subtitle: 'Effort long.',
+    description: 'Avantage rouleurs.',
     inspiration: 'Paris-Roubaix',
     advantage: 'rouleur',
     advantageLabel: 'Rouleurs',
@@ -201,7 +201,7 @@ export const StageRaceConfig = {
     [StageRaceProfile.BALANCED]: {
       id: StageRaceProfile.BALANCED,
       name: 'Équilibré',
-      description: 'Mix varié de terrains pour tous les profils de coureurs.',
+      description: 'Mix de terrains.',
       icon: 'balance',
       // Distribution des types d'étapes (utilisée pour générer le programme)
       stageDistribution: {
@@ -213,7 +213,7 @@ export const StageRaceConfig = {
     [StageRaceProfile.MOUNTAIN]: {
       id: StageRaceProfile.MOUNTAIN,
       name: 'Montagne',
-      description: 'Dominé par les étapes de montagne. Avantage grimpeurs.',
+      description: 'Montagne dominante.',
       icon: 'summit',
       stageDistribution: {
         3: [StageType.HILLY, StageType.MOUNTAIN, StageType.MOUNTAIN],
@@ -224,7 +224,7 @@ export const StageRaceConfig = {
     [StageRaceProfile.SPRINTERS]: {
       id: StageRaceProfile.SPRINTERS,
       name: 'Sprinteurs',
-      description: 'Nombreuses arrivées au sprint. Avantage sprinteurs.',
+      description: 'Arrivées au sprint.',
       icon: 'finish',
       stageDistribution: {
         3: [StageType.FLAT, StageType.FLAT, StageType.SPRINT],

@@ -5,14 +5,14 @@
       <h1>{{ headerTitle }}</h1>
       <button v-if="phase === 'finished'" class="btn-back" @click="$emit('backToSetup')">
         <UIIcon type="chevron-up" size="sm" style="transform: rotate(-90deg)" />
-        Nouvelle partie
+        Retour
       </button>
     </div>
     
     <!-- AI Thinking Indicator -->
     <div v-if="isAIThinking" class="ai-thinking">
       <UIIcon type="ai" size="md" />
-      L'IA réfléchit...
+      IA en réflexion.
     </div>
     
     <!-- Status Bar -->
@@ -68,7 +68,7 @@
           <!-- View-only mode: show info banner instead of actions -->
           <div v-if="isViewOnlySelection" class="view-only-banner">
             <UIIcon type="eye" size="sm" />
-            <span>Consultation uniquement</span>
+            <span>Lecture seule</span>
           </div>
           <!-- Normal mode: show action zone -->
           <ActionZone 
@@ -95,7 +95,7 @@
     <!-- No Selection Prompt -->
     <div v-else-if="phase !== 'finished' && !showEffectsOverlay" class="no-selection-prompt">
       <UIIcon type="target" size="lg" class="prompt-icon" />
-      <span>Cliquez sur un coureur de <strong>{{ currentTeamConfig?.name }}</strong> pour le jouer</span>
+      <span>Sélectionnez un coureur ({{ currentTeamConfig?.name }})</span>
     </div>
 
     <!-- Team Legend (dynamique) -->

@@ -8,7 +8,7 @@
           <path d="M12 6v6l4 2"></path>
         </svg>
         <h1 class="section-header-title type-display-h1">Course Cycliste</h1>
-        <span class="section-header-subtitle">Configuration de la partie</span>
+        <span class="section-header-subtitle">Préparation de course · Brief</span>
       </div>
 
       <!-- Race type -->
@@ -22,7 +22,7 @@
           <ClassicRaceSelector v-model="selectedClassic" />
           <div v-if="selectedClassicPreset" class="race-summary">
             <UIIcon :type="selectedClassicPreset.icon" size="sm" />
-            <span>Vous avez choisi : {{ selectedClassicPreset.name }} — avantage {{ selectedClassicPreset.advantageLabel }}</span>
+            <span>Sélection : {{ selectedClassicPreset.name }} — avantage {{ selectedClassicPreset.advantageLabel.toLowerCase() }}</span>
           </div>
         </div>
         <div v-else-if="raceType === 'stage'" class="race-config-block">
@@ -33,13 +33,14 @@
         </div>
         <div v-else class="race-placeholder">
           <UIIcon type="info" size="sm" />
-          <span>Choisissez un type de course pour afficher le format.</span>
+          <span>Choisissez un format.</span>
         </div>
       </section>
 
       <!-- Number of teams -->
       <section ref="teamsSection" class="setup-section">
         <label class="form-label">Nombre d'équipes</label>
+        <p class="form-hint">Jusqu'à 4 équipes.</p>
         <div class="segmented segmented--stretch">
           <button 
             v-for="n in [2, 3, 4]" 
@@ -55,7 +56,8 @@
 
       <!-- Team configuration -->
       <section class="setup-section">
-        <label class="form-label">Configuration des équipes</label>
+        <label class="form-label">Équipes</label>
+        <p class="form-hint">Définissez humain / IA.</p>
         <div class="teams-grid">
           <div 
             v-for="(player, index) in players" 
@@ -73,6 +75,7 @@
                 type="text" 
                 v-model="player.customName" 
                 :placeholder="player.name"
+                aria-label="Nom d'équipe"
                 class="input input--inline"
                 @input="updatePlayer(index)"
               />
@@ -184,6 +187,7 @@
 
       <!-- Summary -->
       <div class="setup-summary">
+        <span class="setup-summary-label">Résumé</span>
         <span class="badge badge-blue">
           <UIIcon type="human" size="xs" />
           {{ humanCount }} joueur(s)
@@ -203,12 +207,12 @@
         style="display: flex; margin: 0 auto;"
       >
         <UIIcon type="finish" size="lg" />
-        Lancer la course !
+        Lancer la course
       </button>
 
-      <p v-if="startWarning" class="setup-warning type-caption">
-        <UIIcon type="warning" size="sm" />
-        {{ startWarning }}
+      <p v-if="startWarning || canStart" class="setup-warning type-caption" :class="{ 'setup-warning--ok': canStart }">
+        <UIIcon :type="canStart ? 'check' : 'warning'" size="sm" />
+        {{ canStart ? 'Brief validé.' : startWarning }}
       </p>
     </div>
   </div>
@@ -517,22 +521,21 @@ const selectedClassicPreset = computed(() =>
   selectedClassic.value ? getClassicPreset(selectedClassic.value) : null
 );
 
-const lengthLabel = computed(() => 
-  isStageRace.value ? 'Longueur des étapes' : 'Longueur du parcours'
-);
+const lengthLabel = computed(() => 'Distance');
 
 const lengthHint = computed(() => {
-  if (!isStageRace.value) return '';
-  if (!stageConfig.value?.numStages) return 'Par étape';
-  return `${stageConfig.value.numStages} étapes × ${courseLength.value} cases`;
+  const base = 'Détermine la durée.';
+  if (!isStageRace.value) return base;
+  if (!stageConfig.value?.numStages) return `${base} Par étape.`;
+  return `${base} ${stageConfig.value.numStages} étapes × ${courseLength.value} cases.`;
 });
 
 const startWarning = computed(() => {
-  if (humanCount.value === 0) return 'Au moins un joueur humain requis';
-  if (!raceType.value) return 'Choisissez d\'abord un type de course.';
-  if (isClassicRace.value && !selectedClassic.value) return 'Choisissez une classique.';
+  if (humanCount.value === 0) return 'Au moins un humain requis.';
+  if (!raceType.value) return 'À compléter : format.';
+  if (isClassicRace.value && !selectedClassic.value) return 'À compléter : parcours.';
   if (isStageRace.value && !isStageConfigComplete.value) {
-    return 'Choisissez un nombre d\'étapes et un profil.';
+    return 'À compléter : étapes, profil.';
   }
   if (!isDraftComplete.value) {
     const teamId = incompleteDraftTeam.value;
@@ -781,6 +784,14 @@ initializePlayers();
   margin-bottom: var(--space-lg);
 }
 
+.setup-summary-label {
+  font-size: 10px;
+  text-transform: uppercase;
+  letter-spacing: 0.6px;
+  color: var(--color-ink-muted);
+  font-weight: 600;
+}
+
 /* Warning */
 .setup-warning {
   display: flex;
@@ -790,6 +801,10 @@ initializePlayers();
   text-align: center;
   color: var(--color-danger);
   margin-top: var(--space-sm);
+}
+
+.setup-warning--ok {
+  color: var(--color-success);
 }
 
 /* Race sections */

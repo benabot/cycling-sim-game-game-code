@@ -2,11 +2,11 @@
   <div class="game-over-panel">
     <h2 class="game-over-title">
       <UIIcon type="trophy" :size="28" />
-      Course Terminée!
+      Course terminée
     </h2>
     <div class="winning-team" v-if="winningTeam">
       <span class="winner-badge" :style="{ background: TeamConfig[winningTeam]?.color }">
-        {{ TeamConfig[winningTeam]?.name }} gagne!
+        Vainqueur : {{ TeamConfig[winningTeam]?.name }}
       </span>
     </div>
     <div class="final-rankings">
@@ -26,7 +26,7 @@
     </div>
     <button @click="$emit('restart')" class="btn btn-restart">
       <UIIcon type="restart" :size="18" />
-      Nouvelle partie
+      Nouvelle course
     </button>
   </div>
 </template>

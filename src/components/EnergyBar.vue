@@ -48,7 +48,10 @@ const props = defineProps({
 });
 
 const barColor = computed(() => getEnergyColor(props.energy));
-const statusLabel = computed(() => getEnergyLabel(props.energy));
+const statusLabel = computed(() => {
+  const label = getEnergyLabel(props.energy);
+  return label.replace('Fringale!', 'Fringale');
+});
 const effects = computed(() => getEnergyEffects(props.energy));
 
 const hasEffects = computed(() => {

@@ -56,7 +56,7 @@
 
     <span v-if="isLastTurn" class="badge badge-gold status-bar-badge">
       <UIIcon type="finish" :size="14" />
-      DERNIER TOUR
+      Dernier tour
     </span>
 
     <span v-if="phase === 'finished'" class="badge badge-gold status-bar-badge">
@@ -106,22 +106,22 @@ const phaseIcon = computed(() => {
 const phaseLabel = computed(() => {
   if (props.phase === 'finished') return 'Course terminée';
   const labels = {
-    select_rider: 'Choisir coureur',
-    select_card: 'Choisir carte',
-    roll_dice: 'Lancer dé',
-    select_specialty: 'Spécialité ?',
-    resolve: 'Valider'
+    select_rider: 'Sélection coureur',
+    select_card: 'Choix de carte',
+    roll_dice: 'Lancer le dé',
+    select_specialty: 'Spécialité',
+    resolve: 'Résolution'
   };
   return labels[props.turnPhase] || '';
 });
 
 const phaseTooltip = computed(() => {
   const tooltips = {
-    select_rider: 'Sélectionnez un coureur de votre équipe',
-    select_card: 'Choisissez une carte mouvement ou attaque',
-    roll_dice: 'Lancez le dé pour déterminer le déplacement',
-    select_specialty: 'Utilisez une carte spécialité si disponible',
-    resolve: 'Confirmez le mouvement'
+    select_rider: 'Sélectionnez un coureur.',
+    select_card: 'Choisissez une carte.',
+    roll_dice: 'Lancez le dé.',
+    select_specialty: 'Choisissez une spécialité.',
+    resolve: 'Validez le déplacement.'
   };
   return tooltips[props.turnPhase] || '';
 });

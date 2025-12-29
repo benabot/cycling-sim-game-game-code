@@ -60,13 +60,13 @@ const iconType = computed(() => {
 });
 
 const title = computed(() => {
-  return props.type === 'classic' ? 'Classique' : 'Course à étapes';
+  return props.type === 'classic' ? 'Classique (1 jour)' : 'Course à étapes';
 });
 
 const description = computed(() => {
   return props.type === 'classic'
-    ? 'Course d\'un jour inspirée des monuments du cyclisme'
-    : 'Mini Grand Tour avec classement général sur plusieurs étapes';
+    ? 'Une arrivée. Décision rapide.'
+    : 'Classement général. Gestion sur plusieurs jours.';
 });
 </script>
 

@@ -12,7 +12,10 @@
       <div class="section-header__icon">
         <UIIcon type="trophy" size="md" />
       </div>
-      <h2 class="section-header__title">Type de course</h2>
+      <div class="section-header__content">
+        <h2 class="section-header__title">Type de course</h2>
+        <p class="section-header__subtitle">Choisissez le format.</p>
+      </div>
     </header>
     
     <!-- Cards Grid -->
@@ -66,12 +69,24 @@ defineEmits(['update:modelValue']);
   color: var(--color-ink-soft);
 }
 
+.section-header__content {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
 .section-header__title {
   font-family: var(--font-display);
   font-size: 18px;
   font-weight: 600;
   color: var(--color-ink);
   margin: 0;
+}
+
+.section-header__subtitle {
+  margin: 0;
+  font-size: 12px;
+  color: var(--color-ink-muted);
 }
 
 /* Grid */

@@ -1,6 +1,6 @@
 <template>
   <div class="terrain-legend">
-    <span class="legend-title">Terrains :</span>
+    <span class="legend-title">Terrains</span>
     
     <div class="legend-items">
       <span class="terrain-badge terrain-badge--flat">
@@ -39,7 +39,7 @@
       </span>
     </div>
     
-    <span class="legend-info">Max 4 coureurs/case | Leader = droite</span>
+    <span class="legend-info">Max 4 coureurs/case · Leader = droite</span>
   </div>
 </template>
 

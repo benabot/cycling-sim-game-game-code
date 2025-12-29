@@ -3,13 +3,13 @@
     <!-- Phase: Select Card -->
     <div v-if="turnPhase === 'select_card'" class="action-prompt">
       <span class="action-prompt-step">1</span>
-      <span class="type-body">Choisissez une carte à jouer</span>
+      <span class="type-body">Choisissez une carte.</span>
     </div>
 
     <!-- Phase: Roll Dice -->
     <div v-if="turnPhase === 'roll_dice'" class="action-content">
       <div class="action-preview">
-        <span class="type-caption">Carte sélectionnée</span>
+        <span class="type-caption">Carte</span>
         <span class="action-preview-value" :class="{ 'action-preview-value--attack': isAttackCard }">
           +{{ cardValue }}
         </span>
@@ -22,7 +22,7 @@
         </button>
         <button @click="$emit('cancelCard')" class="btn btn-ghost">
           <UIIcon type="chevron-up" :size="16" class="icon-back" />
-          Changer de carte
+          Retour
         </button>
       </div>
     </div>
@@ -46,7 +46,7 @@
           </span>
         </template>
       </div>
-      <p class="type-body">Utiliser une carte Spécialité (+2) ?</p>
+      <p class="type-body">Spécialité (+2) ?</p>
       <div class="action-buttons">
         <button 
           v-if="hasSpecialtyCards"
@@ -54,10 +54,10 @@
           class="btn btn-success"
         >
           <UIIcon type="star" :size="16" />
-          Utiliser (+2)
+          Utiliser +2
         </button>
         <button @click="$emit('skipSpecialty')" class="btn btn-secondary">
-          Rouler
+          Sans spécialité
           <UIIcon type="chevron-down" :size="16" class="icon-forward" />
         </button>
       </div>
@@ -91,7 +91,7 @@
       </div>
       <button @click="$emit('resolve')" class="btn btn-success btn-lg">
         <UIIcon type="check" :size="18" />
-        Avancer de {{ totalMovement }} cases (→ case {{ targetPosition }})
+        Valider : {{ totalMovement }} cases (case {{ targetPosition }})
       </button>
     </div>
   </div>

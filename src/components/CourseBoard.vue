@@ -53,7 +53,7 @@
           <template v-if="previewPositions?.summitStopWithout">
             <UIIcon type="summit" :size="10" />
           </template>
-          Sans spé
+          Sans spécialité
         </div>
         <div 
           v-if="isPreviewWith(index + 1) && !isPreviewWithout(index + 1)" 
@@ -62,7 +62,7 @@
           <template v-if="previewPositions?.summitStopWith">
             <UIIcon type="summit" :size="10" />
           </template>
-          Avec spé
+          Avec spécialité
         </div>
         <div 
           v-if="isPreviewBoth(index + 1)" 
@@ -107,7 +107,7 @@
           v-if="isPreviewWithoutFinish || isPreviewWithFinish" 
           class="track-preview-badge track-preview-badge--finish"
         >
-          <UIIcon type="trophy" :size="12" /> Arrivée!
+          <UIIcon type="trophy" :size="12" /> Arrivée
         </div>
         <div class="track-finished-riders">
           <RiderToken 
@@ -268,7 +268,7 @@ function getCellTooltip(cell, position) {
   
   let tip = `Case ${position}: ${terrain?.name || cell.terrain} (${count}/4)`;
   if (cell.isRefuelZone) {
-    tip += ' RAVITAILLEMENT (+15⚡)';
+    tip += ' Ravitaillement (+25 énergie)';
   }
   if (riders.length > 0) {
     tip += '\n' + riders.map((r, i) => `${i === 0 ? '→ ' : '  '}${r.name}`).join('\n');

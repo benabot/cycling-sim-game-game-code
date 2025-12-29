@@ -10,9 +10,9 @@
       <div v-if="effects.aspiration.length > 0" class="effect-group aspiration-group">
         <h4>
           <UIIcon type="aspiration" :size="18" />
-          Aspiration (regroupement)
+          Aspiration
         </h4>
-        <p class="effect-rule">Écart de 1 case → rejoint le groupe devant</p>
+        <p class="effect-rule">Écart d'1 case vide → avance d'1 case</p>
         <div class="effect-list">
           <div 
             v-for="effect in effects.aspiration" 
@@ -30,9 +30,9 @@
       <div v-if="effects.wind.length > 0" class="effect-group wind-group">
         <h4>
           <UIIcon type="wind" :size="18" />
-          Relais
+          Vent
         </h4>
-        <p class="effect-rule">Case vide devant → leader reçoit carte vent</p>
+        <p class="effect-rule">Seul ou plus à droite + case devant vide</p>
         <div class="effect-list">
           <div 
             v-for="effect in effects.wind" 
@@ -41,7 +41,7 @@
           >
             <span class="effect-rider">{{ effect.riderName }}</span>
             <span class="effect-card bad">+{{ effect.cardValue ?? 1 }}</span>
-            <span class="effect-desc">carte ajoutée</span>
+            <span class="effect-desc">carte fin de tour</span>
           </div>
         </div>
       </div>
@@ -50,9 +50,9 @@
       <div v-if="effects.shelter.length > 0" class="effect-group shelter-group">
         <h4>
           <UIIcon type="tempo" :size="18" />
-          Tempo
+          Cartes fin de tour
         </h4>
-        <p class="effect-rule">Protégé ou terrain sans vent → reçoit carte +2</p>
+        <p class="effect-rule">Hors vent : carte +2</p>
         <div class="effect-list">
           <div 
             v-for="effect in effects.shelter" 
@@ -61,7 +61,7 @@
           >
             <span class="effect-rider">{{ effect.riderName }}</span>
             <span class="effect-card good">+{{ effect.cardValue ?? 2 }}</span>
-            <span class="effect-desc">carte ajoutée</span>
+            <span class="effect-desc">carte fin de tour</span>
           </div>
         </div>
       </div>
@@ -72,7 +72,7 @@
           <UIIcon type="refuel" :size="18" />
           Ravitaillement
         </h4>
-        <p class="effect-rule">Arrêt en zone ravito → récupération d'énergie</p>
+        <p class="effect-rule">Case finale : +25 énergie</p>
         <div class="effect-list">
           <div 
             v-for="effect in effects.refuel" 
@@ -81,17 +81,17 @@
           >
             <span class="effect-rider">{{ effect.riderName }}</span>
             <span class="effect-energy">+{{ effect.energyRecovered }}</span>
-            <span class="effect-desc">énergie récupérée</span>
+            <span class="effect-desc">énergie</span>
           </div>
         </div>
       </div>
       
       <div v-if="noEffects" class="no-effects">
-        <p>Pas d'effets de fin de tour (terrain Montagne ou Descente).</p>
+        <p>Aucun effet de fin de tour.</p>
       </div>
       
       <button @click="$emit('acknowledge')" class="btn btn-continue">
-        Continuer
+        Suivant
         <UIIcon type="chevron-down" :size="18" class="icon-forward" />
       </button>
     </div>

@@ -41,7 +41,7 @@
         <EnergyBar :energy="rider.energy || 100" :showEffects="true" />
       </div>
 
-      <button @click="$emit('cancel')" class="btn-close" title="Changer de coureur">
+      <button @click="$emit('cancel')" class="btn-close" title="Retour">
         <UIIcon type="close" :size="16" />
       </button>
     </div>
@@ -52,7 +52,7 @@
       <div class="cards-section">
         <div class="cards-section-header">
           <UIIcon type="card" :size="16" class="section-icon" />
-          <span class="type-label">Cartes Mouvement</span>
+          <span class="type-label">Cartes mouvement</span>
           <span class="badge badge-muted">{{ rider.hand?.length || 0 }}</span>
         </div>
         <div class="cards-list">
@@ -77,7 +77,7 @@
       <div class="cards-section cards-section--attack">
         <div class="cards-section-header">
           <UIIcon type="attack" :size="16" class="section-icon" />
-          <span class="type-label">Attaques</span>
+          <span class="type-label">Cartes attaque</span>
           <span class="badge badge-muted">{{ rider.attackCards?.length || 0 }}/2</span>
           <span v-if="!canUseAttackCard" class="type-caption text-danger energy-warning">
             <UIIcon type="energy" :size="12" />
@@ -107,7 +107,7 @@
       <div class="cards-section cards-section--specialty">
         <div class="cards-section-header">
           <UIIcon type="star" :size="16" class="section-icon" />
-          <span class="type-label">Spécialités</span>
+          <span class="type-label">Cartes spécialité</span>
           <span class="badge badge-muted">{{ rider.specialtyCards?.length || 0 }}/2</span>
           <span v-if="!energyEffects.canUseSpecialty" class="type-caption text-danger energy-warning">
             <UIIcon type="energy" :size="12" />
