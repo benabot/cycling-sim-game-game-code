@@ -15,6 +15,7 @@ import {
 } from '../src/core/energy.js';
 import { TerrainType } from '../src/core/terrain.js';
 import { createAttackCard, createMovementCard, createSpecialtyCard } from '../src/core/rider.js';
+import { RaceWeather } from '../src/core/race_weather.js';
 
 function makeCourse(terrains, refuelPositions = []) {
   return terrains.map((terrain, index) => ({
@@ -69,6 +70,8 @@ describe('Wind rules', () => {
     state.riders = [rider];
     state.ridersPlayedThisTurn = [];
     state.arrivalCounter = 1;
+    state.raceEventState = { cooldownTurns: 0, weather: RaceWeather.CLEAR };
+    state.raceEventState = { cooldownTurns: 0, weather: RaceWeather.CLEAR };
 
     // Act
     const after = applyEndOfTurnEffects(state);
@@ -154,6 +157,7 @@ describe('Wind rules', () => {
     state.riders = [nonRouleur, rouleur];
     state.ridersPlayedThisTurn = [];
     state.arrivalCounter = 2;
+    state.raceEventState = { cooldownTurns: 0, weather: RaceWeather.CLEAR };
 
     // Act
     const after = applyEndOfTurnEffects(state);
@@ -265,6 +269,7 @@ describe('Wind rules', () => {
     state.riders = [rider, otherRider];
     state.ridersPlayedThisTurn = [];
     state.arrivalCounter = 2;
+    state.raceEventState = { cooldownTurns: 0, weather: RaceWeather.CLEAR };
 
     const after = applyEndOfTurnEffects(state);
     const windyRider = after.riders.find(r => r.id === rider.id);
@@ -308,6 +313,36 @@ describe('Wind rules', () => {
     expect(secondAfter.windPenaltyNextMove).toBe(0);
     expect(firstAfter.energy).toBe(expectedAfterFirst);
     expect(secondAfter.energy).toBe(expectedAfterSecond);
+  });
+
+  it('wind penalty increases under lateral wind', () => {
+    const course = makeCourse([
+      TerrainType.FLAT,
+      TerrainType.FLAT,
+      TerrainType.FLAT
+    ]);
+    const state = createGameState({ courseLength: course.length });
+    const rider = {
+      ...state.riders[0],
+      type: 'sprinter',
+      position: 2,
+      arrivalOrder: 0,
+      hand: [],
+      energy: 100
+    };
+
+    state.course = course;
+    state.courseLength = course.length;
+    state.finishLine = course.length;
+    state.riders = [rider];
+    state.ridersPlayedThisTurn = [];
+    state.arrivalCounter = 1;
+    state.raceEventState = { cooldownTurns: 0, weather: RaceWeather.WIND };
+
+    const after = applyEndOfTurnEffects(state);
+    const updatedRider = after.riders.find(r => r.id === rider.id);
+
+    expect(updatedRider.windPenaltyNextMove).toBe(4);
   });
 });
 

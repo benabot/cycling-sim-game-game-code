@@ -3,7 +3,6 @@ import { TerrainType } from '../src/core/terrain.js';
 import {
   RaceEventDefinitions,
   RaceEventId,
-  RaceWeather,
   rollRaceEvent,
   pickRaceEvent,
   attachRaceEvent,
@@ -12,6 +11,7 @@ import {
   getRaceEventCardPenalty,
   tickRaceEvent
 } from '../src/core/race_events.js';
+import { RaceWeather } from '../src/core/race_weather.js';
 
 function makeRider(id) {
   return {

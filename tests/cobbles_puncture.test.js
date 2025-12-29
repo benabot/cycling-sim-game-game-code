@@ -8,6 +8,7 @@ import { TerrainType } from '../src/core/terrain.js';
 import { createMovementCard } from '../src/core/rider.js';
 import { applyEnergyChange, calculateMovementConsumption } from '../src/core/energy.js';
 import { rollPunctureOnCobbleStep, RaceEventId } from '../src/core/race_events.js';
+import { RaceWeather } from '../src/core/race_weather.js';
 
 function makeCourse(terrains, cobblePositions = []) {
   return terrains.map((terrain, index) => ({
@@ -185,6 +186,19 @@ describe('cobbles puncture (V2.1)', () => {
 
     expect(
       rollPunctureOnCobbleStep(rider, { energy: 40, rng })
+    ).toBe(true);
+  });
+
+  it('increases puncture chance on rain', () => {
+    const rider = { energy: 60 };
+    const rng = () => 0.11;
+
+    expect(
+      rollPunctureOnCobbleStep(rider, { energy: 60, rng, weather: RaceWeather.CLEAR })
+    ).toBe(false);
+
+    expect(
+      rollPunctureOnCobbleStep(rider, { energy: 60, rng, weather: RaceWeather.RAIN })
     ).toBe(true);
   });
 });
