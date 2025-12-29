@@ -19,6 +19,7 @@ export { default as StagePreview } from './StagePreview.vue';
 export { default as DraftRosterSection } from './DraftRosterSection.vue';
 export { default as RaceHeader } from './RaceHeader.vue';
 export { default as WeatherChip } from './WeatherChip.vue';
+export { default as RiskChip } from './RiskChip.vue';
 
 // Icon components
 export * from './icons';

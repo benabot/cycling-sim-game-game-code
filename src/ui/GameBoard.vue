@@ -26,6 +26,7 @@
       :stageRace="stageRace"
       :weather="weather"
       :nextWeather="nextWeather"
+      :riskCue="riskCue"
     />
 
     <!-- Terrain Legend -->
@@ -230,6 +231,7 @@ const {
   stageRace,
   weather,
   nextWeather,
+  riskCue,
   
   // Actions
   initialize,

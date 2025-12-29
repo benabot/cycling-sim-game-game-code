@@ -23,7 +23,7 @@ import { CyclingAI, createAI } from '../core/ai.js';
 import { PlayerType } from '../core/teams.js';
 import { FINISH_LINE, TeamConfig } from '../config/game.config.js';
 import { EnergyConfig } from '../core/energy.js';
-import { isRefuelZone } from '../core/terrain.js';
+import { isRefuelZone, TerrainType } from '../core/terrain.js';
 import { RaceWeather, getWeatherLogLine } from '../core/race_weather.js';
 
 export function useGameEngine() {
@@ -194,6 +194,41 @@ export function useGameEngine() {
         hasSpecialty: rider.specialtyCards.length > 0
       }
     };
+  });
+
+  const focusRider = computed(() => {
+    if (currentRider.value) return currentRider.value;
+    const teamRiders = allRiders.value.filter(r => r.team === currentTeam.value && !r.hasFinished);
+    if (!teamRiders.length) return null;
+    return teamRiders.reduce((leader, rider) => (rider.position > leader.position ? rider : leader), teamRiders[0]);
+  });
+
+  const riskCue = computed(() => {
+    const rider = focusRider.value;
+    if (!rider || !gameState.value) {
+      return { level: 'Faible', reason: null };
+    }
+
+    const position = rider.position || 0;
+    const courseIndex = position - 1;
+    const cell = gameState.value.course?.[courseIndex];
+    const terrain = cell?.terrain || getTerrainAt(gameState.value, position);
+    const isCobbles = !!cell?.isCobbles;
+    const groupSize = allRiders.value.filter(r => !r.hasFinished && r.position === position).length;
+    const isExposed = groupSize <= 1 || (rider.windPenaltyNextMove || 0) > 0;
+    const hasBadWeather = weather.value !== RaceWeather.CLEAR;
+    const isDangerTerrain = isCobbles || (terrain === TerrainType.DESCENT && weather.value === RaceWeather.RAIN);
+
+    if (isDangerTerrain) {
+      return { level: 'Élevé', reason: 'Terrain dangereux' };
+    }
+    if (isExposed) {
+      return { level: 'Modéré', reason: 'Groupe instable' };
+    }
+    if (hasBadWeather) {
+      return { level: 'Modéré', reason: 'Météo défavorable' };
+    }
+    return { level: 'Faible', reason: null };
   });
 
   // Helper functions - v3.2 balanced bonuses
@@ -842,6 +877,7 @@ export function useGameEngine() {
     aiPersonalities,
     weather,
     nextWeather,
+    riskCue,
     
     // Actions
     initialize,

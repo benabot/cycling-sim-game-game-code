@@ -28,6 +28,7 @@
 
     <div class="status-bar-item status-bar-chips">
       <WeatherChip :weather="weather" :nextWeather="nextWeather" />
+      <RiskChip :level="riskCue?.level" :reason="riskCue?.reason" />
     </div>
 
     <template v-if="hasStageRace">
@@ -78,6 +79,7 @@ import { TeamConfig } from '../config/game.config.js';
 import { JerseyConfig } from '../config/race-presets.js';
 import { UIIcon } from './icons';
 import WeatherChip from './WeatherChip.vue';
+import RiskChip from './RiskChip.vue';
 
 const props = defineProps({
   turn: { type: Number, required: true },
@@ -88,7 +90,8 @@ const props = defineProps({
   winningTeam: { type: String, default: null },
   stageRace: { type: Object, default: null },
   weather: { type: String, default: 'clear' },
-  nextWeather: { type: String, default: null }
+  nextWeather: { type: String, default: null },
+  riskCue: { type: Object, default: null }
 });
 
 const teamConfig = computed(() => TeamConfig[props.currentTeam]);
