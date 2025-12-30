@@ -36,11 +36,8 @@
           :class="`classic-card__illustration--${classic.id}`"
           aria-hidden="true"
         ></span>
-        <!-- Header with icon and difficulty -->
+        <!-- Header with difficulty -->
         <div class="classic-card__header">
-          <div class="classic-card__icon">
-            <UIIcon :type="classic.icon" size="md" />
-          </div>
           <span :class="['classic-card__difficulty', `classic-card__difficulty--${classic.difficulty}`]">
             {{ classic.difficultyLabel }}
           </span>
@@ -176,11 +173,6 @@ function getProfilePath(profile = []) {
     grid-template-columns: 1fr;
   }
 
-  .classic-card__icon {
-    width: 32px;
-    height: 32px;
-  }
-
   .classic-card__illustration {
     width: 96px;
     height: 56px;
@@ -227,24 +219,8 @@ function getProfilePath(profile = []) {
 .classic-card__header {
   display: flex;
   align-items: center;
-  justify-content: space-between;
+  justify-content: flex-start;
   margin-bottom: var(--space-xs);
-}
-
-.classic-card__icon {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  width: 36px;
-  height: 36px;
-  background-color: var(--color-paper);
-  border-radius: var(--radius-md);
-  color: var(--color-ink-soft);
-}
-
-.classic-card--selected .classic-card__icon {
-  background-color: var(--color-accent);
-  color: white;
 }
 
 /* Difficulty badge */

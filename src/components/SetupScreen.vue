@@ -1531,6 +1531,13 @@ initializePlayers();
     gap: var(--space-xs);
     overflow-x: auto;
     padding-bottom: var(--space-xs);
+    position: sticky;
+    top: var(--space-sm);
+    z-index: 8;
+    background: var(--color-surface);
+    padding: var(--space-xs);
+    border-radius: var(--radius-md);
+    box-shadow: 0 6px 14px rgba(31, 35, 40, 0.08);
   }
 
   .stepper-item {

@@ -19,11 +19,6 @@
     ]"
     @click="$emit('select', type)"
   >
-    <!-- Icon -->
-    <div class="race-type-card__icon">
-      <UIIcon :type="iconType" size="xl" />
-    </div>
-    
     <!-- Content -->
     <div class="race-type-card__content">
       <h3 class="race-type-card__title">{{ title }}</h3>
@@ -39,7 +34,6 @@
 
 <script setup>
 import { computed } from 'vue';
-import UIIcon from './icons/UIIcon.vue';
 
 const props = defineProps({
   type: {
@@ -55,10 +49,6 @@ const props = defineProps({
 
 defineEmits(['select']);
 
-const iconType = computed(() => {
-  return props.type === 'classic' ? 'laurel' : 'calendar';
-});
-
 const title = computed(() => {
   return props.type === 'classic' ? 'Classique (1 jour)' : 'Course à étapes';
 });
@@ -73,7 +63,7 @@ const description = computed(() => {
 <style scoped>
 .race-type-card {
   display: flex;
-  align-items: flex-start;
+  align-items: center;
   gap: var(--space-md);
   padding: var(--space-lg);
   background-color: var(--color-surface);
@@ -97,24 +87,6 @@ const description = computed(() => {
 
 .race-type-card--selected:hover {
   border-color: var(--color-accent);
-}
-
-/* Icon */
-.race-type-card__icon {
-  flex-shrink: 0;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  width: 48px;
-  height: 48px;
-  background-color: var(--color-paper);
-  border-radius: var(--radius-md);
-  color: var(--color-ink-soft);
-}
-
-.race-type-card--selected .race-type-card__icon {
-  background-color: var(--color-accent);
-  color: white;
 }
 
 /* Content */
