@@ -25,6 +25,7 @@ import { FINISH_LINE, TeamConfig } from '../config/game.config.js';
 import { EnergyConfig } from '../core/energy.js';
 import { isRefuelZone, TerrainType } from '../core/terrain.js';
 import { RaceWeather, getWeatherLogLine } from '../core/race_weather.js';
+import { computeRiskCue } from '../core/risk_cues.js';
 
 export function useGameEngine() {
   // State
@@ -206,7 +207,7 @@ export function useGameEngine() {
   const riskCue = computed(() => {
     const rider = focusRider.value;
     if (!rider || !gameState.value) {
-      return { level: 'Faible', reason: null };
+      return { level: 'Faible', reason: 'Groupe stable', type: 'Incident' };
     }
 
     const position = rider.position || 0;
@@ -216,19 +217,13 @@ export function useGameEngine() {
     const isCobbles = !!cell?.isCobbles;
     const groupSize = allRiders.value.filter(r => !r.hasFinished && r.position === position).length;
     const isExposed = groupSize <= 1 || (rider.windPenaltyNextMove || 0) > 0;
-    const hasBadWeather = weather.value !== RaceWeather.CLEAR;
-    const isDangerTerrain = isCobbles || (terrain === TerrainType.DESCENT && weather.value === RaceWeather.RAIN);
 
-    if (isDangerTerrain) {
-      return { level: 'Élevé', reason: 'Terrain dangereux' };
-    }
-    if (isExposed) {
-      return { level: 'Modéré', reason: 'Groupe instable' };
-    }
-    if (hasBadWeather) {
-      return { level: 'Modéré', reason: 'Météo défavorable' };
-    }
-    return { level: 'Faible', reason: null };
+    return computeRiskCue({
+      terrain,
+      isCobbles,
+      isExposed,
+      weather: weather.value
+    });
   });
 
   // Helper functions - v3.2 balanced bonuses

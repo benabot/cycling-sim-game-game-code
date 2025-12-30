@@ -28,7 +28,7 @@
 
     <div class="status-bar-item status-bar-chips">
       <WeatherChip :weather="weather" :nextWeather="nextWeather" />
-      <RiskChip :level="riskCue?.level" :reason="riskCue?.reason" />
+      <RiskChip :level="riskCue?.level" :reason="riskCue?.reason" :type="riskCue?.type" />
     </div>
 
     <template v-if="hasStageRace">
