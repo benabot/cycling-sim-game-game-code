@@ -48,6 +48,17 @@
       <path d="M8 4v8" />
       <path d="M12 4v8" />
     </template>
+
+    <!-- Cobbles: Small stones -->
+    <template v-else-if="type === 'cobbles'">
+      <rect x="4" y="5" width="4" height="4" rx="1" fill="currentColor" stroke="none" />
+      <rect x="10" y="4" width="4" height="4" rx="1" fill="currentColor" stroke="none" />
+      <rect x="16" y="6" width="4" height="4" rx="1" fill="currentColor" stroke="none" />
+      <rect x="6" y="12" width="4" height="4" rx="1" fill="currentColor" stroke="none" />
+      <rect x="12" y="11" width="4" height="4" rx="1" fill="currentColor" stroke="none" />
+      <rect x="8" y="17" width="4" height="4" rx="1" fill="currentColor" stroke="none" />
+      <rect x="14" y="17" width="4" height="4" rx="1" fill="currentColor" stroke="none" />
+    </template>
     
     <!-- Refuel: Banana -->
     <template v-else-if="type === 'refuel'">
@@ -70,7 +81,7 @@ defineProps({
   type: { 
     type: String, 
     required: true,
-    validator: (v) => ['flat', 'hill', 'mountain', 'descent', 'sprint', 'refuel'].includes(v)
+    validator: (v) => ['flat', 'hill', 'mountain', 'descent', 'sprint', 'cobbles', 'refuel'].includes(v)
   },
   size: { type: [Number, String], default: 20 }
 });
@@ -87,5 +98,6 @@ defineProps({
 .terrain-icon--mountain { color: #8B6E5C; }
 .terrain-icon--descent { color: #4A7BA7; }
 .terrain-icon--sprint { color: #7E5BA3; }
+.terrain-icon--cobbles { color: #7A6A4A; }
 .terrain-icon--refuel { color: #D4A017; }
 </style>

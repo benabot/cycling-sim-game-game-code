@@ -130,8 +130,9 @@ export const RulesUIContent = {
       title: 'Pavés',
       icon: 'cobbles',
       lines: [
-        'Overlay sur plat/côte/descente (2–4 secteurs, 3–6 cases).',
+        'Overlay sur plat/côte/descente (4–6 secteurs, 4–6 cases).',
         'Risques crevaison/chute ↑; rouleur favorisé, grimpeur pénalisé.',
+        'Bonus pavés: Rouleur +1, Sprinteur +1, Grimpeur -1.',
         'Aucun pavé sur montagne/sprint/ravitaillement.'
       ]
     },
@@ -163,14 +164,15 @@ export const RulesUIContent = {
       { id: 'hill', label: 'Côte', icon: 'hill' },
       { id: 'mountain', label: 'Montagne', icon: 'mountain' },
       { id: 'descent', label: 'Descente', icon: 'descent' },
-      { id: 'sprint', label: 'Sprint', icon: 'sprint' }
+      { id: 'sprint', label: 'Sprint', icon: 'sprint' },
+      { id: 'cobbles', label: 'Pavés', icon: 'cobbles' }
     ],
     rows: [
-      { id: 'climber', label: 'Grimpeur', icon: 'climber', values: [0, 1, 2, 2, -1] },
-      { id: 'puncher', label: 'Puncheur', icon: 'puncher', values: [0, 2, 1, 2, 0] },
-      { id: 'rouleur', label: 'Rouleur', icon: 'rouleur', values: [2, 0, -1, 3, 0] },
-      { id: 'sprinter', label: 'Sprinteur', icon: 'sprinter', values: [0, -1, -2, 3, 3] },
-      { id: 'versatile', label: 'Polyvalent', icon: 'versatile', values: [0, 0, 0, 2, 0] }
+      { id: 'climber', label: 'Grimpeur', icon: 'climber', values: [0, 1, 2, 2, -1, -1] },
+      { id: 'puncher', label: 'Puncheur', icon: 'puncher', values: [0, 2, 1, 2, 0, 0] },
+      { id: 'rouleur', label: 'Rouleur', icon: 'rouleur', values: [2, 0, -1, 3, 0, 1] },
+      { id: 'sprinter', label: 'Sprinteur', icon: 'sprinter', values: [0, -1, -2, 3, 3, 1] },
+      { id: 'versatile', label: 'Polyvalent', icon: 'versatile', values: [0, 0, 0, 2, 0, 0] }
     ]
   }
 };
