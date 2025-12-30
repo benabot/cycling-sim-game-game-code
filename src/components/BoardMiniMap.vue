@@ -47,7 +47,11 @@ defineEmits(['focusCourse']);
 const miniCells = computed(() => {
   const cells = [{ terrain: 'start', position: 0 }];
   (props.course || []).forEach((cell, index) => {
-    cells.push({ terrain: cell.terrain, position: index + 1 });
+    cells.push({
+      terrain: cell.terrain,
+      position: index + 1,
+      isCobbles: !!cell.isCobbles
+    });
   });
   return cells;
 });
@@ -73,7 +77,9 @@ const activeMarker = computed(() => {
 
 function getCellClass(cell) {
   if (!cell?.terrain || cell.terrain === 'start') return 'mini-map-cell--start';
-  return `mini-map-cell--${cell.terrain}`;
+  const classes = [`mini-map-cell--${cell.terrain}`];
+  if (cell.isCobbles) classes.push('mini-map-cell--cobbles');
+  return classes.join(' ');
 }
 </script>
 
@@ -146,6 +152,18 @@ function getCellClass(cell) {
 .mini-map-cell--descent { background: var(--terrain-descent); }
 .mini-map-cell--sprint { background: var(--terrain-sprint); }
 
+.mini-map-cell--cobbles::after {
+  content: '';
+  position: absolute;
+  inset: 2px;
+  border-radius: 3px;
+  background-image: url("data:image/svg+xml,%3Csvg width='8' height='8' viewBox='0 0 8 8' xmlns='http://www.w3.org/2000/svg'%3E%3Crect x='0' y='0' width='4' height='4' fill='%231F2328' fill-opacity='0.22'/%3E%3Crect x='4' y='4' width='4' height='4' fill='%231F2328' fill-opacity='0.22'/%3E%3C/svg%3E");
+  background-size: 6px 6px;
+  opacity: 0.55;
+  pointer-events: none;
+  z-index: 0;
+}
+
 .mini-map-marker {
   position: absolute;
   top: -4px;
@@ -156,6 +174,7 @@ function getCellClass(cell) {
   transform: translateX(-50%);
   border: 1px solid rgba(31, 35, 40, 0.25);
   box-shadow: 0 2px 6px rgba(31, 35, 40, 0.16);
+  z-index: 1;
 }
 
 .mini-map-marker--leader {

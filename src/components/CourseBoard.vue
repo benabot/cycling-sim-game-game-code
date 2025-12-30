@@ -194,6 +194,9 @@ function getCellClasses(cell, index) {
   if (cell.isRefuelZone) {
     classes.push('track-cell--refuel');
   }
+  if (cell.isCobbles) {
+    classes.push('track-cell--cobbles');
+  }
   
   // States
   if (hasSelectedAt(position)) {
@@ -272,6 +275,9 @@ function getCellTooltip(cell, position) {
   let tip = `Case ${position}: ${terrain?.name || cell.terrain} (${count}/4)`;
   if (cell.isRefuelZone) {
     tip += ' Ravitaillement (+25 énergie)';
+  }
+  if (cell.isCobbles) {
+    tip += ' Pavés';
   }
   if (riders.length > 0) {
     tip += '\n' + riders.map((r, i) => `${i === 0 ? '→ ' : '  '}${r.name}`).join('\n');
