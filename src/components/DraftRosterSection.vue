@@ -69,8 +69,27 @@
       <span class="draft-count type-caption">{{ filteredCount }} coureurs</span>
     </div>
 
-    <div class="draft-grid">
-      <div class="draft-pool">
+    <div v-if="isMobile" class="segmented segmented--stretch draft-mobile-tabs">
+      <button
+        type="button"
+        class="segmented-item"
+        :class="{ 'segmented-item-active': activeMobileTab === 'market' }"
+        @click="activeMobileTab = 'market'"
+      >
+        Marché
+      </button>
+      <button
+        type="button"
+        class="segmented-item"
+        :class="{ 'segmented-item-active': activeMobileTab === 'team' }"
+        @click="activeMobileTab = 'team'"
+      >
+        Mon équipe ({{ rosterCount }}/{{ rosterSize }})
+      </button>
+    </div>
+
+    <div class="draft-grid" :class="{ 'draft-grid--mobile': isMobile }">
+      <div class="draft-pool" v-show="!isMobile || activeMobileTab === 'market'">
         <div class="draft-pool-header">
           <div>
             <h3 class="draft-title">Marché des coureurs</h3>
@@ -140,6 +159,25 @@
                 <span class="stat-value">{{ stat.value }}</span>
               </div>
             </div>
+            <details
+              v-if="isMobile && getExtraStatRows(rider).length"
+              class="draft-card-details"
+            >
+              <summary>Détails</summary>
+              <div class="draft-card-stats draft-card-stats--detail">
+                <div
+                  v-for="stat in getExtraStatRows(rider)"
+                  :key="stat.key"
+                  class="stat-row stat-row--compact"
+                >
+                  <span class="stat-label">{{ stat.label }}</span>
+                  <div class="stat-bar">
+                    <div class="stat-bar__fill" :style="{ width: stat.value + '%' }"></div>
+                  </div>
+                  <span class="stat-value">{{ stat.value }}</span>
+                </div>
+              </div>
+            </details>
           </article>
         </div>
         <div v-else class="draft-empty">
@@ -166,7 +204,7 @@
         </div>
       </div>
 
-      <div class="draft-roster">
+      <div class="draft-roster" v-show="!isMobile || activeMobileTab === 'team'">
         <h3 class="draft-title">Sélection</h3>
         <div class="draft-roster-summary">
           <div class="draft-roster-avatars">
@@ -348,7 +386,7 @@
 </template>
 
 <script setup>
-import { computed, ref, watch } from 'vue';
+import { computed, ref, watch, onMounted, onBeforeUnmount } from 'vue';
 import { TeamConfigs } from '../core/teams.js';
 import { getRiderPortraitUrl, PORTRAIT_FALLBACK_URL } from '../utils/portraits.js';
 import { UIIcon } from './icons';
@@ -398,6 +436,8 @@ const activeRole = ref('all');
 const page = ref(1);
 const pageSize = 8;
 const portraitErrors = ref({});
+const isMobile = ref(false);
+const activeMobileTab = ref('market');
 const statDisplayOrder = ['endurance', 'sprint', 'climb', 'punch'];
 const knownRoleTypes = new Set(['climber', 'puncher', 'rouleur', 'sprinter', 'versatile']);
 
@@ -519,12 +559,40 @@ function canRecruit(rider) {
 
 function getStatRows(rider) {
   const stats = rider.stats || {};
-  return statDisplayOrder.map(key => ({
+  const keys = isMobile.value ? statDisplayOrder.slice(0, 2) : statDisplayOrder;
+  return keys.map(key => ({
     key,
     label: props.statLabels[key] || key,
     value: stats[key] ?? 0
   }));
 }
+
+function getExtraStatRows(rider) {
+  if (!isMobile.value) return [];
+  const stats = rider.stats || {};
+  return statDisplayOrder.slice(2).map(key => ({
+    key,
+    label: props.statLabels[key] || key,
+    value: stats[key] ?? 0
+  }));
+}
+
+function updateViewport() {
+  if (typeof window === 'undefined') return;
+  isMobile.value = window.matchMedia('(max-width: 720px)').matches;
+  if (!isMobile.value) {
+    activeMobileTab.value = 'market';
+  }
+}
+
+onMounted(() => {
+  updateViewport();
+  window.addEventListener('resize', updateViewport);
+});
+
+onBeforeUnmount(() => {
+  window.removeEventListener('resize', updateViewport);
+});
 </script>
 
 <style scoped>
@@ -593,6 +661,10 @@ function getStatRows(rider) {
   align-items: end;
 }
 
+.draft-mobile-tabs {
+  display: none;
+}
+
 .draft-search,
 .draft-filters {
   display: flex;
@@ -624,6 +696,26 @@ function getStatRows(rider) {
 
 .draft-count {
   justify-self: end;
+}
+
+.draft-card-details {
+  margin-top: var(--space-xs);
+  border-top: 1px solid var(--color-line);
+  padding-top: var(--space-xs);
+}
+
+.draft-card-details summary {
+  cursor: pointer;
+  font-size: 12px;
+  color: var(--color-ink-muted);
+  list-style: none;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.draft-card-details summary::-webkit-details-marker {
+  display: none;
 }
 
 .draft-grid {
@@ -1079,6 +1171,26 @@ function getStatRows(rider) {
 
   .draft-sticky-summary {
     display: flex;
+  }
+}
+
+@media (max-width: 720px) {
+  .draft-mobile-tabs {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: var(--space-xs);
+  }
+
+  .draft-grid--mobile {
+    grid-template-columns: 1fr;
+  }
+
+  .draft-card .btn {
+    min-height: 44px;
+  }
+
+  .draft-card-details summary {
+    font-size: 11px;
   }
 }
 </style>
