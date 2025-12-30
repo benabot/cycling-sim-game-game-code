@@ -34,6 +34,19 @@ function getRefuelSegments(course) {
   return segments.filter(segment => segment.isRefuel);
 }
 
+function getCobbleSegments(course) {
+  const segments = [];
+  for (const cell of course) {
+    const isCobbles = !!cell.isCobbles;
+    if (!segments.length || segments[segments.length - 1].isCobbles !== isCobbles) {
+      segments.push({ isCobbles, length: 1 });
+    } else {
+      segments[segments.length - 1].length += 1;
+    }
+  }
+  return segments.filter(segment => segment.isCobbles);
+}
+
 function makeClassicPreset(classicId) {
   return { ...ClassicPresets[classicId], presetType: classicId };
 }
@@ -70,12 +83,26 @@ describe('Race presets V1 constraints', () => {
       { rng: () => 0.25 }
     );
     const segments = getSegments(course);
+    const cobbleSegments = getCobbleSegments(course);
     const hillFlatSequence = segments
       .filter(segment => segment.terrain === TerrainType.HILL || segment.terrain === TerrainType.FLAT)
       .map(segment => segment.terrain);
 
     expect(course[course.length - 1].terrain).toBe(TerrainType.SPRINT);
     expect(segments.filter(segment => segment.terrain === TerrainType.MOUNTAIN)).toHaveLength(0);
+    expect(cobbleSegments.length).toBeGreaterThanOrEqual(2);
+    expect(cobbleSegments.length).toBeLessThanOrEqual(4);
+    cobbleSegments.forEach(segment => {
+      expect(segment.length).toBeGreaterThanOrEqual(3);
+      expect(segment.length).toBeLessThanOrEqual(6);
+    });
+    course
+      .filter(cell => cell.isCobbles)
+      .forEach(cell => {
+        expect(cell.terrain).not.toBe(TerrainType.MOUNTAIN);
+        expect(cell.terrain).not.toBe(TerrainType.SPRINT);
+        expect(cell.isRefuelZone).toBe(false);
+      });
     expect(hillFlatSequence).toContain(TerrainType.HILL);
     expect(hillFlatSequence).toContain(TerrainType.FLAT);
 

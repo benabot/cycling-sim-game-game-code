@@ -201,4 +201,13 @@ describe('cobbles puncture (V2.1)', () => {
       rollPunctureOnCobbleStep(rider, { energy: 60, rng, weather: RaceWeather.RAIN })
     ).toBe(true);
   });
+
+  it('favours rouleur over climber on cobbles', () => {
+    const rng = () => 0.11;
+    const rouleur = { energy: 60, type: 'rouleur' };
+    const climber = { energy: 60, type: 'climber' };
+
+    expect(rollPunctureOnCobbleStep(rouleur, { rng })).toBe(false);
+    expect(rollPunctureOnCobbleStep(climber, { rng })).toBe(true);
+  });
 });
