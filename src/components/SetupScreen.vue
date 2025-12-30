@@ -1,6 +1,5 @@
 <template>
   <div class="setup-screen">
-    <MobileTopBar :title="mobileHeaderTitle" @rules="openRules" />
     <div class="setup-panel">
       <!-- Header -->
       <RaceHeader :title="raceHeaderTitle" :subtitle="raceHeaderSubtitle" :theme="raceHeaderTheme">
@@ -439,7 +438,6 @@ import DraftRosterSection from './DraftRosterSection.vue';
 import RaceHeader from './RaceHeader.vue';
 import RulesModal from './RulesModal.vue';
 import StepHelpModal from './StepHelpModal.vue';
-import MobileTopBar from './MobileTopBar.vue';
 import MobileStickyCTA from './MobileStickyCTA.vue';
 import { getClassicPreset, StageRaceConfig } from '../config/race-presets.js';
 import { UIConfig, getRaceHeaderTitle } from '../config/ui.config.js';
@@ -473,7 +471,6 @@ const riderPoolIndex = new Map(RiderPool.map((rider, index) => [rider.id, index]
 const raceHeaderTitle = getRaceHeaderTitle(UIConfig.titleVariant);
 const raceHeaderSubtitle = UIConfig.subtitle;
 const raceHeaderTheme = UIConfig.raceTheme;
-const mobileHeaderTitle = 'Avant-course';
 const isRulesOpen = ref(false);
 const isHelpOpen = ref(false);
 const activeHelpStep = ref(1);

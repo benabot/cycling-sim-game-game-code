@@ -102,8 +102,12 @@ defineProps({
     padding: var(--space-md);
   }
 
+  .race-header__content {
+    gap: var(--space-md);
+  }
+
   .race-header__actions {
-    display: none;
+    align-self: center;
   }
 
   .race-header__title {

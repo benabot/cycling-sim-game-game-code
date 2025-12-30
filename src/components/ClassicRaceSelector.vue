@@ -39,7 +39,7 @@
         <!-- Header with icon and difficulty -->
         <div class="classic-card__header">
           <div class="classic-card__icon">
-            <UIIcon :type="classic.icon" size="lg" />
+            <UIIcon :type="classic.icon" size="md" />
           </div>
           <span :class="['classic-card__difficulty', `classic-card__difficulty--${classic.difficulty}`]">
             {{ classic.difficultyLabel }}
@@ -175,6 +175,17 @@ function getProfilePath(profile = []) {
   .classic-selector__grid {
     grid-template-columns: 1fr;
   }
+
+  .classic-card__icon {
+    width: 32px;
+    height: 32px;
+  }
+
+  .classic-card__illustration {
+    width: 96px;
+    height: 56px;
+    opacity: 0.06;
+  }
 }
 
 /* Classic Card */
@@ -224,8 +235,8 @@ function getProfilePath(profile = []) {
   display: flex;
   align-items: center;
   justify-content: center;
-  width: 40px;
-  height: 40px;
+  width: 36px;
+  height: 36px;
   background-color: var(--color-paper);
   border-radius: var(--radius-md);
   color: var(--color-ink-soft);
@@ -296,9 +307,9 @@ function getProfilePath(profile = []) {
 .classic-card__illustration {
   position: absolute;
   inset: 10px 16px auto auto;
-  width: 150px;
-  height: 90px;
-  opacity: 0.12;
+  width: 120px;
+  height: 70px;
+  opacity: 0.08;
   background-repeat: no-repeat;
   background-position: right top;
   background-size: contain;
