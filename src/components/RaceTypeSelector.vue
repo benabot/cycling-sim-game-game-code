@@ -14,7 +14,6 @@
       </div>
       <div class="section-header__content">
         <h2 class="section-header__title">Type de course</h2>
-        <p class="section-header__subtitle">Choisissez le format.</p>
       </div>
     </header>
     
@@ -83,12 +82,6 @@ defineEmits(['update:modelValue']);
   font-weight: 600;
   color: var(--sp-text-strong);
   margin: 0;
-}
-
-.section-header__subtitle {
-  margin: 0;
-  font-size: 13px;
-  color: var(--sp-text-secondary);
 }
 
 /* Grid */

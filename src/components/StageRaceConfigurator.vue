@@ -4,16 +4,6 @@
 -->
 <template>
   <section class="stage-race-configurator">
-    <header class="race-section-header">
-      <div class="race-section-header__icon">
-        <UIIcon type="calendar" size="md" />
-      </div>
-      <div class="race-section-header__content">
-        <h2 class="race-section-header__title">Plan de course</h2>
-        <p class="race-section-header__subtitle">Étapes et profil.</p>
-      </div>
-    </header>
-
     <div class="stage-race-configurator__controls">
       <div class="form-group">
         <label class="form-label">Étapes</label>
@@ -46,24 +36,9 @@
             ]"
             @click="updateProfile(profile.id)"
           >
-            <span
-              class="profile-card__illustration"
-              :class="`profile-card__illustration--${profile.id}`"
-              aria-hidden="true"
-            ></span>
             <div class="profile-card__header">
-              <div class="profile-card__icon">
-                <UIIcon :type="profile.icon" size="md" />
-              </div>
               <div class="profile-card__titles">
                 <h3 class="profile-card__title">{{ profile.name }}</h3>
-                <p class="profile-card__description">{{ profile.description }}</p>
-                <div class="profile-card__profile">
-                  <svg class="profile-line profile-line--sm" viewBox="0 0 100 24" aria-hidden="true">
-                    <path :d="getProfilePath(profile.profile)" class="profile-line__path" />
-                  </svg>
-                  <span class="profile-card__narrative">{{ profile.narrative }}</span>
-                </div>
               </div>
             </div>
 
@@ -74,44 +49,13 @@
         </div>
       </div>
     </div>
-
-    <div class="stage-race-configurator__preview">
-      <div class="preview-header">
-        <div class="preview-header__title">
-          <UIIcon type="info" size="sm" />
-          <span>Aperçu</span>
-        </div>
-        <span v-if="isConfigComplete" class="preview-header__summary">
-          {{ selectedNumStages }} étapes • {{ selectedProfileName }}
-        </span>
-      </div>
-
-      <div v-if="isConfigComplete" class="preview-grid">
-        <StagePreview
-          v-for="stage in stageProgram"
-          :key="stage.number"
-          :stage="stage"
-          :length="stageLength"
-        />
-      </div>
-      <div v-else class="preview-placeholder">
-        <UIIcon type="cursor" size="sm" />
-        <span>Choisissez des étapes et un profil.</span>
-      </div>
-    </div>
-
-    <div class="stage-race-configurator__rules">
-      <UIIcon type="trophy" size="sm" />
-      <span>Classement général : retards cumulés (10 s / case)</span>
-    </div>
   </section>
 </template>
 
 <script setup>
 import { computed } from 'vue';
 import UIIcon from './icons/UIIcon.vue';
-import StagePreview from './StagePreview.vue';
-import { StageRaceConfig, StageRaceProfile, generateStageProgram } from '../config/race-presets.js';
+import { StageRaceConfig, StageRaceProfile } from '../config/race-presets.js';
 
 const props = defineProps({
   modelValue: {
@@ -136,18 +80,6 @@ const currentValue = computed(() => ({
 
 const selectedNumStages = computed(() => currentValue.value.numStages);
 const selectedProfile = computed(() => currentValue.value.profile);
-const selectedProfileName = computed(() => {
-  if (!selectedProfile.value) return '';
-  return StageRaceConfig.profiles[selectedProfile.value]?.name || '';
-});
-
-const isConfigComplete = computed(() => !!selectedNumStages.value && !!selectedProfile.value);
-
-const stageProgram = computed(() => {
-  if (!isConfigComplete.value) return [];
-  return generateStageProgram(selectedNumStages.value, selectedProfile.value);
-});
-
 function updateNumStages(value) {
   emit('update:modelValue', {
     ...currentValue.value,
@@ -161,19 +93,6 @@ function updateProfile(value) {
     profile: value || StageRaceProfile.BALANCED
   });
 }
-
-function getProfilePath(profile = []) {
-  const points = profile.length ? profile : [0.2, 0.4, 0.3, 0.5, 0.2];
-  const width = 100;
-  const height = 20;
-  const step = points.length > 1 ? width / (points.length - 1) : width;
-  const coords = points.map((value, index) => {
-    const x = index * step;
-    const y = height - Math.max(0, Math.min(1, value)) * height;
-    return `${x} ${y}`;
-  });
-  return `M ${coords.join(' L ')}`;
-}
 </script>
 
 <style scoped>
@@ -181,18 +100,6 @@ function getProfilePath(profile = []) {
   display: flex;
   flex-direction: column;
   gap: var(--space-xl);
-}
-
-.race-section-header__content {
-  display: flex;
-  flex-direction: column;
-  gap: 2px;
-}
-
-.race-section-header__subtitle {
-  margin: 0;
-  font-size: 13px;
-  color: var(--sp-text-secondary, var(--color-ink-muted));
 }
 
 .stage-race-configurator__controls {
@@ -218,37 +125,14 @@ function getProfilePath(profile = []) {
 
 .profile-card {
   gap: var(--space-sm);
-  min-height: 140px;
+  min-height: 96px;
   position: relative;
   overflow: hidden;
 }
 
-.profile-card > * {
-  position: relative;
-  z-index: 1;
-}
-
 .profile-card__header {
   display: flex;
-  align-items: flex-start;
-  gap: var(--space-sm);
-}
-
-.profile-card__icon {
-  display: flex;
   align-items: center;
-  justify-content: center;
-  width: 38px;
-  height: 38px;
-  background-color: var(--color-canvas);
-  border-radius: var(--radius-md);
-  color: var(--sp-text-secondary, var(--color-ink-soft));
-  flex-shrink: 0;
-}
-
-.selection-card--selected .profile-card__icon {
-  background-color: var(--color-accent);
-  color: white;
 }
 
 .profile-card__titles {
@@ -265,64 +149,6 @@ function getProfilePath(profile = []) {
   color: var(--sp-text-strong, var(--color-ink));
 }
 
-.profile-card__description {
-  margin: 0;
-  font-family: var(--font-ui);
-  font-size: 12px;
-  line-height: 1.4;
-  color: var(--sp-text-secondary, var(--color-muted));
-}
-
-.profile-card__profile {
-  display: flex;
-  flex-direction: column;
-  gap: var(--space-xs);
-  margin-top: var(--space-xs);
-}
-
-.profile-card__illustration {
-  position: absolute;
-  inset: 12px 16px auto auto;
-  width: 120px;
-  height: 70px;
-  opacity: 0.1;
-  background-repeat: no-repeat;
-  background-position: right top;
-  background-size: contain;
-  pointer-events: none;
-  z-index: 0;
-}
-
-.profile-card__illustration--balanced {
-  background-image: url("data:image/svg+xml,%3Csvg width='140' height='80' viewBox='0 0 140 80' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M8 60c18-12 26-6 38-18 12-12 26-8 40-20 14-12 26-6 38-16' stroke='%23666666' stroke-width='3' fill='none' stroke-linecap='round'/%3E%3Cpath d='M18 68h44' stroke='%23666666' stroke-width='2' stroke-linecap='round'/%3E%3C/svg%3E");
-}
-
-.profile-card__illustration--mountain {
-  background-image: url("data:image/svg+xml,%3Csvg width='140' height='80' viewBox='0 0 140 80' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M8 70l34-46 26 36 30-54 34 64' stroke='%23666666' stroke-width='3' fill='none' stroke-linejoin='round'/%3E%3C/svg%3E");
-}
-
-.profile-card__illustration--sprinters {
-  background-image: url("data:image/svg+xml,%3Csvg width='140' height='80' viewBox='0 0 140 80' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M12 38h96' stroke='%23666666' stroke-width='3' stroke-linecap='round'/%3E%3Cpath d='M26 50h76' stroke='%23666666' stroke-width='2' stroke-linecap='round'/%3E%3Cpath d='M102 30l12 8-12 8' stroke='%23666666' stroke-width='2' fill='none' stroke-linecap='round'/%3E%3C/svg%3E");
-}
-
-.profile-line--sm {
-  width: 100%;
-  height: 24px;
-}
-
-.profile-line__path {
-  fill: none;
-  stroke: var(--color-ink-muted);
-  stroke-width: 2;
-  stroke-linecap: round;
-  stroke-linejoin: round;
-}
-
-.profile-card__narrative {
-  font-size: 11px;
-  color: var(--sp-text-muted, var(--color-ink-muted));
-}
-
 .profile-card__check {
   position: absolute;
   top: var(--space-sm);
@@ -336,68 +162,6 @@ function getProfilePath(profile = []) {
   color: white;
   border-radius: 50%;
   z-index: 2;
-}
-
-.stage-race-configurator__preview {
-  display: flex;
-  flex-direction: column;
-  gap: var(--space-md);
-  padding: var(--space-md);
-  background-color: var(--color-canvas);
-  border-radius: var(--radius-md);
-  border: 1px solid var(--sp-border-soft, var(--color-line));
-}
-
-.preview-header {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: var(--space-sm);
-}
-
-.preview-header__title {
-  display: inline-flex;
-  align-items: center;
-  gap: var(--space-xs);
-  font-family: var(--font-ui);
-  font-size: 13px;
-  font-weight: 600;
-  color: var(--sp-text-strong, var(--color-ink));
-}
-
-.preview-header__summary {
-  font-family: var(--font-ui);
-  font-size: 12px;
-  color: var(--sp-text-secondary, var(--color-ink-muted));
-}
-
-.preview-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
-  gap: var(--space-sm);
-}
-
-.preview-placeholder {
-  display: flex;
-  align-items: center;
-  gap: var(--space-xs);
-  padding: var(--space-sm);
-  font-family: var(--font-ui);
-  font-size: 12px;
-  color: var(--sp-text-secondary, var(--color-ink-muted));
-}
-
-.stage-race-configurator__rules {
-  display: inline-flex;
-  align-items: center;
-  gap: var(--space-xs);
-  padding: var(--space-sm) var(--space-md);
-  border: 1px dashed var(--sp-border, var(--color-line-strong));
-  border-radius: var(--radius-md);
-  font-family: var(--font-ui);
-  font-size: 12px;
-  color: var(--sp-text-secondary, var(--color-ink-soft));
-  width: fit-content;
 }
 
 @media (max-width: 840px) {

@@ -16,37 +16,110 @@
         </template>
       </RaceHeader>
 
-      <div class="setup-stepper">
-        <button
-          v-for="step in stepItems"
-          :key="step.id"
-          type="button"
-          class="stepper-item"
-          :class="{
-            'stepper-item--active': activeStep === step.id,
-            'stepper-item--complete': step.complete,
-            'stepper-item--locked': step.locked
-          }"
-          :disabled="step.locked"
-          @click="setActiveStep(step.id)"
-        >
-          <span class="stepper-index">{{ step.id }}</span>
-          <div class="stepper-text">
-            <span class="stepper-title">{{ step.title }}</span>
-            <span class="stepper-status">{{ step.status }}</span>
-          </div>
-          <UIIcon v-if="step.complete" type="check" size="sm" class="stepper-check" />
+      <div class="setup-mode-switch">
+        <div class="segmented setup-mode-tabs">
+          <button
+            type="button"
+            class="segmented-item"
+            :class="{ 'segmented-item-active': setupMode === 'overview' }"
+            @click="setSetupMode('overview')"
+          >
+            Aperçu
+          </button>
+          <button
+            type="button"
+            class="segmented-item"
+            :class="{ 'segmented-item-active': setupMode === 'configure' }"
+            @click="setSetupMode('configure')"
+          >
+            Configurer
+          </button>
+          <button
+            type="button"
+            class="segmented-item"
+            :class="{ 'segmented-item-active': setupMode === 'play' }"
+            @click="setSetupMode('play')"
+          >
+            Jouer
+          </button>
+        </div>
+      </div>
+
+      <div v-if="setupMode === 'overview'" class="setup-overview">
+        <p class="setup-summary-line">Résumé — {{ overviewSummary }}</p>
+        <button type="button" class="btn btn-primary btn-sm" @click="setSetupMode('configure')">
+          Configurer
         </button>
       </div>
 
-      <!-- Step 1: Race -->
-      <section ref="raceStepRef" class="setup-step" :class="getStepClass(1)">
+      <div v-else-if="setupMode === 'play'" class="setup-play">
+        <div class="setup-play-card">
+          <p class="setup-summary-line">Résumé — {{ briefSummary }}</p>
+          <ul class="start-panel__checklist">
+            <li
+              v-for="item in startChecklist"
+              :key="item.label"
+              class="start-panel__checklist-item"
+              :class="{ 'start-panel__checklist-item--ok': item.ok }"
+            >
+              <span class="start-panel__checklist-label">
+                <UIIcon :type="item.ok ? 'check' : 'warning'" size="sm" />
+                {{ item.label }}
+              </span>
+              <span
+                class="start-panel__checklist-status"
+                :class="{ 'start-panel__checklist-status--ok': item.ok }"
+              >
+                {{ item.ok ? 'Validé' : 'À caler' }}
+              </span>
+            </li>
+          </ul>
+          <div class="setup-play-cta">
+            <button
+              class="btn btn-primary btn-lg"
+              @click="startGame"
+              :disabled="!canStart"
+            >
+              <UIIcon type="finish" size="sm" />
+              Lancer la course
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <div v-else>
+        <div class="setup-stepper">
+          <button
+            v-for="step in stepItems"
+            :key="step.id"
+            type="button"
+            class="stepper-item"
+            :class="{
+              'stepper-item--active': activeStep === step.id,
+              'stepper-item--complete': step.complete,
+              'stepper-item--locked': step.locked
+            }"
+            :disabled="step.locked"
+            @click="setActiveStep(step.id)"
+          >
+            <span class="stepper-index">{{ step.id }}</span>
+            <div class="stepper-text">
+              <span class="stepper-title">{{ step.title }}</span>
+              <span class="stepper-status">{{ step.status }}</span>
+            </div>
+            <UIIcon v-if="step.complete" type="check" size="sm" class="stepper-check" />
+          </button>
+        </div>
+
+        <!-- Step 1: Race -->
+        <section ref="raceStepRef" class="setup-step" :class="getStepClass(1)">
         <header class="setup-step-header">
           <div class="setup-step-heading">
             <span class="setup-step-index">1</span>
-            <div>
-              <h2 class="setup-step-title">Profil</h2>
-              <p class="setup-step-subtitle">Type de course et parcours.</p>
+            <div class="setup-step-heading-text">
+              <h2 class="setup-step-title setup-stepTitle">Profil</h2>
+              <p class="setup-step-subtitle setup-helperText">Type de course et parcours.</p>
+              <p class="setup-summary-line">Résumé — {{ profileSummary }}</p>
             </div>
           </div>
           <div class="setup-step-controls">
@@ -65,10 +138,6 @@
           </div>
         </header>
         <div v-show="activeStep === 1" class="setup-step-body">
-          <div class="setup-step-summary">
-            <span class="setup-step-summary__label">Résumé</span>
-            <span class="setup-step-summary__text">{{ profileSummary }}</span>
-          </div>
           <div class="sp-accordions">
             <div class="sp-accordion" :class="{ 'sp-accordion--open': accordionState[1].essential }">
               <button
@@ -79,8 +148,7 @@
                 @click="toggleAccordion(1, 'essential')"
               >
                 <span class="sp-accordion-text">
-                  <span class="sp-accordion-title">Essentiel</span>
-                  <span class="sp-accordion-meta">Format, parcours, distance</span>
+                  <span class="sp-accordion-title">Choix essentiels</span>
                 </span>
                 <UIIcon type="chevron-down" size="sm" class="sp-accordion-chevron" />
               </button>
@@ -102,7 +170,7 @@
                     </div>
                     <div v-else class="race-placeholder">
                       <UIIcon type="info" size="sm" />
-                      <span>Choisissez un format.</span>
+                      <span>Format à choisir.</span>
                     </div>
                   </div>
                 </div>
@@ -110,10 +178,8 @@
                 <div class="sp-subsection">
                   <div class="sp-subsection-header">
                     <div>
-                      <p class="sp-kicker">CHOIX</p>
-                      <h3 class="sp-subsection-title">{{ lengthLabel }}</h3>
+                      <h3 class="sp-subsection-title setup-decisionTitle">{{ lengthLabel }}</h3>
                     </div>
-                    <p v-if="lengthHint" class="sp-subsection-hint">{{ lengthHint }}</p>
                   </div>
                   <div class="course-length">
                     <div class="segmented segmented--stretch">
@@ -145,7 +211,6 @@
               >
                 <span class="sp-accordion-text">
                   <span class="sp-accordion-title">Détails</span>
-                  <span class="sp-accordion-meta">Aperçu et repères</span>
                 </span>
                 <UIIcon type="chevron-down" size="sm" class="sp-accordion-chevron" />
               </button>
@@ -174,14 +239,15 @@
         </div>
       </section>
 
-      <!-- Step 2: Teams -->
-      <section ref="teamsStepRef" class="setup-step" :class="getStepClass(2)">
+        <!-- Step 2: Teams -->
+        <section ref="teamsStepRef" class="setup-step" :class="getStepClass(2)">
         <header class="setup-step-header">
           <div class="setup-step-heading">
             <span class="setup-step-index">2</span>
-            <div>
-              <h2 class="setup-step-title">Équipes</h2>
-              <p class="setup-step-subtitle">Effectifs, noms, composition du peloton.</p>
+            <div class="setup-step-heading-text">
+              <h2 class="setup-step-title setup-stepTitle">Équipes</h2>
+              <p class="setup-step-subtitle setup-helperText">Effectifs et IA.</p>
+              <p class="setup-summary-line">Résumé — {{ teamsSummary }}</p>
             </div>
           </div>
           <div class="setup-step-controls">
@@ -200,10 +266,6 @@
           </div>
         </header>
         <div v-show="activeStep === 2" class="setup-step-body">
-          <div class="setup-step-summary">
-            <span class="setup-step-summary__label">Résumé</span>
-            <span class="setup-step-summary__text">{{ teamsSummary }}</span>
-          </div>
           <div class="sp-accordions">
             <div class="sp-accordion" :class="{ 'sp-accordion--open': accordionState[2].essential }">
               <button
@@ -214,8 +276,7 @@
                 @click="toggleAccordion(2, 'essential')"
               >
                 <span class="sp-accordion-text">
-                  <span class="sp-accordion-title">Essentiel</span>
-                  <span class="sp-accordion-meta">Effectifs, humains/IA, niveau</span>
+                  <span class="sp-accordion-title">Choix essentiels</span>
                 </span>
                 <UIIcon type="chevron-down" size="sm" class="sp-accordion-chevron" />
               </button>
@@ -223,10 +284,8 @@
                 <div class="sp-subsection">
                   <div class="sp-subsection-header">
                     <div>
-                      <p class="sp-kicker">CHOIX</p>
-                      <h3 class="sp-subsection-title">Nombre d'équipes</h3>
+                      <h3 class="sp-subsection-title setup-decisionTitle">Nombre d'équipes</h3>
                     </div>
-                    <p class="sp-subsection-hint">Jusqu'à 4 équipes.</p>
                   </div>
                   <div class="teams-count">
                     <div class="segmented segmented--stretch">
@@ -246,10 +305,8 @@
                 <div class="sp-subsection">
                   <div class="sp-subsection-header">
                     <div>
-                      <p class="sp-kicker">PELOTON</p>
-                      <h3 class="sp-subsection-title">Composition</h3>
+                      <h3 class="sp-subsection-title setup-decisionTitle">Composition</h3>
                     </div>
-                    <p class="sp-subsection-hint">Humain ou IA, niveau et style.</p>
                   </div>
                   <div class="teams-grid">
                     <div
@@ -302,13 +359,6 @@
                           </button>
                         </div>
 
-                        <p v-if="player.playerType === 'ai'" class="team-microcopy">
-                          Auto-sélection des coureurs selon difficulté.
-                        </p>
-                        <p v-else class="team-microcopy">
-                          Sélection manuelle requise.
-                        </p>
-
                         <div v-if="player.playerType === 'ai'" class="ai-options">
                           <div class="ai-field">
                             <span class="type-caption">Niveau IA</span>
@@ -328,17 +378,6 @@
                               <option value="balanced">Équilibré</option>
                             </select>
                           </div>
-                          <div class="team-ai-summary">
-                            <span class="badge badge-pill">Budget {{ getTeamBudgetTotal(player.teamId) }}</span>
-                            <span class="badge badge-pill">Profils 5/5</span>
-                          </div>
-                        </div>
-
-                        <div v-else class="team-human-actions">
-                          <div class="team-human-summary">
-                            <span class="badge badge-pill">Coureurs {{ getRoster(player.teamId).length }}/{{ DraftConfig.rosterSize }}</span>
-                            <span class="badge badge-pill">Budget {{ getTeamBudgetTotal(player.teamId) }}</span>
-                          </div>
                         </div>
                       </div>
                     </div>
@@ -357,7 +396,6 @@
               >
                 <span class="sp-accordion-text">
                   <span class="sp-accordion-title">Détails</span>
-                  <span class="sp-accordion-meta">Synthèse d'équipes</span>
                 </span>
                 <UIIcon type="chevron-down" size="sm" class="sp-accordion-chevron" />
               </button>
@@ -386,14 +424,15 @@
         </div>
       </section>
 
-      <!-- Step 3: Draft -->
-      <section ref="draftStepRef" class="setup-step" :class="getStepClass(3)">
+        <!-- Step 3: Draft -->
+        <section ref="draftStepRef" class="setup-step" :class="getStepClass(3)">
         <header class="setup-step-header">
           <div class="setup-step-heading">
             <span class="setup-step-index">3</span>
-            <div>
-              <h2 class="setup-step-title">Coureurs</h2>
-              <p class="setup-step-subtitle">Le train et les leaders.</p>
+            <div class="setup-step-heading-text">
+              <h2 class="setup-step-title setup-stepTitle">Coureurs</h2>
+              <p class="setup-step-subtitle setup-helperText">Recrutement de l'équipe.</p>
+              <p class="setup-summary-line">Résumé — {{ draftSummary }}</p>
             </div>
           </div>
           <div class="setup-step-controls">
@@ -412,10 +451,6 @@
           </div>
         </header>
         <div v-show="activeStep === 3" class="setup-step-body">
-          <div class="setup-step-summary">
-            <span class="setup-step-summary__label">Résumé</span>
-            <span class="setup-step-summary__text">{{ draftSummary }}</span>
-          </div>
           <div class="sp-accordions">
             <div class="sp-accordion" :class="{ 'sp-accordion--open': accordionState[3].essential }">
               <button
@@ -426,8 +461,7 @@
                 @click="toggleAccordion(3, 'essential')"
               >
                 <span class="sp-accordion-text">
-                  <span class="sp-accordion-title">Essentiel</span>
-                  <span class="sp-accordion-meta">Marché et sélection</span>
+                  <span class="sp-accordion-title">Choix essentiels</span>
                 </span>
                 <UIIcon type="chevron-down" size="sm" class="sp-accordion-chevron" />
               </button>
@@ -435,8 +469,7 @@
                 <div v-if="manualDraftTeamIds.length === 0" class="draft-placeholder">
                   <UIIcon type="ai" size="sm" />
                   <div>
-                    <p>Auto-sélection active pour les équipes IA.</p>
-                    <p class="type-caption">Passez une équipe en Humain pour composer.</p>
+                    <p>IA active.</p>
                   </div>
                   <div class="draft-placeholder-actions">
                     <button type="button" class="btn btn-ghost btn-sm" @click="setActiveStep(2)">
@@ -477,7 +510,6 @@
               >
                 <span class="sp-accordion-text">
                   <span class="sp-accordion-title">Détails</span>
-                  <span class="sp-accordion-meta">Budget, slots, repères</span>
                 </span>
                 <UIIcon type="chevron-down" size="sm" class="sp-accordion-chevron" />
               </button>
@@ -505,14 +537,15 @@
         </div>
       </section>
 
-      <!-- Step 4: Launch -->
-      <section ref="launchStepRef" class="setup-step" :class="getStepClass(4)">
+        <!-- Step 4: Launch -->
+        <section ref="launchStepRef" class="setup-step" :class="getStepClass(4)">
         <header class="setup-step-header">
           <div class="setup-step-heading">
             <span class="setup-step-index">4</span>
-            <div>
-              <h2 class="setup-step-title">Départ</h2>
-              <p class="setup-step-subtitle">Brief, options finales.</p>
+            <div class="setup-step-heading-text">
+              <h2 class="setup-step-title setup-stepTitle">Départ</h2>
+              <p class="setup-step-subtitle setup-helperText">Vérification et lancement.</p>
+              <p class="setup-summary-line">Résumé — {{ launchSummary }}</p>
             </div>
           </div>
           <div class="setup-step-controls">
@@ -531,10 +564,6 @@
           </div>
         </header>
         <div v-show="activeStep === 4" class="setup-step-body">
-          <div class="setup-step-summary">
-            <span class="setup-step-summary__label">Résumé</span>
-            <span class="setup-step-summary__text">{{ launchSummary }}</span>
-          </div>
           <div class="sp-accordions">
             <div class="sp-accordion" :class="{ 'sp-accordion--open': accordionState[4].essential }">
               <button
@@ -545,17 +574,12 @@
                 @click="toggleAccordion(4, 'essential')"
               >
                 <span class="sp-accordion-text">
-                  <span class="sp-accordion-title">Essentiel</span>
-                  <span class="sp-accordion-meta">Brief DS + départ</span>
+                  <span class="sp-accordion-title">Choix essentiels</span>
                 </span>
                 <UIIcon type="chevron-down" size="sm" class="sp-accordion-chevron" />
               </button>
               <div v-show="accordionState[4].essential" id="step-4-essential" class="sp-accordion-panel">
                 <div class="start-panel start-panel--essential">
-                  <div class="start-panel__summary">
-                    <span class="start-panel__label">Brief DS</span>
-                    <span class="start-panel__text">: {{ briefSummary }}</span>
-                  </div>
                   <div class="start-panel__cta">
                     <button
                       class="btn btn-primary btn-lg start-panel__cta-button"
@@ -565,9 +589,6 @@
                       <UIIcon type="finish" size="sm" />
                       Lancer la course
                     </button>
-                    <p class="start-panel__hint type-caption">
-                      {{ canStart ? 'Derniers réglages validés.' : 'Complète les étapes 1–3.' }}
-                    </p>
                   </div>
                 </div>
               </div>
@@ -583,7 +604,6 @@
               >
                 <span class="sp-accordion-text">
                   <span class="sp-accordion-title">Détails</span>
-                  <span class="sp-accordion-meta">Checklist d'étapes</span>
                 </span>
                 <UIIcon type="chevron-down" size="sm" class="sp-accordion-chevron" />
               </button>
@@ -613,15 +633,14 @@
             </div>
           </div>
         </div>
-      </section>
+        </section>
+      </div>
     </div>
     <MobileStickyCTA
+      v-if="setupMode === 'configure'"
       :label="mobileCtaLabel"
       :disabled="mobileCtaDisabled"
-      :hint="mobileCtaHint"
-      :actions="mobileCtaActions"
       @click="handleMobileCta"
-      @action="handleMobileAction"
     />
     <RulesModal v-model="isRulesOpen" />
     <StepHelpModal
@@ -648,7 +667,7 @@ import RulesModal from './RulesModal.vue';
 import StepHelpModal from './StepHelpModal.vue';
 import MobileStickyCTA from './MobileStickyCTA.vue';
 import { getClassicPreset, StageRaceConfig } from '../config/race-presets.js';
-import { UIConfig, getRaceHeaderTitle } from '../config/ui.config.js';
+import { UIConfig } from '../config/ui.config.js';
 import { DraftConfig, DraftAIConfig, DraftStatLabels, DraftStatOrder, RiderPool } from '../config/draft.config.js';
 
 const emit = defineEmits(['start']);
@@ -676,9 +695,10 @@ const riderPool = ref([]);
 const teamRosters = ref({});
 const activeDraftTeamId = ref(null);
 const riderPoolIndex = new Map(RiderPool.map((rider, index) => [rider.id, index]));
-const raceHeaderTitle = getRaceHeaderTitle(UIConfig.titleVariant);
-const raceHeaderSubtitle = UIConfig.subtitle;
+const raceHeaderTitle = 'Préparer la course';
+const raceHeaderSubtitle = '';
 const raceHeaderTheme = UIConfig.raceTheme;
+const setupMode = ref('configure');
 const isRulesOpen = ref(false);
 const isHelpOpen = ref(false);
 const activeHelpStep = ref(1);
@@ -692,43 +712,47 @@ const accordionState = reactive({
 const stepHelpContent = {
   1: {
     title: 'Profil',
-    body: 'Choisis le format et le parcours avant de lancer.',
+    body: 'Choisis le format, le parcours et la distance.',
     bullets: [
-      'Classique (1 jour) : une arrivée, décision rapide.',
-      'Course à étapes : gestion et régularité.',
-      'Parcours et distance fixent le tempo.'
+      'Classique : une arrivée.',
+      'Étapes : plusieurs étapes.',
+      'Distance = durée estimée.'
     ]
   },
   2: {
     title: 'Équipes',
-    body: 'Configure le peloton et les équipes en jeu.',
+    body: 'Définis les équipes et l’IA.',
     bullets: [
-      'Nombre d’équipes et noms.',
-      'Humain ou IA, avec niveau et style.',
-      'Au moins un joueur humain.'
+      'Nombre d’équipes.',
+      'Humain ou IA, niveau et style.',
+      'Au moins un humain.'
     ]
   },
   3: {
     title: 'Coureurs',
-    body: 'Compose tes leaders et ton train.',
+    body: 'Sélectionne les coureurs.',
     bullets: [
-      '5 profils requis (Grimpeur, Puncheur, Rouleur, Sprinteur, Polyvalent).',
-      'Budget limité, une sélection par rôle.',
-      'Valide quand le roster est complet.'
+      '5 profils à recruter.',
+      'Budget limité.',
+      'Valide quand l’équipe est complète.'
     ]
   },
   4: {
     title: 'Départ',
-    body: 'Derniers réglages avant le départ.',
+    body: 'Vérifie les réglages puis lance.',
     bullets: [
-      'Brief DS clair et cohérent.',
-      'Équipes et coureurs alignés.',
-      'Lancer quand tout est calé.'
+      'Profil prêt.',
+      'Équipes prêtes.',
+      'Coureurs prêts.'
     ]
   }
 };
 
 const activeHelp = computed(() => stepHelpContent[activeHelpStep.value] || stepHelpContent[1]);
+
+function setSetupMode(mode) {
+  setupMode.value = mode;
+}
 
 function openRules() {
   isRulesOpen.value = true;
@@ -742,6 +766,7 @@ function openHelp(step) {
 function toggleAccordion(step, key) {
   accordionState[step][key] = !accordionState[step][key];
 }
+
 
 // Get team card class
 function getTeamCardClass(teamId) {
@@ -1055,13 +1080,6 @@ const selectedClassicPreset = computed(() =>
 
 const lengthLabel = computed(() => 'Distance');
 
-const lengthHint = computed(() => {
-  const base = 'Détermine la durée.';
-  if (!isStageRace.value) return base;
-  if (!stageConfig.value?.numStages) return `${base} Par étape.`;
-  return `${base} ${stageConfig.value.numStages} étapes × ${courseLength.value} cases.`;
-});
-
 const startWarning = computed(() => {
   if (humanCount.value === 0) return 'Au moins un humain requis.';
   if (!raceType.value) return 'À caler : format.';
@@ -1168,8 +1186,9 @@ const draftDetailItems = computed(() => {
   ];
 });
 
-const launchSummary = computed(() => (canStart.value ? 'Brief prêt' : 'Derniers réglages'));
+const launchSummary = computed(() => (canStart.value ? 'Prêt' : 'À vérifier'));
 
+const overviewSummary = computed(() => briefSummary.value);
 
 const stepItems = computed(() => [
   {
@@ -1216,14 +1235,6 @@ const mobileCtaDisabled = computed(() => {
   if (activeStep.value === 4) return !canStart.value;
   return true;
 });
-const mobileCtaHint = computed(() => {
-  if (activeStep.value !== 4) return '';
-  return canStart.value ? 'Derniers réglages validés.' : 'Complète les étapes 1–3.';
-});
-
-const mobileCtaActions = computed(() => [
-  { id: 'rules', label: 'Règles', icon: 'book', ariaLabel: 'Ouvrir les règles' }
-]);
 
 function getStepRef(step) {
   if (step === 1) return raceStepRef;
@@ -1246,6 +1257,9 @@ function getStepClass(step) {
 
 function setActiveStep(step) {
   if (isStepLocked(step)) return;
+  if (setupMode.value !== 'configure') {
+    setupMode.value = 'configure';
+  }
   activeStep.value = step;
   scrollToSection(getStepRef(step));
 }
@@ -1265,12 +1279,6 @@ function confirmStep(step) {
     stepConfirmed.step3 = true;
     activeStep.value = 4;
     scrollToSection(launchStepRef);
-  }
-}
-
-function handleMobileAction(actionId) {
-  if (actionId === 'rules') {
-    openRules();
   }
 }
 
@@ -1427,6 +1435,36 @@ initializePlayers();
   gap: var(--space-sm);
 }
 
+.setup-mode-switch {
+  display: flex;
+  justify-content: center;
+}
+
+.setup-mode-tabs {
+  width: min(420px, 100%);
+}
+
+.setup-overview,
+.setup-play {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-md);
+}
+
+.setup-play-card {
+  border: 1px solid var(--sp-border-soft);
+  border-radius: var(--radius-md);
+  background: var(--color-surface);
+  padding: var(--space-md);
+}
+
+.setup-play-cta {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: var(--space-xs);
+}
+
 .rules-trigger {
   display: inline-flex;
   align-items: center;
@@ -1530,6 +1568,12 @@ initializePlayers();
   gap: var(--space-sm);
 }
 
+.setup-step-heading-text {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
 .setup-step-index {
   width: 28px;
   height: 28px;
@@ -1549,9 +1593,19 @@ initializePlayers();
   color: var(--sp-text-strong);
 }
 
+.setup-stepTitle {
+  font-size: inherit;
+  font-weight: inherit;
+  color: inherit;
+}
+
 .setup-step-subtitle {
   margin: 0;
   font-size: 13px;
+  color: var(--sp-text-secondary);
+}
+
+.setup-helperText {
   color: var(--sp-text-secondary);
 }
 
@@ -1579,6 +1633,16 @@ initializePlayers();
   flex-direction: column;
   gap: var(--space-lg);
 }
+
+.setup-summary-line {
+  margin: 0;
+  font-size: 12px;
+  color: var(--sp-text-secondary);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
 
 .sp-accordions {
   display: flex;
@@ -1616,11 +1680,6 @@ initializePlayers();
   font-size: 14px;
   font-weight: 600;
   color: var(--sp-text-strong);
-}
-
-.sp-accordion-meta {
-  font-size: 12px;
-  color: var(--sp-text-secondary);
 }
 
 .sp-accordion-chevron {
@@ -1665,19 +1724,10 @@ initializePlayers();
   color: var(--sp-text-strong);
 }
 
-.sp-subsection-hint {
-  margin: 0;
-  font-size: 12px;
-  color: var(--sp-text-secondary);
-}
-
-.sp-kicker {
-  margin: 0 0 2px;
-  font-size: 10px;
+.setup-decisionTitle {
+  font-size: 15px;
   font-weight: 600;
-  text-transform: uppercase;
-  letter-spacing: 0.5px;
-  color: var(--sp-text-muted);
+  color: var(--sp-text-strong);
 }
 
 .sp-detail-grid {
@@ -1715,32 +1765,6 @@ initializePlayers();
   margin: 0;
   font-size: 12px;
   color: var(--sp-text-secondary);
-}
-
-.setup-step-summary {
-  display: flex;
-  align-items: center;
-  gap: var(--space-sm);
-  padding: var(--space-xs) var(--space-sm);
-  border: 1px solid var(--sp-border-soft);
-  border-radius: var(--radius-md);
-  background: var(--sp-summary-bg);
-  font-size: 13px;
-  color: var(--sp-text-strong);
-}
-
-.setup-step-summary__label {
-  font-size: 10px;
-  text-transform: uppercase;
-  letter-spacing: 0.5px;
-  color: var(--sp-text-muted);
-  font-weight: 600;
-}
-
-.setup-step-summary__text {
-  font-size: 13px;
-  color: var(--sp-text-strong);
-  font-weight: 600;
 }
 
 .setup-step-actions {
@@ -1807,12 +1831,6 @@ initializePlayers();
   width: 100%;
 }
 
-.team-microcopy {
-  margin: 0;
-  font-size: 12px;
-  color: var(--color-ink-muted);
-}
-
 .ai-options {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
@@ -1823,19 +1841,6 @@ initializePlayers();
   display: flex;
   flex-direction: column;
   gap: var(--space-xs);
-}
-
-.team-ai-summary,
-.team-human-summary {
-  display: flex;
-  flex-wrap: wrap;
-  gap: var(--space-xs);
-}
-
-.team-human-actions {
-  display: flex;
-  flex-direction: column;
-  gap: var(--space-sm);
 }
 
 .draft-placeholder {
@@ -1901,18 +1906,6 @@ initializePlayers();
   box-shadow: none;
 }
 
-.start-panel__summary {
-  font-size: 13px;
-  color: var(--color-ink-soft);
-}
-
-.start-panel__label {
-  font-weight: 600;
-  text-transform: uppercase;
-  letter-spacing: 0.08em;
-  color: var(--color-ink);
-}
-
 .start-panel__checklist {
   display: flex;
   flex-direction: column;
@@ -1971,10 +1964,6 @@ initializePlayers();
   box-shadow: 0 8px 18px rgba(31, 35, 40, 0.12);
 }
 
-.start-panel__hint {
-  margin: 0;
-  color: var(--color-ink-muted);
-}
 
 /* Race sections */
 .race-config-block {
@@ -1994,20 +1983,6 @@ initializePlayers();
   color: var(--color-ink-muted);
   font-family: var(--font-ui);
   font-size: 12px;
-}
-
-.race-summary {
-  display: inline-flex;
-  align-items: center;
-  gap: var(--space-xs);
-  padding: var(--space-xs) var(--space-sm);
-  border: 1px solid var(--sp-border-soft);
-  border-radius: var(--radius-chip);
-  background-color: var(--sp-summary-bg);
-  color: var(--sp-text-secondary);
-  font-family: var(--font-ui);
-  font-size: 12px;
-  width: fit-content;
 }
 
 @media (max-width: 900px) {
@@ -2101,16 +2076,8 @@ initializePlayers();
     display: none;
   }
 
-  :deep(.draft-sticky-cta) {
-    display: none;
-  }
-
   .start-panel__cta {
     display: none;
-  }
-
-  :deep(.draft-sticky-summary) {
-    bottom: calc(var(--space-md) + 120px);
   }
 }
 

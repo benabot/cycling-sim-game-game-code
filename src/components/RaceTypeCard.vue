@@ -22,7 +22,6 @@
     <!-- Content -->
     <div class="race-type-card__content">
       <h3 class="race-type-card__title">{{ title }}</h3>
-      <p class="race-type-card__description">{{ description }}</p>
     </div>
     
     <!-- Radio indicator -->
@@ -53,11 +52,6 @@ const title = computed(() => {
   return props.type === 'classic' ? 'Classique (1 jour)' : 'Course à étapes';
 });
 
-const description = computed(() => {
-  return props.type === 'classic'
-    ? 'Une arrivée. Décision rapide.'
-    : 'Gestion. Régularité.';
-});
 </script>
 
 <style scoped>
@@ -100,14 +94,6 @@ const description = computed(() => {
   font-size: 15px;
   font-weight: 600;
   color: var(--sp-text-strong);
-  margin: 0 0 var(--space-xs) 0;
-}
-
-.race-type-card__description {
-  font-family: var(--font-ui);
-  font-size: 13px;
-  line-height: 1.4;
-  color: var(--sp-text-secondary);
   margin: 0;
 }
 

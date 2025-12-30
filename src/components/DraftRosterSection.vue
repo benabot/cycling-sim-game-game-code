@@ -6,7 +6,6 @@
       </div>
       <div class="race-section-header__content">
         <h2 class="race-section-header__title">Coureurs</h2>
-        <p class="race-section-header__subtitle">Le train et les leaders.</p>
       </div>
     </header>
 
@@ -24,20 +23,6 @@
         </button>
       </div>
 
-      <div class="draft-summary">
-        <div class="draft-summary-item">
-          <span class="draft-summary-label">Budget restant</span>
-          <span class="draft-summary-value type-numeric">{{ budgetRemaining }}</span>
-        </div>
-        <div class="draft-summary-item">
-          <span class="draft-summary-label">Coureurs sélectionnés</span>
-          <span class="draft-summary-value">{{ rosterCount }}/{{ rosterSize }}</span>
-        </div>
-        <div class="draft-summary-item">
-          <span class="draft-summary-label">Équipe</span>
-          <span class="draft-summary-value">{{ activeTeamLabel }}</span>
-        </div>
-      </div>
     </div>
 
     <div class="draft-toolbar">
@@ -90,12 +75,11 @@
 
     <div class="draft-grid" :class="{ 'draft-grid--mobile': isMobile }">
       <div class="draft-pool" v-show="!isMobile || activeMobileTab === 'market'">
-        <div class="draft-pool-header">
-          <div>
-            <h3 class="draft-title">Marché des coureurs</h3>
-            <p class="draft-subtitle">Choisis 5 profils. Budget limité.</p>
-          </div>
+      <div class="draft-pool-header">
+        <div>
+          <h3 class="draft-title">Marché</h3>
         </div>
+      </div>
         <div v-if="pagedPool.length" class="draft-pool-grid">
           <article v-for="rider in pagedPool" :key="rider.id" class="draft-card draft-card--compact">
             <div class="draft-card-main">
@@ -134,7 +118,6 @@
                     <span class="badge badge-pill draft-role-badge">{{ getRoleLabel(rider.role) }}</span>
                     <span class="badge badge-pill">{{ rider.price }}</span>
                   </div>
-                  <span class="draft-card-style">{{ getRiderStyle(rider) }}</span>
                 </div>
               </div>
               <button
@@ -206,51 +189,6 @@
 
       <div class="draft-roster" v-show="!isMobile || activeMobileTab === 'team'">
         <h3 class="draft-title">Sélection</h3>
-        <div class="draft-roster-summary">
-          <div class="draft-roster-avatars">
-            <div
-              v-for="slot in rosterSize"
-              :key="`roster-slot-${slot}`"
-              class="rider-portrait rider-portrait--sm"
-              :class="getPortraitClass(activeRoster[slot - 1]?.role)"
-              :style="getTeamBorderStyle(activeTeamId)"
-            >
-              <img
-                v-if="hasPortrait(activeRoster[slot - 1]?.portraitKey)"
-                :src="getPortraitSrc(activeRoster[slot - 1]?.portraitKey)"
-                :alt="activeRoster[slot - 1]?.name"
-                class="rider-portrait__image"
-                @error="onPortraitError(activeRoster[slot - 1]?.portraitKey)"
-              />
-              <img
-                v-else
-                :src="PORTRAIT_FALLBACK_URL"
-                alt=""
-                class="rider-portrait__fallback"
-              />
-              <span v-if="activeRoster[slot - 1]" class="rider-portrait__initials">
-                {{ getInitials(activeRoster[slot - 1].name) }}
-              </span>
-              <span
-                v-if="activeRoster[slot - 1]?.role && isKnownRole(activeRoster[slot - 1].role)"
-                class="rider-portrait__badge rider-portrait__badge--role"
-                :style="getTeamBadgeStyle(activeTeamId)"
-              >
-                <RiderIcon :type="activeRoster[slot - 1].role" :size="9" />
-              </span>
-              <span
-                v-else-if="activeRoster[slot - 1]?.role"
-                class="rider-portrait__badge rider-portrait__badge--fallback"
-                :style="getTeamBadgeStyle(activeTeamId)"
-              ></span>
-            </div>
-          </div>
-          <div class="draft-roster-metrics">
-            <span>Slots {{ rosterCount }}/{{ rosterSize }}</span>
-            <span>Budget {{ budgetRemaining }}</span>
-          </div>
-          <span class="draft-roster-note">Profil équipe : {{ rosterTone }}</span>
-        </div>
         <div class="roster-slots">
           <div
             v-for="role in roles"
@@ -329,59 +267,6 @@
       </div>
     </div>
 
-    <div class="draft-sticky-summary">
-      <div class="draft-sticky-avatars">
-        <div
-          v-for="slot in rosterSize"
-          :key="`slot-${slot}`"
-          class="rider-portrait rider-portrait--sm"
-          :class="getPortraitClass(activeRoster[slot - 1]?.role)"
-          :style="getTeamBorderStyle(activeTeamId)"
-        >
-          <img
-            v-if="hasPortrait(activeRoster[slot - 1]?.portraitKey)"
-            :src="getPortraitSrc(activeRoster[slot - 1]?.portraitKey)"
-            :alt="activeRoster[slot - 1]?.name"
-            class="rider-portrait__image"
-            @error="onPortraitError(activeRoster[slot - 1]?.portraitKey)"
-          />
-          <img
-            v-else
-            :src="PORTRAIT_FALLBACK_URL"
-            alt=""
-            class="rider-portrait__fallback"
-          />
-          <span v-if="activeRoster[slot - 1]" class="rider-portrait__initials">
-            {{ getInitials(activeRoster[slot - 1].name) }}
-          </span>
-          <span
-            v-if="activeRoster[slot - 1]?.role && isKnownRole(activeRoster[slot - 1].role)"
-            class="rider-portrait__badge rider-portrait__badge--role"
-            :style="getTeamBadgeStyle(activeTeamId)"
-          >
-            <RiderIcon :type="activeRoster[slot - 1].role" :size="9" />
-          </span>
-          <span
-            v-else-if="activeRoster[slot - 1]?.role"
-            class="rider-portrait__badge rider-portrait__badge--fallback"
-            :style="getTeamBadgeStyle(activeTeamId)"
-          ></span>
-        </div>
-      </div>
-      <div class="draft-sticky-metrics">
-        <span>Slots {{ rosterCount }}/{{ rosterSize }}</span>
-        <span>Budget {{ budgetRemaining }}</span>
-        <span class="draft-sticky-note">Profil équipe : {{ rosterTone }}</span>
-      </div>
-      <button
-        type="button"
-        class="btn btn-primary btn-sm draft-sticky-cta"
-        :disabled="rosterCount < rosterSize"
-        @click="$emit('confirm')"
-      >
-        {{ rosterCount === rosterSize ? "Valider l'équipe" : `À caler : ${rosterCount}/${rosterSize}` }}
-      </button>
-    </div>
   </section>
 </template>
 
@@ -421,15 +306,6 @@ const rosterByRole = computed(() => {
   }, {});
 });
 
-const activeTeamLabel = computed(() => getTeamLabel(props.activeTeamId));
-const rosterTone = computed(() => {
-  if (rosterCount.value < props.rosterSize) return 'Profil en construction';
-  const roles = new Set(activeRoster.value.map(rider => rider.role));
-  if (roles.size === props.roles.length) return 'Équipe équilibrée';
-  if (!roles.has('climber')) return 'Risque montagne';
-  if (roles.has('sprinter') && roles.has('puncher')) return 'Profil offensif';
-  return 'Profil stable';
-});
 
 const searchQuery = ref('');
 const activeRole = ref('all');
@@ -538,17 +414,6 @@ function getTeamBadgeStyle(teamId) {
   };
 }
 
-function getRiderStyle(rider) {
-  if (rider?.style) return rider.style;
-  const fallback = {
-    climber: 'Grimpeur pur',
-    puncher: 'Attaquant',
-    rouleur: 'Rouleur',
-    sprinter: 'Finisseur',
-    versatile: 'Équilibré'
-  };
-  return fallback[rider?.role] || 'Profil stable';
-}
 
 function canRecruit(rider) {
   if (!props.activeTeamId) return false;
@@ -608,12 +473,6 @@ onBeforeUnmount(() => {
   gap: 2px;
 }
 
-.race-section-header__subtitle {
-  margin: 0;
-  font-size: 12px;
-  color: var(--sp-text-secondary, var(--color-ink-muted));
-}
-
 .draft-controls {
   display: flex;
   flex-direction: column;
@@ -622,36 +481,6 @@ onBeforeUnmount(() => {
 
 .draft-team-tabs {
   width: 100%;
-}
-
-.draft-summary {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
-  gap: var(--space-sm);
-}
-
-.draft-summary-item {
-  padding: var(--space-sm) var(--space-md);
-  border: 1px solid var(--sp-border-soft, var(--color-line));
-  border-radius: var(--radius-md);
-  background: var(--sp-summary-bg, var(--color-canvas));
-  display: flex;
-  flex-direction: column;
-  gap: 2px;
-}
-
-.draft-summary-label {
-  font-size: 10px;
-  text-transform: uppercase;
-  letter-spacing: 0.6px;
-  color: var(--sp-text-muted, var(--color-ink-muted));
-  font-weight: 600;
-}
-
-.draft-summary-value {
-  font-size: 14px;
-  font-weight: 700;
-  color: var(--sp-text-strong, var(--color-ink));
 }
 
 .draft-toolbar {
@@ -746,12 +575,6 @@ onBeforeUnmount(() => {
   color: var(--sp-text-strong, var(--color-ink));
   text-transform: uppercase;
   letter-spacing: 0.6px;
-}
-
-.draft-subtitle {
-  margin: 0;
-  font-size: 12px;
-  color: var(--sp-text-secondary, var(--color-ink-muted));
 }
 
 .draft-pool-header {
@@ -963,10 +786,6 @@ onBeforeUnmount(() => {
   margin-top: var(--space-xs);
 }
 
-.draft-card-style {
-  font-size: 11px;
-  color: var(--sp-text-secondary, var(--color-ink-muted));
-}
 
 .draft-card-stats--compact {
   display: grid;
@@ -1028,29 +847,6 @@ onBeforeUnmount(() => {
   gap: var(--space-sm);
 }
 
-.draft-roster-summary {
-  display: flex;
-  flex-direction: column;
-  gap: var(--space-xs);
-  margin-bottom: var(--space-sm);
-}
-
-.draft-roster-avatars {
-  display: flex;
-  gap: var(--space-xs);
-}
-
-.draft-roster-note {
-  font-size: 12px;
-  color: var(--sp-text-secondary, var(--color-ink-muted));
-}
-
-.draft-roster-metrics {
-  display: flex;
-  gap: var(--space-md);
-  font-size: 12px;
-  color: var(--sp-text-secondary, var(--color-ink-muted));
-}
 
 .roster-slot {
   border: 1px dashed var(--sp-border-soft, var(--color-line));
@@ -1130,36 +926,6 @@ onBeforeUnmount(() => {
   align-self: start;
 }
 
-.draft-sticky-summary {
-  display: none;
-  position: sticky;
-  bottom: var(--space-md);
-  gap: var(--space-sm);
-  align-items: center;
-  justify-content: space-between;
-  padding: var(--space-sm) var(--space-md);
-  border: 1px solid var(--color-line);
-  border-radius: var(--radius-md);
-  background: var(--color-surface);
-  box-shadow: var(--shadow-md);
-}
-
-.draft-sticky-avatars {
-  display: flex;
-  gap: var(--space-xs);
-}
-
-.draft-sticky-metrics {
-  display: flex;
-  flex-direction: column;
-  gap: 2px;
-  font-size: 12px;
-  color: var(--color-ink-muted);
-}
-
-.draft-sticky-note {
-  color: var(--color-ink-soft);
-}
 
 @media (max-width: 960px) {
   .draft-grid {
@@ -1183,9 +949,6 @@ onBeforeUnmount(() => {
     position: static;
   }
 
-  .draft-sticky-summary {
-    display: flex;
-  }
 }
 
 @media (max-width: 720px) {
