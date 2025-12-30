@@ -1527,6 +1527,32 @@ initializePlayers();
     padding-bottom: calc(var(--space-2xl) + 84px);
   }
 
+  .setup-panel {
+    gap: var(--space-md);
+  }
+
+  :deep(.race-header) {
+    padding: var(--space-sm);
+  }
+
+  :deep(.race-header__title) {
+    font-size: 20px;
+    line-height: 24px;
+  }
+
+  :deep(.race-header__eyebrow) {
+    display: none;
+  }
+
+  :deep(.race-header__subtitle) {
+    font-size: 12px;
+    margin-top: 4px;
+  }
+
+  :deep(.race-header__ornament) {
+    display: none;
+  }
+
   .setup-stepper {
     display: flex;
     gap: var(--space-xs);
