@@ -235,9 +235,9 @@ const COURSE_CONSTRAINTS = {
 const MOUNTAIN_ALLOWED_PRESETS = new Set(['mountain', 'lombarde']);
 const PAVES_PRESETS = new Set(['nord']);
 const COBBLES_CONSTRAINTS = {
-  minSegments: 2,
-  maxSegments: 4,
-  minLength: 3,
+  minSegments: 4,
+  maxSegments: 6,
+  minLength: 4,
   maxLength: 6,
   buffer: 1
 };
@@ -276,6 +276,7 @@ function applyCobblesOverlay(course, options = {}) {
   const used = new Array(course.length).fill(false);
   const blocked = new Array(course.length).fill(false);
   let placed = 0;
+  const windowSize = Math.max(1, Math.floor(course.length / targetSegments));
 
   const canPlace = (start, length) => {
     for (let i = 0; i < length; i++) {
@@ -300,9 +301,12 @@ function applyCobblesOverlay(course, options = {}) {
     }
   };
 
-  const findCandidates = (length) => {
+  const findCandidates = (length, window = null) => {
     const candidates = [];
-    for (let start = 0; start <= course.length - length; start++) {
+    const rangeStart = window ? window.start : 0;
+    const rangeEnd = window ? window.end : course.length - 1;
+    const maxStart = Math.max(rangeStart, Math.min(rangeEnd, course.length - length));
+    for (let start = rangeStart; start <= maxStart; start++) {
       if (canPlace(start, length)) {
         candidates.push(start);
       }
@@ -311,15 +315,34 @@ function applyCobblesOverlay(course, options = {}) {
   };
 
   for (let segmentIndex = 0; segmentIndex < targetSegments; segmentIndex++) {
+    const window = {
+      start: segmentIndex * windowSize,
+      end: segmentIndex === targetSegments - 1
+        ? course.length - 1
+        : Math.min(course.length - 1, (segmentIndex + 1) * windowSize - 1)
+    };
     let length = minLength + Math.floor(rng() * (maxLength - minLength + 1));
-    let candidates = findCandidates(length);
+    let candidates = findCandidates(length, window);
 
     if (!candidates.length) {
       for (let altLength = minLength; altLength <= maxLength; altLength++) {
-        candidates = findCandidates(altLength);
+        candidates = findCandidates(altLength, window);
         if (candidates.length) {
           length = altLength;
           break;
+        }
+      }
+    }
+
+    if (!candidates.length) {
+      candidates = findCandidates(length);
+      if (!candidates.length) {
+        for (let altLength = minLength; altLength <= maxLength; altLength++) {
+          candidates = findCandidates(altLength);
+          if (candidates.length) {
+            length = altLength;
+            break;
+          }
         }
       }
     }

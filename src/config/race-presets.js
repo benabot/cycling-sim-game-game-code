@@ -210,9 +210,9 @@ export const ClassicPresets = {
       startFlat: 6,
       endSprint: 8,
       cobbles: {
-        minSegments: 2,
-        maxSegments: 4,
-        minLength: 3,
+        minSegments: 4,
+        maxSegments: 6,
+        minLength: 4,
         maxLength: 6
       },
       segmentPattern: [
