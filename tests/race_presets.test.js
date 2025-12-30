@@ -90,10 +90,10 @@ describe('Race presets V1 constraints', () => {
 
     expect(course[course.length - 1].terrain).toBe(TerrainType.SPRINT);
     expect(segments.filter(segment => segment.terrain === TerrainType.MOUNTAIN)).toHaveLength(0);
-    expect(cobbleSegments.length).toBeGreaterThanOrEqual(2);
-    expect(cobbleSegments.length).toBeLessThanOrEqual(4);
+    expect(cobbleSegments.length).toBeGreaterThanOrEqual(4);
+    expect(cobbleSegments.length).toBeLessThanOrEqual(6);
     cobbleSegments.forEach(segment => {
-      expect(segment.length).toBeGreaterThanOrEqual(3);
+      expect(segment.length).toBeGreaterThanOrEqual(4);
       expect(segment.length).toBeLessThanOrEqual(6);
     });
     course
