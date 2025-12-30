@@ -23,6 +23,11 @@
         <span>Descente</span>
       </span>
       
+      <span class="terrain-badge terrain-badge--sprint">
+        <TerrainIcon type="sprint" :size="14" />
+        <span>Sprint</span>
+      </span>
+
       <span
         class="terrain-badge terrain-badge--cobbles"
         title="Secteur pavé : risque accru, favorise rouleurs."
@@ -30,11 +35,6 @@
       >
         <span class="terrain-swatch terrain-swatch--cobbles" aria-hidden="true"></span>
         <span>Pavés</span>
-      </span>
-
-      <span class="terrain-badge terrain-badge--sprint">
-        <TerrainIcon type="sprint" :size="14" />
-        <span>Sprint</span>
       </span>
       
       <span class="terrain-badge terrain-badge--refuel">
