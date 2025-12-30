@@ -1524,7 +1524,7 @@ initializePlayers();
 @media (max-width: 720px) {
   .setup-screen {
     display: block;
-    padding-bottom: calc(var(--space-2xl) + 84px);
+    padding-bottom: calc(var(--space-2xl) + 120px);
   }
 
   .setup-panel {
@@ -1602,7 +1602,7 @@ initializePlayers();
   }
 
   :deep(.draft-sticky-summary) {
-    bottom: calc(var(--space-md) + 84px);
+    bottom: calc(var(--space-md) + 120px);
   }
 }
 
