@@ -65,6 +65,10 @@
           </div>
         </header>
         <div v-show="activeStep === 1" class="setup-step-body">
+          <div class="setup-step-summary">
+            <span class="setup-step-summary__label">Résumé</span>
+            <span class="setup-step-summary__text">{{ profileSummary }}</span>
+          </div>
           <RaceTypeSelector v-model="raceType" />
 
           <div class="race-config-block">
@@ -145,6 +149,10 @@
           </div>
         </header>
         <div v-show="activeStep === 2" class="setup-step-body">
+          <div class="setup-step-summary">
+            <span class="setup-step-summary__label">Résumé</span>
+            <span class="setup-step-summary__text">{{ teamsSummary }}</span>
+          </div>
           <div class="teams-count">
             <label class="form-label">Nombre d'équipes</label>
             <p class="form-hint">Jusqu'à 4 équipes.</p>
@@ -293,6 +301,10 @@
           </div>
         </header>
         <div v-show="activeStep === 3" class="setup-step-body">
+          <div class="setup-step-summary">
+            <span class="setup-step-summary__label">Résumé</span>
+            <span class="setup-step-summary__text">{{ draftSummary }}</span>
+          </div>
           <div v-if="manualDraftTeamIds.length === 0" class="draft-placeholder">
             <UIIcon type="ai" size="sm" />
             <div>
@@ -364,6 +376,10 @@
           </div>
         </header>
         <div v-show="activeStep === 4" class="setup-step-body">
+          <div class="setup-step-summary">
+            <span class="setup-step-summary__label">Résumé</span>
+            <span class="setup-step-summary__text">{{ launchSummary }}</span>
+          </div>
           <div class="start-panel">
             <div class="start-panel__summary">
               <span class="start-panel__label">Brief DS</span>
@@ -413,7 +429,9 @@
       :label="mobileCtaLabel"
       :disabled="mobileCtaDisabled"
       :hint="mobileCtaHint"
+      :actions="mobileCtaActions"
       @click="handleMobileCta"
+      @action="handleMobileAction"
     />
     <RulesModal v-model="isRulesOpen" />
     <StepHelpModal
@@ -421,6 +439,11 @@
       :title="activeHelp.title"
       :body="activeHelp.body"
       :bullets="activeHelp.bullets"
+    />
+    <SummaryModal
+      v-model="isSummaryOpen"
+      title="Résumé DS"
+      :items="summaryLines"
     />
   </div>
 </template>
@@ -439,6 +462,7 @@ import RaceHeader from './RaceHeader.vue';
 import RulesModal from './RulesModal.vue';
 import StepHelpModal from './StepHelpModal.vue';
 import MobileStickyCTA from './MobileStickyCTA.vue';
+import SummaryModal from './SummaryModal.vue';
 import { getClassicPreset, StageRaceConfig } from '../config/race-presets.js';
 import { UIConfig, getRaceHeaderTitle } from '../config/ui.config.js';
 import { DraftConfig, DraftAIConfig, DraftStatLabels, DraftStatOrder, RiderPool } from '../config/draft.config.js';
@@ -473,6 +497,7 @@ const raceHeaderSubtitle = UIConfig.subtitle;
 const raceHeaderTheme = UIConfig.raceTheme;
 const isRulesOpen = ref(false);
 const isHelpOpen = ref(false);
+const isSummaryOpen = ref(false);
 const activeHelpStep = ref(1);
 
 const stepHelpContent = {
@@ -517,12 +542,21 @@ const stepHelpContent = {
 const activeHelp = computed(() => stepHelpContent[activeHelpStep.value] || stepHelpContent[1]);
 
 function openRules() {
+  isHelpOpen.value = false;
+  isSummaryOpen.value = false;
   isRulesOpen.value = true;
 }
 
 function openHelp(step) {
+  isSummaryOpen.value = false;
   activeHelpStep.value = step;
   isHelpOpen.value = true;
+}
+
+function openSummary() {
+  isRulesOpen.value = false;
+  isHelpOpen.value = false;
+  isSummaryOpen.value = true;
 }
 
 // Get team card class
@@ -878,6 +912,41 @@ const startChecklist = computed(() => [
   { label: 'Coureurs', ok: stepConfirmed.step3 }
 ]);
 
+const profileSummary = computed(() => {
+  if (isClassicRace.value) {
+    const raceName = selectedClassicPreset.value?.name || 'Parcours à caler';
+    return `Classique · ${raceName} · ${courseLength.value} cases`;
+  }
+  if (isStageRace.value) {
+    const stages = stageConfig.value?.numStages ? `${stageConfig.value.numStages} étapes` : 'Étapes à caler';
+    const profileName = StageRaceConfig.profiles[stageConfig.value?.profile]?.name || 'Profil à caler';
+    return `Course à étapes · ${stages} · ${profileName} · ${courseLength.value} cases`;
+  }
+  return 'Profil à caler';
+});
+
+const teamsSummary = computed(() => {
+  const teamLabel = `${numTeams.value} équipe${numTeams.value > 1 ? 's' : ''}`;
+  return `${teamLabel} (${humanCount.value} humain${humanCount.value > 1 ? 's' : ''}, ${aiCount.value} IA)`;
+});
+
+const draftSummary = computed(() => {
+  if (manualDraftTeamIds.value.length === 0) return 'Auto-sélection IA';
+  const teamId = activeManualTeamId.value || manualDraftTeamIds.value[0];
+  if (!teamId) return `Coureurs 0/${DraftConfig.rosterSize}`;
+  const count = getRoster(teamId).length;
+  return `${count}/${DraftConfig.rosterSize} · Budget ${getTeamBudgetTotal(teamId)}`;
+});
+
+const launchSummary = computed(() => (canStart.value ? 'Brief prêt' : 'Derniers réglages'));
+
+const summaryLines = computed(() => [
+  `Profil : ${profileSummary.value}`,
+  `Équipes : ${teamsSummary.value}`,
+  `Coureurs : ${draftSummary.value}`,
+  `Départ : ${launchSummary.value}`
+]);
+
 const stepItems = computed(() => [
   {
     id: 1,
@@ -928,6 +997,11 @@ const mobileCtaHint = computed(() => {
   return canStart.value ? 'Derniers réglages validés.' : 'Complète les étapes 1–3.';
 });
 
+const mobileCtaActions = computed(() => [
+  { id: 'summary', label: 'Résumé', icon: 'card', ariaLabel: 'Ouvrir le résumé' },
+  { id: 'rules', label: 'Règles', icon: 'book', ariaLabel: 'Ouvrir les règles' }
+]);
+
 function getStepRef(step) {
   if (step === 1) return raceStepRef;
   if (step === 2) return teamsStepRef;
@@ -968,6 +1042,16 @@ function confirmStep(step) {
     stepConfirmed.step3 = true;
     activeStep.value = 4;
     scrollToSection(launchStepRef);
+  }
+}
+
+function handleMobileAction(actionId) {
+  if (actionId === 'rules') {
+    openRules();
+    return;
+  }
+  if (actionId === 'summary') {
+    openSummary();
   }
 }
 
@@ -1244,6 +1328,32 @@ initializePlayers();
   display: flex;
   flex-direction: column;
   gap: var(--space-lg);
+}
+
+.setup-step-summary {
+  display: flex;
+  align-items: center;
+  gap: var(--space-sm);
+  padding: var(--space-xs) var(--space-sm);
+  border: 1px solid var(--color-line);
+  border-radius: var(--radius-md);
+  background: var(--color-canvas);
+  font-size: 13px;
+  color: var(--color-ink);
+}
+
+.setup-step-summary__label {
+  font-size: 10px;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  color: var(--color-ink-muted);
+  font-weight: 600;
+}
+
+.setup-step-summary__text {
+  font-size: 13px;
+  color: var(--color-ink);
+  font-weight: 500;
 }
 
 .setup-step-actions {
