@@ -104,6 +104,38 @@ export const RulesUIContent = {
       ]
     },
     {
+      id: 'evenements',
+      title: 'Événements',
+      icon: 'event',
+      lines: [
+        '1 tirage max par tour global, cooldown 1 tour.',
+        'Crevaison: +2 énergie sur le prochain déplacement.',
+        'Chute: mouvement réduit (cap 1 case) +5 énergie.',
+        'Incident mécanique: carte fin de tour -1 (min 1).'
+      ]
+    },
+    {
+      id: 'meteo',
+      title: 'Météo & risque',
+      icon: 'wind',
+      lines: [
+        'Météo: Ciel clair, Vent latéral, Pluie.',
+        'Vent: pénalité sous vent ↑, abri ↓.',
+        'Pluie: chutes (descente/pavés) ↑, crevaison pavés ↑.',
+        'Indice risque: type + niveau + raison (qualitatif).'
+      ]
+    },
+    {
+      id: 'paves',
+      title: 'Pavés',
+      icon: 'cobbles',
+      lines: [
+        'Overlay sur plat/côte/descente (2–4 secteurs, 3–6 cases).',
+        'Risques crevaison/chute ↑; rouleur favorisé, grimpeur pénalisé.',
+        'Aucun pavé sur montagne/sprint/ravitaillement.'
+      ]
+    },
+    {
       id: 'fin-de-tour',
       title: 'Fin de tour',
       icon: 'info',
