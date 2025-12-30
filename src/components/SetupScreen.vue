@@ -1,10 +1,19 @@
 <template>
   <div class="setup-screen">
+    <MobileTopBar :title="mobileHeaderTitle" @rules="openRules" />
     <div class="setup-panel">
       <!-- Header -->
       <RaceHeader :title="raceHeaderTitle" :subtitle="raceHeaderSubtitle" :theme="raceHeaderTheme">
         <template #actions>
-          <RulesDrawer />
+          <button
+            type="button"
+            class="btn btn-ghost btn-sm rules-trigger"
+            aria-label="Ouvrir les règles"
+            @click="openRules"
+          >
+            <UIIcon type="book" size="sm" />
+            Règles
+          </button>
         </template>
       </RaceHeader>
 
@@ -37,13 +46,24 @@
           <div class="setup-step-heading">
             <span class="setup-step-index">1</span>
             <div>
-              <h2 class="setup-step-title">Choisir l'épreuve</h2>
+              <h2 class="setup-step-title">Profil</h2>
               <p class="setup-step-subtitle">Type de course et parcours.</p>
             </div>
           </div>
-          <button v-if="activeStep !== 1" type="button" class="btn btn-ghost btn-sm" @click="setActiveStep(1)">
-            Modifier
-          </button>
+          <div class="setup-step-controls">
+            <button
+              type="button"
+              class="btn btn-ghost btn-sm step-help"
+              aria-label="Aide profil"
+              @click="openHelp(1)"
+            >
+              <UIIcon type="info" size="sm" />
+              Infos
+            </button>
+            <button v-if="activeStep !== 1" type="button" class="btn btn-ghost btn-sm" @click="setActiveStep(1)">
+              Modifier
+            </button>
+          </div>
         </header>
         <div v-show="activeStep === 1" class="setup-step-body">
           <RaceTypeSelector v-model="raceType" />
@@ -106,13 +126,24 @@
           <div class="setup-step-heading">
             <span class="setup-step-index">2</span>
             <div>
-              <h2 class="setup-step-title">Choisir les équipes</h2>
-              <p class="setup-step-subtitle">Humain ou IA, niveau et style.</p>
+              <h2 class="setup-step-title">Équipes</h2>
+              <p class="setup-step-subtitle">Effectifs, noms, composition du peloton.</p>
             </div>
           </div>
-          <button v-if="activeStep !== 2" type="button" class="btn btn-ghost btn-sm" @click="setActiveStep(2)">
-            Modifier
-          </button>
+          <div class="setup-step-controls">
+            <button
+              type="button"
+              class="btn btn-ghost btn-sm step-help"
+              aria-label="Aide équipes"
+              @click="openHelp(2)"
+            >
+              <UIIcon type="info" size="sm" />
+              Infos
+            </button>
+            <button v-if="activeStep !== 2" type="button" class="btn btn-ghost btn-sm" @click="setActiveStep(2)">
+              Modifier
+            </button>
+          </div>
         </header>
         <div v-show="activeStep === 2" class="setup-step-body">
           <div class="teams-count">
@@ -243,13 +274,24 @@
           <div class="setup-step-heading">
             <span class="setup-step-index">3</span>
             <div>
-              <h2 class="setup-step-title">Composer l'équipe</h2>
-              <p class="setup-step-subtitle">Vivier et budget.</p>
+              <h2 class="setup-step-title">Coureurs</h2>
+              <p class="setup-step-subtitle">Le train et les leaders.</p>
             </div>
           </div>
-          <button v-if="activeStep !== 3" type="button" class="btn btn-ghost btn-sm" @click="setActiveStep(3)">
-            Modifier
-          </button>
+          <div class="setup-step-controls">
+            <button
+              type="button"
+              class="btn btn-ghost btn-sm step-help"
+              aria-label="Aide coureurs"
+              @click="openHelp(3)"
+            >
+              <UIIcon type="info" size="sm" />
+              Infos
+            </button>
+            <button v-if="activeStep !== 3" type="button" class="btn btn-ghost btn-sm" @click="setActiveStep(3)">
+              Modifier
+            </button>
+          </div>
         </header>
         <div v-show="activeStep === 3" class="setup-step-body">
           <div v-if="manualDraftTeamIds.length === 0" class="draft-placeholder">
@@ -303,13 +345,24 @@
           <div class="setup-step-heading">
             <span class="setup-step-index">4</span>
             <div>
-              <h2 class="setup-step-title">Lancer la course</h2>
-              <p class="setup-step-subtitle">Brief final.</p>
+              <h2 class="setup-step-title">Départ</h2>
+              <p class="setup-step-subtitle">Brief, options finales.</p>
             </div>
           </div>
-          <button v-if="activeStep !== 4" type="button" class="btn btn-ghost btn-sm" @click="setActiveStep(4)">
-            Ouvrir
-          </button>
+          <div class="setup-step-controls">
+            <button
+              type="button"
+              class="btn btn-ghost btn-sm step-help"
+              aria-label="Aide départ"
+              @click="openHelp(4)"
+            >
+              <UIIcon type="info" size="sm" />
+              Infos
+            </button>
+            <button v-if="activeStep !== 4" type="button" class="btn btn-ghost btn-sm" @click="setActiveStep(4)">
+              Ouvrir
+            </button>
+          </div>
         </header>
         <div v-show="activeStep === 4" class="setup-step-body">
           <div class="start-panel">
@@ -334,7 +387,7 @@
                     class="start-panel__checklist-status"
                     :class="{ 'start-panel__checklist-status--ok': item.ok }"
                   >
-                    {{ item.ok ? 'Validé' : 'À compléter' }}
+                    {{ item.ok ? 'Validé' : 'À caler' }}
                   </span>
                 </li>
               </ul>
@@ -349,7 +402,7 @@
                   Lancer la course
                 </button>
                 <p class="start-panel__hint type-caption">
-                  {{ canStart ? 'Brief validé.' : 'Complète les étapes 1–3.' }}
+                  {{ canStart ? 'Derniers réglages validés.' : 'Complète les étapes 1–3.' }}
                 </p>
               </div>
             </div>
@@ -357,6 +410,19 @@
         </div>
       </section>
     </div>
+    <MobileStickyCTA
+      :label="mobileCtaLabel"
+      :disabled="mobileCtaDisabled"
+      :hint="mobileCtaHint"
+      @click="handleMobileCta"
+    />
+    <RulesModal v-model="isRulesOpen" />
+    <StepHelpModal
+      v-model="isHelpOpen"
+      :title="activeHelp.title"
+      :body="activeHelp.body"
+      :bullets="activeHelp.bullets"
+    />
   </div>
 </template>
 
@@ -371,7 +437,10 @@ import ClassicRaceSelector from './ClassicRaceSelector.vue';
 import StageRaceConfigurator from './StageRaceConfigurator.vue';
 import DraftRosterSection from './DraftRosterSection.vue';
 import RaceHeader from './RaceHeader.vue';
-import RulesDrawer from './RulesDrawer.vue';
+import RulesModal from './RulesModal.vue';
+import StepHelpModal from './StepHelpModal.vue';
+import MobileTopBar from './MobileTopBar.vue';
+import MobileStickyCTA from './MobileStickyCTA.vue';
 import { getClassicPreset, StageRaceConfig } from '../config/race-presets.js';
 import { UIConfig, getRaceHeaderTitle } from '../config/ui.config.js';
 import { DraftConfig, DraftAIConfig, DraftStatLabels, DraftStatOrder, RiderPool } from '../config/draft.config.js';
@@ -404,6 +473,60 @@ const riderPoolIndex = new Map(RiderPool.map((rider, index) => [rider.id, index]
 const raceHeaderTitle = getRaceHeaderTitle(UIConfig.titleVariant);
 const raceHeaderSubtitle = UIConfig.subtitle;
 const raceHeaderTheme = UIConfig.raceTheme;
+const mobileHeaderTitle = 'Avant-course';
+const isRulesOpen = ref(false);
+const isHelpOpen = ref(false);
+const activeHelpStep = ref(1);
+
+const stepHelpContent = {
+  1: {
+    title: 'Profil',
+    body: 'Choisis le format et le parcours avant de lancer.',
+    bullets: [
+      'Classique (1 jour) : une arrivée, décision rapide.',
+      'Course à étapes : gestion et régularité.',
+      'Parcours et distance fixent le tempo.'
+    ]
+  },
+  2: {
+    title: 'Équipes',
+    body: 'Configure le peloton et les équipes en jeu.',
+    bullets: [
+      'Nombre d’équipes et noms.',
+      'Humain ou IA, avec niveau et style.',
+      'Au moins un joueur humain.'
+    ]
+  },
+  3: {
+    title: 'Coureurs',
+    body: 'Compose tes leaders et ton train.',
+    bullets: [
+      '5 profils requis (Grimpeur, Puncheur, Rouleur, Sprinteur, Polyvalent).',
+      'Budget limité, une sélection par rôle.',
+      'Valide quand le roster est complet.'
+    ]
+  },
+  4: {
+    title: 'Départ',
+    body: 'Derniers réglages avant le départ.',
+    bullets: [
+      'Brief DS clair et cohérent.',
+      'Équipes et coureurs alignés.',
+      'Lancer quand tout est calé.'
+    ]
+  }
+};
+
+const activeHelp = computed(() => stepHelpContent[activeHelpStep.value] || stepHelpContent[1]);
+
+function openRules() {
+  isRulesOpen.value = true;
+}
+
+function openHelp(step) {
+  activeHelpStep.value = step;
+  isHelpOpen.value = true;
+}
 
 // Get team card class
 function getTeamCardClass(teamId) {
@@ -721,15 +844,15 @@ const lengthHint = computed(() => {
 
 const startWarning = computed(() => {
   if (humanCount.value === 0) return 'Au moins un humain requis.';
-  if (!raceType.value) return 'À compléter : format.';
-  if (isClassicRace.value && !selectedClassic.value) return 'À compléter : parcours.';
+  if (!raceType.value) return 'À caler : format.';
+  if (isClassicRace.value && !selectedClassic.value) return 'À caler : parcours.';
   if (isStageRace.value && !isStageConfigComplete.value) {
-    return 'À compléter : étapes, profil.';
+    return 'À caler : étapes, profil.';
   }
   if (!isDraftComplete.value) {
     const teamId = incompleteDraftTeam.value;
     const count = getRoster(teamId).length;
-    return `À compléter : coureurs (${count}/${DraftConfig.rosterSize}).`;
+    return `À caler : coureurs (${count}/${DraftConfig.rosterSize}).`;
   }
   return '';
 });
@@ -753,7 +876,7 @@ const briefSummary = computed(() => {
 });
 
 const startChecklist = computed(() => [
-  { label: 'Épreuve', ok: stepConfirmed.step1 },
+  { label: 'Profil', ok: stepConfirmed.step1 },
   { label: 'Équipes', ok: stepConfirmed.step2 },
   { label: 'Coureurs', ok: stepConfirmed.step3 }
 ]);
@@ -761,10 +884,10 @@ const startChecklist = computed(() => [
 const stepItems = computed(() => [
   {
     id: 1,
-    title: 'Épreuve',
+    title: 'Profil',
     status: stepConfirmed.step1
       ? 'Validé'
-      : (isRaceConfigComplete.value ? 'Prêt' : 'À compléter'),
+      : (isRaceConfigComplete.value ? 'Verrouillé' : 'À caler'),
     complete: stepConfirmed.step1,
     locked: false
   },
@@ -773,7 +896,7 @@ const stepItems = computed(() => [
     title: 'Équipes',
     status: stepConfirmed.step2
       ? 'Validé'
-      : (isTeamsReady.value ? 'Prêt' : 'À compléter'),
+      : (isTeamsReady.value ? 'Verrouillé' : 'À caler'),
     complete: stepConfirmed.step2,
     locked: !stepConfirmed.step1
   },
@@ -782,18 +905,31 @@ const stepItems = computed(() => [
     title: 'Coureurs',
     status: stepConfirmed.step3
       ? 'Validé'
-      : (isDraftReady.value ? 'Prêt' : 'Vivier'),
+      : (isDraftReady.value ? 'Verrouillé' : 'Sélection'),
     complete: stepConfirmed.step3,
     locked: !stepConfirmed.step2
   },
   {
     id: 4,
-    title: 'Lancer',
-    status: canStart.value ? 'Prêt' : 'Brief',
+    title: 'Départ',
+    status: canStart.value ? 'Verrouillé' : 'Derniers réglages',
     complete: false,
     locked: !stepConfirmed.step3
   }
 ]);
+
+const mobileCtaLabel = computed(() => (activeStep.value === 4 ? 'Lancer la course' : 'Continuer'));
+const mobileCtaDisabled = computed(() => {
+  if (activeStep.value === 1) return !isRaceConfigComplete.value;
+  if (activeStep.value === 2) return !isTeamsReady.value;
+  if (activeStep.value === 3) return !isDraftReady.value;
+  if (activeStep.value === 4) return !canStart.value;
+  return true;
+});
+const mobileCtaHint = computed(() => {
+  if (activeStep.value !== 4) return '';
+  return canStart.value ? 'Derniers réglages validés.' : 'Complète les étapes 1–3.';
+});
 
 function getStepRef(step) {
   if (step === 1) return raceStepRef;
@@ -912,6 +1048,14 @@ function startGame() {
   });
 }
 
+function handleMobileCta() {
+  if (activeStep.value === 4) {
+    startGame();
+  } else {
+    confirmStep(activeStep.value);
+  }
+}
+
 initializePlayers();
 </script>
 
@@ -964,6 +1108,13 @@ initializePlayers();
   display: grid;
   grid-template-columns: repeat(4, minmax(0, 1fr));
   gap: var(--space-sm);
+}
+
+.rules-trigger {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  min-height: 44px;
 }
 
 .stepper-item {
@@ -1076,6 +1227,19 @@ initializePlayers();
   margin: 0;
   font-size: 12px;
   color: var(--color-ink-muted);
+}
+
+.setup-step-controls {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-sm);
+}
+
+.step-help {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  min-height: 44px;
 }
 
 .setup-step-body {
@@ -1352,13 +1516,69 @@ initializePlayers();
   }
 }
 
-@media (max-width: 600px) {
-  .setup-panel {
-    padding: var(--space-lg);
+@media (min-width: 960px) {
+  .setup-stepper {
+    position: sticky;
+    top: var(--space-lg);
+    z-index: 6;
+  }
+}
+
+@media (max-width: 720px) {
+  .setup-screen {
+    padding-bottom: calc(var(--space-2xl) + 84px);
   }
 
   .setup-stepper {
-    grid-template-columns: 1fr;
+    display: flex;
+    gap: var(--space-xs);
+    overflow-x: auto;
+    padding-bottom: var(--space-xs);
+  }
+
+  .stepper-item {
+    min-width: 140px;
+    padding: var(--space-xs) var(--space-sm);
+  }
+
+  .stepper-index {
+    width: 22px;
+    height: 22px;
+    font-size: 11px;
+  }
+
+  .stepper-title {
+    font-size: 12px;
+  }
+
+  .stepper-status {
+    font-size: 10px;
+  }
+
+  .setup-step-actions {
+    display: none;
+  }
+
+  .draft-placeholder-actions {
+    display: none;
+  }
+
+  :deep(.draft-sticky-cta) {
+    display: none;
+  }
+
+  .start-panel__cta {
+    display: none;
+  }
+
+  :deep(.draft-sticky-summary) {
+    bottom: calc(var(--space-md) + 84px);
+  }
+}
+
+@media (max-width: 600px) {
+  .setup-panel {
+    padding: var(--space-lg);
   }
 
   .teams-grid {

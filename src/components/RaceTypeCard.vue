@@ -66,7 +66,7 @@ const title = computed(() => {
 const description = computed(() => {
   return props.type === 'classic'
     ? 'Une arrivée. Décision rapide.'
-    : 'Classement général. Gestion sur plusieurs jours.';
+    : 'Gestion. Régularité.';
 });
 </script>
 

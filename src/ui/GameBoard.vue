@@ -156,8 +156,18 @@
     <!-- Game Log -->
     <GameLog :log="gameLog" />
 
-    <!-- Rules Drawer (collapsed by default) -->
-    <RulesDrawer :courseLength="course?.length || 80" />
+    <div class="rules-trigger-wrapper">
+      <button
+        type="button"
+        class="btn btn-ghost btn-sm rules-trigger"
+        aria-label="Ouvrir les règles"
+        @click="isRulesOpen = true"
+      >
+        <UIIcon type="book" size="sm" />
+        Règles
+      </button>
+    </div>
+    <RulesModal v-model="isRulesOpen" />
   </div>
 </template>
 
@@ -179,7 +189,7 @@ import {
   TeamsOverview,
   GameOverPanel,
   GameLog,
-  RulesDrawer,
+  RulesModal,
   UIIcon,
   RiderIcon
 } from '../components';
@@ -256,6 +266,7 @@ const {
 const courseBoardRef = ref(null);
 const courseBoardShellRef = ref(null);
 const isCourseFocusActive = ref(false);
+const isRulesOpen = ref(false);
 let courseFocusTimeout = null;
 const headerTitle = computed(() => {
   if (stageRace.value) {
@@ -482,6 +493,18 @@ watch(
   display: flex;
   flex-direction: column;
   gap: var(--space-lg);
+}
+
+.rules-trigger-wrapper {
+  display: flex;
+  justify-content: flex-end;
+}
+
+.rules-trigger {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  min-height: 44px;
 }
 
 .course-board-shell {

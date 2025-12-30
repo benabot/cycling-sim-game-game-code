@@ -96,4 +96,19 @@ defineProps({
   opacity: 0.4;
   transform: rotate(-6deg);
 }
+
+@media (max-width: 720px) {
+  .race-header {
+    padding: var(--space-md);
+  }
+
+  .race-header__actions {
+    display: none;
+  }
+
+  .race-header__title {
+    font-size: 22px;
+    line-height: 26px;
+  }
+}
 </style>

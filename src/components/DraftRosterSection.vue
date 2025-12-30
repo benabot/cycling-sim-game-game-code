@@ -6,7 +6,7 @@
       </div>
       <div class="race-section-header__content">
         <h2 class="race-section-header__title">Coureurs</h2>
-        <p class="race-section-header__subtitle">Vivier et budget.</p>
+        <p class="race-section-header__subtitle">Le train et les leaders.</p>
       </div>
     </header>
 
@@ -337,11 +337,11 @@
       </div>
       <button
         type="button"
-        class="btn btn-primary btn-sm"
+        class="btn btn-primary btn-sm draft-sticky-cta"
         :disabled="rosterCount < rosterSize"
         @click="$emit('confirm')"
       >
-        {{ rosterCount === rosterSize ? "Valider l'équipe" : `À compléter : ${rosterCount}/${rosterSize}` }}
+        {{ rosterCount === rosterSize ? "Valider l'équipe" : `À caler : ${rosterCount}/${rosterSize}` }}
       </button>
     </div>
   </section>
