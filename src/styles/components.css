@@ -532,20 +532,22 @@
   display: flex;
   align-items: center;
   gap: var(--space-sm);
-  padding-bottom: var(--space-md);
-  border-bottom: 1px solid var(--color-line);
+  padding: var(--space-sm) var(--space-md);
+  border: 1px solid var(--sp-border-soft, var(--color-line));
+  border-radius: var(--radius-md);
+  background: var(--color-canvas);
   margin-bottom: var(--space-lg);
 }
 
 .race-section-header__icon {
-  color: var(--color-ink-soft);
+  color: var(--sp-text-secondary, var(--color-ink-soft));
 }
 
 .race-section-header__title {
   font-family: var(--font-display);
-  font-size: 18px;
+  font-size: 15px;
   font-weight: 600;
-  color: var(--color-ink);
+  color: var(--sp-text-strong, var(--color-ink));
   margin: 0;
 }
 
@@ -556,7 +558,7 @@
   flex-direction: column;
   padding: var(--space-lg);
   background-color: var(--color-surface);
-  border: 2px solid var(--color-line);
+  border: 1px solid var(--sp-border-soft, var(--color-line));
   border-radius: var(--radius-card);
   cursor: pointer;
   transition: var(--transition-fast);
@@ -570,7 +572,7 @@
 
 .selection-card--selected {
   border-color: var(--color-accent);
-  background-color: rgba(59, 130, 246, 0.04);
+  background-color: color-mix(in srgb, var(--color-accent) 8%, white);
 }
 
 .selection-card--selected:hover {
