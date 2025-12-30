@@ -440,11 +440,6 @@
       :body="activeHelp.body"
       :bullets="activeHelp.bullets"
     />
-    <SummaryModal
-      v-model="isSummaryOpen"
-      title="Résumé DS"
-      :items="summaryLines"
-    />
   </div>
 </template>
 
@@ -462,7 +457,6 @@ import RaceHeader from './RaceHeader.vue';
 import RulesModal from './RulesModal.vue';
 import StepHelpModal from './StepHelpModal.vue';
 import MobileStickyCTA from './MobileStickyCTA.vue';
-import SummaryModal from './SummaryModal.vue';
 import { getClassicPreset, StageRaceConfig } from '../config/race-presets.js';
 import { UIConfig, getRaceHeaderTitle } from '../config/ui.config.js';
 import { DraftConfig, DraftAIConfig, DraftStatLabels, DraftStatOrder, RiderPool } from '../config/draft.config.js';
@@ -497,7 +491,6 @@ const raceHeaderSubtitle = UIConfig.subtitle;
 const raceHeaderTheme = UIConfig.raceTheme;
 const isRulesOpen = ref(false);
 const isHelpOpen = ref(false);
-const isSummaryOpen = ref(false);
 const activeHelpStep = ref(1);
 
 const stepHelpContent = {
@@ -542,21 +535,12 @@ const stepHelpContent = {
 const activeHelp = computed(() => stepHelpContent[activeHelpStep.value] || stepHelpContent[1]);
 
 function openRules() {
-  isHelpOpen.value = false;
-  isSummaryOpen.value = false;
   isRulesOpen.value = true;
 }
 
 function openHelp(step) {
-  isSummaryOpen.value = false;
   activeHelpStep.value = step;
   isHelpOpen.value = true;
-}
-
-function openSummary() {
-  isRulesOpen.value = false;
-  isHelpOpen.value = false;
-  isSummaryOpen.value = true;
 }
 
 // Get team card class
@@ -940,12 +924,6 @@ const draftSummary = computed(() => {
 
 const launchSummary = computed(() => (canStart.value ? 'Brief prêt' : 'Derniers réglages'));
 
-const summaryLines = computed(() => [
-  `Profil : ${profileSummary.value}`,
-  `Équipes : ${teamsSummary.value}`,
-  `Coureurs : ${draftSummary.value}`,
-  `Départ : ${launchSummary.value}`
-]);
 
 const stepItems = computed(() => [
   {
@@ -998,7 +976,6 @@ const mobileCtaHint = computed(() => {
 });
 
 const mobileCtaActions = computed(() => [
-  { id: 'summary', label: 'Résumé', icon: 'card', ariaLabel: 'Ouvrir le résumé' },
   { id: 'rules', label: 'Règles', icon: 'book', ariaLabel: 'Ouvrir les règles' }
 ]);
 
@@ -1048,10 +1025,6 @@ function confirmStep(step) {
 function handleMobileAction(actionId) {
   if (actionId === 'rules') {
     openRules();
-    return;
-  }
-  if (actionId === 'summary') {
-    openSummary();
   }
 }
 

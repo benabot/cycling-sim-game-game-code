@@ -67,7 +67,7 @@ const description = computed(() => {
   gap: var(--space-md);
   padding: var(--space-lg);
   background-color: var(--color-surface);
-  border: 2px solid var(--color-line);
+  border: 1px solid var(--sp-border-soft);
   border-radius: var(--radius-card);
   cursor: pointer;
   transition: var(--transition-fast);
@@ -82,7 +82,7 @@ const description = computed(() => {
 
 .race-type-card--selected {
   border-color: var(--color-accent);
-  background-color: rgba(59, 130, 246, 0.04);
+  background-color: color-mix(in srgb, var(--color-accent) 10%, white);
 }
 
 .race-type-card--selected:hover {
@@ -97,9 +97,9 @@ const description = computed(() => {
 
 .race-type-card__title {
   font-family: var(--font-display);
-  font-size: 16px;
+  font-size: 15px;
   font-weight: 600;
-  color: var(--color-ink);
+  color: var(--sp-text-strong);
   margin: 0 0 var(--space-xs) 0;
 }
 
@@ -107,7 +107,7 @@ const description = computed(() => {
   font-family: var(--font-ui);
   font-size: 13px;
   line-height: 1.4;
-  color: var(--color-muted);
+  color: var(--sp-text-secondary);
   margin: 0;
 }
 
@@ -116,7 +116,7 @@ const description = computed(() => {
   flex-shrink: 0;
   width: 20px;
   height: 20px;
-  border: 2px solid var(--color-line-strong);
+  border: 1px solid var(--sp-border);
   border-radius: 50%;
   display: flex;
   align-items: center;

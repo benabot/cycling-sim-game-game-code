@@ -611,7 +611,7 @@ onBeforeUnmount(() => {
 .race-section-header__subtitle {
   margin: 0;
   font-size: 12px;
-  color: var(--color-ink-muted);
+  color: var(--sp-text-secondary, var(--color-ink-muted));
 }
 
 .draft-controls {
@@ -632,9 +632,9 @@ onBeforeUnmount(() => {
 
 .draft-summary-item {
   padding: var(--space-sm) var(--space-md);
-  border: 1px solid var(--color-line);
+  border: 1px solid var(--sp-border-soft, var(--color-line));
   border-radius: var(--radius-md);
-  background: var(--color-canvas);
+  background: var(--sp-summary-bg, var(--color-canvas));
   display: flex;
   flex-direction: column;
   gap: 2px;
@@ -644,14 +644,14 @@ onBeforeUnmount(() => {
   font-size: 10px;
   text-transform: uppercase;
   letter-spacing: 0.6px;
-  color: var(--color-ink-muted);
+  color: var(--sp-text-muted, var(--color-ink-muted));
   font-weight: 600;
 }
 
 .draft-summary-value {
   font-size: 14px;
-  font-weight: 600;
-  color: var(--color-ink);
+  font-weight: 700;
+  color: var(--sp-text-strong, var(--color-ink));
 }
 
 .draft-toolbar {
@@ -663,6 +663,20 @@ onBeforeUnmount(() => {
 
 .draft-mobile-tabs {
   display: none;
+}
+
+.draft-mobile-tabs .segmented-item {
+  border: 1px solid var(--sp-border-soft, var(--color-line));
+  background: var(--color-surface);
+  color: var(--sp-text-secondary, var(--color-ink-muted));
+  font-weight: 600;
+}
+
+.draft-mobile-tabs .segmented-item-active {
+  border-color: var(--color-accent);
+  background: var(--color-canvas);
+  color: var(--sp-text-strong, var(--color-ink));
+  box-shadow: inset 0 -2px 0 var(--color-accent);
 }
 
 .draft-search,
@@ -707,7 +721,7 @@ onBeforeUnmount(() => {
 .draft-card-details summary {
   cursor: pointer;
   font-size: 12px;
-  color: var(--color-ink-muted);
+  color: var(--sp-text-secondary, var(--color-ink-muted));
   list-style: none;
   display: inline-flex;
   align-items: center;
@@ -727,9 +741,9 @@ onBeforeUnmount(() => {
 .draft-title {
   margin: 0 0 var(--space-sm);
   font-family: var(--font-ui);
-  font-size: 13px;
+  font-size: 14px;
   font-weight: 600;
-  color: var(--color-ink);
+  color: var(--sp-text-strong, var(--color-ink));
   text-transform: uppercase;
   letter-spacing: 0.6px;
 }
@@ -737,7 +751,7 @@ onBeforeUnmount(() => {
 .draft-subtitle {
   margin: 0;
   font-size: 12px;
-  color: var(--color-ink-muted);
+  color: var(--sp-text-secondary, var(--color-ink-muted));
 }
 
 .draft-pool-header {
@@ -747,8 +761,8 @@ onBeforeUnmount(() => {
   gap: var(--space-md);
   padding: var(--space-md);
   border-radius: var(--radius-md);
-  background: linear-gradient(135deg, rgba(59, 130, 246, 0.08), rgba(15, 23, 42, 0.02));
-  border: 1px solid var(--color-line);
+  background: linear-gradient(135deg, rgba(59, 130, 246, 0.04), rgba(15, 23, 42, 0.01));
+  border: 1px solid var(--sp-border-soft, var(--color-line));
   position: relative;
   overflow: hidden;
 }
@@ -768,14 +782,14 @@ onBeforeUnmount(() => {
 }
 
 .draft-card {
-  border: 1px solid var(--color-line);
+  border: 1px solid var(--sp-border-soft, var(--color-line));
   border-radius: var(--radius-md);
   padding: var(--space-md);
   background: var(--color-surface);
   display: flex;
   flex-direction: column;
   gap: var(--space-sm);
-  box-shadow: var(--shadow-sm);
+  box-shadow: none;
 }
 
 .draft-card--compact {
@@ -936,9 +950,9 @@ onBeforeUnmount(() => {
 .draft-card-name {
   margin: 0;
   font-family: var(--font-display);
-  font-size: 14px;
+  font-size: 15px;
   font-weight: 600;
-  color: var(--color-ink);
+  color: var(--sp-text-strong, var(--color-ink));
 }
 
 .draft-card-tags,
@@ -951,7 +965,7 @@ onBeforeUnmount(() => {
 
 .draft-card-style {
   font-size: 11px;
-  color: var(--color-ink-muted);
+  color: var(--sp-text-secondary, var(--color-ink-muted));
 }
 
 .draft-card-stats--compact {
@@ -966,7 +980,7 @@ onBeforeUnmount(() => {
   gap: var(--space-xs);
   align-items: center;
   font-size: 10px;
-  color: var(--color-ink-soft);
+  color: var(--sp-text-secondary, var(--color-ink-soft));
 }
 
 .stat-label {
@@ -976,7 +990,7 @@ onBeforeUnmount(() => {
 
 .stat-bar {
   height: 6px;
-  background: var(--color-line);
+  background: var(--sp-border-soft, var(--color-line));
   border-radius: var(--radius-pill);
   overflow: hidden;
 }
@@ -1001,11 +1015,11 @@ onBeforeUnmount(() => {
 
 .draft-empty {
   padding: var(--space-md);
-  border: 1px dashed var(--color-line);
+  border: 1px dashed var(--sp-border-soft, var(--color-line));
   border-radius: var(--radius-md);
   background: var(--color-canvas);
   font-size: 12px;
-  color: var(--color-ink-muted);
+  color: var(--sp-text-secondary, var(--color-ink-muted));
 }
 
 .roster-slots {
@@ -1028,18 +1042,18 @@ onBeforeUnmount(() => {
 
 .draft-roster-note {
   font-size: 12px;
-  color: var(--color-ink-muted);
+  color: var(--sp-text-secondary, var(--color-ink-muted));
 }
 
 .draft-roster-metrics {
   display: flex;
   gap: var(--space-md);
   font-size: 12px;
-  color: var(--color-ink-muted);
+  color: var(--sp-text-secondary, var(--color-ink-muted));
 }
 
 .roster-slot {
-  border: 1px dashed var(--color-line);
+  border: 1px dashed var(--sp-border-soft, var(--color-line));
   border-radius: var(--radius-md);
   padding: var(--space-sm) var(--space-md);
   background: var(--color-paper);
@@ -1059,7 +1073,7 @@ onBeforeUnmount(() => {
   gap: var(--space-xs);
   font-size: 12px;
   font-weight: 600;
-  color: var(--color-ink-soft);
+  color: var(--sp-text-secondary, var(--color-ink-soft));
 }
 
 .roster-role-label {

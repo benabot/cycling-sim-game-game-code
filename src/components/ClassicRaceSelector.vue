@@ -131,12 +131,14 @@ function getProfilePath(profile = []) {
   display: flex;
   align-items: center;
   gap: var(--space-sm);
-  padding-bottom: var(--space-md);
-  border-bottom: 1px solid var(--color-line);
+  padding: var(--space-sm) var(--space-md);
+  border: 1px solid var(--sp-border-soft);
+  border-radius: var(--radius-md);
+  background: var(--color-canvas);
 }
 
 .section-header__icon {
-  color: var(--color-ink-soft);
+  color: var(--sp-text-secondary);
 }
 
 .section-header__content {
@@ -147,16 +149,16 @@ function getProfilePath(profile = []) {
 
 .section-header__title {
   font-family: var(--font-display);
-  font-size: 18px;
+  font-size: 15px;
   font-weight: 600;
-  color: var(--color-ink);
+  color: var(--sp-text-strong);
   margin: 0;
 }
 
 .section-header__subtitle {
   margin: 0;
-  font-size: 12px;
-  color: var(--color-ink-muted);
+  font-size: 13px;
+  color: var(--sp-text-secondary);
 }
 
 /* Grid */
@@ -186,7 +188,7 @@ function getProfilePath(profile = []) {
   gap: var(--space-sm);
   padding: var(--space-lg);
   background-color: var(--color-surface);
-  border: 2px solid var(--color-line);
+  border: 1px solid var(--sp-border-soft);
   border-radius: var(--radius-card);
   cursor: pointer;
   transition: var(--transition-fast);
@@ -206,7 +208,7 @@ function getProfilePath(profile = []) {
 
 .classic-card--selected {
   border-color: var(--color-accent);
-  background-color: rgba(59, 130, 246, 0.04);
+  background-color: color-mix(in srgb, var(--color-accent) 8%, white);
 }
 
 .classic-card--selected:hover {
@@ -255,9 +257,9 @@ function getProfilePath(profile = []) {
 /* Name and subtitle */
 .classic-card__name {
   font-family: var(--font-display);
-  font-size: 18px;
+  font-size: 17px;
   font-weight: 600;
-  color: var(--color-ink);
+  color: var(--sp-text-strong);
   margin: 0;
 }
 
@@ -265,7 +267,7 @@ function getProfilePath(profile = []) {
   font-family: var(--font-ui);
   font-size: 12px;
   font-style: italic;
-  color: var(--color-muted);
+  color: var(--sp-text-secondary);
   margin: 0;
 }
 
@@ -274,7 +276,7 @@ function getProfilePath(profile = []) {
   font-family: var(--font-ui);
   font-size: 13px;
   line-height: 1.5;
-  color: var(--color-ink-soft);
+  color: var(--sp-text-secondary);
   margin: var(--space-xs) 0;
 }
 
@@ -320,7 +322,7 @@ function getProfilePath(profile = []) {
 
 .profile-line__path {
   fill: none;
-  stroke: var(--color-ink-muted);
+  stroke: var(--sp-text-secondary);
   stroke-width: 2;
   stroke-linecap: round;
   stroke-linejoin: round;
@@ -328,7 +330,7 @@ function getProfilePath(profile = []) {
 
 .classic-card__narrative {
   font-size: 12px;
-  color: var(--color-ink-muted);
+  color: var(--sp-text-secondary);
 }
 
 /* Advantage badge */
@@ -337,13 +339,13 @@ function getProfilePath(profile = []) {
   align-items: center;
   gap: var(--space-xs);
   padding: var(--space-xs) var(--space-sm);
-  background-color: var(--color-paper);
-  border: 1px solid var(--color-line);
+  background-color: var(--color-canvas);
+  border: 1px solid var(--sp-border-soft);
   border-radius: var(--radius-chip);
   font-family: var(--font-ui);
   font-size: 12px;
   font-weight: 500;
-  color: var(--color-ink-soft);
+  color: var(--sp-text-secondary);
   width: fit-content;
 }
 
@@ -354,7 +356,7 @@ function getProfilePath(profile = []) {
   border-radius: 999px;
   overflow: hidden;
   background-color: rgba(31, 35, 40, 0.06);
-  border: 1px solid rgba(31, 35, 40, 0.08);
+  border: 1px solid var(--sp-border-soft);
   margin-top: var(--space-sm);
 }
 

@@ -191,8 +191,8 @@ function getProfilePath(profile = []) {
 
 .race-section-header__subtitle {
   margin: 0;
-  font-size: 12px;
-  color: var(--color-ink-muted);
+  font-size: 13px;
+  color: var(--sp-text-secondary, var(--color-ink-muted));
 }
 
 .stage-race-configurator__controls {
@@ -240,9 +240,9 @@ function getProfilePath(profile = []) {
   justify-content: center;
   width: 38px;
   height: 38px;
-  background-color: var(--color-paper);
+  background-color: var(--color-canvas);
   border-radius: var(--radius-md);
-  color: var(--color-ink-soft);
+  color: var(--sp-text-secondary, var(--color-ink-soft));
   flex-shrink: 0;
 }
 
@@ -262,7 +262,7 @@ function getProfilePath(profile = []) {
   font-family: var(--font-display);
   font-size: 15px;
   font-weight: 600;
-  color: var(--color-ink);
+  color: var(--sp-text-strong, var(--color-ink));
 }
 
 .profile-card__description {
@@ -270,7 +270,7 @@ function getProfilePath(profile = []) {
   font-family: var(--font-ui);
   font-size: 12px;
   line-height: 1.4;
-  color: var(--color-muted);
+  color: var(--sp-text-secondary, var(--color-muted));
 }
 
 .profile-card__profile {
@@ -320,7 +320,7 @@ function getProfilePath(profile = []) {
 
 .profile-card__narrative {
   font-size: 11px;
-  color: var(--color-ink-muted);
+  color: var(--sp-text-muted, var(--color-ink-muted));
 }
 
 .profile-card__check {
@@ -345,7 +345,7 @@ function getProfilePath(profile = []) {
   padding: var(--space-md);
   background-color: var(--color-canvas);
   border-radius: var(--radius-md);
-  border: 1px solid var(--color-line);
+  border: 1px solid var(--sp-border-soft, var(--color-line));
 }
 
 .preview-header {
@@ -362,13 +362,13 @@ function getProfilePath(profile = []) {
   font-family: var(--font-ui);
   font-size: 13px;
   font-weight: 600;
-  color: var(--color-ink);
+  color: var(--sp-text-strong, var(--color-ink));
 }
 
 .preview-header__summary {
   font-family: var(--font-ui);
   font-size: 12px;
-  color: var(--color-ink-muted);
+  color: var(--sp-text-secondary, var(--color-ink-muted));
 }
 
 .preview-grid {
@@ -384,7 +384,7 @@ function getProfilePath(profile = []) {
   padding: var(--space-sm);
   font-family: var(--font-ui);
   font-size: 12px;
-  color: var(--color-ink-muted);
+  color: var(--sp-text-secondary, var(--color-ink-muted));
 }
 
 .stage-race-configurator__rules {
@@ -392,11 +392,11 @@ function getProfilePath(profile = []) {
   align-items: center;
   gap: var(--space-xs);
   padding: var(--space-sm) var(--space-md);
-  border: 1px dashed var(--color-line-strong);
+  border: 1px dashed var(--sp-border, var(--color-line-strong));
   border-radius: var(--radius-md);
   font-family: var(--font-ui);
   font-size: 12px;
-  color: var(--color-ink-soft);
+  color: var(--sp-text-secondary, var(--color-ink-soft));
   width: fit-content;
 }
 

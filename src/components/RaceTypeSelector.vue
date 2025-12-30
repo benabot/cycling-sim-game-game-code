@@ -61,12 +61,14 @@ defineEmits(['update:modelValue']);
   display: flex;
   align-items: center;
   gap: var(--space-sm);
-  padding-bottom: var(--space-md);
-  border-bottom: 1px solid var(--color-line);
+  padding: var(--space-sm) var(--space-md);
+  border: 1px solid var(--sp-border-soft);
+  border-radius: var(--radius-md);
+  background: var(--color-canvas);
 }
 
 .section-header__icon {
-  color: var(--color-ink-soft);
+  color: var(--sp-text-secondary);
 }
 
 .section-header__content {
@@ -77,16 +79,16 @@ defineEmits(['update:modelValue']);
 
 .section-header__title {
   font-family: var(--font-display);
-  font-size: 18px;
+  font-size: 15px;
   font-weight: 600;
-  color: var(--color-ink);
+  color: var(--sp-text-strong);
   margin: 0;
 }
 
 .section-header__subtitle {
   margin: 0;
-  font-size: 12px;
-  color: var(--color-ink-muted);
+  font-size: 13px;
+  color: var(--sp-text-secondary);
 }
 
 /* Grid */
