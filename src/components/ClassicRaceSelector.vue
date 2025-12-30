@@ -60,7 +60,6 @@
         
         <!-- Advantage badge -->
         <div class="classic-card__advantage">
-          <RiderIcon :type="classic.advantage" size="sm" />
           <span>Avantage {{ classic.advantageLabel }}</span>
         </div>
         
@@ -88,7 +87,6 @@
 <script setup>
 import { computed } from 'vue';
 import UIIcon from './icons/UIIcon.vue';
-import RiderIcon from './icons/RiderIcon.vue';
 import { getAllClassicPresets } from '../config/race-presets.js';
 import { TerrainConfig } from '../core/terrain.js';
 

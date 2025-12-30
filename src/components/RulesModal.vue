@@ -295,6 +295,7 @@ watch(
   padding: var(--space-sm) var(--space-lg);
   border-bottom: 1px solid var(--color-line);
   overflow-x: auto;
+  flex-shrink: 0;
 }
 
 .rules-modal__tab {
@@ -318,6 +319,9 @@ watch(
   padding: var(--space-lg);
   overflow: auto;
   font-size: 16px;
+  flex: 1;
+  min-height: 0;
+  overscroll-behavior: contain;
 }
 
 .rules-modal__cards {

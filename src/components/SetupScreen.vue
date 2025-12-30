@@ -1523,6 +1523,7 @@ initializePlayers();
 
 @media (max-width: 720px) {
   .setup-screen {
+    display: block;
     padding-bottom: calc(var(--space-2xl) + 84px);
   }
 
@@ -1532,7 +1533,7 @@ initializePlayers();
     overflow-x: auto;
     padding-bottom: var(--space-xs);
     position: sticky;
-    top: var(--space-sm);
+    top: calc(var(--space-sm) + env(safe-area-inset-top));
     z-index: 8;
     background: var(--color-surface);
     padding: var(--space-xs);
