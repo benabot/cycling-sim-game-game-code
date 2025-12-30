@@ -1324,7 +1324,7 @@ export function applyEndOfTurnEffects(state) {
     if (terrain === TerrainType.DESCENT) weight += 0.3;
     if (isCobbles) weight += 0.2;
 
-    return { terrain, isCobbles, weight };
+    return { terrain, isCobbles, weight, riderType: rider.type };
   };
   const raceEventRoll = rollRaceEvent({
     riders: updatedRiders,

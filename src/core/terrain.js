@@ -234,6 +234,13 @@ const COURSE_CONSTRAINTS = {
 
 const MOUNTAIN_ALLOWED_PRESETS = new Set(['mountain', 'lombarde']);
 const PAVES_PRESETS = new Set(['nord']);
+const COBBLES_CONSTRAINTS = {
+  minSegments: 2,
+  maxSegments: 4,
+  minLength: 3,
+  maxLength: 6,
+  buffer: 1
+};
 
 function getTerrainMinLength(terrain) {
   if (terrain === TerrainType.MOUNTAIN) return COURSE_CONSTRAINTS.mountainMin;
@@ -244,6 +251,88 @@ function getTerrainMinLength(terrain) {
 function getRefuelZoneLength(rng = Math.random) {
   const span = COURSE_CONSTRAINTS.refuelMax - COURSE_CONSTRAINTS.refuelMin;
   return COURSE_CONSTRAINTS.refuelMin + (span > 0 ? Math.floor(rng() * (span + 1)) : 0);
+}
+
+function isCobbleAllowedCell(cell) {
+  if (!cell || cell.isRefuelZone) return false;
+  return [
+    TerrainType.FLAT,
+    TerrainType.HILL,
+    TerrainType.DESCENT
+  ].includes(cell.terrain);
+}
+
+function applyCobblesOverlay(course, options = {}) {
+  if (!course || course.length === 0) return 0;
+  const rng = options.rng || Math.random;
+  const config = options.config || {};
+  const minSegments = config.minSegments ?? COBBLES_CONSTRAINTS.minSegments;
+  const maxSegments = config.maxSegments ?? COBBLES_CONSTRAINTS.maxSegments;
+  const minLength = config.minLength ?? COBBLES_CONSTRAINTS.minLength;
+  const maxLength = config.maxLength ?? COBBLES_CONSTRAINTS.maxLength;
+  const buffer = config.buffer ?? COBBLES_CONSTRAINTS.buffer;
+
+  const targetSegments = minSegments + Math.floor(rng() * (maxSegments - minSegments + 1));
+  const used = new Array(course.length).fill(false);
+  const blocked = new Array(course.length).fill(false);
+  let placed = 0;
+
+  const canPlace = (start, length) => {
+    for (let i = 0; i < length; i++) {
+      const index = start + i;
+      if (!course[index] || used[index] || blocked[index]) return false;
+      if (!isCobbleAllowedCell(course[index])) return false;
+    }
+    return true;
+  };
+
+  const mark = (start, length) => {
+    for (let i = 0; i < length; i++) {
+      const index = start + i;
+      course[index].isCobbles = true;
+      used[index] = true;
+    }
+    for (let offset = 1; offset <= buffer; offset++) {
+      if (start - offset >= 0) blocked[start - offset] = true;
+      if (start + length - 1 + offset < course.length) {
+        blocked[start + length - 1 + offset] = true;
+      }
+    }
+  };
+
+  const findCandidates = (length) => {
+    const candidates = [];
+    for (let start = 0; start <= course.length - length; start++) {
+      if (canPlace(start, length)) {
+        candidates.push(start);
+      }
+    }
+    return candidates;
+  };
+
+  for (let segmentIndex = 0; segmentIndex < targetSegments; segmentIndex++) {
+    let length = minLength + Math.floor(rng() * (maxLength - minLength + 1));
+    let candidates = findCandidates(length);
+
+    if (!candidates.length) {
+      for (let altLength = minLength; altLength <= maxLength; altLength++) {
+        candidates = findCandidates(altLength);
+        if (candidates.length) {
+          length = altLength;
+          break;
+        }
+      }
+    }
+
+    if (!candidates.length) break;
+
+    const pickIndex = Math.floor(rng() * candidates.length);
+    const start = candidates[pickIndex] ?? candidates[0];
+    mark(start, length);
+    placed += 1;
+  }
+
+  return placed;
 }
 
 /**
@@ -529,14 +618,19 @@ export function generateCourseFromPreset(preset, length = null, options = {}) {
   for (let i = 0; i < courseLength; i++) {
     const isInRefuelZone1 = i >= refuelZone1Start && i < refuelZone1Start + refuelZoneLength;
     const isInRefuelZone2 = i >= refuelZone2Start && i < refuelZone2Start + refuelZoneLength;
-    const isCobbles = presetType && PAVES_PRESETS.has(presetType) && courseStructure[i] === TerrainType.HILL;
     
     course.push({
       index: i,
       terrain: courseStructure[i],
       config: TerrainConfig[courseStructure[i]],
-      isRefuelZone: isInRefuelZone1 || isInRefuelZone2,
-      isCobbles
+      isRefuelZone: isInRefuelZone1 || isInRefuelZone2
+    });
+  }
+
+  if (presetType && PAVES_PRESETS.has(presetType)) {
+    applyCobblesOverlay(course, {
+      rng,
+      config: structure.cobbles
     });
   }
   
@@ -806,6 +900,19 @@ function extractRefuelSegments(course) {
   return segments.filter(segment => segment.isRefuel);
 }
 
+function extractCobbleSegments(course) {
+  const segments = [];
+  for (const cell of course) {
+    const isCobbles = !!cell.isCobbles;
+    if (!segments.length || segments[segments.length - 1].isCobbles !== isCobbles) {
+      segments.push({ isCobbles, length: 1 });
+    } else {
+      segments[segments.length - 1].length += 1;
+    }
+  }
+  return segments.filter(segment => segment.isCobbles);
+}
+
 export function validateCourse(course, presetType, options = {}) {
   const issues = [];
   if (!course || course.length === 0) {
@@ -865,6 +972,29 @@ export function validateCourse(course, presetType, options = {}) {
     }
     if (!hillFlatSequence.includes(TerrainType.FLAT)) {
       issues.push('paves: missing flat segments');
+    }
+
+    const cobbleSegments = extractCobbleSegments(course);
+    if (cobbleSegments.length < COBBLES_CONSTRAINTS.minSegments) {
+      issues.push('paves: missing cobble sectors');
+    }
+    if (cobbleSegments.length > COBBLES_CONSTRAINTS.maxSegments) {
+      issues.push('paves: too many cobble sectors');
+    }
+    for (const segment of cobbleSegments) {
+      if (segment.length < COBBLES_CONSTRAINTS.minLength || segment.length > COBBLES_CONSTRAINTS.maxLength) {
+        issues.push('paves: cobble sector length out of bounds');
+        break;
+      }
+    }
+    const invalidCobble = course.some(cell =>
+      cell.isCobbles &&
+      (cell.isRefuelZone ||
+        cell.terrain === TerrainType.MOUNTAIN ||
+        cell.terrain === TerrainType.SPRINT)
+    );
+    if (invalidCobble) {
+      issues.push('paves: cobbles on invalid terrain');
     }
   }
 

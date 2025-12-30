@@ -49,13 +49,25 @@ const COBBLES_PUNCTURE_MAX = 0.2;
 const COBBLES_LOW_ENERGY_BONUS = 0.03;
 const COBBLES_CRITICAL_ENERGY_BONUS = 0.06;
 const COBBLES_SHELTER_REDUCTION = 0.03;
+const COBBLES_PROFILE_MODIFIERS = {
+  rouleur: -0.03,
+  sprinter: -0.015,
+  puncher: 0,
+  climber: 0.03,
+  versatile: 0
+};
 
-export function getRaceEventChance({ terrain, weather }) {
+function getCobblesProfileModifier(riderType) {
+  return COBBLES_PROFILE_MODIFIERS[riderType] ?? 0;
+}
+
+export function getRaceEventChance({ terrain, weather, isCobbles = false }) {
   let chance = BASE_EVENT_CHANCE;
 
   if (terrain === TerrainType.HILL) chance += 0.03;
   if (terrain === TerrainType.DESCENT) chance += 0.05;
   if (terrain === TerrainType.SPRINT) chance -= 0.02;
+  if (isCobbles) chance += 0.03;
 
   if (weather === RaceWeather.RAIN) chance += 0.04;
   if (weather === RaceWeather.WIND) chance += 0.02;
@@ -63,14 +75,25 @@ export function getRaceEventChance({ terrain, weather }) {
   return Math.max(MIN_EVENT_CHANCE, Math.min(MAX_EVENT_CHANCE, chance));
 }
 
-export function pickRaceEvent({ terrain, weather, isCobbles = false, rng = Math.random }) {
+export function pickRaceEvent({
+  terrain,
+  weather,
+  isCobbles = false,
+  riderType = null,
+  rng = Math.random
+}) {
   const weights = [];
   const add = (id, weight) => {
     if (weight > 0) weights.push({ id, weight });
   };
 
-  const crashBonus = isCobbles ? COBBLES_CRASH_BONUS + getCobbleCrashWeatherBonus(weather) : 0;
-  const punctureBonus = isCobbles ? COBBLES_PUNCTURE_BONUS + getCobblePunctureWeatherBonus(weather) : 0;
+  const profileModifier = isCobbles ? getCobblesProfileModifier(riderType) : 0;
+  const crashBonus = isCobbles
+    ? Math.max(0, COBBLES_CRASH_BONUS + getCobbleCrashWeatherBonus(weather) + profileModifier)
+    : 0;
+  const punctureBonus = isCobbles
+    ? Math.max(0, COBBLES_PUNCTURE_BONUS + getCobblePunctureWeatherBonus(weather) + profileModifier)
+    : 0;
 
   if (terrain === TerrainType.DESCENT) {
     add(RaceEventId.CRASH, (weather === RaceWeather.RAIN ? 0.7 : 0.55) + crashBonus);
@@ -147,13 +170,23 @@ export function rollRaceEvent({
   }
 
   const terrain = selected.context?.terrain || (getTerrainForRider ? getTerrainForRider(selected.rider) : TerrainType.FLAT);
-  const chance = getRaceEventChance({ terrain, weather });
+  const chance = getRaceEventChance({
+    terrain,
+    weather,
+    isCobbles: selected.context?.isCobbles
+  });
 
   if (rng() > chance) {
     return { event: null, riderId: null, cooldownTurns: 0 };
   }
 
-  const event = pickRaceEvent({ terrain, weather, isCobbles: selected.context?.isCobbles, rng });
+  const event = pickRaceEvent({
+    terrain,
+    weather,
+    isCobbles: selected.context?.isCobbles,
+    riderType: selected.context?.riderType,
+    rng
+  });
   if (!event) {
     return { event: null, riderId: null, cooldownTurns: 0 };
   }
@@ -220,8 +253,12 @@ export function rollPunctureOnCobbleStep(rider, context = {}) {
   const isSheltered = context.isSheltered || false;
   const weather = context.weather || RaceWeather.CLEAR;
   const baseChance = context.baseChance ?? COBBLES_PUNCTURE_BASE;
+  const riderType = context.riderType || rider.type;
 
   let chance = baseChance + getCobblePunctureWeatherBonus(weather);
+  if (riderType) {
+    chance += getCobblesProfileModifier(riderType);
+  }
   if (energy < 25) {
     chance += COBBLES_CRITICAL_ENERGY_BONUS;
   } else if (energy < 50) {

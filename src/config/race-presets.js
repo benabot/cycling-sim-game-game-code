@@ -182,7 +182,7 @@ export const ClassicPresets = {
 
   /**
    * Nord - Style Paris-Roubaix
-   * Parcours plat avec sections difficiles (pavés simulés par côtes)
+   * Parcours plat avec secteurs pavés (overlay)
    * Avantage: Rouleurs (et sprinteurs)
    */
   [ClassicId.NORD]: {
@@ -201,7 +201,7 @@ export const ClassicPresets = {
     defaultLength: 80,
     distribution: {
       [TerrainType.FLAT]: 45,
-      [TerrainType.HILL]: 30,      // Simule les secteurs pavés (effort intense)
+      [TerrainType.HILL]: 30,
       [TerrainType.MOUNTAIN]: 0,
       [TerrainType.DESCENT]: 10,
       [TerrainType.SPRINT]: 15
@@ -209,6 +209,12 @@ export const ClassicPresets = {
     structure: {
       startFlat: 6,
       endSprint: 8,
+      cobbles: {
+        minSegments: 2,
+        maxSegments: 4,
+        minLength: 3,
+        maxLength: 6
+      },
       segmentPattern: [
         { terrain: TerrainType.HILL, min: 6, max: 10 },
         { terrain: TerrainType.FLAT, min: 4, max: 10 },
