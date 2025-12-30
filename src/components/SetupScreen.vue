@@ -1555,21 +1555,20 @@ initializePlayers();
 
   .setup-stepper {
     display: flex;
-    gap: var(--space-xs);
+    gap: 6px;
     overflow-x: auto;
-    padding-bottom: var(--space-xs);
     position: sticky;
-    top: calc(var(--space-sm) + env(safe-area-inset-top));
+    top: calc(var(--space-xs) + env(safe-area-inset-top));
     z-index: 8;
     background: var(--color-surface);
-    padding: var(--space-xs);
+    padding: 6px;
     border-radius: var(--radius-md);
     box-shadow: 0 6px 14px rgba(31, 35, 40, 0.08);
   }
 
   .stepper-item {
-    min-width: 140px;
-    padding: var(--space-xs) var(--space-sm);
+    min-width: 120px;
+    padding: 6px 10px;
   }
 
   .stepper-index {
