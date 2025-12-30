@@ -29,7 +29,7 @@
       </span>
       
       <span class="terrain-badge terrain-badge--refuel">
-        <TerrainIcon type="refuel" :size="14" />
+        <span class="terrain-swatch terrain-swatch--refuel" aria-hidden="true"></span>
         <span>Ravitaillement</span>
       </span>
     </div>
@@ -41,9 +41,7 @@
 <script setup>
 import { TerrainIcon } from './icons';
 
-defineProps({
-  course: { type: Array, default: () => [] }
-});
+defineProps({});
 </script>
 
 <style scoped>
@@ -105,7 +103,21 @@ defineProps({
 }
 
 .terrain-badge--refuel {
-  background: var(--color-paper);
+  background: #fff;
+  border: 2px dashed var(--color-warning);
+}
+
+.terrain-swatch {
+  width: 14px;
+  height: 14px;
+  border-radius: 4px;
+  display: inline-flex;
+  flex-shrink: 0;
+  box-sizing: border-box;
+}
+
+.terrain-swatch--refuel {
+  background: #fff;
   border: 2px dashed var(--color-warning);
 }
 
