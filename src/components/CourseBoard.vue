@@ -292,6 +292,12 @@ function getAspirationInfo(riderId) {
   overflow-y: hidden;
   overscroll-behavior-x: contain;
   -webkit-overflow-scrolling: touch;
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+}
+
+.track-container::-webkit-scrollbar {
+  height: 0;
 }
 
 /* Fixed height for cells: fit 2x2 tokens (22px each) */
