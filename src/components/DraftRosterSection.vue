@@ -415,6 +415,14 @@ onBeforeUnmount(() => {
   gap: var(--space-lg);
 }
 
+.draft-pool {
+  width: 100%;
+  max-width: 100%;
+  min-width: 0;
+  overflow-x: hidden;
+  box-sizing: border-box;
+}
+
 
 .draft-card {
   border: 1px solid var(--sp-border-soft, var(--color-line));
@@ -426,6 +434,8 @@ onBeforeUnmount(() => {
   gap: var(--space-sm);
   box-shadow: none;
   box-sizing: border-box;
+  width: 100%;
+  max-width: 100%;
 }
 
 .draft-card--compact {
@@ -436,6 +446,9 @@ onBeforeUnmount(() => {
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
   gap: var(--space-sm);
+  width: 100%;
+  max-width: 100%;
+  box-sizing: border-box;
 }
 
 .draft-card-main {
@@ -468,6 +481,7 @@ onBeforeUnmount(() => {
 .draft-card-actions {
   display: flex;
   justify-content: flex-end;
+  width: 100%;
 }
 
 .rider-portrait {
@@ -823,11 +837,12 @@ onBeforeUnmount(() => {
   }
 
   .draft-card-actions {
-    width: 100%;
+    justify-content: flex-end;
   }
 
   .draft-card-cta {
-    width: 100%;
+    width: auto;
+    min-width: 96px;
     justify-content: center;
   }
 
