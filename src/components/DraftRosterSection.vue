@@ -81,15 +81,6 @@
                   </div>
                 </div>
               </div>
-              <button
-                type="button"
-                class="btn btn-primary btn-sm draft-card-cta"
-                :disabled="!canRecruit(rider)"
-                :aria-label="`Ajouter ${rider.name} (${getRoleLabel(rider.role)})`"
-                @click="$emit('recruit', { teamId: activeTeamId, rider })"
-              >
-                Ajouter
-              </button>
             </div>
             <div class="draft-card-stats draft-card-stats--compact">
               <div
@@ -103,6 +94,17 @@
                 </div>
                 <span class="stat-value">{{ stat.value }}</span>
               </div>
+            </div>
+            <div class="draft-card-actions">
+              <button
+                type="button"
+                class="btn btn-primary btn-sm draft-card-cta"
+                :disabled="!canRecruit(rider)"
+                :aria-label="`Ajouter ${rider.name} (${getRoleLabel(rider.role)})`"
+                @click="$emit('recruit', { teamId: activeTeamId, rider })"
+              >
+                Ajouter
+              </button>
             </div>
           </article>
         </div>
@@ -176,14 +178,16 @@
                   </div>
                 </div>
               </div>
-              <button
-                type="button"
-                class="btn btn-secondary btn-sm roster-card-cta"
-                :aria-label="`Retirer ${rosterByRole[role].name} (${getRoleLabel(rosterByRole[role].role)})`"
-                @click="$emit('release', { teamId: activeTeamId, rider: rosterByRole[role] })"
-              >
-                Retirer
-              </button>
+              <div class="roster-card-actions">
+                <button
+                  type="button"
+                  class="btn btn-secondary btn-sm roster-card-cta"
+                  :aria-label="`Retirer ${rosterByRole[role].name} (${getRoleLabel(rosterByRole[role].role)})`"
+                  @click="$emit('release', { teamId: activeTeamId, rider: rosterByRole[role] })"
+                >
+                  Retirer
+                </button>
+              </div>
             </div>
             <div v-else class="roster-empty">
               <div class="rider-portrait rider-portrait--sm rider-portrait--empty">
@@ -435,8 +439,7 @@ onBeforeUnmount(() => {
 }
 
 .draft-card-main {
-  display: grid;
-  grid-template-columns: minmax(0, 1fr) auto;
+  display: flex;
   align-items: center;
   gap: var(--space-sm);
 }
@@ -460,6 +463,11 @@ onBeforeUnmount(() => {
   min-height: 44px;
   min-width: 88px;
   white-space: nowrap;
+}
+
+.draft-card-actions {
+  display: flex;
+  justify-content: flex-end;
 }
 
 .rider-portrait {
@@ -756,6 +764,11 @@ onBeforeUnmount(() => {
   white-space: nowrap;
 }
 
+.roster-card-actions {
+  display: flex;
+  justify-content: flex-end;
+}
+
 .draft-role-badge {
   background: var(--color-paper);
 }
@@ -806,13 +819,16 @@ onBeforeUnmount(() => {
   }
 
   .draft-card-main {
-    grid-template-columns: minmax(0, 1fr);
-    align-items: flex-start;
+    width: 100%;
+  }
+
+  .draft-card-actions {
+    width: 100%;
   }
 
   .draft-card-cta {
-    justify-self: end;
-    margin-top: var(--space-xs);
+    width: 100%;
+    justify-content: center;
   }
 
   .draft-card-identity {
@@ -820,7 +836,17 @@ onBeforeUnmount(() => {
   }
 
   .roster-card {
-    align-items: center;
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .roster-card-actions {
+    width: 100%;
+  }
+
+  .roster-card-cta {
+    width: 100%;
+    justify-content: center;
   }
 }
 </style>
