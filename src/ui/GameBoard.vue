@@ -686,6 +686,7 @@ watch(
   max-width: 1200px;
   margin: 0 auto;
   padding: var(--space-lg);
+  --status-bar-offset: 64px;
   font-family: var(--font-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif);
   display: flex;
   flex-direction: column;

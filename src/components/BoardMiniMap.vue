@@ -92,7 +92,7 @@ function getCellClass(cell) {
 <style scoped>
 .board-minimap {
   position: sticky;
-  top: var(--space-md);
+  top: calc(var(--space-md) + var(--status-bar-offset, 0px));
   z-index: var(--z-sticky);
   display: grid;
   grid-template-columns: auto 1fr auto;
