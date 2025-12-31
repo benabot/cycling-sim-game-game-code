@@ -421,6 +421,7 @@ onBeforeUnmount(() => {
   flex-direction: column;
   gap: var(--space-sm);
   box-shadow: none;
+  box-sizing: border-box;
 }
 
 .draft-card--compact {
@@ -805,7 +806,17 @@ onBeforeUnmount(() => {
   }
 
   .draft-card-main {
-    align-items: center;
+    grid-template-columns: minmax(0, 1fr);
+    align-items: flex-start;
+  }
+
+  .draft-card-cta {
+    justify-self: end;
+    margin-top: var(--space-xs);
+  }
+
+  .draft-card-identity {
+    width: 100%;
   }
 
   .roster-card {
