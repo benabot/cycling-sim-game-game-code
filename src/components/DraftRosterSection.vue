@@ -50,9 +50,11 @@
           <article v-for="rider in pagedPool" :key="rider.id" class="draft-card draft-card--compact">
             <div class="draft-card-main">
               <div class="draft-card-identity">
-                <p class="draft-card-name">{{ rider.name }}</p>
-                <div class="draft-card-tags">
-                  <span class="badge badge-pill draft-role-badge">{{ getRoleLabel(rider.role) }}</span>
+                <div class="draft-card-text">
+                  <p class="draft-card-name">{{ rider.name }}</p>
+                  <div class="draft-card-tags">
+                    <span class="badge badge-pill draft-role-badge">{{ getRoleLabel(rider.role) }}</span>
+                  </div>
                 </div>
               </div>
               <button
@@ -119,9 +121,11 @@
 
             <div v-if="rosterByRole[role]" class="roster-card">
               <div class="roster-card-main">
-                <span class="roster-card-name">{{ rosterByRole[role].name }}</span>
-                <div class="roster-card-tags">
-                  <span class="badge badge-pill">{{ getRoleLabel(rosterByRole[role].role) }}</span>
+                <div class="roster-card-text">
+                  <span class="roster-card-name">{{ rosterByRole[role].name }}</span>
+                  <div class="roster-card-tags">
+                    <span class="badge badge-pill">{{ getRoleLabel(rosterByRole[role].role) }}</span>
+                  </div>
                 </div>
               </div>
               <button
@@ -234,8 +238,6 @@ function getRoleLabel(role) {
   };
   return labels[role] || role;
 }
-
-
 
 function canRecruit(rider) {
   if (!props.activeTeamId) return false;
@@ -363,16 +365,24 @@ onBeforeUnmount(() => {
 }
 
 .draft-card-main {
-  display: flex;
-  align-items: flex-start;
-  justify-content: space-between;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  align-items: center;
   gap: var(--space-sm);
 }
 
 .draft-card-identity {
   display: flex;
+  align-items: center;
+  gap: var(--space-sm);
+  min-width: 0;
+}
+
+.draft-card-text {
+  display: flex;
   flex-direction: column;
   gap: 2px;
+  min-width: 0;
 }
 
 .draft-card-cta {
@@ -514,6 +524,9 @@ onBeforeUnmount(() => {
   font-size: 15px;
   font-weight: 600;
   color: var(--sp-text-strong, var(--color-ink));
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
 .draft-card-tags,
@@ -645,14 +658,25 @@ onBeforeUnmount(() => {
 
 .roster-card-main {
   display: flex;
+  align-items: center;
+  gap: var(--space-sm);
+  min-width: 0;
+}
+
+.roster-card-text {
+  display: flex;
   flex-direction: column;
   gap: 2px;
+  min-width: 0;
 }
 
 .roster-card-name {
   font-size: 14px;
   font-weight: 600;
   color: var(--color-ink);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
 .roster-card-cta {
