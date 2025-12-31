@@ -518,5 +518,32 @@ function onRiderClick(rider, team) {
   .rider-row-cards {
     display: none;
   }
+
+  .rider-row {
+    min-height: 44px;
+    padding: 8px var(--space-sm);
+    border-radius: var(--radius-sm);
+  }
+
+  .rider-row--selected {
+    border: 1px solid var(--race-yellow);
+    box-shadow: inset 3px 0 0 var(--race-yellow);
+  }
+
+  .rider-row-name {
+    font-size: 13px;
+  }
+
+  .rider-row-type {
+    font-size: 11px;
+  }
+
+  .rider-row-pos {
+    display: none;
+  }
+
+  .rider-row-energy {
+    width: 46px;
+  }
 }
 </style>
