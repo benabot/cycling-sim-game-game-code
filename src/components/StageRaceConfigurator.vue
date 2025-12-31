@@ -41,6 +41,11 @@
                 <h3 class="profile-card__title">{{ profile.name }}</h3>
               </div>
             </div>
+            <div class="profile-card__profile" aria-hidden="true">
+              <svg viewBox="0 0 120 36">
+                <polyline :points="getProfilePoints(profile.profile)" />
+              </svg>
+            </div>
 
             <div v-if="selectedProfile === profile.id" class="profile-card__check">
               <UIIcon type="check" size="sm" />
@@ -80,6 +85,24 @@ const currentValue = computed(() => ({
 
 const selectedNumStages = computed(() => currentValue.value.numStages);
 const selectedProfile = computed(() => currentValue.value.profile);
+
+const profileWidth = 120;
+const profileHeight = 36;
+const profilePadding = 4;
+
+function getProfilePoints(profile = []) {
+  const values = Array.isArray(profile) && profile.length ? profile : [0, 0, 0, 0, 0];
+  const max = Math.max(...values);
+  const min = Math.min(...values);
+  const range = max - min || 1;
+  return values
+    .map((value, index) => {
+      const x = profilePadding + (index / (values.length - 1 || 1)) * (profileWidth - profilePadding * 2);
+      const y = profilePadding + (1 - (value - min) / range) * (profileHeight - profilePadding * 2);
+      return `${x},${y}`;
+    })
+    .join(' ');
+}
 function updateNumStages(value) {
   emit('update:modelValue', {
     ...currentValue.value,
@@ -147,6 +170,25 @@ function updateProfile(value) {
   font-size: 15px;
   font-weight: 600;
   color: var(--sp-text-strong, var(--color-ink));
+}
+
+.profile-card__profile {
+  width: 100%;
+  max-width: 160px;
+}
+
+.profile-card__profile svg {
+  width: 100%;
+  height: 40px;
+}
+
+.profile-card__profile polyline {
+  fill: none;
+  stroke: var(--color-ink-muted);
+  stroke-width: 2;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  opacity: 0.7;
 }
 
 .profile-card__check {
