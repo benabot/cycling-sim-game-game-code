@@ -1366,6 +1366,11 @@ initializePlayers();
   box-shadow: 0 0 0 2px var(--color-accent-light);
 }
 
+.setup-step--active .setup-step-header {
+  background: color-mix(in srgb, var(--color-accent) 12%, white);
+  border-bottom-color: color-mix(in srgb, var(--color-accent) 35%, var(--sp-border));
+}
+
 .setup-step-header {
   display: flex;
   align-items: center;
