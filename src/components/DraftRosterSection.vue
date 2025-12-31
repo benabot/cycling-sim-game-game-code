@@ -323,7 +323,7 @@ function canRecruit(rider) {
 
 function getStatRows(rider) {
   const stats = rider.stats || {};
-  const keys = isMobile.value ? statDisplayOrder.slice(0, 2) : statDisplayOrder;
+  const keys = statDisplayOrder;
   return keys.map(key => ({
     key,
     label: props.statLabels[key] || key,
