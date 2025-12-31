@@ -69,54 +69,129 @@
     />
 
     <!-- Selected Rider Panel -->
-    <template v-if="currentRider && phase !== 'finished' && !showEffectsOverlay">
-      <RiderPanel
-        :rider="currentRider"
-        :terrain="currentRider.terrain"
-        :terrainBonus="currentRider.terrainBonus"
-        :canUseSpecialty="currentRider.availableCards?.canUseSpecialty"
-        :turnPhase="turnPhase"
-        :selectedCardId="selectedCardId"
-        :viewOnly="isViewOnlySelection"
-        :hasPlayedThisTurn="hasPlayedThisTurn"
-        :decisionAid="decisionAid"
-        :turnSummary="turnSummary"
-        @cancel="cancelRiderSelection"
-        @selectCard="selectCard"
+    <template v-if="phase !== 'finished' && !showEffectsOverlay">
+      <div
+        v-if="isMobile"
+        class="rider-action-sheet"
+        :class="`rider-action-sheet--${actionSheetState}`"
       >
-        <template #actions>
-          <!-- View-only mode: show info banner instead of actions -->
-          <div v-if="isViewOnlySelection" class="view-only-banner">
-            <UIIcon type="eye" size="sm" />
-            <span>Lecture seule</span>
-          </div>
-          <!-- Normal mode: show action zone -->
-          <ActionZone 
-            v-else
-            :turnPhase="turnPhase"
-            :cardValue="getSelectedCardValue()"
-            :isAttackCard="isSelectedCardAttack()"
-            :diceResult="lastDiceRoll?.result || 0"
+        <button type="button" class="rider-action-sheet__handle" @click="toggleActionSheet">
+          <span class="rider-action-sheet__grab"></span>
+        </button>
+        <div class="rider-action-sheet__summary" @click="toggleActionSheet">
+          <template v-if="currentRider">
+            <div class="rider-action-sheet__identity">
+              <RiderToken :rider="currentRider" :mini="true" :static="true" />
+              <div class="rider-action-sheet__identity-text">
+                <span class="rider-action-sheet__name">{{ currentRider.name }}</span>
+                <span class="rider-action-sheet__type">{{ riderTypeLabel }}</span>
+              </div>
+            </div>
+            <div class="rider-action-sheet__meta">
+              <span class="rider-action-sheet__energy">{{ currentRider.energy ?? 100 }}%</span>
+              <span class="rider-action-sheet__terrain">
+                <TerrainIcon :type="currentRider.terrain" :size="14" />
+                {{ riderTerrainLabel }}
+              </span>
+            </div>
+          </template>
+          <template v-else>
+            <span class="rider-action-sheet__empty">Sélectionnez un coureur</span>
+          </template>
+        </div>
+        <div v-if="currentRider" class="rider-action-sheet__body">
+          <RiderPanel
+            :rider="currentRider"
+            :terrain="currentRider.terrain"
             :terrainBonus="currentRider.terrainBonus"
-            :hasSpecialtyCards="currentRider.specialtyCards?.length > 0"
-            :useSpecialty="!!selectedSpecialtyId"
-            :totalMovement="calculatedMovement"
-            :currentPosition="currentRider.position"
-            @rollDice="rollDice"
-            @cancelCard="cancelCardSelection"
-            @useSpecialty="useSpecialty"
-            @skipSpecialty="skipSpecialty"
-            @resolve="resolve"
-          />
-        </template>
-      </RiderPanel>
-    </template>
+            :canUseSpecialty="currentRider.availableCards?.canUseSpecialty"
+            :turnPhase="turnPhase"
+            :selectedCardId="selectedCardId"
+            :viewOnly="isViewOnlySelection"
+            :hasPlayedThisTurn="hasPlayedThisTurn"
+            :decisionAid="decisionAid"
+            :turnSummary="turnSummary"
+            @cancel="cancelRiderSelection"
+            @selectCard="selectCard"
+          >
+            <template #actions>
+              <!-- View-only mode: show info banner instead of actions -->
+              <div v-if="isViewOnlySelection" class="view-only-banner">
+                <UIIcon type="eye" size="sm" />
+                <span>Lecture seule</span>
+              </div>
+              <!-- Normal mode: show action zone -->
+              <ActionZone 
+                v-else
+                :turnPhase="turnPhase"
+                :cardValue="getSelectedCardValue()"
+                :isAttackCard="isSelectedCardAttack()"
+                :diceResult="lastDiceRoll?.result || 0"
+                :terrainBonus="currentRider.terrainBonus"
+                :hasSpecialtyCards="currentRider.specialtyCards?.length > 0"
+                :useSpecialty="!!selectedSpecialtyId"
+                :totalMovement="calculatedMovement"
+                :currentPosition="currentRider.position"
+                @rollDice="rollDice"
+                @cancelCard="cancelCardSelection"
+                @useSpecialty="useSpecialty"
+                @skipSpecialty="skipSpecialty"
+                @resolve="resolve"
+              />
+            </template>
+          </RiderPanel>
+        </div>
+      </div>
+      <template v-else>
+        <RiderPanel
+          v-if="currentRider"
+          :rider="currentRider"
+          :terrain="currentRider.terrain"
+          :terrainBonus="currentRider.terrainBonus"
+          :canUseSpecialty="currentRider.availableCards?.canUseSpecialty"
+          :turnPhase="turnPhase"
+          :selectedCardId="selectedCardId"
+          :viewOnly="isViewOnlySelection"
+          :hasPlayedThisTurn="hasPlayedThisTurn"
+          :decisionAid="decisionAid"
+          :turnSummary="turnSummary"
+          @cancel="cancelRiderSelection"
+          @selectCard="selectCard"
+        >
+          <template #actions>
+            <!-- View-only mode: show info banner instead of actions -->
+            <div v-if="isViewOnlySelection" class="view-only-banner">
+              <UIIcon type="eye" size="sm" />
+              <span>Lecture seule</span>
+            </div>
+            <!-- Normal mode: show action zone -->
+            <ActionZone 
+              v-else
+              :turnPhase="turnPhase"
+              :cardValue="getSelectedCardValue()"
+              :isAttackCard="isSelectedCardAttack()"
+              :diceResult="lastDiceRoll?.result || 0"
+              :terrainBonus="currentRider.terrainBonus"
+              :hasSpecialtyCards="currentRider.specialtyCards?.length > 0"
+              :useSpecialty="!!selectedSpecialtyId"
+              :totalMovement="calculatedMovement"
+              :currentPosition="currentRider.position"
+              @rollDice="rollDice"
+              @cancelCard="cancelCardSelection"
+              @useSpecialty="useSpecialty"
+              @skipSpecialty="skipSpecialty"
+              @resolve="resolve"
+            />
+          </template>
+        </RiderPanel>
 
-    <!-- No Selection Prompt -->
-    <div v-else-if="phase !== 'finished' && !showEffectsOverlay" class="no-selection-prompt">
-      <UIIcon type="target" size="lg" class="prompt-icon" />
-      <span>Sélectionnez un coureur ({{ currentTeamConfig?.name }})</span>
-    </div>
+        <!-- No Selection Prompt -->
+        <div v-else class="no-selection-prompt">
+          <UIIcon type="target" size="lg" class="prompt-icon" />
+          <span>Sélectionnez un coureur ({{ currentTeamConfig?.name }})</span>
+        </div>
+      </template>
+    </template>
 
     <!-- Team Legend (dynamique) -->
     <div class="team-legend" v-if="!showEffectsOverlay">
@@ -176,6 +251,7 @@ import { ref, onMounted, onBeforeUnmount, watch, nextTick, computed } from 'vue'
 import { useGameEngine } from '../composables/useGameEngine.js';
 import { TeamConfigs, PlayerType } from '../core/teams.js';
 import { getClassicPreset } from '../config/race-presets.js';
+import { RiderConfig, TerrainConfig } from '../config/game.config.js';
 import { calculateMovementConsumption, calculateRecovery } from '../core/energy.js';
 import { isRefuelZone } from '../core/terrain.js';
 import {
@@ -189,9 +265,13 @@ import {
   TeamsOverview,
   GameOverPanel,
   GameLog,
+  CourseModal,
+  HistoryModal,
   RulesModal,
   UIIcon,
-  RiderIcon
+  RiderIcon,
+  RiderToken,
+  TerrainIcon
 } from '../components';
 
 // Props and emits
@@ -267,6 +347,11 @@ const courseBoardRef = ref(null);
 const courseBoardShellRef = ref(null);
 const isCourseFocusActive = ref(false);
 const isRulesOpen = ref(false);
+const isCourseModalOpen = ref(false);
+const isHistoryOpen = ref(false);
+const isMobile = ref(false);
+const actionSheetState = ref('collapsed');
+const lastActionSheetRiderId = ref(null);
 let courseFocusTimeout = null;
 const headerTitle = computed(() => {
   if (stageRace.value) {
@@ -314,6 +399,23 @@ const activePosition = computed(() => {
   return currentRider.value.position ?? leaderPosition.value;
 });
 
+const riderTypeLabel = computed(() => {
+  if (!currentRider.value) return '';
+  return RiderConfig[currentRider.value.type]?.name || currentRider.value.type;
+});
+
+const riderTerrainLabel = computed(() => {
+  if (!currentRider.value) return '';
+  return TerrainConfig[currentRider.value.terrain]?.name || currentRider.value.terrain;
+});
+
+const mobileLogPreview = computed(() => {
+  if (!gameLog.value?.length) return 'Aucun événement';
+  const lastEntry = gameLog.value[gameLog.value.length - 1];
+  const cleaned = normalizeLogText(getEntryText(lastEntry));
+  return truncateText(cleaned || 'Événement', 72);
+});
+
 // Scroll to rider position on the course
 function scrollToRider(riderId) {
   const rider = allRiders.value.find(r => r.id === riderId);
@@ -355,6 +457,14 @@ function focusCourseBoard() {
   }, 1500);
 }
 
+function handleCourseAction() {
+  if (isMobile.value) {
+    isCourseModalOpen.value = true;
+    return;
+  }
+  focusCourseBoard();
+}
+
 // Quick rider selection from TeamsOverview
 // Allows viewing any rider's info (scroll + panel), but only playable riders can be played
 function quickSelectRider({ rider, viewOnly = false }) {
@@ -377,6 +487,44 @@ function quickSelectRider({ rider, viewOnly = false }) {
   // Select rider for viewing (even if from another team or already played)
   // The game engine and UI will handle whether actions are available
   selectRider(rider.id, { viewOnly });
+}
+
+function updateViewport() {
+  if (typeof window === 'undefined') return;
+  isMobile.value = window.matchMedia('(max-width: 900px)').matches;
+}
+
+function toggleActionSheet() {
+  if (!isMobile.value || !currentRider.value) return;
+  if (actionSheetState.value === 'collapsed') {
+    actionSheetState.value = 'peek';
+    return;
+  }
+  actionSheetState.value = actionSheetState.value === 'expanded' ? 'peek' : 'expanded';
+}
+
+function getEntryText(entry) {
+  if (typeof entry === 'string') return entry;
+  return entry?.message || entry?.text || '';
+}
+
+function normalizeLogText(text) {
+  if (!text) return '';
+  let cleaned = text
+    .replace(/🏁|🏆|💨|🛡️|🌀|⚔️|🍌|🤕|⚠️|🎲|▶️|➡️/g, '')
+    .replace(/\[FINISH\]|\[WINNER\]|\[WIND\]|\[SHELTER\]|\[ASPIRATION\]|\[ATTACK\]|\[REFUEL\]|\[CRASH\]|\[EVENT\]/g, '')
+    .replace(/[=═-]{3,}/g, '')
+    .replace(/!+/g, '')
+    .trim();
+
+  cleaned = cleaned.replace(/\s+/g, ' ').trim();
+  cleaned = cleaned.replace(/Tour\s+\d+/i, '').trim();
+  return cleaned;
+}
+
+function truncateText(text, maxLength) {
+  if (!text || text.length <= maxLength) return text;
+  return `${text.slice(0, maxLength - 1).trim()}…`;
 }
 
 // Card helpers
@@ -449,12 +597,39 @@ function buildCoachNote({ rider, energyEstimate, windRisk }) {
 
 // Initialize on mount with game config
 onMounted(() => {
+  updateViewport();
+  window.addEventListener('resize', updateViewport);
   initialize(props.gameConfig);
 });
 
 onBeforeUnmount(() => {
+  window.removeEventListener('resize', updateViewport);
   if (courseFocusTimeout) {
     clearTimeout(courseFocusTimeout);
+  }
+});
+
+watch(
+  () => currentRider.value?.id,
+  (riderId) => {
+    if (!isMobile.value) return;
+    if (riderId && riderId !== lastActionSheetRiderId.value) {
+      actionSheetState.value = 'peek';
+    }
+    if (!riderId) {
+      actionSheetState.value = 'collapsed';
+    }
+    lastActionSheetRiderId.value = riderId || null;
+  }
+);
+
+watch(isMobile, (mobile) => {
+  if (!mobile) {
+    actionSheetState.value = 'collapsed';
+    return;
+  }
+  if (currentRider.value?.id) {
+    actionSheetState.value = 'peek';
   }
 });
 
@@ -493,11 +668,7 @@ watch(
   display: flex;
   flex-direction: column;
   gap: var(--space-lg);
-}
-
-.rules-trigger-wrapper {
-  display: flex;
-  justify-content: flex-end;
+  overflow-x: hidden;
 }
 
 .rules-trigger {
@@ -523,16 +694,35 @@ watch(
 }
 
 h1 {
-  text-align: center;
   margin: 0;
   color: var(--color-ink, #1e293b);
 }
 
 .header-row {
   display: flex;
-  justify-content: center;
+  justify-content: space-between;
   align-items: center;
   gap: var(--space-md);
+}
+
+.header-main {
+  display: flex;
+  align-items: center;
+  gap: var(--space-sm);
+  min-width: 0;
+}
+
+.header-main h1 {
+  text-align: left;
+  font-size: 22px;
+  font-weight: 600;
+}
+
+.header-actions {
+  display: flex;
+  align-items: center;
+  gap: var(--space-sm);
+  flex-wrap: wrap;
 }
 
 .header-icon {
@@ -630,5 +820,166 @@ h1 {
   color: var(--color-muted, #64748b);
   font-size: 0.9em;
   font-style: italic;
+}
+
+.mobile-log-line {
+  display: none;
+}
+
+@media (max-width: 900px) {
+  .game-container {
+    padding-bottom: calc(240px + env(safe-area-inset-bottom));
+  }
+
+  .header-row {
+    flex-wrap: wrap;
+  }
+
+  .header-main h1 {
+    font-size: 20px;
+  }
+
+  .rider-action-sheet {
+    position: fixed;
+    left: 50%;
+    bottom: 0;
+    transform: translateX(-50%);
+    width: min(100%, 1200px);
+    background: var(--color-surface);
+    border-radius: 18px 18px 0 0;
+    border: 1px solid var(--color-line);
+    box-shadow: 0 -8px 24px rgba(31, 35, 40, 0.18);
+    display: flex;
+    flex-direction: column;
+    z-index: var(--z-sticky);
+    overflow: hidden;
+  }
+
+  .rider-action-sheet__handle {
+    background: transparent;
+    border: none;
+    padding: 10px 0 4px;
+    cursor: pointer;
+  }
+
+  .rider-action-sheet__grab {
+    display: block;
+    width: 48px;
+    height: 4px;
+    border-radius: 999px;
+    background: rgba(31, 35, 40, 0.2);
+    margin: 0 auto;
+  }
+
+  .rider-action-sheet__summary {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: var(--space-sm);
+    padding: 8px var(--space-md) var(--space-sm);
+    border-bottom: 1px solid var(--color-line-subtle);
+    cursor: pointer;
+  }
+
+  .rider-action-sheet__identity {
+    display: flex;
+    align-items: center;
+    gap: var(--space-sm);
+    min-width: 0;
+  }
+
+  .rider-action-sheet__identity-text {
+    display: flex;
+    flex-direction: column;
+    min-width: 0;
+  }
+
+  .rider-action-sheet__name {
+    font-weight: 600;
+    color: var(--color-ink);
+  }
+
+  .rider-action-sheet__type {
+    font-size: 12px;
+    color: var(--color-ink-muted);
+  }
+
+  .rider-action-sheet__meta {
+    display: flex;
+    align-items: center;
+    gap: var(--space-sm);
+    font-size: 12px;
+    color: var(--color-ink-muted);
+    flex-shrink: 0;
+  }
+
+  .rider-action-sheet__terrain {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+  }
+
+  .rider-action-sheet__body {
+    padding: var(--space-sm) var(--space-md) var(--space-lg);
+    overflow: auto;
+    min-height: 0;
+  }
+
+  .rider-action-sheet__body .btn-close {
+    display: none;
+  }
+
+  .rider-action-sheet__empty {
+    color: var(--color-ink-muted);
+    font-size: 14px;
+  }
+
+  .rider-action-sheet--collapsed {
+    height: 96px;
+  }
+
+  .rider-action-sheet--collapsed .rider-action-sheet__body {
+    display: none;
+  }
+
+  .rider-action-sheet--peek {
+    height: min(45vh, 360px);
+  }
+
+  .rider-action-sheet--expanded {
+    height: min(85vh, 720px);
+  }
+
+  .mobile-log-line {
+    display: flex;
+    align-items: center;
+    gap: var(--space-sm);
+    padding: 8px var(--space-md);
+    border: 1px solid var(--color-line);
+    border-radius: var(--radius-md);
+    background: var(--color-paper);
+  }
+
+  .mobile-log-label {
+    font-size: 11px;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    color: var(--color-ink-muted);
+    font-weight: 600;
+  }
+
+  .mobile-log-text {
+    flex: 1;
+    font-size: 13px;
+    color: var(--color-ink);
+    min-width: 0;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+  .mobile-log-action {
+    flex-shrink: 0;
+  }
 }
 </style>
