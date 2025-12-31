@@ -27,7 +27,12 @@
       </div>
     </div>
 
-    <button type="button" class="board-minimap__action" @click="$emit('focusCourse')">
+    <button
+      v-if="showAction"
+      type="button"
+      class="board-minimap__action"
+      @click="$emit('focusCourse')"
+    >
       Voir le parcours
     </button>
   </section>
@@ -39,7 +44,8 @@ import { computed } from 'vue';
 const props = defineProps({
   course: { type: Array, default: () => [] },
   leaderPosition: { type: Number, default: null },
-  activePosition: { type: Number, default: null }
+  activePosition: { type: Number, default: null },
+  showAction: { type: Boolean, default: true }
 });
 
 defineEmits(['focusCourse']);

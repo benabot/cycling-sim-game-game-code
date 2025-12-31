@@ -1,12 +1,25 @@
 <template>
   <div class="game-container">
     <div class="header-row">
-      <RiderIcon type="rouleur" :size="32" class="header-icon" />
-      <h1>{{ headerTitle }}</h1>
-      <button v-if="phase === 'finished'" class="btn-back" @click="$emit('backToSetup')">
-        <UIIcon type="chevron-up" size="sm" style="transform: rotate(-90deg)" />
-        Retour
-      </button>
+      <div class="header-main">
+        <RiderIcon type="rouleur" :size="32" class="header-icon" />
+        <h1>{{ headerTitle }}</h1>
+      </div>
+      <div class="header-actions">
+        <button
+          type="button"
+          class="btn btn-ghost btn-sm rules-trigger"
+          aria-label="Ouvrir les règles"
+          @click="isRulesOpen = true"
+        >
+          <UIIcon type="book" size="sm" />
+          Règles
+        </button>
+        <button v-if="phase === 'finished'" class="btn-back" @click="$emit('backToSetup')">
+          <UIIcon type="chevron-up" size="sm" style="transform: rotate(-90deg)" />
+          Retour
+        </button>
+      </div>
     </div>
     
     <!-- AI Thinking Indicator -->
@@ -36,7 +49,7 @@
       :course="course"
       :leaderPosition="leaderPosition"
       :activePosition="activePosition"
-      @focusCourse="focusCourseBoard"
+      @focusCourse="handleCourseAction"
     />
 
     <!-- Course Board -->
@@ -219,6 +232,19 @@
       @selectRider="quickSelectRider"
     />
 
+    <div v-if="isMobile" class="mobile-log-line">
+      <span class="mobile-log-label">Dernier événement</span>
+      <span class="mobile-log-text">{{ mobileLogPreview }}</span>
+      <button
+        type="button"
+        class="btn btn-ghost btn-sm mobile-log-action"
+        @click="isHistoryOpen = true"
+      >
+        <UIIcon type="history" size="sm" />
+        Historique
+      </button>
+    </div>
+
     <!-- Game Over -->
     <GameOverPanel 
       v-if="phase === 'finished'"
@@ -229,20 +255,16 @@
     />
 
     <!-- Game Log -->
-    <GameLog :log="gameLog" />
+    <GameLog v-if="!isMobile" :log="gameLog" />
 
-    <div class="rules-trigger-wrapper">
-      <button
-        type="button"
-        class="btn btn-ghost btn-sm rules-trigger"
-        aria-label="Ouvrir les règles"
-        @click="isRulesOpen = true"
-      >
-        <UIIcon type="book" size="sm" />
-        Règles
-      </button>
-    </div>
     <RulesModal v-model="isRulesOpen" />
+    <CourseModal
+      v-model="isCourseModalOpen"
+      :course="course"
+      :leaderPosition="leaderPosition"
+      :activePosition="activePosition"
+    />
+    <HistoryModal v-model="isHistoryOpen" :log="gameLog" />
   </div>
 </template>
 
