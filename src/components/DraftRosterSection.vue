@@ -50,6 +50,30 @@
           <article v-for="rider in pagedPool" :key="rider.id" class="draft-card draft-card--compact">
             <div class="draft-card-main">
               <div class="draft-card-identity">
+                <div
+                  class="rider-portrait"
+                  :class="getPortraitClass(rider.role)"
+                  :style="getPortraitStyle()"
+                >
+                  <img
+                    v-if="getPortraitUrl(rider)"
+                    :src="getPortraitUrl(rider)"
+                    :alt="`Portrait de ${rider.name}`"
+                    class="rider-portrait__image"
+                    loading="lazy"
+                    @error="markPortraitError(rider.id)"
+                  />
+                  <img
+                    v-else
+                    :src="PORTRAIT_FALLBACK_URL"
+                    alt=""
+                    class="rider-portrait__fallback"
+                    loading="lazy"
+                  />
+                  <span class="rider-portrait__badge rider-portrait__badge--role">
+                    <RiderIcon :type="rider.role" :size="10" />
+                  </span>
+                </div>
                 <div class="draft-card-text">
                   <p class="draft-card-name">{{ rider.name }}</p>
                   <div class="draft-card-tags">
@@ -121,6 +145,30 @@
 
             <div v-if="rosterByRole[role]" class="roster-card">
               <div class="roster-card-main">
+                <div
+                  class="rider-portrait rider-portrait--sm"
+                  :class="getPortraitClass(rosterByRole[role].role)"
+                  :style="getPortraitStyle()"
+                >
+                  <img
+                    v-if="getPortraitUrl(rosterByRole[role])"
+                    :src="getPortraitUrl(rosterByRole[role])"
+                    :alt="`Portrait de ${rosterByRole[role].name}`"
+                    class="rider-portrait__image"
+                    loading="lazy"
+                    @error="markPortraitError(rosterByRole[role].id)"
+                  />
+                  <img
+                    v-else
+                    :src="PORTRAIT_FALLBACK_URL"
+                    alt=""
+                    class="rider-portrait__fallback"
+                    loading="lazy"
+                  />
+                  <span class="rider-portrait__badge rider-portrait__badge--role">
+                    <RiderIcon :type="rosterByRole[role].role" :size="10" />
+                  </span>
+                </div>
                 <div class="roster-card-text">
                   <span class="roster-card-name">{{ rosterByRole[role].name }}</span>
                   <div class="roster-card-tags">
@@ -157,7 +205,7 @@
 <script setup>
 import { computed, ref, watch, onMounted, onBeforeUnmount } from 'vue';
 import { TeamConfigs } from '../core/teams.js';
-import { PORTRAIT_FALLBACK_URL } from '../utils/portraits.js';
+import { PORTRAIT_FALLBACK_URL, getRiderPortraitUrl } from '../utils/portraits.js';
 import RiderIcon from './icons/RiderIcon.vue';
 
 const props = defineProps({
@@ -196,6 +244,7 @@ const pageSize = 8;
 const isMobile = ref(false);
 const activeMobileTab = ref('market');
 const statDisplayOrder = ['endurance', 'sprint', 'climb', 'punch'];
+const portraitErrors = ref({});
 
 const roleFilters = computed(() => ['all', ...(props.roles || [])]);
 
@@ -237,6 +286,26 @@ function getRoleLabel(role) {
     versatile: 'Polyvalent'
   };
   return labels[role] || role;
+}
+
+function getPortraitClass(role) {
+  if (!role) return 'rider-portrait--neutral';
+  return `rider-portrait--${role}`;
+}
+
+function getPortraitStyle() {
+  const teamColor = TeamConfigs[props.activeTeamId]?.color || '#1f2937';
+  return { '--portrait-badge-bg': teamColor };
+}
+
+function getPortraitUrl(rider) {
+  if (!rider?.portraitKey || portraitErrors.value[rider.id]) return null;
+  return getRiderPortraitUrl(rider.portraitKey);
+}
+
+function markPortraitError(riderId) {
+  if (!riderId) return;
+  portraitErrors.value = { ...portraitErrors.value, [riderId]: true };
 }
 
 function canRecruit(rider) {
