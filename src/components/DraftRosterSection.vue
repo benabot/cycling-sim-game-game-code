@@ -49,14 +49,21 @@
         <div v-if="pagedPool.length" class="draft-pool-grid">
           <article v-for="rider in pagedPool" :key="rider.id" class="draft-card draft-card--compact">
             <div class="draft-card-main">
-              <div class="draft-card-meta">
-                <div class="draft-card-identity">
-                  <p class="draft-card-name">{{ rider.name }}</p>
-                  <div class="draft-card-tags">
-                    <span class="badge badge-pill draft-role-badge">{{ getRoleLabel(rider.role) }}</span>
-                  </div>
+              <div class="draft-card-identity">
+                <p class="draft-card-name">{{ rider.name }}</p>
+                <div class="draft-card-tags">
+                  <span class="badge badge-pill draft-role-badge">{{ getRoleLabel(rider.role) }}</span>
                 </div>
               </div>
+              <button
+                type="button"
+                class="btn btn-primary btn-sm draft-card-cta"
+                :disabled="!canRecruit(rider)"
+                :aria-label="`Ajouter ${rider.name} (${getRoleLabel(rider.role)})`"
+                @click="$emit('recruit', { teamId: activeTeamId, rider })"
+              >
+                Ajouter
+              </button>
             </div>
             <div class="draft-card-stats draft-card-stats--compact">
               <div
@@ -71,36 +78,6 @@
                 <span class="stat-value">{{ stat.value }}</span>
               </div>
             </div>
-            <div class="draft-card-action">
-              <button
-                type="button"
-                class="btn btn-primary btn-sm"
-                :disabled="!canRecruit(rider)"
-                :aria-label="`Ajouter ${rider.name} (${getRoleLabel(rider.role)})`"
-                @click="$emit('recruit', { teamId: activeTeamId, rider })"
-              >
-                Ajouter
-              </button>
-            </div>
-            <details
-              v-if="isMobile && getExtraStatRows(rider).length"
-              class="draft-card-details"
-            >
-              <summary>Détails</summary>
-              <div class="draft-card-stats draft-card-stats--detail">
-                <div
-                  v-for="stat in getExtraStatRows(rider)"
-                  :key="stat.key"
-                  class="stat-row stat-row--compact"
-                >
-                  <span class="stat-label">{{ stat.label }}</span>
-                  <div class="stat-bar">
-                    <div class="stat-bar__fill" :style="{ width: stat.value + '%' }"></div>
-                  </div>
-                  <span class="stat-value">{{ stat.value }}</span>
-                </div>
-              </div>
-            </details>
           </article>
         </div>
         <div v-else class="draft-empty">
@@ -149,7 +126,7 @@
               </div>
               <button
                 type="button"
-                class="btn btn-secondary btn-sm"
+                class="btn btn-secondary btn-sm roster-card-cta"
                 :aria-label="`Retirer ${rosterByRole[role].name} (${getRoleLabel(rosterByRole[role].role)})`"
                 @click="$emit('release', { teamId: activeTeamId, rider: rosterByRole[role] })"
               >
@@ -277,16 +254,6 @@ function getStatRows(rider) {
   }));
 }
 
-function getExtraStatRows(rider) {
-  if (!isMobile.value) return [];
-  const stats = rider.stats || {};
-  return statDisplayOrder.slice(2).map(key => ({
-    key,
-    label: props.statLabels[key] || key,
-    value: stats[key] ?? 0
-  }));
-}
-
 function updateViewport() {
   if (typeof window === 'undefined') return;
   isMobile.value = window.matchMedia('(max-width: 720px)').matches;
@@ -366,25 +333,6 @@ onBeforeUnmount(() => {
 }
 
 
-.draft-card-details {
-  margin-top: var(--space-xs);
-  border-top: 1px solid var(--color-line);
-  padding-top: var(--space-xs);
-}
-
-.draft-card-details summary {
-  cursor: pointer;
-  font-size: 12px;
-  color: var(--sp-text-secondary, var(--color-ink-muted));
-  list-style: none;
-  display: inline-flex;
-  align-items: center;
-  gap: 6px;
-}
-
-.draft-card-details summary::-webkit-details-marker {
-  display: none;
-}
 
 .draft-grid {
   display: grid;
@@ -421,16 +369,17 @@ onBeforeUnmount(() => {
   gap: var(--space-sm);
 }
 
-.draft-card-meta {
-  display: flex;
-  gap: var(--space-sm);
-  align-items: flex-start;
-}
-
 .draft-card-identity {
   display: flex;
   flex-direction: column;
   gap: 2px;
+}
+
+.draft-card-cta {
+  flex-shrink: 0;
+  min-height: 44px;
+  min-width: 88px;
+  white-space: nowrap;
 }
 
 .rider-portrait {
@@ -582,14 +531,6 @@ onBeforeUnmount(() => {
   gap: 6px var(--space-sm);
 }
 
-.draft-card-action {
-  display: flex;
-  justify-content: flex-end;
-}
-
-.draft-card-action .btn {
-  min-width: 120px;
-}
 
 .stat-row--compact {
   display: grid;
@@ -714,6 +655,13 @@ onBeforeUnmount(() => {
   color: var(--color-ink);
 }
 
+.roster-card-cta {
+  flex-shrink: 0;
+  min-height: 44px;
+  min-width: 88px;
+  white-space: nowrap;
+}
+
 .draft-role-badge {
   background: var(--color-paper);
 }
@@ -755,32 +703,20 @@ onBeforeUnmount(() => {
     padding-bottom: calc(var(--space-2xl) + 96px + env(safe-area-inset-bottom));
   }
 
-  .draft-card-action .btn,
-  .roster-card .btn {
-    width: 100%;
-    min-height: 44px;
-  }
-
-  .draft-card-main {
-    flex-direction: column;
-    align-items: flex-start;
-  }
-
-  .draft-card-action {
-    justify-content: stretch;
-  }
-
-  .roster-card {
-    flex-direction: column;
-    align-items: stretch;
-  }
-
   .draft-card .btn {
     min-height: 44px;
   }
 
-  .draft-card-details summary {
-    font-size: 11px;
+  .draft-card {
+    padding: var(--space-sm);
+  }
+
+  .draft-card-main {
+    align-items: center;
+  }
+
+  .roster-card {
+    align-items: center;
   }
 }
 </style>
