@@ -16,78 +16,7 @@
         </template>
       </RaceHeader>
 
-      <div class="setup-mode-switch">
-        <div class="segmented setup-mode-tabs">
-          <button
-            type="button"
-            class="segmented-item"
-            :class="{ 'segmented-item-active': setupMode === 'overview' }"
-            @click="setSetupMode('overview')"
-          >
-            Aperçu
-          </button>
-          <button
-            type="button"
-            class="segmented-item"
-            :class="{ 'segmented-item-active': setupMode === 'configure' }"
-            @click="setSetupMode('configure')"
-          >
-            Configurer
-          </button>
-          <button
-            type="button"
-            class="segmented-item"
-            :class="{ 'segmented-item-active': setupMode === 'play' }"
-            @click="setSetupMode('play')"
-          >
-            Jouer
-          </button>
-        </div>
-      </div>
-
-      <div v-if="setupMode === 'overview'" class="setup-overview">
-        <p class="setup-summary-line">Résumé — {{ overviewSummary }}</p>
-        <button type="button" class="btn btn-primary btn-sm" @click="setSetupMode('configure')">
-          Configurer
-        </button>
-      </div>
-
-      <div v-else-if="setupMode === 'play'" class="setup-play">
-        <div class="setup-play-card">
-          <p class="setup-summary-line">Résumé — {{ briefSummary }}</p>
-          <ul class="start-panel__checklist">
-            <li
-              v-for="item in startChecklist"
-              :key="item.label"
-              class="start-panel__checklist-item"
-              :class="{ 'start-panel__checklist-item--ok': item.ok }"
-            >
-              <span class="start-panel__checklist-label">
-                <UIIcon :type="item.ok ? 'check' : 'warning'" size="sm" />
-                {{ item.label }}
-              </span>
-              <span
-                class="start-panel__checklist-status"
-                :class="{ 'start-panel__checklist-status--ok': item.ok }"
-              >
-                {{ item.ok ? 'Validé' : 'À caler' }}
-              </span>
-            </li>
-          </ul>
-          <div class="setup-play-cta">
-            <button
-              class="btn btn-primary btn-lg"
-              @click="startGame"
-              :disabled="!canStart"
-            >
-              <UIIcon type="finish" size="sm" />
-              Lancer la course
-            </button>
-          </div>
-        </div>
-      </div>
-
-      <div v-else>
+      <div>
         <div class="setup-stepper">
           <button
             v-for="step in stepItems"
@@ -431,7 +360,6 @@
             <span class="setup-step-index">3</span>
             <div class="setup-step-heading-text">
               <h2 class="setup-step-title setup-stepTitle">Coureurs</h2>
-              <p class="setup-step-subtitle setup-helperText">Recrutement de l'équipe.</p>
               <p class="setup-summary-line">Résumé — {{ draftSummary }}</p>
             </div>
           </div>
@@ -451,79 +379,33 @@
           </div>
         </header>
         <div v-show="activeStep === 3" class="setup-step-body">
-          <div class="sp-accordions">
-            <div class="sp-accordion" :class="{ 'sp-accordion--open': accordionState[3].essential }">
-              <button
-                type="button"
-                class="sp-accordion-trigger"
-                :aria-expanded="accordionState[3].essential"
-                aria-controls="step-3-essential"
-                @click="toggleAccordion(3, 'essential')"
-              >
-                <span class="sp-accordion-text">
-                  <span class="sp-accordion-title">Choix essentiels</span>
-                </span>
-                <UIIcon type="chevron-down" size="sm" class="sp-accordion-chevron" />
+          <div v-if="manualDraftTeamIds.length === 0" class="draft-placeholder">
+            <div class="draft-placeholder-actions">
+              <button type="button" class="btn btn-ghost btn-sm" @click="setActiveStep(2)">
+                Modifier
               </button>
-              <div v-show="accordionState[3].essential" id="step-3-essential" class="sp-accordion-panel">
-                <div v-if="manualDraftTeamIds.length === 0" class="draft-placeholder">
-                  <UIIcon type="ai" size="sm" />
-                  <div>
-                    <p>IA active.</p>
-                  </div>
-                  <div class="draft-placeholder-actions">
-                    <button type="button" class="btn btn-ghost btn-sm" @click="setActiveStep(2)">
-                      Modifier
-                    </button>
-                    <button type="button" class="btn btn-primary btn-sm" @click="confirmStep(3)">
-                      Continuer
-                    </button>
-                  </div>
-                </div>
-                <DraftRosterSection
-                  v-else
-                  :team-ids="manualDraftTeamIds"
-                  :players="players"
-                  :active-team-id="activeDraftTeamId"
-                  :rosters="teamRosters"
-                  :pool="riderPool"
-                  :budget-total="activeDraftBudgetTotal"
-                  :roster-size="DraftConfig.rosterSize"
-                  :roles="DraftConfig.roles"
-                  :stat-order="DraftStatOrder"
-                  :stat-labels="DraftStatLabels"
-                  @selectTeam="activeDraftTeamId = $event"
-                  @recruit="recruitRider"
-                  @release="releaseRider"
-                  @confirm="confirmStep(3)"
-                />
-              </div>
-            </div>
-
-            <div class="sp-accordion" :class="{ 'sp-accordion--open': accordionState[3].details }">
-              <button
-                type="button"
-                class="sp-accordion-trigger"
-                :aria-expanded="accordionState[3].details"
-                aria-controls="step-3-details"
-                @click="toggleAccordion(3, 'details')"
-              >
-                <span class="sp-accordion-text">
-                  <span class="sp-accordion-title">Détails</span>
-                </span>
-                <UIIcon type="chevron-down" size="sm" class="sp-accordion-chevron" />
+              <button type="button" class="btn btn-primary btn-sm" @click="confirmStep(3)">
+                Continuer
               </button>
-              <div v-show="accordionState[3].details" id="step-3-details" class="sp-accordion-panel">
-                <div v-if="draftDetailItems.length" class="sp-detail-grid">
-                  <div v-for="item in draftDetailItems" :key="item.label" class="sp-detail-card">
-                    <span class="sp-detail-label">{{ item.label }}</span>
-                    <span class="sp-detail-text">{{ item.value }}</span>
-                  </div>
-                </div>
-                <p v-else class="sp-detail-empty">Auto-sélection IA active.</p>
-              </div>
             </div>
           </div>
+          <DraftRosterSection
+            v-else
+            :team-ids="manualDraftTeamIds"
+            :players="players"
+            :active-team-id="activeDraftTeamId"
+            :rosters="teamRosters"
+            :pool="riderPool"
+            :budget-total="activeDraftBudgetTotal"
+            :roster-size="DraftConfig.rosterSize"
+            :roles="DraftConfig.roles"
+            :stat-order="DraftStatOrder"
+            :stat-labels="DraftStatLabels"
+            @selectTeam="activeDraftTeamId = $event"
+            @recruit="recruitRider"
+            @release="releaseRider"
+            @confirm="confirmStep(3)"
+          />
           <div v-if="manualDraftTeamIds.length > 0" class="setup-step-actions">
             <button
               type="button"
@@ -637,7 +519,6 @@
       </div>
     </div>
     <MobileStickyCTA
-      v-if="setupMode === 'configure'"
       :label="mobileCtaLabel"
       :disabled="mobileCtaDisabled"
       @click="handleMobileCta"
@@ -698,7 +579,6 @@ const riderPoolIndex = new Map(RiderPool.map((rider, index) => [rider.id, index]
 const raceHeaderTitle = 'Préparer la course';
 const raceHeaderSubtitle = '';
 const raceHeaderTheme = UIConfig.raceTheme;
-const setupMode = ref('configure');
 const isRulesOpen = ref(false);
 const isHelpOpen = ref(false);
 const activeHelpStep = ref(1);
@@ -750,9 +630,6 @@ const stepHelpContent = {
 
 const activeHelp = computed(() => stepHelpContent[activeHelpStep.value] || stepHelpContent[1]);
 
-function setSetupMode(mode) {
-  setupMode.value = mode;
-}
 
 function openRules() {
   isRulesOpen.value = true;
@@ -1057,11 +934,6 @@ const activeManualTeamId = computed(() => {
   return manualDraftTeamIds.value[0] || null;
 });
 const activeDraftBudgetTotal = computed(() => getTeamBudgetTotal(activeManualTeamId.value));
-const activeDraftBudgetRemaining = computed(() => getBudgetRemaining(activeManualTeamId.value));
-const activeDraftRosterCount = computed(() => {
-  if (!activeManualTeamId.value) return 0;
-  return getRoster(activeManualTeamId.value).length;
-});
 
 const isStageRace = computed(() => raceType.value === 'stage');
 const isClassicRace = computed(() => raceType.value === 'classic');
@@ -1098,20 +970,6 @@ const startWarning = computed(() => {
 const canStart = computed(() => startWarning.value === '');
 
 const isTeamsReady = computed(() => humanCount.value > 0);
-
-const briefSummary = computed(() => {
-  const teamLabel = `${numTeams.value} équipe${numTeams.value > 1 ? 's' : ''} (${humanCount.value} humain${humanCount.value > 1 ? 's' : ''}, ${aiCount.value} IA)`;
-  if (isClassicRace.value) {
-    const raceName = selectedClassicPreset.value?.name || 'Classique';
-    return `Classique • ${raceName} • ${teamLabel}`;
-  }
-  if (isStageRace.value) {
-    const stagesLabel = stageConfig.value?.numStages ? `${stageConfig.value.numStages} étapes` : 'Étapes';
-    const profileName = StageRaceConfig.profiles[stageConfig.value?.profile]?.name || 'Profil';
-    return `Course à étapes • ${stagesLabel} • ${profileName} • ${teamLabel}`;
-  }
-  return `Course • ${teamLabel}`;
-});
 
 const startChecklist = computed(() => [
   { label: 'Profil', ok: stepConfirmed.step1 },
@@ -1170,25 +1028,14 @@ const teamsDetailNote = computed(() => {
 });
 
 const draftSummary = computed(() => {
-  if (manualDraftTeamIds.value.length === 0) return 'Auto-sélection IA';
-  const teamId = activeManualTeamId.value || manualDraftTeamIds.value[0];
-  if (!teamId) return `Coureurs 0/${DraftConfig.rosterSize}`;
-  const count = getRoster(teamId).length;
-  return `${count}/${DraftConfig.rosterSize} · Budget ${getTeamBudgetTotal(teamId)}`;
-});
-
-const draftDetailItems = computed(() => {
-  if (!activeManualTeamId.value) return [];
-  return [
-    { label: 'Équipe active', value: getTeamLabel(activeManualTeamId.value) },
-    { label: 'Coureurs', value: `${activeDraftRosterCount.value}/${DraftConfig.rosterSize}` },
-    { label: 'Budget restant', value: `${activeDraftBudgetRemaining.value}` }
-  ];
+  const teamId = activeManualTeamId.value || manualDraftTeamIds.value[0] || players.value[0]?.teamId;
+  const count = teamId ? getRoster(teamId).length : 0;
+  const budget = teamId ? getTeamBudgetTotal(teamId) : DraftConfig.budgetTotal;
+  return `${count}/${DraftConfig.rosterSize} · Budget ${budget}`;
 });
 
 const launchSummary = computed(() => (canStart.value ? 'Prêt' : 'À vérifier'));
 
-const overviewSummary = computed(() => briefSummary.value);
 
 const stepItems = computed(() => [
   {
@@ -1257,9 +1104,6 @@ function getStepClass(step) {
 
 function setActiveStep(step) {
   if (isStepLocked(step)) return;
-  if (setupMode.value !== 'configure') {
-    setupMode.value = 'configure';
-  }
   activeStep.value = step;
   scrollToSection(getStepRef(step));
 }
@@ -1433,36 +1277,6 @@ initializePlayers();
   display: grid;
   grid-template-columns: repeat(4, minmax(0, 1fr));
   gap: var(--space-sm);
-}
-
-.setup-mode-switch {
-  display: flex;
-  justify-content: center;
-}
-
-.setup-mode-tabs {
-  width: min(420px, 100%);
-}
-
-.setup-overview,
-.setup-play {
-  display: flex;
-  flex-direction: column;
-  gap: var(--space-md);
-}
-
-.setup-play-card {
-  border: 1px solid var(--sp-border-soft);
-  border-radius: var(--radius-md);
-  background: var(--color-surface);
-  padding: var(--space-md);
-}
-
-.setup-play-cta {
-  display: flex;
-  flex-direction: column;
-  align-items: flex-end;
-  gap: var(--space-xs);
 }
 
 .rules-trigger {
@@ -1846,7 +1660,7 @@ initializePlayers();
 .draft-placeholder {
   display: flex;
   align-items: center;
-  justify-content: space-between;
+  justify-content: flex-end;
   gap: var(--space-md);
   padding: var(--space-md);
   border: 1px dashed var(--color-line);
