@@ -48,51 +48,53 @@
         </div>
         <div v-if="pagedPool.length" class="draft-pool-grid">
           <article v-for="rider in pagedPool" :key="rider.id" class="draft-card draft-card--compact">
-            <div class="draft-card-main">
-              <div class="draft-card-identity">
-                <div
-                  class="rider-portrait"
-                  :class="getPortraitClass(rider.role)"
-                  :style="getPortraitStyle()"
-                >
-                  <img
-                    v-if="getPortraitUrl(rider)"
-                    :src="getPortraitUrl(rider)"
-                    :alt="`Portrait de ${rider.name}`"
-                    class="rider-portrait__image"
-                    loading="lazy"
-                    @error="markPortraitError(rider.id)"
-                  />
-                  <img
-                    v-else
-                    :src="PORTRAIT_FALLBACK_URL"
-                    alt=""
-                    class="rider-portrait__fallback"
-                    loading="lazy"
-                  />
-                  <span class="rider-portrait__badge rider-portrait__badge--role">
-                    <RiderIcon :type="rider.role" :size="10" />
-                  </span>
-                </div>
-                <div class="draft-card-text">
-                  <p class="draft-card-name">{{ rider.name }}</p>
-                  <div class="draft-card-tags">
-                    <span class="badge badge-pill draft-role-badge">{{ getRoleLabel(rider.role) }}</span>
+            <div class="draft-card-content">
+              <div class="draft-card-main">
+                <div class="draft-card-identity">
+                  <div
+                    class="rider-portrait"
+                    :class="getPortraitClass(rider.role)"
+                    :style="getPortraitStyle()"
+                  >
+                    <img
+                      v-if="getPortraitUrl(rider)"
+                      :src="getPortraitUrl(rider)"
+                      :alt="`Portrait de ${rider.name}`"
+                      class="rider-portrait__image"
+                      loading="lazy"
+                      @error="markPortraitError(rider.id)"
+                    />
+                    <img
+                      v-else
+                      :src="PORTRAIT_FALLBACK_URL"
+                      alt=""
+                      class="rider-portrait__fallback"
+                      loading="lazy"
+                    />
+                    <span class="rider-portrait__badge rider-portrait__badge--role">
+                      <RiderIcon :type="rider.role" :size="10" />
+                    </span>
+                  </div>
+                  <div class="draft-card-text">
+                    <p class="draft-card-name">{{ rider.name }}</p>
+                    <div class="draft-card-tags">
+                      <span class="badge badge-pill draft-role-badge">{{ getRoleLabel(rider.role) }}</span>
+                    </div>
                   </div>
                 </div>
               </div>
-            </div>
-            <div class="draft-card-stats draft-card-stats--compact">
-              <div
-                v-for="stat in getStatRows(rider)"
-                :key="stat.key"
-                class="stat-row stat-row--compact"
-              >
-                <span class="stat-label">{{ stat.label }}</span>
-                <div class="stat-bar">
-                  <div class="stat-bar__fill" :style="{ width: stat.value + '%' }"></div>
+              <div class="draft-card-stats draft-card-stats--compact">
+                <div
+                  v-for="stat in getStatRows(rider)"
+                  :key="stat.key"
+                  class="stat-row stat-row--compact"
+                >
+                  <span class="stat-label">{{ stat.label }}</span>
+                  <div class="stat-bar">
+                    <div class="stat-bar__fill" :style="{ width: stat.value + '%' }"></div>
+                  </div>
+                  <span class="stat-value">{{ stat.value }}</span>
                 </div>
-                <span class="stat-value">{{ stat.value }}</span>
               </div>
             </div>
             <div class="draft-card-actions">
@@ -455,6 +457,13 @@ onBeforeUnmount(() => {
   display: flex;
   align-items: center;
   gap: var(--space-sm);
+}
+
+.draft-card-content {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-sm);
+  min-width: 0;
 }
 
 .draft-card-identity {
@@ -832,11 +841,15 @@ onBeforeUnmount(() => {
     padding: var(--space-sm);
   }
 
-  .draft-card-main {
-    width: 100%;
+  .draft-card {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) auto;
+    align-items: start;
+    column-gap: var(--space-sm);
   }
 
   .draft-card-actions {
+    align-self: start;
     justify-content: flex-end;
   }
 
@@ -848,6 +861,31 @@ onBeforeUnmount(() => {
 
   .draft-card-identity {
     width: 100%;
+  }
+
+  .draft-card-content {
+    width: 100%;
+  }
+
+  .draft-card-stats--compact {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+  }
+
+  .stat-row--compact {
+    display: flex;
+    align-items: center;
+    gap: var(--space-xs);
+    font-size: 10px;
+  }
+
+  .stat-label {
+    min-width: 64px;
+  }
+
+  .stat-bar {
+    height: 5px;
   }
 
   .roster-card {
