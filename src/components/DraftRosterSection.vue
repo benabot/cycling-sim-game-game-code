@@ -922,3 +922,20 @@ onBeforeUnmount(() => {
   }
 }
 </style>
+    <div class="draft-budget" :aria-live="isMobile ? 'polite' : null">
+      <span class="draft-budget__label">Budget restant</span>
+      <span class="draft-budget__value">{{ budgetRemaining }} / {{ budgetTotal }}</span>
+    </div>
+.draft-budget {
+  display: flex;
+  align-items: baseline;
+  gap: var(--space-xs);
+  font-size: 13px;
+  color: var(--sp-text-secondary, var(--color-ink-muted));
+}
+
+.draft-budget__label {
+  font-weight: 500;
+}
+
+.draft-budget__value {
