@@ -30,12 +30,21 @@
         ]"
         @click="$emit('update:modelValue', classic.id)"
       >
-        <h3 class="classic-card__name">{{ classic.name }}</h3>
-
-        <div class="classic-card__profile" aria-hidden="true">
-          <svg viewBox="0 0 120 36">
-            <polyline :points="getProfilePoints(classic.profile)" />
-          </svg>
+        <div class="classic-card__content">
+          <div class="classic-card__text">
+            <h3 class="classic-card__name">{{ classic.name }}</h3>
+            <p v-if="classic.description" class="classic-card__desc">{{ classic.description }}</p>
+            <div class="classic-card__meta">
+              <span v-if="classic.advantageLabel" class="badge badge-pill classic-card__advantage">
+                Avantage {{ classic.advantageLabel }}
+              </span>
+            </div>
+          </div>
+          <div class="classic-card__profile" aria-hidden="true">
+            <svg viewBox="0 0 120 36">
+              <polyline :points="getProfilePoints(classic.profile)" />
+            </svg>
+          </div>
         </div>
         
         <!-- Selection indicator -->
@@ -175,9 +184,50 @@ function getProfilePoints(profile = []) {
   margin: 0;
 }
 
+.classic-card__content {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: var(--space-md);
+  align-items: center;
+}
+
+.classic-card__text {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  min-width: 0;
+}
+
+.classic-card__desc {
+  margin: 0;
+  font-size: 12px;
+  color: var(--sp-text-secondary);
+  line-height: 1.4;
+  display: -webkit-box;
+  -webkit-line-clamp: 1;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+.classic-card__meta {
+  display: flex;
+  gap: var(--space-xs);
+  flex-wrap: wrap;
+}
+
+.classic-card__advantage {
+  background: var(--color-paper);
+  border: 1px solid var(--color-line);
+  color: var(--color-ink);
+  font-size: 11px;
+  font-weight: 600;
+  padding: 2px 6px;
+}
+
 .classic-card__profile {
   width: 100%;
   max-width: 160px;
+  justify-self: end;
 }
 
 .classic-card__profile svg {
@@ -208,5 +258,15 @@ function getProfilePoints(profile = []) {
   color: white;
   border-radius: 50%;
   z-index: 2;
+}
+
+@media (max-width: 720px) {
+  .classic-card__content {
+    grid-template-columns: minmax(0, 1fr) 120px;
+  }
+
+  .classic-card__profile {
+    max-width: 120px;
+  }
 }
 </style>
