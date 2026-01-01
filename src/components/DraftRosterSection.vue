@@ -32,6 +32,11 @@
       </button>
     </div>
 
+    <div class="draft-budget" :aria-live="isMobile ? 'polite' : null">
+      <span class="draft-budget__label">Budget restant</span>
+      <span class="draft-budget__value">{{ budgetRemaining }} / {{ budgetTotal }}</span>
+    </div>
+
     <div class="draft-grid" :class="{ 'draft-grid--mobile': isMobile }">
       <div class="draft-pool" v-show="!isMobile || activeMobileTab === 'market'">
         <div class="draft-filter-row">
@@ -79,7 +84,7 @@
                     <p class="draft-card-name">{{ rider.name }}</p>
                     <div class="draft-card-tags">
                       <span class="badge badge-pill draft-role-badge">{{ getRoleLabel(rider.role) }}</span>
-                      <span v-if="rider.price != null" class="badge badge-pill draft-price-badge">€{{ rider.price }}</span>
+                      <span v-if="rider.price != null" class="draft-price">Coût {{ rider.price }}</span>
                     </div>
                   </div>
                 </div>
@@ -361,6 +366,23 @@ onBeforeUnmount(() => {
   width: 100%;
 }
 
+.draft-budget {
+  display: flex;
+  align-items: baseline;
+  gap: var(--space-xs);
+  font-size: 13px;
+  color: var(--sp-text-secondary, var(--color-ink-muted));
+}
+
+.draft-budget__label {
+  font-weight: 500;
+}
+
+.draft-budget__value {
+  font-weight: 600;
+  color: var(--sp-text-strong, var(--color-ink));
+}
+
 .draft-mobile-tabs {
   display: none;
 }
@@ -640,6 +662,17 @@ onBeforeUnmount(() => {
   align-items: center;
 }
 
+.draft-price {
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--sp-text-secondary, var(--color-ink-muted));
+  padding: 2px 6px;
+  border-radius: var(--radius-pill);
+  border: 1px solid var(--sp-border-soft, var(--color-line));
+  background: var(--color-canvas);
+  white-space: nowrap;
+}
+
 
 .draft-card-stats--compact {
   display: grid;
@@ -798,17 +831,6 @@ onBeforeUnmount(() => {
   background: var(--color-paper);
 }
 
-.draft-price-badge {
-  background: var(--color-paper);
-  border: 1px solid var(--color-line);
-  color: var(--color-ink);
-  font-weight: 600;
-  font-size: 11px;
-  line-height: 1;
-  padding: 3px 6px;
-  white-space: nowrap;
-}
-
 .draft-roster {
   position: sticky;
   top: var(--space-lg);
@@ -902,11 +924,6 @@ onBeforeUnmount(() => {
     height: 5px;
   }
 
-  .draft-price-badge {
-    font-size: 10px;
-    padding: 2px 6px;
-  }
-
   .roster-card {
     flex-direction: column;
     align-items: stretch;
@@ -922,20 +939,3 @@ onBeforeUnmount(() => {
   }
 }
 </style>
-    <div class="draft-budget" :aria-live="isMobile ? 'polite' : null">
-      <span class="draft-budget__label">Budget restant</span>
-      <span class="draft-budget__value">{{ budgetRemaining }} / {{ budgetTotal }}</span>
-    </div>
-.draft-budget {
-  display: flex;
-  align-items: baseline;
-  gap: var(--space-xs);
-  font-size: 13px;
-  color: var(--sp-text-secondary, var(--color-ink-muted));
-}
-
-.draft-budget__label {
-  font-weight: 500;
-}
-
-.draft-budget__value {
