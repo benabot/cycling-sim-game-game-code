@@ -79,7 +79,7 @@
                     <p class="draft-card-name">{{ rider.name }}</p>
                     <div class="draft-card-tags">
                       <span class="badge badge-pill draft-role-badge">{{ getRoleLabel(rider.role) }}</span>
-                      <span class="badge badge-pill draft-price-badge">Prix {{ rider.price }}</span>
+                      <span v-if="rider.price != null" class="badge badge-pill draft-price-badge">€{{ rider.price }}</span>
                     </div>
                   </div>
                 </div>
@@ -637,6 +637,7 @@ onBeforeUnmount(() => {
   gap: var(--space-xs);
   flex-wrap: wrap;
   margin-top: var(--space-xs);
+  align-items: center;
 }
 
 
@@ -798,10 +799,13 @@ onBeforeUnmount(() => {
 }
 
 .draft-price-badge {
-  background: var(--color-surface);
+  background: var(--color-paper);
   border: 1px solid var(--color-line);
   color: var(--color-ink);
   font-weight: 600;
+  font-size: 11px;
+  line-height: 1;
+  padding: 3px 6px;
   white-space: nowrap;
 }
 
@@ -895,6 +899,11 @@ onBeforeUnmount(() => {
 
   .stat-bar {
     height: 5px;
+  }
+
+  .draft-price-badge {
+    font-size: 10px;
+    padding: 2px 6px;
   }
 
   .roster-card {
