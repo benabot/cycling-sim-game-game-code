@@ -47,7 +47,6 @@
             <span class="setup-step-index">1</span>
             <div class="setup-step-heading-text">
               <h2 class="setup-step-title setup-stepTitle">Profil</h2>
-              <p class="setup-step-subtitle setup-helperText">Type de course et parcours.</p>
             </div>
           </div>
           <div class="setup-step-controls">
@@ -66,65 +65,56 @@
           </div>
         </header>
         <div v-show="activeStep === 1" class="setup-step-body">
-          <div class="sp-accordions">
-            <div class="sp-accordion" :class="{ 'sp-accordion--open': accordionState[1].essential }">
-              <button
-                type="button"
-                class="sp-accordion-trigger"
-                :aria-expanded="accordionState[1].essential"
-                aria-controls="step-1-essential"
-                @click="toggleAccordion(1, 'essential')"
-              >
-                <span class="sp-accordion-text">
-                  <span class="sp-accordion-title">Choix essentiels</span>
-                </span>
-                <UIIcon type="chevron-down" size="sm" class="sp-accordion-chevron" />
-              </button>
-              <div v-show="accordionState[1].essential" id="step-1-essential" class="sp-accordion-panel">
-                <div class="sp-subsection">
-                  <RaceTypeSelector v-model="raceType" />
-                </div>
-
-                <div class="sp-subsection">
-                  <div class="race-config-block">
-                    <div v-if="raceType === 'classic'" class="race-config-block">
-                      <ClassicRaceSelector v-model="selectedClassic" />
-                    </div>
-                    <div v-else-if="raceType === 'stage'" class="race-config-block">
-                      <StageRaceConfigurator
-                        v-model="stageConfig"
-                        :stageLength="courseLength"
-                      />
-                    </div>
-                  </div>
-                </div>
-
-                <div class="sp-subsection">
-                  <div class="sp-subsection-header">
-                    <div>
-                      <h3 class="sp-subsection-title setup-decisionTitle">{{ lengthLabel }}</h3>
-                    </div>
-                  </div>
-                  <div class="course-length">
-                    <div class="segmented segmented--stretch">
-                      <button
-                        v-for="len in courseLengths"
-                        :key="len.value"
-                        class="segmented-item segmented-item--col"
-                        :class="{ 'segmented-item-active': courseLength === len.value }"
-                        @click="courseLength = len.value"
-                      >
-                        <span class="type-body-medium">{{ len.value }} cases</span>
-                        <span class="type-caption">
-                          ~{{ len.duration }}<span v-if="isStageRace"> par étape</span>
-                        </span>
-                      </button>
-                    </div>
-                  </div>
-                </div>
+          <div class="sp-subsection">
+            <div class="sp-subsection-header">
+              <div>
+                <h3 class="sp-subsection-title setup-decisionTitle">Type de course</h3>
               </div>
             </div>
+            <RaceTypeSelector v-model="raceType" />
+          </div>
 
+          <div class="sp-subsection">
+            <div class="sp-subsection-header">
+              <div>
+                <h3 class="sp-subsection-title setup-decisionTitle">Parcours</h3>
+              </div>
+            </div>
+            <div class="race-config-block">
+              <div v-if="raceType === 'classic'" class="race-config-block">
+                <ClassicRaceSelector v-model="selectedClassic" />
+              </div>
+              <div v-else-if="raceType === 'stage'" class="race-config-block">
+                <StageRaceConfigurator
+                  v-model="stageConfig"
+                  :stageLength="courseLength"
+                />
+              </div>
+            </div>
+          </div>
+
+          <div class="sp-subsection">
+            <div class="sp-subsection-header">
+              <div>
+                <h3 class="sp-subsection-title setup-decisionTitle">{{ lengthLabel }}</h3>
+              </div>
+            </div>
+            <div class="course-length">
+              <div class="segmented segmented--stretch">
+                <button
+                  v-for="len in courseLengths"
+                  :key="len.value"
+                  class="segmented-item segmented-item--col"
+                  :class="{ 'segmented-item-active': courseLength === len.value }"
+                  @click="courseLength = len.value"
+                >
+                  <span class="type-body-medium">{{ len.value }} cases</span>
+                  <span class="type-caption">
+                    ~{{ len.duration }}<span v-if="isStageRace"> par étape</span>
+                  </span>
+                </button>
+              </div>
+            </div>
           </div>
 
           <div class="setup-step-actions">
@@ -147,7 +137,6 @@
             <span class="setup-step-index">2</span>
             <div class="setup-step-heading-text">
               <h2 class="setup-step-title setup-stepTitle">Équipes</h2>
-              <p class="setup-step-subtitle setup-helperText">Effectifs et IA.</p>
             </div>
           </div>
           <div class="setup-step-controls">
@@ -166,126 +155,107 @@
           </div>
         </header>
         <div v-show="activeStep === 2" class="setup-step-body">
-          <div class="sp-accordions">
-            <div class="sp-accordion" :class="{ 'sp-accordion--open': accordionState[2].essential }">
-              <button
-                type="button"
-                class="sp-accordion-trigger"
-                :aria-expanded="accordionState[2].essential"
-                aria-controls="step-2-essential"
-                @click="toggleAccordion(2, 'essential')"
+          <div class="sp-subsection">
+            <div class="sp-subsection-header">
+              <div>
+                <h3 class="sp-subsection-title setup-decisionTitle">Nombre d'équipes</h3>
+              </div>
+            </div>
+            <div class="teams-count">
+              <div class="segmented segmented--stretch">
+                <button
+                  v-for="n in [2, 3, 4]"
+                  :key="n"
+                  class="segmented-item"
+                  :class="{ 'segmented-item-active': numTeams === n }"
+                  @click="setNumTeams(n)"
+                >
+                  {{ n }} équipes
+                </button>
+              </div>
+            </div>
+          </div>
+
+          <div class="sp-subsection">
+            <div class="sp-subsection-header">
+              <div>
+                <h3 class="sp-subsection-title setup-decisionTitle">Composition</h3>
+              </div>
+            </div>
+            <div class="teams-grid">
+              <div
+                v-for="(player, index) in players"
+                :key="player.teamId"
+                class="card team-setup-card"
+                :class="getTeamCardClass(player.teamId)"
               >
-                <span class="sp-accordion-text">
-                  <span class="sp-accordion-title">Choix essentiels</span>
-                </span>
-                <UIIcon type="chevron-down" size="sm" class="sp-accordion-chevron" />
-              </button>
-              <div v-show="accordionState[2].essential" id="step-2-essential" class="sp-accordion-panel">
-                <div class="sp-subsection">
-                  <div class="sp-subsection-header">
-                    <div>
-                      <h3 class="sp-subsection-title setup-decisionTitle">Nombre d'équipes</h3>
-                    </div>
-                  </div>
-                  <div class="teams-count">
-                    <div class="segmented segmented--stretch">
-                      <button
-                        v-for="n in [2, 3, 4]"
-                        :key="n"
-                        class="segmented-item"
-                        :class="{ 'segmented-item-active': numTeams === n }"
-                        @click="setNumTeams(n)"
-                      >
-                        {{ n }} équipes
-                      </button>
-                    </div>
+                <div class="team-setup-header">
+                  <RiderToken
+                    :rider="{ id: 'icon', name: '', type: 'rouleur', team: player.teamId, position: 0 }"
+                    :compact="true"
+                  />
+                  <div class="team-setup-header-text">
+                    <span class="team-setup-title">{{ getTeamLabel(player.teamId) }}</span>
+                    <span class="team-setup-meta">{{ player.playerType === 'human' ? 'Humain' : 'IA' }}</span>
                   </div>
                 </div>
 
-                <div class="sp-subsection">
-                  <div class="sp-subsection-header">
-                    <div>
-                      <h3 class="sp-subsection-title setup-decisionTitle">Composition</h3>
-                    </div>
+                <div class="team-setup-body">
+                  <div class="team-name-field">
+                    <label class="type-caption" :for="`team-name-${player.teamId}`">Nom d'équipe</label>
+                    <input
+                      :id="`team-name-${player.teamId}`"
+                      v-model="player.customName"
+                      type="text"
+                      class="input input-sm"
+                      :placeholder="getTeamDefaultName(player.teamId)"
+                      maxlength="24"
+                      @input="updatePlayer(index)"
+                      @blur="sanitizeTeamName(index)"
+                    />
                   </div>
-                  <div class="teams-grid">
-                    <div
-                      v-for="(player, index) in players"
-                      :key="player.teamId"
-                      class="card team-setup-card"
-                      :class="getTeamCardClass(player.teamId)"
+                  <div class="segmented segmented--stretch team-toggle">
+                    <button
+                      type="button"
+                      class="segmented-item"
+                      :class="{ 'segmented-item-active': player.playerType === 'ai' }"
+                      @click="setPlayerType(index, PlayerType.AI)"
                     >
-                      <div class="team-setup-header">
-                        <RiderToken
-                          :rider="{ id: 'icon', name: '', type: 'rouleur', team: player.teamId, position: 0 }"
-                          :compact="true"
-                        />
-                        <div class="team-setup-header-text">
-                          <span class="team-setup-title">{{ getTeamLabel(player.teamId) }}</span>
-                          <span class="team-setup-meta">{{ player.playerType === 'human' ? 'Humain' : 'IA' }}</span>
-                        </div>
-                      </div>
+                      IA
+                    </button>
+                    <button
+                      type="button"
+                      class="segmented-item"
+                      :class="{ 'segmented-item-active': player.playerType === 'human' }"
+                      @click="setPlayerType(index, PlayerType.HUMAN)"
+                    >
+                      Humain
+                    </button>
+                  </div>
 
-                      <div class="team-setup-body">
-                        <div class="team-name-field">
-                          <label class="type-caption" :for="`team-name-${player.teamId}`">Nom d'équipe</label>
-                          <input
-                            :id="`team-name-${player.teamId}`"
-                            v-model="player.customName"
-                            type="text"
-                            class="input input-sm"
-                            :placeholder="getTeamDefaultName(player.teamId)"
-                            maxlength="24"
-                            @input="updatePlayer(index)"
-                            @blur="sanitizeTeamName(index)"
-                          />
-                        </div>
-                        <div class="segmented segmented--stretch team-toggle">
-                          <button
-                            type="button"
-                            class="segmented-item"
-                            :class="{ 'segmented-item-active': player.playerType === 'ai' }"
-                            @click="setPlayerType(index, PlayerType.AI)"
-                          >
-                            IA
-                          </button>
-                          <button
-                            type="button"
-                            class="segmented-item"
-                            :class="{ 'segmented-item-active': player.playerType === 'human' }"
-                            @click="setPlayerType(index, PlayerType.HUMAN)"
-                          >
-                            Humain
-                          </button>
-                        </div>
-
-                        <div v-if="player.playerType === 'ai'" class="ai-options">
-                          <div class="ai-field">
-                            <span class="type-caption">Niveau IA</span>
-                            <select v-model="player.difficulty" @change="updatePlayer(index)" class="select select--sm">
-                              <option value="easy">Facile</option>
-                              <option value="normal">Normal</option>
-                              <option value="hard">Difficile</option>
-                            </select>
-                          </div>
-                          <div class="ai-field">
-                            <span class="type-caption">Comportement</span>
-                            <select v-model="player.personality" @change="updatePlayer(index)" class="select select--sm">
-                              <option value="">Aléatoire</option>
-                              <option value="attacker">Attaquant</option>
-                              <option value="conservative">Conservateur</option>
-                              <option value="opportunist">Opportuniste</option>
-                              <option value="balanced">Équilibré</option>
-                            </select>
-                          </div>
-                        </div>
-                      </div>
+                  <div v-if="player.playerType === 'ai'" class="ai-options">
+                    <div class="ai-field">
+                      <span class="type-caption">Niveau IA</span>
+                      <select v-model="player.difficulty" @change="updatePlayer(index)" class="select select--sm">
+                        <option value="easy">Facile</option>
+                        <option value="normal">Normal</option>
+                        <option value="hard">Difficile</option>
+                      </select>
+                    </div>
+                    <div class="ai-field">
+                      <span class="type-caption">Comportement</span>
+                      <select v-model="player.personality" @change="updatePlayer(index)" class="select select--sm">
+                        <option value="">Aléatoire</option>
+                        <option value="attacker">Attaquant</option>
+                        <option value="conservative">Conservateur</option>
+                        <option value="opportunist">Opportuniste</option>
+                        <option value="balanced">Équilibré</option>
+                      </select>
                     </div>
                   </div>
                 </div>
               </div>
             </div>
-
           </div>
 
           <div class="setup-step-actions">
@@ -373,7 +343,6 @@
             <span class="setup-step-index">4</span>
             <div class="setup-step-heading-text">
               <h2 class="setup-step-title setup-stepTitle">Départ</h2>
-              <p class="setup-step-subtitle setup-helperText">Vérification et lancement.</p>
             </div>
           </div>
           <div class="setup-step-controls">
@@ -392,36 +361,17 @@
           </div>
         </header>
         <div v-show="activeStep === 4" class="setup-step-body">
-          <div class="sp-accordions">
-            <div class="sp-accordion" :class="{ 'sp-accordion--open': accordionState[4].essential }">
+          <div class="start-panel start-panel--essential">
+            <div class="start-panel__cta">
               <button
-                type="button"
-                class="sp-accordion-trigger"
-                :aria-expanded="accordionState[4].essential"
-                aria-controls="step-4-essential"
-                @click="toggleAccordion(4, 'essential')"
+                class="btn btn-primary btn-lg start-panel__cta-button"
+                @click="startGame"
+                :disabled="!canStart"
               >
-                <span class="sp-accordion-text">
-                  <span class="sp-accordion-title">Choix essentiels</span>
-                </span>
-                <UIIcon type="chevron-down" size="sm" class="sp-accordion-chevron" />
+                <UIIcon type="finish" size="sm" />
+                Lancer la course
               </button>
-              <div v-show="accordionState[4].essential" id="step-4-essential" class="sp-accordion-panel">
-                <div class="start-panel start-panel--essential">
-                  <div class="start-panel__cta">
-                    <button
-                      class="btn btn-primary btn-lg start-panel__cta-button"
-                      @click="startGame"
-                      :disabled="!canStart"
-                    >
-                      <UIIcon type="finish" size="sm" />
-                      Lancer la course
-                    </button>
-                  </div>
-                </div>
-              </div>
             </div>
-
           </div>
         </div>
         </section>
@@ -491,12 +441,6 @@ const raceHeaderTheme = UIConfig.raceTheme;
 const isRulesOpen = ref(false);
 const isHelpOpen = ref(false);
 const activeHelpStep = ref(1);
-const accordionState = reactive({
-  1: { essential: true },
-  2: { essential: true },
-  3: { essential: true },
-  4: { essential: true }
-});
 
 const stepHelpContent = {
   1: {
@@ -548,11 +492,6 @@ function openHelp(step) {
   activeHelpStep.value = step;
   isHelpOpen.value = true;
 }
-
-function toggleAccordion(step, key) {
-  accordionState[step][key] = !accordionState[step][key];
-}
-
 
 // Get team card class
 function getTeamCardClass(teamId) {
@@ -1294,61 +1233,6 @@ initializePlayers();
   display: flex;
   flex-direction: column;
   gap: var(--space-lg);
-}
-
-.sp-accordions {
-  display: flex;
-  flex-direction: column;
-  gap: var(--space-md);
-}
-
-.sp-accordion {
-  border: 1px solid var(--sp-border-soft);
-  border-radius: var(--radius-md);
-  background: var(--color-surface);
-  overflow: hidden;
-}
-
-.sp-accordion-trigger {
-  width: 100%;
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: var(--space-md);
-  padding: var(--space-sm) var(--space-md);
-  border: 0;
-  background: var(--sp-header-bg);
-  text-align: left;
-  cursor: pointer;
-}
-
-.sp-accordion-text {
-  display: flex;
-  flex-direction: column;
-  gap: 2px;
-}
-
-.sp-accordion-title {
-  font-size: 14px;
-  font-weight: 600;
-  color: var(--sp-text-strong);
-}
-
-.sp-accordion-chevron {
-  color: var(--sp-text-muted);
-  transition: transform var(--transition-fast), color var(--transition-fast);
-}
-
-.sp-accordion--open .sp-accordion-chevron {
-  transform: rotate(180deg);
-  color: var(--sp-text-strong);
-}
-
-.sp-accordion-panel {
-  padding: var(--space-md);
-  display: flex;
-  flex-direction: column;
-  gap: var(--space-md);
 }
 
 .sp-subsection {
