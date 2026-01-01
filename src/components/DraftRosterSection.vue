@@ -91,7 +91,7 @@
               </div>
               <div class="draft-card-stats draft-card-stats--compact">
                 <div
-                  v-for="stat in getStatRows(rider)"
+                  v-for="stat in getVisibleStatRows(rider)"
                   :key="stat.key"
                   class="stat-row stat-row--compact"
                 >
@@ -101,6 +101,27 @@
                   </div>
                   <span class="stat-value">{{ stat.value }}</span>
                 </div>
+              </div>
+              <button
+                v-if="isMobile && getExtraStatRows(rider).length"
+                type="button"
+                class="draft-card-stats-toggle"
+                :aria-expanded="isStatsExpanded(rider.id)"
+                @click="toggleStats(rider.id)"
+              >
+                {{ isStatsExpanded(rider.id) ? 'Moins' : 'Plus' }}
+              </button>
+              <div
+                v-if="isMobile && isStatsExpanded(rider.id)"
+                class="draft-card-stats-extra"
+              >
+                <span
+                  v-for="stat in getExtraStatRows(rider)"
+                  :key="stat.key"
+                  class="draft-stat-chip"
+                >
+                  {{ stat.label }} {{ stat.value }}
+                </span>
               </div>
             </div>
             <div class="draft-card-actions">
@@ -255,8 +276,14 @@ const page = ref(1);
 const pageSize = 8;
 const isMobile = ref(false);
 const activeMobileTab = ref('market');
-const statDisplayOrder = ['endurance', 'sprint', 'climb', 'punch'];
+const primaryStatKeys = ['endurance', 'sprint'];
 const portraitErrors = ref({});
+const expandedStats = ref({});
+const statDisplayOrder = computed(() =>
+  props.statOrder?.length
+    ? props.statOrder
+    : ['endurance', 'sprint', 'climb', 'punch', 'force', 'rolling']
+);
 
 const roleFilters = computed(() => ['all', ...(props.roles || [])]);
 
@@ -327,14 +354,36 @@ function canRecruit(rider) {
   return !rosterByRole.value[rider.role];
 }
 
-function getStatRows(rider) {
+function getStatRowsForKeys(rider, keys) {
   const stats = rider.stats || {};
-  const keys = isMobile.value ? statDisplayOrder.slice(0, 2) : statDisplayOrder;
   return keys.map(key => ({
     key,
     label: props.statLabels[key] || key,
     value: stats[key] ?? 0
   }));
+}
+
+function getVisibleStatRows(rider) {
+  const keys = isMobile.value ? primaryStatKeys : statDisplayOrder.value;
+  return getStatRowsForKeys(rider, keys);
+}
+
+function getExtraStatRows(rider) {
+  if (!isMobile.value) return [];
+  const extraKeys = statDisplayOrder.value.filter(key => !primaryStatKeys.includes(key));
+  return getStatRowsForKeys(rider, extraKeys);
+}
+
+function isStatsExpanded(riderId) {
+  return !!expandedStats.value[riderId];
+}
+
+function toggleStats(riderId) {
+  if (!riderId) return;
+  expandedStats.value = {
+    ...expandedStats.value,
+    [riderId]: !expandedStats.value[riderId]
+  };
 }
 
 function updateViewport() {
@@ -713,6 +762,29 @@ onBeforeUnmount(() => {
   color: var(--color-ink);
 }
 
+.draft-card-stats-toggle {
+  align-self: flex-start;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--sp-text-secondary, var(--color-ink-muted));
+  cursor: pointer;
+}
+
+.draft-card-stats-extra {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px 8px;
+  font-size: 11px;
+  color: var(--sp-text-secondary, var(--color-ink-muted));
+}
+
+.draft-stat-chip {
+  white-space: nowrap;
+}
+
 .draft-pagination {
   display: flex;
   align-items: center;
@@ -903,21 +975,19 @@ onBeforeUnmount(() => {
   }
 
   .draft-card-stats--compact {
-    display: flex;
-    flex-direction: column;
+    display: grid;
+    grid-template-columns: 1fr;
     gap: 6px;
   }
 
   .stat-row--compact {
-    display: grid;
-    grid-template-columns: 1fr auto;
-    align-items: center;
-    gap: var(--space-xs);
-    font-size: 10px;
+    grid-template-columns: 72px 1fr 26px;
+    font-size: 11px;
   }
 
   .stat-label {
-    display: none;
+    display: inline;
+    text-transform: none;
   }
 
   .stat-bar {
