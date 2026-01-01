@@ -79,6 +79,7 @@
                     <p class="draft-card-name">{{ rider.name }}</p>
                     <div class="draft-card-tags">
                       <span class="badge badge-pill draft-role-badge">{{ getRoleLabel(rider.role) }}</span>
+                      <span class="badge badge-pill draft-price-badge">Prix {{ rider.price }}</span>
                     </div>
                   </div>
                 </div>
@@ -794,6 +795,14 @@ onBeforeUnmount(() => {
 
 .draft-role-badge {
   background: var(--color-paper);
+}
+
+.draft-price-badge {
+  background: var(--color-surface);
+  border: 1px solid var(--color-line);
+  color: var(--color-ink);
+  font-weight: 600;
+  white-space: nowrap;
 }
 
 .draft-roster {
