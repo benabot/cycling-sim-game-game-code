@@ -324,7 +324,7 @@ function canRecruit(rider) {
 
 function getStatRows(rider) {
   const stats = rider.stats || {};
-  const keys = statDisplayOrder;
+  const keys = isMobile.value ? statDisplayOrder.slice(0, 2) : statDisplayOrder;
   return keys.map(key => ({
     key,
     label: props.statLabels[key] || key,
@@ -887,14 +887,15 @@ onBeforeUnmount(() => {
   }
 
   .stat-row--compact {
-    display: flex;
+    display: grid;
+    grid-template-columns: 1fr auto;
     align-items: center;
     gap: var(--space-xs);
     font-size: 10px;
   }
 
   .stat-label {
-    min-width: 64px;
+    display: none;
   }
 
   .stat-bar {
