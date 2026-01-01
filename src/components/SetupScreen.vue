@@ -96,10 +96,6 @@
                         :stageLength="courseLength"
                       />
                     </div>
-                    <div v-else class="race-placeholder">
-                      <UIIcon type="info" size="sm" />
-                      <span>Format à choisir.</span>
-                    </div>
                   </div>
                 </div>
 
