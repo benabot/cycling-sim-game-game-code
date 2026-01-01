@@ -7,16 +7,6 @@
 -->
 <template>
   <section class="classic-selector">
-    <!-- Section Header -->
-    <header class="section-header">
-      <div class="section-header__icon">
-        <UIIcon type="laurel" size="md" />
-      </div>
-      <div class="section-header__content">
-        <h2 class="section-header__title">Parcours</h2>
-      </div>
-    </header>
-    
     <!-- Classics Grid -->
     <div class="classic-selector__grid">
       <button
@@ -33,10 +23,12 @@
         <div class="classic-card__content">
           <div class="classic-card__text">
             <h3 class="classic-card__name">{{ classic.name }}</h3>
-            <p v-if="classic.description" class="classic-card__desc">{{ classic.description }}</p>
+            <p v-if="classic.subtitle || classic.description" class="classic-card__desc">
+              {{ classic.subtitle || classic.description }}
+            </p>
             <div class="classic-card__meta">
               <span v-if="classic.advantageLabel" class="badge badge-pill classic-card__advantage">
-                Avantage {{ classic.advantageLabel }}
+                {{ classic.advantageLabel }}
               </span>
             </div>
           </div>
@@ -58,7 +50,6 @@
 
 <script setup>
 import { computed } from 'vue';
-import UIIcon from './icons/UIIcon.vue';
 import { getAllClassicPresets } from '../config/race-presets.js';
 
 defineProps({
@@ -96,35 +87,6 @@ function getProfilePoints(profile = []) {
   display: flex;
   flex-direction: column;
   gap: var(--space-lg);
-}
-
-/* Section Header */
-.section-header {
-  display: flex;
-  align-items: center;
-  gap: var(--space-sm);
-  padding: var(--space-sm) var(--space-md);
-  border: 1px solid var(--sp-border-soft);
-  border-radius: var(--radius-md);
-  background: var(--color-canvas);
-}
-
-.section-header__icon {
-  color: var(--sp-text-secondary);
-}
-
-.section-header__content {
-  display: flex;
-  flex-direction: column;
-  gap: 2px;
-}
-
-.section-header__title {
-  font-family: var(--font-display);
-  font-size: 15px;
-  font-weight: 600;
-  color: var(--sp-text-strong);
-  margin: 0;
 }
 
 /* Grid */
@@ -216,12 +178,12 @@ function getProfilePoints(profile = []) {
 }
 
 .classic-card__advantage {
-  background: var(--color-paper);
+  background: var(--color-canvas);
   border: 1px solid var(--color-line);
   color: var(--color-ink);
   font-size: 11px;
   font-weight: 600;
-  padding: 2px 6px;
+  padding: 2px 8px;
 }
 
 .classic-card__profile {
