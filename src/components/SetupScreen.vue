@@ -96,7 +96,7 @@
           <div class="sp-subsection">
             <div class="sp-subsection-header">
               <div>
-                <h3 class="sp-subsection-title setup-decisionTitle">{{ lengthLabel }}</h3>
+                <h3 class="sp-subsection-title setup-decisionTitle">Distance</h3>
               </div>
             </div>
             <div class="course-length">
@@ -797,8 +797,6 @@ const isRaceConfigComplete = computed(() => {
 const selectedClassicPreset = computed(() =>
   selectedClassic.value ? getClassicPreset(selectedClassic.value) : null
 );
-
-const lengthLabel = computed(() => 'Distance');
 
 const startWarning = computed(() => {
   if (humanCount.value === 0) return 'Au moins un humain requis.';
