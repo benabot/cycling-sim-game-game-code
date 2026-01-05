@@ -945,6 +945,10 @@ onBeforeUnmount(() => {
 }
 
 @media (max-width: 720px) {
+  .draft-status-bar {
+    top: 50px;
+  }
+
   .draft-mobile-tabs {
     display: grid;
     grid-template-columns: repeat(2, minmax(0, 1fr));
