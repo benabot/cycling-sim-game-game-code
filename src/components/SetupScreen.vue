@@ -1132,7 +1132,7 @@ initializePlayers();
 .setup-step {
   border: 1px solid var(--sp-border);
   border-radius: var(--radius-lg);
-  overflow: hidden;
+  overflow: visible;
   scroll-margin-top: var(--space-xl);
   background: var(--color-surface);
 }
@@ -1159,6 +1159,8 @@ initializePlayers();
   padding: var(--space-md) var(--space-lg);
   background: var(--sp-header-bg);
   border-bottom: 1px solid var(--sp-border);
+  border-radius: var(--radius-lg) var(--radius-lg) 0 0;
+  overflow: hidden;
 }
 
 .setup-step-heading {
