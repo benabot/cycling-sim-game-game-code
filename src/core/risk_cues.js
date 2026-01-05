@@ -49,3 +49,23 @@ export function computeRiskCue({
 
   return { level, reason, type };
 }
+
+export function toRiskReading(riskCue = {}) {
+  const levelMap = {
+    Faible: 'low',
+    Modéré: 'medium',
+    Élevé: 'high'
+  };
+  const reasonMap = {
+    Pavés: 'terrain',
+    'Descente sous pluie': 'terrain',
+    'Groupe instable': 'group',
+    'Groupe stable': 'group',
+    'Météo défavorable': 'weather'
+  };
+
+  return {
+    level: levelMap[riskCue.level] || 'low',
+    reason: reasonMap[riskCue.reason] || 'group'
+  };
+}

@@ -14,6 +14,8 @@ import { RiderType, CardType } from './rider.js';
 import { TerrainType, getTerrainBonus } from './terrain.js';
 import { getEnergyEffects, getEnergyStatus, EnergyConfig } from './energy.js';
 import { AIDifficulty } from './teams.js';
+import { computeRiskCue, toRiskReading } from './risk_cues.js';
+import { RaceWeather } from './race_weather.js';
 
 /**
  * AI Personality types - affects decision making style
@@ -43,7 +45,8 @@ export const TeamRole = {
  * Main AI class for making game decisions
  */
 export class CyclingAI {
-  constructor(difficulty = AIDifficulty.NORMAL, personality = null) {
+  constructor(difficulty = AIDifficulty.NORMAL, personality = null, options = {}) {
+    this.random = options.random || Math.random;
     this.difficulty = difficulty;
     this.personality = personality || this.assignRandomPersonality();
     this.thinkingDelay = this.getThinkingDelay();
@@ -61,7 +64,7 @@ export class CyclingAI {
       return AIPersonality.BALANCED;
     }
     // Normal/Hard get random personality
-    return personalities[Math.floor(Math.random() * personalities.length)];
+    return personalities[Math.floor(this.random() * personalities.length)];
   }
 
   /**
@@ -225,6 +228,107 @@ export class CyclingAI {
   }
 
   /**
+   * Build a qualitative risk cue reading for a rider.
+   */
+  getRiskCueReading(state, rider) {
+    if (!state || !rider) {
+      return { level: 'low', reason: 'group' };
+    }
+
+    const position = rider.position || 0;
+    const courseIndex = position - 1;
+    const cell = state.course?.[courseIndex];
+    const terrain = cell?.terrain || this.getTerrainAtPosition(state, position);
+    const isCobbles = !!cell?.isCobbles;
+    const groupSize = state.riders
+      .filter(r => !r.hasFinished && r.position === position).length;
+    const isExposed = groupSize <= 1 || (rider.windPenaltyNextMove || 0) > 0;
+    const weather = state.raceEventState?.weather || RaceWeather.CLEAR;
+
+    const cue = computeRiskCue({
+      terrain,
+      isCobbles,
+      isExposed,
+      weather
+    });
+
+    return toRiskReading(cue);
+  }
+
+  /**
+   * Apply qualitative risk cues to tactical decisions.
+   */
+  riskAwareDecision(action, context = {}) {
+    const { state, rider } = context;
+    const riskCue = context.riskCue || this.getRiskCueReading(state, rider);
+    const analysis = context.analysis || this.raceAnalysis;
+
+    if (action === 'attack') {
+      const baseDecision = !!context.baseDecision;
+      if (!baseDecision) return { allow: false, riskCue };
+      if (riskCue.level === 'low') return { allow: true, riskCue };
+      if (!rider || !state) return { allow: baseDecision, riskCue };
+
+      const terrain = context.terrain || this.getTerrainAtPosition(state, rider.position);
+      const terrainBonus = getTerrainBonus(rider.type, terrain);
+      const favorableProfile = terrainBonus > 0 || (rider.energy || 0) > 70;
+
+      if (riskCue.level === 'medium') {
+        if (!favorableProfile) return { allow: false, riskCue };
+        const hesitation = this.random();
+        if (hesitation < 0.35) return { allow: false, riskCue };
+        return { allow: true, riskCue };
+      }
+
+      if (riskCue.level === 'high') {
+        if (!favorableProfile) return { allow: false, riskCue };
+        const isLateRace = context.distanceToFinish <= 12 || analysis?.racePhase === 'sprint';
+        if (!isLateRace && this.personality !== AIPersonality.ATTACKER) {
+          return { allow: false, riskCue };
+        }
+        const hesitation = this.random();
+        if (hesitation < 0.8) return { allow: false, riskCue };
+        return { allow: true, riskCue };
+      }
+    }
+
+    if (action === 'wind') {
+      if (riskCue.level === 'low') return { avoidWind: false, riskCue };
+      const reasonSignals = riskCue.reason === 'group' || riskCue.reason === 'weather';
+      const baseAvoid = riskCue.level === 'high' || reasonSignals;
+      const chance = riskCue.level === 'high' ? 0.7 : 0.4;
+      const avoidWind = baseAvoid && this.random() < chance;
+      return { avoidWind, riskCue };
+    }
+
+    if (action === 'card') {
+      const { cards = [], selectedCard } = context;
+      if (!selectedCard || cards.length === 0) return { card: selectedCard, riskCue };
+      if (riskCue.level === 'low') return { card: selectedCard, riskCue };
+
+      const sorted = [...cards].sort((a, b) => a.value - b.value);
+      const baseIndex = sorted.findIndex(c => c.id === selectedCard.id);
+      if (baseIndex <= 0) return { card: selectedCard, riskCue };
+
+      const protectLeader = riskCue.level !== 'low' &&
+        context.role !== TeamRole.LEADER &&
+        analysis?.myBestRider?.id &&
+        analysis.myBestRider.id !== rider?.id;
+      const downshiftChance = riskCue.level === 'high' ? 0.75 : 0.4;
+      let shouldDownshift = this.random() < downshiftChance;
+      if (context.avoidWind) shouldDownshift = true;
+      if (protectLeader) shouldDownshift = true;
+      if (!shouldDownshift) return { card: selectedCard, riskCue };
+
+      const dropSteps = riskCue.level === 'high' && this.random() < 0.5 ? 2 : 1;
+      const targetIndex = Math.max(0, baseIndex - dropSteps);
+      return { card: sorted[targetIndex], riskCue };
+    }
+
+    return { riskCue };
+  }
+
+  /**
    * Make a decision based on current game state and phase
    */
   makeDecision(state, phase, teamId) {
@@ -275,9 +379,9 @@ export class CyclingAI {
     // Selection logic based on difficulty and personality
     let selectedRider;
     
-    if (this.difficulty === AIDifficulty.EASY && Math.random() < 0.3) {
+    if (this.difficulty === AIDifficulty.EASY && this.random() < 0.3) {
       // 30% chance to pick randomly
-      selectedRider = availableRiders[Math.floor(Math.random() * availableRiders.length)];
+      selectedRider = availableRiders[Math.floor(this.random() * availableRiders.length)];
     } else if (this.personality === AIPersonality.CONSERVATIVE) {
       // Conservative: play domestiques first to protect leader
       const domestiques = scoredRiders.filter(s => s.role === TeamRole.DOMESTIQUE);
@@ -385,14 +489,14 @@ export class CyclingAI {
     const energyEffects = getEnergyEffects(rider.energy);
     const distanceToFinish = state.courseLength - rider.position;
     const role = this.teamRoles.get(rider.id);
-    const analysis = this.raceAnalysis;
+    const riskCue = this.getRiskCueReading(state, rider);
 
     // Get available cards
     const movementCards = rider.hand || [];
     const attackCards = energyEffects.canUseAttackCard ? (rider.attackCards || []) : [];
 
     // Decision: use attack card?
-    if (attackCards.length > 0 && this.shouldUseAttack(rider, state, distanceToFinish, role)) {
+    if (attackCards.length > 0 && this.shouldUseAttack(rider, state, distanceToFinish, role, riskCue)) {
       const attackCard = attackCards[0];
       return {
         type: 'select_card',
@@ -407,7 +511,7 @@ export class CyclingAI {
       return { type: 'error', reason: 'Aucune carte disponible' };
     }
 
-    const selectedCard = this.selectBestMovementCard(movementCards, rider, state, terrain, role);
+    const selectedCard = this.selectBestMovementCard(movementCards, rider, state, terrain, role, riskCue);
     return {
       type: 'select_card',
       cardId: selectedCard.id,
@@ -418,7 +522,21 @@ export class CyclingAI {
   /**
    * Decide whether to use attack card
    */
-  shouldUseAttack(rider, state, distanceToFinish, role) {
+  shouldUseAttack(rider, state, distanceToFinish, role, riskCue = null) {
+    const baseDecision = this.shouldUseAttackBase(rider, state, distanceToFinish, role);
+    const riskDecision = this.riskAwareDecision('attack', {
+      baseDecision,
+      rider,
+      state,
+      role,
+      distanceToFinish,
+      analysis: this.raceAnalysis,
+      riskCue
+    });
+    return riskDecision.allow;
+  }
+
+  shouldUseAttackBase(rider, state, distanceToFinish, role) {
     const analysis = this.raceAnalysis;
     
     // Domestiques rarely attack (unless opportunity)
@@ -432,7 +550,7 @@ export class CyclingAI {
 
     // Easy: rarely attacks
     if (this.difficulty === AIDifficulty.EASY) {
-      return distanceToFinish < 10 && Math.random() < 0.3;
+      return distanceToFinish < 10 && this.random() < 0.3;
     }
 
     // Personality-based attack decisions
@@ -440,30 +558,30 @@ export class CyclingAI {
       // Attackers attack earlier and more often
       if (distanceToFinish < 25) return true;
       if (analysis?.racePhase === 'middle' && rider.energy > 60) {
-        return Math.random() < 0.4;
+        return this.random() < 0.4;
       }
       // Attack in mountains if climber
       const terrain = this.getTerrainAtPosition(state, rider.position);
       if (terrain === TerrainType.MOUNTAIN && rider.type === RiderType.CLIMBER) {
-        return Math.random() < 0.5;
+        return this.random() < 0.5;
       }
     } else if (this.personality === AIPersonality.CONSERVATIVE) {
       // Conservative only attacks when sure
       if (distanceToFinish > 15) return false;
       if (rider.energy < 50) return false;
       if (analysis?.isLeading) return false; // Don't attack when leading
-      return distanceToFinish < 10 && Math.random() < 0.6;
+      return distanceToFinish < 10 && this.random() < 0.6;
     } else if (this.personality === AIPersonality.OPPORTUNIST) {
       // Opportunist attacks when opening appears
       if (analysis?.gapToLeader > 3 && analysis?.gapToLeader < 10) {
-        return Math.random() < 0.5; // Bridge the gap
+        return this.random() < 0.5; // Bridge the gap
       }
       if (distanceToFinish < 20) return true;
     }
 
     // Normal: attacks in final
     if (this.difficulty === AIDifficulty.NORMAL) {
-      return distanceToFinish < 15 && Math.random() < 0.5;
+      return distanceToFinish < 15 && this.random() < 0.5;
     }
 
     // Hard: strategic attacks
@@ -473,7 +591,7 @@ export class CyclingAI {
       if (rider.energy > 60) {
         const terrain = this.getTerrainAtPosition(state, rider.position);
         const bonus = getTerrainBonus(rider.type, terrain);
-        if (bonus > 0) return Math.random() < 0.4;
+        if (bonus > 0) return this.random() < 0.4;
       }
     }
 
@@ -483,7 +601,30 @@ export class CyclingAI {
   /**
    * Select best movement card from hand
    */
-  selectBestMovementCard(cards, rider, state, terrain, role) {
+  selectBestMovementCard(cards, rider, state, terrain, role, riskCue = null) {
+    const baseCard = this.selectBestMovementCardBase(cards, rider, state, terrain, role);
+    const windDecision = this.riskAwareDecision('wind', {
+      rider,
+      state,
+      role,
+      analysis: this.raceAnalysis,
+      riskCue
+    });
+    const riskDecision = this.riskAwareDecision('card', {
+      rider,
+      state,
+      role,
+      analysis: this.raceAnalysis,
+      cards,
+      selectedCard: baseCard,
+      terrain,
+      riskCue,
+      avoidWind: windDecision.avoidWind
+    });
+    return riskDecision.card || baseCard;
+  }
+
+  selectBestMovementCardBase(cards, rider, state, terrain, role) {
     const energyStatus = getEnergyStatus(rider.energy);
     const analysis = this.raceAnalysis;
     
@@ -510,7 +651,7 @@ export class CyclingAI {
 
     // Easy: random card
     if (this.difficulty === AIDifficulty.EASY) {
-      return cards[Math.floor(Math.random() * cards.length)];
+      return cards[Math.floor(this.random() * cards.length)];
     }
 
     // Check terrain advantage
@@ -582,7 +723,7 @@ export class CyclingAI {
 
     // Easy: 50% chance
     if (this.difficulty === AIDifficulty.EASY) {
-      if (Math.random() < 0.5) {
+      if (this.random() < 0.5) {
         return { type: 'use_specialty', useSpecialty: true, reason: 'Utilisation spécialité' };
       }
       return { type: 'skip_specialty', reason: 'Économie de carte' };
@@ -610,7 +751,7 @@ export class CyclingAI {
 
     // Normal: use if close to finish or on good terrain segment
     if (this.difficulty === AIDifficulty.NORMAL) {
-      if (distanceToFinish < 30 || Math.random() < 0.6) {
+      if (distanceToFinish < 30 || this.random() < 0.6) {
         return { type: 'use_specialty', useSpecialty: true, reason: 'Utilisation spécialité' };
       }
     }
@@ -665,8 +806,8 @@ export class CyclingAI {
 /**
  * Create AI instance with given difficulty and optional personality
  */
-export function createAI(difficulty = AIDifficulty.NORMAL, personality = null) {
-  return new CyclingAI(difficulty, personality);
+export function createAI(difficulty = AIDifficulty.NORMAL, personality = null, options = {}) {
+  return new CyclingAI(difficulty, personality, options);
 }
 
 /**
