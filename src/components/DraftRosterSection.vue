@@ -32,9 +32,15 @@
       </button>
     </div>
 
-    <div class="draft-budget" :aria-live="isMobile ? 'polite' : null">
-      <span class="draft-budget__label">Budget restant</span>
-      <span class="draft-budget__value">{{ budgetRemaining }} / {{ budgetTotal }}</span>
+    <div class="draft-status-bar" :aria-live="isMobile ? 'polite' : null">
+      <div class="draft-status-bar__item">
+        <span>Budget</span>
+        <span class="draft-status-bar__value">{{ budgetRemaining }}/{{ budgetTotal }}</span>
+      </div>
+      <div class="draft-status-bar__item">
+        <span>Équipe</span>
+        <span class="draft-status-bar__value">{{ rosterCount }}/{{ rosterSize }}</span>
+      </div>
     </div>
 
     <div class="draft-grid" :class="{ 'draft-grid--mobile': isMobile }">
@@ -415,21 +421,33 @@ onBeforeUnmount(() => {
   width: 100%;
 }
 
-.draft-budget {
+.draft-status-bar {
+  position: sticky;
+  top: 0;
+  z-index: var(--z-sticky);
+  background: rgba(255, 255, 255, 0.95);
+  backdrop-filter: blur(8px);
+  padding: 12px 16px;
+  border-bottom: 1px solid var(--color-line);
   display: flex;
-  align-items: baseline;
-  gap: var(--space-xs);
-  font-size: 13px;
-  color: var(--sp-text-secondary, var(--color-ink-muted));
-}
-
-.draft-budget__label {
+  justify-content: space-between;
+  align-items: center;
+  font-size: 14px;
   font-weight: 500;
+  gap: 16px;
+  color: var(--color-ink-soft);
 }
 
-.draft-budget__value {
+.draft-status-bar__item {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.draft-status-bar__value {
   font-weight: 600;
-  color: var(--sp-text-strong, var(--color-ink));
+  font-family: var(--font-mono);
+  color: var(--color-ink);
 }
 
 .draft-mobile-tabs {
