@@ -362,6 +362,15 @@
         </header>
         <div v-show="activeStep === 4" class="setup-step-body">
           <div class="start-panel start-panel--essential">
+            <div class="start-panel__message">
+              <div class="start-panel__icon">
+                <UIIcon type="finish" size="lg" />
+              </div>
+              <h3 class="start-panel__heading">Tout est prêt !</h3>
+              <p class="start-panel__text">
+                Votre course est configurée. Lancez la compétition quand vous êtes prêt.
+              </p>
+            </div>
             <div class="start-panel__cta">
               <button
                 class="btn btn-primary btn-lg start-panel__cta-button"
@@ -1413,6 +1422,42 @@ initializePlayers();
   box-shadow: 0 8px 18px rgba(31, 35, 40, 0.12);
 }
 
+.start-panel__message {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--space-sm);
+  text-align: center;
+}
+
+.start-panel__icon {
+  width: 64px;
+  height: 64px;
+  border-radius: var(--radius-full);
+  background: linear-gradient(135deg, var(--color-accent), var(--color-accent-hover));
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: white;
+  box-shadow: 0 8px 20px rgba(227, 181, 74, 0.3);
+}
+
+.start-panel__heading {
+  margin: 0;
+  font-family: var(--font-display);
+  font-size: 22px;
+  font-weight: 650;
+  color: var(--sp-text-strong);
+}
+
+.start-panel__text {
+  margin: 0;
+  font-size: 14px;
+  color: var(--sp-text-secondary);
+  max-width: 400px;
+  line-height: 1.5;
+}
+
 
 /* Race sections */
 .race-config-block {
@@ -1514,7 +1559,25 @@ initializePlayers();
 
   .start-panel--essential {
     flex-direction: column;
-    align-items: flex-start;
+    align-items: center;
+    padding: var(--space-2xl) var(--space-lg);
+  }
+
+  .start-panel__message {
+    width: 100%;
+  }
+
+  .start-panel__icon {
+    width: 72px;
+    height: 72px;
+  }
+
+  .start-panel__heading {
+    font-size: 24px;
+  }
+
+  .start-panel__text {
+    font-size: 15px;
   }
 
   .setup-step-actions {
