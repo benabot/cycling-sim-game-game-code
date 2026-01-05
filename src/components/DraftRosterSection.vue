@@ -730,6 +730,8 @@ onBeforeUnmount(() => {
 }
 
 .draft-price {
+  display: inline-flex;
+  align-items: center;
   font-size: 11px;
   font-weight: 600;
   color: var(--sp-text-secondary, var(--color-ink-muted));
