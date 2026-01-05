@@ -1,24 +1,41 @@
 <template>
-  <header class="race-header" :class="`race-header--${theme}`">
-    <div class="race-header__content">
-      <div class="race-header__title-block">
-        <span class="race-header__eyebrow">Avant-course</span>
-        <h1 class="race-header__title">{{ title }}</h1>
-        <p v-if="subtitle" class="race-header__subtitle">{{ subtitle }}</p>
+  <header class="race-header" :class="[`race-header--${theme}`, { 'race-header--compact': variant === 'compact' }]">
+    <!-- Compact variant for race gameplay -->
+    <div v-if="variant === 'compact'" class="race-header__compact">
+      <div class="race-header__line1">
+        <span v-if="turn" class="turn-badge">Tour {{ turn }}</span>
+        <span v-if="phase" class="phase-label">{{ phase }}</span>
       </div>
-      <div v-if="$slots.actions" class="race-header__actions">
-        <slot name="actions" />
+      <div v-if="$slots.chips" class="race-header__line2">
+        <slot name="chips" />
       </div>
     </div>
-    <div class="race-header__ornament" aria-hidden="true"></div>
+
+    <!-- Default variant for setup screens -->
+    <template v-else>
+      <div class="race-header__content">
+        <div class="race-header__title-block">
+          <span class="race-header__eyebrow">Avant-course</span>
+          <h1 class="race-header__title">{{ title }}</h1>
+          <p v-if="subtitle" class="race-header__subtitle">{{ subtitle }}</p>
+        </div>
+        <div v-if="$slots.actions" class="race-header__actions">
+          <slot name="actions" />
+        </div>
+      </div>
+      <div class="race-header__ornament" aria-hidden="true"></div>
+    </template>
   </header>
 </template>
 
 <script setup>
 defineProps({
+  variant: { type: String, default: 'default' }, // 'default' | 'compact'
   title: { type: String, default: '' },
   subtitle: { type: String, default: '' },
-  theme: { type: String, default: 'poster' }
+  theme: { type: String, default: 'poster' },
+  turn: { type: Number, default: null },
+  phase: { type: String, default: null }
 });
 </script>
 
@@ -95,6 +112,55 @@ defineProps({
   border-radius: 60px;
   opacity: 0.4;
   transform: rotate(-6deg);
+}
+
+/* Compact variant styles */
+.race-header--compact {
+  padding: 8px 16px;
+  background: var(--color-paper);
+  border: 1px solid var(--color-line);
+}
+
+.race-header--compact::before,
+.race-header--compact::after,
+.race-header--compact .race-header__ornament {
+  display: none;
+}
+
+.race-header__compact {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.race-header__line1 {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--color-ink);
+}
+
+.turn-badge {
+  color: var(--color-ink-soft);
+}
+
+.phase-label {
+  color: var(--color-ink);
+}
+
+.race-header__line2 {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  overflow-x: auto;
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+}
+
+.race-header__line2::-webkit-scrollbar {
+  display: none;
 }
 
 @media (max-width: 720px) {
