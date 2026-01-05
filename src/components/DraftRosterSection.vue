@@ -955,7 +955,7 @@ onBeforeUnmount(() => {
 
   .draft-pool,
   .draft-roster {
-    padding-bottom: calc(var(--space-2xl) + 96px + env(safe-area-inset-bottom));
+    padding-bottom: 120px; /* CTA + safe-area + breathing room */
   }
 
   .draft-card .btn {
