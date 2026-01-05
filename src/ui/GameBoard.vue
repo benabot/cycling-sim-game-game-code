@@ -254,8 +254,8 @@
       @restart="restartGame"
     />
 
-    <!-- Game Log -->
-    <GameLog v-if="!isMobile" :log="gameLog" />
+    <!-- Game Log (slate panel on all devices) -->
+    <GameLog :log="gameLog" />
 
     <RulesModal v-model="isRulesOpen" />
     <CourseModal
