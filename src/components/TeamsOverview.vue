@@ -21,7 +21,7 @@
           <span class="team-card-name">{{ getTeamConfig(team).name }}</span>
           <span v-if="isAITeam(team)" class="team-badge team-badge--ai">
             <UIIcon type="ai" size="xs" />
-            <UIIcon v-if="getAIPersonalityType(team)" :type="getAIPersonalityType(team)" size="xs" />
+            <UIIcon v-if="getAIProfileType(team)" :type="getAIProfileType(team)" size="xs" />
           </span>
           <span v-if="currentTeam === team" class="team-badge team-badge--active">
             <UIIcon type="start" size="xs" />
@@ -122,17 +122,16 @@ const props = defineProps({
   playedRiders: { type: Array, default: () => [] },
   teamIds: { type: Array, default: () => ['team_a', 'team_b'] },
   players: { type: Array, default: () => [] },
-  aiPersonalities: { type: Object, default: () => ({}) }
+  aiProfiles: { type: Object, default: () => ({}) }
 });
 
 const emit = defineEmits(['selectRider']);
 
 // Map personality to icon type
-const personalityIconTypes = {
-  attacker: 'attack',
-  conservative: 'shield',
-  opportunist: 'target',
-  balanced: 'balance'
+const profileIconTypes = {
+  conservateur: 'shield',
+  equilibre: 'balance',
+  opportuniste: 'target'
 };
 
 const displayTeams = computed(() => {
@@ -164,9 +163,9 @@ function isAITeam(teamId) {
   return player?.playerType === PlayerType.AI;
 }
 
-function getAIPersonalityType(teamId) {
-  const personality = props.aiPersonalities[teamId];
-  return personalityIconTypes[personality] || null;
+function getAIProfileType(teamId) {
+  const profile = props.aiProfiles[teamId];
+  return profileIconTypes[profile] || null;
 }
 
 function getTeamRiders(team) {

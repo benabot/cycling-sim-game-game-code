@@ -108,6 +108,7 @@ export function createPlayerConfig(teamId, playerType = PlayerType.HUMAN, diffic
     teamId,
     playerType,
     difficulty: playerType === PlayerType.AI ? difficulty : null,
+    aiProfile: playerType === PlayerType.AI ? 'equilibre' : null,
     name: playerType === PlayerType.HUMAN 
       ? `Joueur ${teamConfig.shortName}` 
       : `IA ${teamConfig.shortName}`,

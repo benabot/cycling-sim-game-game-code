@@ -252,6 +252,14 @@
                         <option value="balanced">Équilibré</option>
                       </select>
                     </div>
+                    <div class="ai-field">
+                      <span class="type-caption">Profil tactique</span>
+                      <select v-model="player.aiProfile" @change="updatePlayer(index)" class="select select--sm">
+                        <option value="conservateur">Conservateur</option>
+                        <option value="equilibre">Équilibré</option>
+                        <option value="opportuniste">Opportuniste</option>
+                      </select>
+                    </div>
                   </div>
                 </div>
               </div>
@@ -527,7 +535,8 @@ function initializePlayers() {
       ...config,
       customName: getTeamDefaultName(teamId),
       riderNames: ['', '', '', '', ''],
-      personality: ''
+      personality: '',
+      aiProfile: isHuman ? null : 'equilibre'
     };
   });
   initializeDraftState(teamIds);
@@ -744,7 +753,8 @@ function setPlayerType(index, type) {
     ...newConfig,
     customName: player.customName,
     riderNames: player.riderNames,
-    personality: player.personality || ''
+    personality: player.personality || '',
+    aiProfile: type === PlayerType.AI ? (player.aiProfile || 'equilibre') : null
   };
   if (type === PlayerType.AI) {
     clearTeamRoster(player.teamId);

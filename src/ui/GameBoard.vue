@@ -228,7 +228,7 @@
       :playedRiders="playedThisTurn"
       :teamIds="teamIds"
       :players="players"
-      :aiPersonalities="aiPersonalities"
+      :aiProfiles="aiProfiles"
       @selectRider="quickSelectRider"
     />
 
@@ -339,7 +339,7 @@ const {
   numTeams,
   teamIds,
   players,
-  aiPersonalities,
+  aiProfiles,
   stageRace,
   weather,
   nextWeather,

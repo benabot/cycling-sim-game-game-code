@@ -17,6 +17,8 @@ import { AIDifficulty } from './teams.js';
 import { computeRiskCue, toRiskReading } from './risk_cues.js';
 import { RaceWeather } from './race_weather.js';
 
+const clampValue = (value, min, max) => Math.min(Math.max(value, min), max);
+
 /**
  * AI Personality types - affects decision making style
  */
@@ -25,6 +27,39 @@ export const AIPersonality = {
   CONSERVATIVE: 'conservative', // Saves energy, attacks only when certain
   OPPORTUNIST: 'opportunist',  // Adapts to situation, exploits openings
   BALANCED: 'balanced'         // Default balanced approach
+};
+
+/**
+ * AI Tactical profiles - risk posture and positioning preferences
+ */
+export const AITacticalProfile = {
+  CONSERVATEUR: 'conservateur',
+  EQUILIBRE: 'equilibre',
+  OPPORTUNISTE: 'opportuniste'
+};
+
+const TacticalProfileModifiers = {
+  [AITacticalProfile.CONSERVATEUR]: {
+    attackBias: -0.2,
+    riskTolerance: -0.25,
+    windAcceptance: -0.2
+  },
+  [AITacticalProfile.EQUILIBRE]: {
+    attackBias: 0,
+    riskTolerance: 0,
+    windAcceptance: 0
+  },
+  [AITacticalProfile.OPPORTUNISTE]: {
+    attackBias: 0.2,
+    riskTolerance: 0.25,
+    windAcceptance: 0.2
+  }
+};
+
+const TacticalProfileNames = {
+  [AITacticalProfile.CONSERVATEUR]: 'Conservateur',
+  [AITacticalProfile.EQUILIBRE]: 'Équilibré',
+  [AITacticalProfile.OPPORTUNISTE]: 'Opportuniste'
 };
 
 /**
@@ -49,6 +84,8 @@ export class CyclingAI {
     this.random = options.random || Math.random;
     this.difficulty = difficulty;
     this.personality = personality || this.assignRandomPersonality();
+    this.aiProfile = this.resolveTacticalProfile(options.aiProfile);
+    this.profileModifiers = this.getTacticalProfileModifiers(this.aiProfile);
     this.thinkingDelay = this.getThinkingDelay();
     this.teamRoles = new Map(); // riderId -> role
     this.raceAnalysis = null;
@@ -65,6 +102,29 @@ export class CyclingAI {
     }
     // Normal/Hard get random personality
     return personalities[Math.floor(this.random() * personalities.length)];
+  }
+
+  /**
+   * Resolve tactical profile, defaulting to equilibré.
+   */
+  resolveTacticalProfile(profile) {
+    const profiles = Object.values(AITacticalProfile);
+    if (profiles.includes(profile)) return profile;
+    return AITacticalProfile.EQUILIBRE;
+  }
+
+  /**
+   * Get tactical profile modifiers for decision biasing.
+   */
+  getTacticalProfileModifiers(profile = this.aiProfile) {
+    return TacticalProfileModifiers[profile] || TacticalProfileModifiers[AITacticalProfile.EQUILIBRE];
+  }
+
+  /**
+   * Get tactical profile name for display.
+   */
+  getTacticalProfileName() {
+    return TacticalProfileNames[this.aiProfile] || 'Inconnu';
   }
 
   /**
@@ -256,27 +316,69 @@ export class CyclingAI {
   }
 
   /**
+   * Check if the rider is currently on a cobbles overlay cell.
+   */
+  isRiderOnCobbles(state, rider) {
+    if (!state || !rider) return false;
+    const position = rider.position || 0;
+    const courseIndex = position - 1;
+    return !!state.course?.[courseIndex]?.isCobbles;
+  }
+
+  /**
+   * Adjust card index for cobbles positioning by tactical profile.
+   */
+  getCobblesCardAdjustment({ rider }) {
+    if (!rider) return 0;
+    if (this.aiProfile === AITacticalProfile.CONSERVATEUR) {
+      if (rider.type === RiderType.CLIMBER) return -2;
+      if (rider.type === RiderType.ROULEUR) return 1;
+      return -1;
+    }
+    if (this.aiProfile === AITacticalProfile.OPPORTUNISTE) {
+      if (rider.type === RiderType.SPRINTER) return 1;
+      if (rider.type === RiderType.ROULEUR) return 1;
+      return 0;
+    }
+    return 0;
+  }
+
+  /**
    * Apply qualitative risk cues to tactical decisions.
    */
   riskAwareDecision(action, context = {}) {
     const { state, rider } = context;
     const riskCue = context.riskCue || this.getRiskCueReading(state, rider);
     const analysis = context.analysis || this.raceAnalysis;
+    const modifiers = this.profileModifiers;
+    const energy = rider?.energy ?? 100;
+    const isCobbles = context.isCobbles ?? this.isRiderOnCobbles(state, rider);
 
     if (action === 'attack') {
       const baseDecision = !!context.baseDecision;
       if (!baseDecision) return { allow: false, riskCue };
-      if (riskCue.level === 'low') return { allow: true, riskCue };
       if (!rider || !state) return { allow: baseDecision, riskCue };
 
       const terrain = context.terrain || this.getTerrainAtPosition(state, rider.position);
       const terrainBonus = getTerrainBonus(rider.type, terrain);
       const favorableProfile = terrainBonus > 0 || (rider.energy || 0) > 70;
+      const riskBias = modifiers.riskTolerance + modifiers.attackBias * 0.4;
+
+      if (this.aiProfile === AITacticalProfile.OPPORTUNISTE && riskCue.level === 'high' && energy < 40) {
+        return { allow: false, riskCue };
+      }
+
+      if (riskCue.level === 'low') {
+        if (modifiers.attackBias < 0 && this.random() < Math.abs(modifiers.attackBias)) {
+          return { allow: false, riskCue };
+        }
+        return { allow: true, riskCue };
+      }
 
       if (riskCue.level === 'medium') {
         if (!favorableProfile) return { allow: false, riskCue };
-        const hesitation = this.random();
-        if (hesitation < 0.35) return { allow: false, riskCue };
+        const avoidThreshold = clampValue(0.35 - riskBias, 0.1, 0.8);
+        if (this.random() < avoidThreshold) return { allow: false, riskCue };
         return { allow: true, riskCue };
       }
 
@@ -286,8 +388,8 @@ export class CyclingAI {
         if (!isLateRace && this.personality !== AIPersonality.ATTACKER) {
           return { allow: false, riskCue };
         }
-        const hesitation = this.random();
-        if (hesitation < 0.8) return { allow: false, riskCue };
+        const avoidThreshold = clampValue(0.8 - riskBias * 0.6, 0.4, 0.95);
+        if (this.random() < avoidThreshold) return { allow: false, riskCue };
         return { allow: true, riskCue };
       }
     }
@@ -297,31 +399,58 @@ export class CyclingAI {
       const reasonSignals = riskCue.reason === 'group' || riskCue.reason === 'weather';
       const baseAvoid = riskCue.level === 'high' || reasonSignals;
       const chance = riskCue.level === 'high' ? 0.7 : 0.4;
-      const avoidWind = baseAvoid && this.random() < chance;
+      const adjustedChance = clampValue(chance - modifiers.windAcceptance * 0.3, 0.1, 0.9);
+      const avoidWind = baseAvoid && this.random() < adjustedChance;
       return { avoidWind, riskCue };
     }
 
     if (action === 'card') {
       const { cards = [], selectedCard } = context;
       if (!selectedCard || cards.length === 0) return { card: selectedCard, riskCue };
-      if (riskCue.level === 'low') return { card: selectedCard, riskCue };
 
       const sorted = [...cards].sort((a, b) => a.value - b.value);
       const baseIndex = sorted.findIndex(c => c.id === selectedCard.id);
-      if (baseIndex <= 0) return { card: selectedCard, riskCue };
+      if (baseIndex < 0) return { card: selectedCard, riskCue };
 
       const protectLeader = riskCue.level !== 'low' &&
         context.role !== TeamRole.LEADER &&
         analysis?.myBestRider?.id &&
         analysis.myBestRider.id !== rider?.id;
-      const downshiftChance = riskCue.level === 'high' ? 0.75 : 0.4;
-      let shouldDownshift = this.random() < downshiftChance;
+      const baseDownshiftChance = riskCue.level === 'high' ? 0.75 : 0.4;
+      const downshiftChance = clampValue(
+        baseDownshiftChance - modifiers.riskTolerance - modifiers.attackBias * 0.3,
+        0.1,
+        0.95
+      );
+      let shouldDownshift = riskCue.level !== 'low' && this.random() < downshiftChance;
       if (context.avoidWind) shouldDownshift = true;
       if (protectLeader) shouldDownshift = true;
-      if (!shouldDownshift) return { card: selectedCard, riskCue };
+      if (this.aiProfile === AITacticalProfile.OPPORTUNISTE && riskCue.level === 'high' && energy < 40) {
+        shouldDownshift = true;
+      }
 
-      const dropSteps = riskCue.level === 'high' && this.random() < 0.5 ? 2 : 1;
-      const targetIndex = Math.max(0, baseIndex - dropSteps);
+      let targetIndex = baseIndex;
+      if (shouldDownshift) {
+        const dropChanceBase = riskCue.level === 'high' ? 0.5 : 0.2;
+        const dropChance = clampValue(
+          dropChanceBase - modifiers.riskTolerance * 0.2,
+          0.1,
+          0.8
+        );
+        const dropSteps = this.random() < dropChance ? 2 : 1;
+        targetIndex = Math.max(0, baseIndex - dropSteps);
+      }
+
+      if (isCobbles) {
+        const cobblesAdjustment = this.getCobblesCardAdjustment({ rider });
+        targetIndex = clampValue(targetIndex + cobblesAdjustment, 0, sorted.length - 1);
+      }
+
+      if (this.aiProfile === AITacticalProfile.OPPORTUNISTE && riskCue.level === 'high' && energy < 40) {
+        targetIndex = 0;
+      }
+
+      if (targetIndex === baseIndex) return { card: selectedCard, riskCue };
       return { card: sorted[targetIndex], riskCue };
     }
 
@@ -490,6 +619,8 @@ export class CyclingAI {
     const distanceToFinish = state.courseLength - rider.position;
     const role = this.teamRoles.get(rider.id);
     const riskCue = this.getRiskCueReading(state, rider);
+    const courseIndex = (rider.position || 0) - 1;
+    const isCobbles = !!state.course?.[courseIndex]?.isCobbles;
 
     // Get available cards
     const movementCards = rider.hand || [];
@@ -511,7 +642,7 @@ export class CyclingAI {
       return { type: 'error', reason: 'Aucune carte disponible' };
     }
 
-    const selectedCard = this.selectBestMovementCard(movementCards, rider, state, terrain, role, riskCue);
+    const selectedCard = this.selectBestMovementCard(movementCards, rider, state, terrain, role, riskCue, isCobbles);
     return {
       type: 'select_card',
       cardId: selectedCard.id,
@@ -601,7 +732,7 @@ export class CyclingAI {
   /**
    * Select best movement card from hand
    */
-  selectBestMovementCard(cards, rider, state, terrain, role, riskCue = null) {
+  selectBestMovementCard(cards, rider, state, terrain, role, riskCue = null, isCobbles = false) {
     const baseCard = this.selectBestMovementCardBase(cards, rider, state, terrain, role);
     const windDecision = this.riskAwareDecision('wind', {
       rider,
@@ -619,7 +750,8 @@ export class CyclingAI {
       selectedCard: baseCard,
       terrain,
       riskCue,
-      avoidWind: windDecision.avoidWind
+      avoidWind: windDecision.avoidWind,
+      isCobbles
     });
     return riskDecision.card || baseCard;
   }

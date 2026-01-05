@@ -19,7 +19,7 @@ import {
   getCurrentTeamAIDifficulty,
   TurnPhase
 } from '../core/game_engine.js';
-import { CyclingAI, createAI } from '../core/ai.js';
+import { CyclingAI, createAI, AITacticalProfile } from '../core/ai.js';
 import { PlayerType } from '../core/teams.js';
 import { FINISH_LINE, TeamConfig } from '../config/game.config.js';
 import { EnergyConfig } from '../core/energy.js';
@@ -69,15 +69,16 @@ export function useGameEngine() {
       gameConfig.players
         .filter(p => p.playerType === PlayerType.AI)
         .forEach(p => {
-          // v4.5: Pass personality (empty = random)
+          // v4.5: Pass personality (empty = random) + tactical profile
           const personality = p.personality || null;
-          const ai = createAI(p.difficulty, personality);
+          const aiProfile = p.aiProfile || AITacticalProfile.EQUILIBRE;
+          const ai = createAI(p.difficulty, personality, { aiProfile });
           aiInstances.value[p.teamId] = ai;
-          // Store personality for display
-          if (!gameState.value.aiPersonalities) {
-            gameState.value.aiPersonalities = {};
+          // Store profile for display
+          if (!gameState.value.aiProfiles) {
+            gameState.value.aiProfiles = {};
           }
-          gameState.value.aiPersonalities[p.teamId] = ai.personality;
+          gameState.value.aiProfiles[p.teamId] = ai.aiProfile;
         });
     }
     
@@ -88,7 +89,7 @@ export function useGameEngine() {
       log(`🤖 ${numAI} équipe(s) IA sur ${numTeams}`);
       // Log personalities
       Object.entries(aiInstances.value).forEach(([teamId, ai]) => {
-        log(`   ${teamId}: ${ai.getPersonalityName()}`);
+        log(`   ${teamId}: ${ai.getTacticalProfileName()}`);
       });
     }
   }
@@ -107,7 +108,7 @@ export function useGameEngine() {
   const selectedCardId = computed(() => gameState.value?.selectedCardId);
   const selectedSpecialtyId = computed(() => gameState.value?.selectedSpecialtyId);
   const lastDiceRoll = computed(() => gameState.value?.lastDiceRoll);
-  const aiPersonalities = computed(() => gameState.value?.aiPersonalities || {});
+  const aiProfiles = computed(() => gameState.value?.aiProfiles || {});
   const calculatedMovement = computed(() => gameState.value?.calculatedMovement || 0);
   const playedThisTurn = computed(() => gameState.value?.ridersPlayedThisTurn || []);
   const weather = computed(() => gameState.value?.raceEventState?.weather || RaceWeather.CLEAR);
@@ -869,7 +870,7 @@ export function useGameEngine() {
     teamIds,
     players,
     stageRace,
-    aiPersonalities,
+    aiProfiles,
     weather,
     nextWeather,
     riskCue,
