@@ -18,11 +18,17 @@ function makeCard(id, value, name) {
   return { id, value, name: name || `Card ${value}` };
 }
 
-function buildAttackState({ isCobbles = false, otherPosition = 48 } = {}) {
+function buildAttackState({
+  isCobbles = false,
+  otherPosition = 48,
+  terrain = TerrainType.FLAT,
+  weather = RaceWeather.CLEAR
+} = {}) {
   const courseLength = 60;
   const position = 50;
   const course = Array.from({ length: courseLength + 1 }, () => ({ terrain: TerrainType.FLAT }));
   course[position - 1].isCobbles = isCobbles;
+  course[position - 1].terrain = terrain;
 
   const rider = {
     id: 'r1',
@@ -56,7 +62,7 @@ function buildAttackState({ isCobbles = false, otherPosition = 48 } = {}) {
     courseLength,
     course,
     selectedRiderId: rider.id,
-    raceEventState: { weather: RaceWeather.CLEAR }
+    raceEventState: { weather }
   };
 }
 
@@ -162,19 +168,19 @@ describe('AI tactical profiles', () => {
   });
 
   it('alters cobbles positioning by rider type', () => {
-    const climberState = buildCobblesCardState(RiderType.CLIMBER);
-    const climberConservative = selectCardValue({
-      state: climberState,
+    const rouleurState = buildCobblesCardState(RiderType.ROULEUR);
+    const rouleurConservative = selectCardValue({
+      state: rouleurState,
       profile: AITacticalProfile.CONSERVATEUR,
-      randomValues: [0.8, 0.9]
+      randomValues: [0.99, 0.99]
     });
-    const climberBalanced = selectCardValue({
-      state: climberState,
+    const rouleurBalanced = selectCardValue({
+      state: rouleurState,
       profile: AITacticalProfile.EQUILIBRE,
-      randomValues: [0.8, 0.9]
+      randomValues: [0.99, 0.99]
     });
 
-    expect(climberConservative).toBeLessThan(climberBalanced);
+    expect(rouleurConservative).toBeGreaterThan(rouleurBalanced);
 
     const sprinterState = buildCobblesCardState(RiderType.SPRINTER);
     const sprinterOpportunist = selectCardValue({
@@ -194,7 +200,11 @@ describe('AI tactical profiles', () => {
   it('reduces aggression under high risk for every profile', () => {
     const randomValues = [0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 0.95];
     const lowRiskState = buildAttackState({ otherPosition: 50 });
-    const highRiskState = buildAttackState({ isCobbles: true, otherPosition: 50 });
+    const highRiskState = buildAttackState({
+      otherPosition: 50,
+      terrain: TerrainType.DESCENT,
+      weather: RaceWeather.RAIN
+    });
 
     const profiles = [
       AITacticalProfile.CONSERVATEUR,
