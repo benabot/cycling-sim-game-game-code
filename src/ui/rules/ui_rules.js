@@ -1,164 +1,168 @@
 // Source de vérité: PROJECT_DOCS/01_RULES/RULES_CURRENT.md
 export const RulesUIContent = {
   source: 'PROJECT_DOCS/01_RULES/RULES_CURRENT.md',
-  drawerLabel: 'Règles',
+  drawerLabel: 'Règles du jeu',
   cards: [
     {
       id: 'objectif',
-      title: 'Objectif',
+      title: 'But du jeu',
       icon: 'target',
       lines: [
-        "Dernier tour: déclenché par une action joueur (position >= arrivée).",
-        "L'aspiration ne déclenche pas le dernier tour.",
-        'Vainqueur: plus loin à la fin du dernier tour.'
+        "Amenez vos coureurs le plus loin possible avant la fin de la course.",
+        "Le dernier tour se déclenche quand un coureur franchit la ligne d'arrivée par son action (pas par aspiration).",
+        "Le vainqueur est le coureur ayant parcouru la plus grande distance à la fin du dernier tour."
       ]
     },
     {
       id: 'equipes',
-      title: 'Équipes',
+      title: 'Votre équipe',
       icon: 'team',
-      intro: '5 coureurs:',
+      intro: 'Vous dirigez 5 coureurs aux spécialités différentes :',
       profiles: [
         { type: 'climber', label: 'Grimpeur' },
         { type: 'puncher', label: 'Puncheur' },
         { type: 'rouleur', label: 'Rouleur' },
         { type: 'sprinter', label: 'Sprinteur' },
         { type: 'versatile', label: 'Polyvalent' }
-      ]
+      ],
+      footer: "Chaque profil excelle sur certains terrains et reçoit des bonus adaptés."
     },
     {
       id: 'sequence',
-      title: 'Séquence',
+      title: "Déroulement d'un tour",
       icon: 'die',
       list: [
-        'Choisir une carte',
-        'Lancer 1d6',
-        'Spécialité (si dispo)',
-        'Résoudre le déplacement'
+        'Choisissez une carte de votre main (+2 à +5) ou une carte Attaque (+6)',
+        'Lancez le dé pour ajouter 1 à 6 cases',
+        'Activez votre carte Spécialité (+2) si le terrain correspond à votre profil',
+        'Votre coureur avance du total : carte + dé + bonus terrain + spécialité'
       ],
       listType: 'ordered'
     },
     {
       id: 'main',
-      title: 'Cartes & main',
+      title: 'Gestion des cartes',
       icon: 'card',
       lines: [
-        'Main initiale: +2, +3, +3, +4, +4, +5.',
-        'Fin de tour (deck infini): Montagne/Descente +2 ; sinon +2, sous vent +1 (Rouleur +2).',
-        'Défausse: toutes les cartes, jamais recyclées.'
+        "Chaque coureur commence avec 6 cartes : +2, +3, +3, +4, +4, +5.",
+        "Les cartes jouées vont en défausse et ne reviennent jamais.",
+        "À chaque fin de tour, vous recevez une nouvelle carte (+2 normalement, ou +1 si vous êtes exposé au vent).",
+        "Astuce : gardez vos grosses cartes pour les moments décisifs !"
       ]
     },
     {
       id: 'energie',
-      title: 'Énergie (seuils)',
+      title: "Système d'énergie",
       icon: 'energy',
       lines: [
-        'Déplacement possible si coût <= énergie restante.',
-        'Fatigué 26-50: Attaque -1, Spécialité -1.',
-        'Épuisé 1-25: Attaque, Spécialité, Bonus spécialité indisponibles (bonus terrain ok).',
-        'Fringale 0: Récupérer uniquement (0 déplacement, +10).'
+        "Chaque coureur dispose de 100 points d'énergie. Se déplacer coûte de l'énergie selon la distance et le terrain.",
+        "Entre 51 et 100% : tout va bien, aucune pénalité.",
+        "Entre 26 et 50% (Fatigué) : vos cartes Attaque et Spécialité perdent 1 point d'efficacité.",
+        "Entre 1 et 25% (Épuisé) : impossible d'utiliser les cartes Attaque ou Spécialité.",
+        "À 0% (Fringale) : votre coureur doit se reposer (aucun déplacement, récupère 10 points)."
       ]
     },
     {
       id: 'recuperation',
-      title: 'Récupération',
+      title: "Récupérer de l'énergie",
       icon: 'shelter',
       lines: [
-        'Descente: +1 énergie/case si départ en descente.',
-        'Abri: +3 énergie fin de tour si pas sous vent et position finale ≠ montagne.',
-        'Ravitaillement: case finale du déplacement, +25 après dépense.',
-        'Cumulable: descente, abri, ravito (cap 100).'
+        "En descente : récupérez +1 énergie par case parcourue si vous partez d'une case descente.",
+        "À l'abri : +3 énergie en fin de tour si vous n'êtes pas exposé au vent (sauf en montagne).",
+        "Au ravitaillement : +25 énergie si vous terminez votre déplacement sur une case ravitaillement.",
+        "Ces bonus sont cumulables (maximum 100 points)."
       ]
     },
     {
       id: 'cases',
-      title: 'Cases (max 4)',
+      title: 'Occupation des cases',
       icon: 'info',
       lines: [
-        'Max 4 coureurs par case.',
-        'Case pleine: arrêt derrière.',
-        'Dans une case: plus à droite = devant.'
+        "Maximum 4 coureurs par case.",
+        "Si une case est pleine, le coureur s'arrête sur la première case libre derrière.",
+        "Dans une même case, le coureur le plus à droite est considéré \"devant\" (avantage en cas d'égalité)."
       ]
     },
     {
       id: 'aspiration',
-      title: 'Aspiration',
+      title: 'Aspiration (drafting)',
       icon: 'aspiration',
       lines: [
-        "Écart d'1 case vide: avance d'1 case.",
-        'Ne rejoint pas la case du groupe devant.',
-        'Pas en descente.',
-        'Montagne: possible si le coureur derrière termine hors montagne.',
-        'Résolution en cascade (arrière vers avant).'
+        "Quand une seule case vide sépare deux groupes, le groupe arrière avance automatiquement d'une case.",
+        "L'aspiration ne permet jamais de rejoindre directement la case du groupe devant.",
+        "Pas d'aspiration en descente (trop rapide pour profiter de l'abri).",
+        "Aspiration possible vers un groupe en montagne, mais uniquement si vous restez hors montagne.",
+        "L'aspiration se résout en cascade, de l'arrière vers l'avant."
       ]
     },
     {
       id: 'vent',
-      title: 'Vent',
+      title: 'Exposition au vent',
       icon: 'wind',
       lines: [
-        'Seul ou plus à droite + case devant vide.',
-        'Hors Montagne/Descente, évalué après aspiration.',
-        'Carte fin de tour: +1 (+2 rouleur).',
-        'Surcoût énergie au tour suivant: +3 / +5 rouleur.'
+        "Un coureur est exposé au vent s'il est seul (ou le plus à droite de sa case) ET que la case devant est vide.",
+        "Le vent est évalué après l'aspiration, et ne s'applique ni en montagne ni en descente.",
+        "Conséquences : carte de fin de tour réduite à +1 (sauf Rouleur : +2), et surcoût d'énergie au tour suivant (+3, ou +5 pour le Rouleur)."
       ]
     },
     {
       id: 'evenements',
-      title: 'Événements',
+      title: 'Incidents de course',
       icon: 'event',
       lines: [
-        '1 tirage max par tour global, cooldown 1 tour.',
-        'Crevaison: +2 énergie sur le prochain déplacement.',
-        'Chute: mouvement réduit (cap 1 case) +5 énergie.',
-        'Incident mécanique: carte fin de tour -1 (min 1).'
+        "Des incidents peuvent survenir aléatoirement (1 par tour maximum, avec un délai d'un tour entre deux).",
+        "Crevaison : coûte +2 énergie sur votre prochain déplacement.",
+        "Chute : déplacement limité à 1 case maximum + coût de +5 énergie.",
+        "Incident mécanique : votre carte de fin de tour perd 1 point."
       ]
     },
     {
       id: 'meteo',
-      title: 'Météo & risque',
+      title: 'Météo',
       icon: 'wind',
       lines: [
-        'Météo: Ciel clair, Vent latéral, Pluie.',
-        'Vent: pénalité sous vent ↑, abri ↓.',
-        'Pluie: chutes (descente/pavés) ↑, crevaison pavés ↑.',
-        'Indice risque: type + niveau + raison (qualitatif).'
+        "Ciel clair : conditions normales.",
+        "Vent latéral : pénalité au vent augmentée, bonus d'abri réduit.",
+        "Pluie : risque de chute accru en descente et sur pavés, crevaisons plus fréquentes sur pavés."
       ]
     },
     {
       id: 'paves',
-      title: 'Pavés',
+      title: 'Secteurs pavés',
       icon: 'cobbles',
       lines: [
-        'Overlay sur plat/côte/descente (4–6 secteurs, 4–6 cases).',
-        'Risques crevaison/chute ↑; rouleur favorisé, grimpeur pénalisé.',
-        'Bonus pavés: Rouleur +1, Sprinteur +1, Grimpeur -1.',
-        'Aucun pavé sur montagne/sprint/ravitaillement.'
+        "Les pavés sont des zones dangereuses superposées au terrain normal (4 à 6 secteurs de 4 à 6 cases).",
+        "Risques accrus de crevaison et de chute sur ces secteurs.",
+        "Rouleurs et Sprinteurs sont avantagés (+1), les Grimpeurs sont pénalisés (-1).",
+        "Conseil : restez groupés et évitez les efforts excessifs sur les pavés !"
       ]
     },
     {
       id: 'fin-de-tour',
-      title: 'Fin de tour',
+      title: 'Ordre de fin de tour',
       icon: 'info',
       lines: [
-        'Ordre: action, aspiration, vent (hors Montagne/Descente), cartes fin de tour, abri.',
-        'Ravitaillement: pendant le mouvement, pas en fin de tour.',
-        'Abri: +3 énergie si pas sous vent et position finale ≠ montagne.'
+        "1. Tous les joueurs effectuent leur action.",
+        "2. L'aspiration regroupe automatiquement les coureurs proches.",
+        "3. Le vent est évalué (hors montagne et descente).",
+        "4. Chaque coureur reçoit une carte de fin de tour.",
+        "5. Les coureurs à l'abri récupèrent +3 énergie."
       ]
     },
     {
       id: 'classements',
-      title: 'Classements',
+      title: 'Classement final',
       icon: 'trophy',
       lines: [
-        'Classique: positions finales (droite = devant).',
-        'Étapes: retard = écart x 10 s, GC cumulée.',
-        'Même position: retard 0.'
+        "Course classique : le classement correspond aux positions finales (le plus loin = le meilleur).",
+        "Course par étapes : le retard est calculé en secondes (10 secondes par case d'écart avec le leader).",
+        "En cas d'égalité de position, le coureur le plus à droite dans la case est considéré devant."
       ]
     }
   ],
   bonusTable: {
-    title: 'Tableau des bonus terrain',
+    title: 'Bonus par terrain et profil',
+    description: 'Chaque profil de coureur reçoit des bonus (ou malus) selon le terrain traversé.',
     headers: [
       { id: 'flat', label: 'Plat', icon: 'flat' },
       { id: 'hill', label: 'Côte', icon: 'hill' },
