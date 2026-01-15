@@ -10,7 +10,8 @@ export const RaceTitleVariants = [
 export const UIConfig = {
   titleVariant: 'Chasse-Patate',
   subtitle: 'Préparer la course',
-  raceTheme: 'poster'
+  raceTheme: 'poster',
+  animationSpeed: 1
 };
 
 export function getRaceHeaderTitle(variant = UIConfig.titleVariant) {

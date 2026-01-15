@@ -41,6 +41,29 @@
   background: var(--color-paper);
   border-radius: var(--radius-card);
   border: 1px solid var(--color-line);
+  position: relative;
+}
+
+.track-move-overlay {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  z-index: 40;
+}
+
+.track-move-ghost {
+  position: absolute;
+  top: 0;
+  left: 0;
+  pointer-events: none;
+  will-change: transform, opacity;
+  z-index: 41;
+}
+
+.track-move-ghost--aspiration {
+  box-shadow:
+    0 0 0 2px rgba(59, 130, 246, 0.35),
+    0 0 12px rgba(59, 130, 246, 0.35);
 }
 
 /* ========================================
@@ -512,6 +535,12 @@
   50% { 
     transform: translateX(-50%) scale(1.08);
     opacity: 0.9;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .track-aspiration-badge {
+    animation: none;
   }
 }
 

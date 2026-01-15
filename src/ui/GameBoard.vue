@@ -124,8 +124,8 @@
             :hasPlayedThisTurn="hasPlayedThisTurn"
             :decisionAid="decisionAid"
             :turnSummary="turnSummary"
-            @cancel="cancelRiderSelection"
-            @selectCard="selectCard"
+            @cancel="guardedCancelRiderSelection"
+            @selectCard="guardedSelectCard"
           >
             <template #actions>
               <!-- View-only mode: show info banner instead of actions -->
@@ -145,11 +145,11 @@
                 :useSpecialty="!!selectedSpecialtyId"
                 :totalMovement="calculatedMovement"
                 :currentPosition="currentRider.position"
-                @rollDice="rollDice"
-                @cancelCard="cancelCardSelection"
-                @useSpecialty="useSpecialty"
-                @skipSpecialty="skipSpecialty"
-                @resolve="resolve"
+                @rollDice="guardedRollDice"
+                @cancelCard="guardedCancelCardSelection"
+                @useSpecialty="guardedUseSpecialty"
+                @skipSpecialty="guardedSkipSpecialty"
+                @resolve="guardedResolve"
               />
             </template>
           </RiderPanel>
@@ -168,8 +168,8 @@
           :hasPlayedThisTurn="hasPlayedThisTurn"
           :decisionAid="decisionAid"
           :turnSummary="turnSummary"
-          @cancel="cancelRiderSelection"
-          @selectCard="selectCard"
+          @cancel="guardedCancelRiderSelection"
+          @selectCard="guardedSelectCard"
         >
           <template #actions>
             <!-- View-only mode: show info banner instead of actions -->
@@ -189,11 +189,11 @@
               :useSpecialty="!!selectedSpecialtyId"
               :totalMovement="calculatedMovement"
               :currentPosition="currentRider.position"
-              @rollDice="rollDice"
-              @cancelCard="cancelCardSelection"
-              @useSpecialty="useSpecialty"
-              @skipSpecialty="skipSpecialty"
-              @resolve="resolve"
+              @rollDice="guardedRollDice"
+              @cancelCard="guardedCancelCardSelection"
+              @useSpecialty="guardedUseSpecialty"
+              @skipSpecialty="guardedSkipSpecialty"
+              @resolve="guardedResolve"
             />
           </template>
         </RiderPanel>
@@ -274,8 +274,10 @@ import { useGameEngine } from '../composables/useGameEngine.js';
 import { TeamConfigs, PlayerType } from '../core/teams.js';
 import { getClassicPreset } from '../config/race-presets.js';
 import { RiderConfig, TerrainConfig } from '../config/game.config.js';
+import { UIConfig } from '../config/ui.config.js';
 import { calculateMovementConsumption, calculateRecovery } from '../core/energy.js';
 import { isRefuelZone } from '../core/terrain.js';
+import { createMoveAnimator, createMoveDiffHandler } from './anim/moveAnimator.js';
 import {
   GameStatusBar,
   TerrainLegend,
@@ -372,6 +374,11 @@ const isRulesOpen = ref(false);
 const isCourseModalOpen = ref(false);
 const isHistoryOpen = ref(false);
 const isMobile = ref(false);
+const isMoveAnimating = ref(false);
+const prefersReducedMotion = ref(false);
+const moveAnimator = ref(null);
+let reducedMotionMedia = null;
+let moveDiffHandler = null;
 const actionSheetState = ref('collapsed');
 const lastActionSheetRiderId = ref(null);
 let courseFocusTimeout = null;
@@ -438,6 +445,20 @@ const mobileLogPreview = computed(() => {
   return truncateText(cleaned || 'Événement', 72);
 });
 
+const animationSpeed = computed(() => {
+  const speed = Number(UIConfig.animationSpeed ?? 1);
+  return Number.isFinite(speed) ? speed : 1;
+});
+
+const riderSnapshots = computed(() => {
+  if (!allRiders.value?.length) return [];
+  return allRiders.value.map(rider => ({
+    id: rider.id,
+    position: rider.position,
+    teamId: rider.teamId || rider.team
+  }));
+});
+
 // Scroll to rider position on the course
 function scrollToRider(riderId) {
   const rider = allRiders.value.find(r => r.id === riderId);
@@ -491,6 +512,7 @@ function handleCourseAction() {
 // Allows viewing any rider's info (scroll + panel), but only playable riders can be played
 function quickSelectRider({ rider, viewOnly = false }) {
   if (phase.value === 'finished') return;
+  if (isMoveAnimating.value) return;
   if (rider.hasFinished || rider.turnsToSkip > 0) return;
   
   // Always scroll to rider position
@@ -514,6 +536,67 @@ function quickSelectRider({ rider, viewOnly = false }) {
 function updateViewport() {
   if (typeof window === 'undefined') return;
   isMobile.value = window.matchMedia('(max-width: 900px)').matches;
+}
+
+function updateReducedMotionPreference() {
+  if (!reducedMotionMedia) return;
+  prefersReducedMotion.value = reducedMotionMedia.matches;
+}
+
+function setupReducedMotionListener() {
+  if (typeof window === 'undefined' || typeof window.matchMedia !== 'function') return;
+  reducedMotionMedia = window.matchMedia('(prefers-reduced-motion: reduce)');
+  updateReducedMotionPreference();
+  if (typeof reducedMotionMedia.addEventListener === 'function') {
+    reducedMotionMedia.addEventListener('change', updateReducedMotionPreference);
+  } else if (typeof reducedMotionMedia.addListener === 'function') {
+    reducedMotionMedia.addListener(updateReducedMotionPreference);
+  }
+}
+
+function teardownReducedMotionListener() {
+  if (!reducedMotionMedia) return;
+  if (typeof reducedMotionMedia.removeEventListener === 'function') {
+    reducedMotionMedia.removeEventListener('change', updateReducedMotionPreference);
+  } else if (typeof reducedMotionMedia.removeListener === 'function') {
+    reducedMotionMedia.removeListener(updateReducedMotionPreference);
+  }
+  reducedMotionMedia = null;
+}
+
+function getMoveAnimationMode(moves) {
+  if (!moves?.length) return 'sequential';
+  return moves.length > 3 ? 'batch' : 'sequential';
+}
+
+function setupMoveAnimator() {
+  if (!courseBoardRef.value || moveAnimator.value) return;
+  moveAnimator.value = createMoveAnimator({
+    getOverlay: () => courseBoardRef.value?.getOverlayElement?.(),
+    getRiderElement: riderId => courseBoardRef.value?.getRiderElement?.(riderId),
+    getCellElement: position => courseBoardRef.value?.getCellElement?.(position),
+    getReducedMotion: () => prefersReducedMotion.value,
+    onStart: () => {
+      isMoveAnimating.value = true;
+    },
+    onEnd: () => {
+      isMoveAnimating.value = false;
+    }
+  });
+
+  moveDiffHandler = createMoveDiffHandler({
+    animator: moveAnimator.value,
+    getFromRect: move => {
+      const element = courseBoardRef.value?.getRiderElement?.(move.riderId);
+      return element?.getBoundingClientRect ? element.getBoundingClientRect() : null;
+    },
+    getToRect: move => {
+      const element = courseBoardRef.value?.getRiderElement?.(move.riderId);
+      return element?.getBoundingClientRect ? element.getBoundingClientRect() : null;
+    },
+    getMode: getMoveAnimationMode,
+    getSpeed: () => animationSpeed.value
+  });
 }
 
 function toggleActionSheet() {
@@ -559,6 +642,21 @@ function isSelectedCardAttack() {
   if (!currentRider.value) return false;
   return currentRider.value.attackCards?.some(c => c.id === selectedCardId.value);
 }
+
+function guardAction(action) {
+  return (...args) => {
+    if (isMoveAnimating.value) return;
+    return action(...args);
+  };
+}
+
+const guardedCancelRiderSelection = guardAction(cancelRiderSelection);
+const guardedSelectCard = guardAction(selectCard);
+const guardedCancelCardSelection = guardAction(cancelCardSelection);
+const guardedRollDice = guardAction(rollDice);
+const guardedUseSpecialty = guardAction(useSpecialty);
+const guardedSkipSpecialty = guardAction(skipSpecialty);
+const guardedResolve = guardAction(resolve);
 
 // Team helpers for dynamic legend
 function getTeamColor(teamId) {
@@ -621,11 +719,15 @@ function buildCoachNote({ rider, energyEstimate, windRisk }) {
 onMounted(() => {
   updateViewport();
   window.addEventListener('resize', updateViewport);
+  setupReducedMotionListener();
+  setupMoveAnimator();
   initialize(props.gameConfig);
 });
 
 onBeforeUnmount(() => {
   window.removeEventListener('resize', updateViewport);
+  teardownReducedMotionListener();
+  moveAnimator.value?.cancel();
   if (courseFocusTimeout) {
     clearTimeout(courseFocusTimeout);
   }
@@ -655,20 +757,47 @@ watch(isMobile, (mobile) => {
   }
 });
 
+watch(courseBoardRef, () => {
+  setupMoveAnimator();
+});
+
+watch(
+  riderSnapshots,
+  (next, prev) => {
+    if (!moveDiffHandler) return;
+    if (!prev?.length || !next?.length) return;
+    const effects = (endTurnEffects.value?.aspiration || []).map(effect => ({
+      ...effect,
+      type: 'aspiration'
+    }));
+    const batchId = moveDiffHandler.capture(prev, next, effects);
+    if (!batchId) return;
+    nextTick(() => {
+      moveDiffHandler?.playPending(batchId);
+    });
+  },
+  { flush: 'pre' }
+);
+
 // v4.0: Watch for AI turns and execute automatically
 watch(
-  [isAITurn, turnPhase, showEffectsOverlay, phase, currentTeam],
-  ([aiTurn, tPhase, effectsShowing, gamePhase, team]) => {
+  [isAITurn, turnPhase, showEffectsOverlay, phase, currentTeam, isMoveAnimating],
+  ([aiTurn, tPhase, effectsShowing, gamePhase, team, animating]) => {
     // Only execute AI if:
     // - It's an AI turn
     // - Game is still playing
     // - Not showing effects overlay
     // - Valid turn phase
+    if (animating) return;
     if (aiTurn && gamePhase !== 'finished' && !effectsShowing) {
       const validPhases = ['select_rider', 'end_turn_effects'];
       if (validPhases.includes(tPhase)) {
         // Small delay before AI action for visibility
-        setTimeout(() => executeAITurn(), 300);
+        setTimeout(() => {
+          if (!isMoveAnimating.value) {
+            executeAITurn();
+          }
+        }, 300);
       }
     }
   },

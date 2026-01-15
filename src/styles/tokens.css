@@ -173,6 +173,23 @@
   }
 }
 
+.rider-token--ghost-hidden {
+  opacity: 0;
+}
+
+.rider-token--fade {
+  animation: token-fade 0.16s ease-out;
+}
+
+@keyframes token-fade {
+  0% {
+    opacity: 0.4;
+  }
+  100% {
+    opacity: 1;
+  }
+}
+
 /* ========================================
    COMPACT VERSION (for track cells)
    ======================================== */
@@ -261,5 +278,13 @@
   .rider-token--selected:hover,
   .rider-token.selected:hover {
     transform: scale(1.25);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .rider-token--animating,
+  .rider-token.animating,
+  .rider-token--moving {
+    animation: none;
   }
 }

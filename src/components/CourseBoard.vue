@@ -1,12 +1,14 @@
 <template>
   <div class="track-container">
     <!-- Track -->
-    <div class="track">
+    <div class="track" ref="trackRef">
+      <div ref="overlayRef" class="track-move-overlay" aria-hidden="true"></div>
       <!-- Start cell (0) -->
       <div 
         class="track-cell track-cell--start"
         :class="{ 'track-cell--selected': hasSelectedAt(0) }"
         title="Départ (case 0)"
+        data-track-position="0"
       >
         <span class="track-cell-number">0</span>
         <div class="track-cell-riders-start">
@@ -29,6 +31,7 @@
               :isAnimating="animatingRiders.includes(rider.id)"
               :isLeader="isLeader(rider, 0)"
               :hasPlayed="hasPlayed(rider.id)"
+              :data-rider-id="rider.id"
               mini
             />
             </div>
@@ -43,6 +46,7 @@
         class="track-cell"
         :class="getCellClasses(cell, index)"
         :title="getCellTooltip(cell, index + 1)"
+        :data-track-position="index + 1"
       >
         <span class="track-cell-number">{{ index + 1 }}</span>
         
@@ -90,6 +94,7 @@
               :isAnimating="animatingRiders.includes(rider.id)"
               :isLeader="isLeader(rider, index + 1)"
               :hasPlayed="hasPlayed(rider.id)"
+              :data-rider-id="rider.id"
               compact
             />
           </div>
@@ -102,6 +107,7 @@
       <div 
         class="track-finish-zone"
         :class="{ 'track-finish-zone--preview': isPreviewWithoutFinish || isPreviewWithFinish }"
+        data-track-finish="true"
       >
         <UIIcon type="finish" :size="28" class="track-finish-icon" />
         <span class="track-finish-label">Arrivée</span>
@@ -118,6 +124,7 @@
             :rider="rider"
             :isActive="rider.id === selectedRiderId"
             :hasPlayed="hasPlayed(rider.id)"
+            :data-rider-id="rider.id"
             mini
           />
         </div>
@@ -127,7 +134,7 @@
 </template>
 
 <script setup>
-import { computed } from 'vue';
+import { computed, ref } from 'vue';
 import RiderToken from './RiderToken.vue';
 import { UIIcon } from './icons';
 import { TerrainConfig } from '../config/game.config.js';
@@ -143,6 +150,9 @@ const props = defineProps({
   aiMoveFlash: { type: Object, default: null },
   playedRiders: { type: Array, default: () => [] }
 });
+
+const trackRef = ref(null);
+const overlayRef = ref(null);
 
 const finishLine = computed(() => props.course.length || 0);
 
@@ -289,6 +299,32 @@ function getCellTooltip(cell, position) {
 function getAspirationInfo(riderId) {
   return props.aspirationAnimations.find(a => a.riderId === riderId);
 }
+
+function getOverlayElement() {
+  return overlayRef.value;
+}
+
+function getRiderElement(riderId) {
+  if (!trackRef.value) return null;
+  return trackRef.value.querySelector(`[data-rider-id="${riderId}"]`);
+}
+
+function getCellElement(position) {
+  if (!trackRef.value) return null;
+  if (position <= 0) {
+    return trackRef.value.querySelector('[data-track-position="0"]');
+  }
+  if (position > finishLine.value) {
+    return trackRef.value.querySelector('[data-track-finish="true"]');
+  }
+  return trackRef.value.querySelector(`[data-track-position="${position}"]`);
+}
+
+defineExpose({
+  getOverlayElement,
+  getRiderElement,
+  getCellElement
+});
 </script>
 
 <style scoped>
