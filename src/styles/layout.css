@@ -363,3 +363,58 @@
 .status-bar .type-numeric-lg {
   font-size: 16px;
 }
+
+/* ========================================
+   STATUS BAR - MOBILE RESPONSIVE
+   ======================================== */
+
+@media (max-width: 900px) {
+  .status-bar {
+    flex-wrap: wrap;
+    gap: var(--space-sm);
+    padding: var(--space-xs) var(--space-sm);
+  }
+
+  .status-bar-item {
+    gap: var(--space-xs);
+  }
+
+  .status-bar-label {
+    font-size: 10px;
+  }
+
+  .status-bar-value {
+    font-size: 12px;
+  }
+
+  .status-bar-divider {
+    display: none;
+  }
+
+  .status-bar .type-numeric-lg {
+    font-size: 14px;
+  }
+
+  /* Chips wrap to next line */
+  .status-bar-chips {
+    flex-basis: 100%;
+    flex-wrap: wrap;
+    gap: var(--space-xs);
+    padding-top: var(--space-xs);
+    border-top: 1px solid var(--color-line-subtle);
+  }
+}
+
+@media (max-width: 400px) {
+  .status-bar {
+    font-size: 11px;
+  }
+
+  .status-bar-label {
+    display: none;
+  }
+
+  .status-bar-value {
+    font-size: 11px;
+  }
+}

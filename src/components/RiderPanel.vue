@@ -1,5 +1,5 @@
 <template>
-  <div class="rider-panel card">
+  <div class="rider-panel card" :class="{ 'rider-panel--played': hasPlayedThisTurn }">
     <!-- Header -->
     <div class="rider-panel-header" :class="getTeamClass(rider.team)">
       <div class="rider-identity">
@@ -61,11 +61,11 @@
           <span class="badge badge-muted">{{ rider.hand?.length || 0 }}</span>
         </div>
         <div class="cards-list">
-          <button 
-            v-for="card in rider.hand" 
+          <button
+            v-for="card in rider.hand"
             :key="card.id"
             class="game-card"
-            :class="getCardClasses(card, false)"
+            :class="[getCardClasses(card, false), `game-card--value-${card.value}`]"
             :style="{ '--card-bg': card.color }"
             @click="onCardClick(card, false)"
           >
@@ -141,10 +141,10 @@
       </div>
     </div>
 
-    <!-- Bottom row: Context + Actions side by side -->
-    <div class="rider-bottom-row">
+    <!-- Bottom row: Context + Actions side by side (only when not played) -->
+    <div v-if="!hasPlayedThisTurn" class="rider-bottom-row">
       <div class="rider-context">
-        <div v-if="!hasPlayedThisTurn" class="context-panel context-panel--secondary">
+        <div class="context-panel context-panel--secondary">
           <div class="context-header">
             <UIIcon type="cursor" :size="14" class="section-icon" />
             <span class="type-label">Aide à la décision</span>
@@ -157,41 +157,37 @@
           </div>
           <p class="context-note">{{ decisionAid?.coachNote || '—' }}</p>
         </div>
-        <div v-else class="context-panel">
-          <div class="context-header">
-            <UIIcon type="history" :size="14" class="section-icon" />
-            <span class="type-label">Résumé du tour</span>
-          </div>
-          <div class="context-summary">
-            <div class="context-row">
-              <span class="context-key">Carte</span>
-              <span class="context-value">{{ formatValue(turnSummary?.cardLabel) }}</span>
-            </div>
-            <div class="context-row">
-              <span class="context-key">Dé</span>
-              <span class="context-value">{{ formatValue(turnSummary?.dice) }}</span>
-            </div>
-            <div class="context-row">
-              <span class="context-key">Total</span>
-              <span class="context-value">{{ formatValue(turnSummary?.total) }}</span>
-            </div>
-            <div class="context-row">
-              <span class="context-key">Énergie</span>
-              <span class="context-value">{{ formatEnergySummary(turnSummary) }}</span>
-            </div>
-            <div class="context-row">
-              <span class="context-key">Récup</span>
-              <span class="context-value">{{ formatRecovery(turnSummary) }}</span>
-            </div>
-            <div class="context-row">
-              <span class="context-key">Spécialité</span>
-              <span class="context-value">{{ turnSummary ? (turnSummary.usedSpecialty ? 'Oui' : 'Non') : '—' }}</span>
-            </div>
-          </div>
-        </div>
       </div>
 
       <!-- Action Slot -->
+      <div class="rider-actions">
+        <slot name="actions"></slot>
+      </div>
+    </div>
+
+    <!-- Compact summary bar (only when played) -->
+    <div v-else class="rider-summary-bar">
+      <div class="summary-chips">
+        <span class="summary-chip summary-chip--card">
+          <UIIcon type="card" :size="12" />
+          {{ formatValue(turnSummary?.cardLabel) }}
+        </span>
+        <span class="summary-chip summary-chip--dice">
+          <UIIcon type="dice" :size="12" />
+          {{ formatValue(turnSummary?.dice) }}
+        </span>
+        <span class="summary-chip summary-chip--total">
+          <strong>={{ formatValue(turnSummary?.total) }}</strong>
+        </span>
+        <span class="summary-chip summary-chip--energy">
+          <UIIcon type="energy" :size="12" />
+          {{ formatEnergySummary(turnSummary) }}
+        </span>
+        <span v-if="turnSummary?.usedSpecialty" class="summary-chip summary-chip--specialty">
+          <UIIcon type="star" :size="12" />
+          Spé
+        </span>
+      </div>
       <div class="rider-actions">
         <slot name="actions"></slot>
       </div>
@@ -201,7 +197,7 @@
 
 <script setup>
 import { computed } from 'vue';
-import { TeamConfig, RiderConfig, TerrainConfig } from '../config/game.config.js';
+import { RiderConfig, TerrainConfig } from '../config/game.config.js';
 import { getEnergyEffects } from '../core/energy.js';
 import RiderToken from './RiderToken.vue';
 import EnergyBar from './EnergyBar.vue';
@@ -268,16 +264,6 @@ function formatEnergySummary(summary) {
   return `${before} → ${after}`;
 }
 
-function formatRecovery(summary) {
-  const recovery = summary?.recovery;
-  if (!recovery) return '—';
-  const parts = [];
-  if (recovery.descent) parts.push(`Descente +${recovery.descent}`);
-  if (recovery.refuel) parts.push(`Ravito +${recovery.refuel}`);
-  if (recovery.shelter) parts.push(`Abri +${recovery.shelter}`);
-  return parts.length ? parts.join(' · ') : '—';
-}
-
 function formatWindRisk(risk) {
   if (risk === null || risk === undefined) return '—';
   return risk ? 'Exposé' : 'Abri';
@@ -305,6 +291,109 @@ function onCardClick(card, isAttack) {
 .rider-panel {
   padding: 0;
   overflow: hidden;
+}
+
+/* Played state - more compact */
+.rider-panel--played .rider-panel-cards {
+  padding: var(--space-xs) var(--space-sm);
+  gap: var(--space-xs);
+}
+
+.rider-panel--played .cards-section {
+  padding: var(--space-xs) var(--space-sm);
+  flex: 0 1 auto;
+}
+
+.rider-panel--played .cards-section-header {
+  margin-bottom: var(--space-xs);
+  padding-bottom: 0;
+  border-bottom: none;
+  font-size: 11px;
+}
+
+.rider-panel--played .cards-section-header .badge {
+  display: none;
+}
+
+.rider-panel--played .game-card {
+  min-width: 36px;
+  min-height: 36px;
+  padding: var(--space-xs);
+  opacity: 0.65;
+}
+
+.rider-panel--played .game-card-value {
+  font-size: 0.9em;
+}
+
+.rider-panel--played .game-card-name {
+  display: none;
+}
+
+/* Summary bar - compact horizontal layout */
+.rider-summary-bar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-md);
+  padding: var(--space-sm) var(--space-md);
+  background: linear-gradient(to right, var(--color-canvas), var(--color-surface));
+  border-top: 1px solid var(--color-line-subtle);
+}
+
+.summary-chips {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-xs);
+}
+
+.summary-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 3px 8px;
+  border-radius: var(--radius-pill);
+  font-size: 11px;
+  font-weight: 500;
+  background: var(--color-surface);
+  border: 1px solid var(--color-line-subtle);
+  color: var(--color-ink-soft);
+}
+
+.summary-chip--card {
+  background: linear-gradient(135deg, #E8F0E7 0%, #DCE8DB 100%);
+  border-color: rgba(140, 170, 140, 0.3);
+  color: #4A6A4A;
+}
+
+.summary-chip--dice {
+  background: linear-gradient(135deg, #E8E4F0 0%, #DCD8E8 100%);
+  border-color: rgba(140, 130, 170, 0.3);
+  color: #5A4A6A;
+}
+
+.summary-chip--total {
+  background: linear-gradient(135deg, #F5EDD8 0%, #EDE4CA 100%);
+  border-color: rgba(200, 170, 100, 0.4);
+  color: #7A6A2A;
+  font-size: 12px;
+}
+
+.summary-chip--energy {
+  background: linear-gradient(135deg, #E0F0E5 0%, #D0E5D8 100%);
+  border-color: rgba(100, 170, 130, 0.3);
+  color: #3A6A4A;
+}
+
+.summary-chip--specialty {
+  background: linear-gradient(135deg, #FFF8E0 0%, #F5EDD0 100%);
+  border-color: rgba(200, 170, 80, 0.4);
+  color: #8A7A2A;
+}
+
+.rider-summary-bar .rider-actions {
+  flex-shrink: 0;
 }
 
 /* Header */
@@ -402,10 +491,37 @@ function onCardClick(card, isAttack) {
 
 /* Cards Grid */
 .rider-panel-cards {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
-  gap: var(--space-sm);
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-md);
+  padding: var(--space-md) var(--space-lg);
+  background: var(--color-canvas);
+}
+
+/* Base section styling */
+.cards-section {
   padding: var(--space-sm) var(--space-md);
+  border-radius: var(--radius-md);
+  background: var(--color-surface);
+  border: 1px solid var(--color-line-subtle);
+}
+
+/* Movement section - primary, most important */
+.cards-section:not(.cards-section--attack):not(.cards-section--specialty) {
+  flex: 1;
+  min-width: 0;
+}
+
+/* Attack section - accent purple */
+.cards-section--attack {
+  background: linear-gradient(135deg, rgba(222, 216, 232, 0.4) 0%, rgba(232, 224, 240, 0.3) 100%);
+  border-color: rgba(160, 140, 180, 0.25);
+}
+
+/* Specialty section - accent green */
+.cards-section--specialty {
+  background: linear-gradient(135deg, rgba(216, 232, 220, 0.4) 0%, rgba(224, 240, 229, 0.3) 100%);
+  border-color: rgba(140, 180, 160, 0.25);
 }
 
 .cards-section-header {
@@ -413,77 +529,208 @@ function onCardClick(card, isAttack) {
   align-items: center;
   gap: var(--space-sm);
   margin-bottom: var(--space-sm);
+  padding-bottom: var(--space-xs);
+  border-bottom: 1px solid var(--color-line-subtle);
 }
 
-.section-icon {
-  color: var(--color-ink-muted);
+.cards-section-header .section-icon {
+  color: var(--color-ink-soft);
+}
+
+.cards-section--attack .cards-section-header .section-icon {
+  color: #8B7BA8;
+}
+
+.cards-section--specialty .cards-section-header .section-icon {
+  color: #6B9B7A;
 }
 
 .energy-warning {
   display: flex;
   align-items: center;
   gap: 4px;
+  margin-left: auto;
+  font-size: 10px;
 }
 
 .cards-list {
   display: flex;
   flex-wrap: wrap;
-  gap: var(--space-xs);
+  gap: var(--space-sm);
+  align-items: center;
 }
 
 .cards-empty {
   color: var(--color-ink-muted);
   font-style: italic;
+  font-size: 11px;
+  padding: var(--space-xs) 0;
 }
 
-/* Game Cards */
+/* Game Cards - Tactile board game style */
 .game-card {
   display: flex;
   flex-direction: column;
   align-items: center;
+  justify-content: center;
   padding: var(--space-sm) var(--space-md);
+  min-width: 56px;
+  min-height: 56px;
   background: var(--card-bg, var(--color-canvas));
-  border: 2px solid transparent;
-  border-radius: var(--radius-sm);
+  border: 1px solid rgba(0, 0, 0, 0.08);
+  border-radius: var(--radius-md);
   cursor: default;
-  transition: all 0.15s;
-  min-width: 60px;
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+  box-shadow:
+    0 1px 2px rgba(0, 0, 0, 0.06),
+    0 2px 4px rgba(0, 0, 0, 0.04),
+    inset 0 1px 0 rgba(255, 255, 255, 0.5);
+  position: relative;
+}
+
+/* Inner highlight for depth */
+.game-card::before {
+  content: '';
+  position: absolute;
+  inset: 1px;
+  border-radius: calc(var(--radius-md) - 1px);
+  background: linear-gradient(
+    to bottom,
+    rgba(255, 255, 255, 0.4) 0%,
+    transparent 40%
+  );
+  pointer-events: none;
 }
 
 .game-card--selectable {
   cursor: pointer;
   border-color: var(--color-accent);
+  box-shadow:
+    0 2px 4px rgba(47, 111, 237, 0.15),
+    0 4px 8px rgba(47, 111, 237, 0.1),
+    inset 0 1px 0 rgba(255, 255, 255, 0.5);
 }
 
 .game-card--selectable:hover {
-  transform: translateY(-2px);
-  box-shadow: var(--shadow-md);
+  transform: translateY(-3px) scale(1.02);
+  box-shadow:
+    0 4px 12px rgba(47, 111, 237, 0.2),
+    0 8px 16px rgba(47, 111, 237, 0.1),
+    inset 0 1px 0 rgba(255, 255, 255, 0.5);
+}
+
+.game-card--selectable:active {
+  transform: translateY(-1px) scale(1);
 }
 
 .game-card--selected {
   border-color: var(--color-gold);
-  box-shadow: 0 0 0 2px var(--color-gold);
+  box-shadow:
+    0 0 0 2px var(--color-gold),
+    0 4px 12px rgba(215, 162, 26, 0.25),
+    inset 0 1px 0 rgba(255, 255, 255, 0.5);
 }
 
 .game-card--disabled {
-  opacity: 0.5;
+  opacity: 0.45;
   cursor: not-allowed;
+  filter: grayscale(0.3);
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.04);
 }
 
-.game-card--relais { background: var(--card-movement-1) !important; }
-.game-card--tempo { background: var(--card-movement-2) !important; }
-.game-card--attack { background: var(--card-attack); }
-.game-card--specialty { background: var(--card-specialty); }
+.game-card--disabled::before {
+  display: none;
+}
+
+/* Card color variants */
+.game-card--relais {
+  background: linear-gradient(145deg, #EDE9DD 0%, #E0DBD0 100%) !important;
+  border-color: rgba(180, 170, 150, 0.3);
+}
+.game-card--tempo {
+  background: linear-gradient(145deg, #E8F0E7 0%, #D9E8D8 100%) !important;
+  border-color: rgba(150, 180, 150, 0.3);
+}
+.game-card--attack {
+  background: linear-gradient(145deg, #E8E0F0 0%, #D8D0E5 100%);
+  border-color: rgba(160, 140, 180, 0.3);
+}
+.game-card--specialty {
+  background: linear-gradient(145deg, #E0F0E5 0%, #D0E5D8 100%);
+  border-color: rgba(140, 180, 160, 0.3);
+}
 
 .game-card-value {
   font-family: var(--font-mono);
-  font-weight: 700;
-  font-size: 1.1em;
+  font-weight: 800;
+  font-size: 1.25em;
+  color: var(--color-ink);
+  text-shadow: 0 1px 0 rgba(255, 255, 255, 0.5);
+  line-height: 1;
 }
 
 .game-card-name {
-  font-size: 0.7em;
+  font-size: 0.65em;
+  font-weight: 500;
   color: var(--color-ink-muted);
+  margin-top: 2px;
+  text-transform: capitalize;
+}
+
+/* Card value variants - visual hierarchy by power */
+.game-card--value-1,
+.game-card--value-2 {
+  background: linear-gradient(145deg, #F0EDE6 0%, #E6E3DC 100%);
+  border-color: rgba(160, 155, 145, 0.25);
+}
+.game-card--value-1 .game-card-value,
+.game-card--value-2 .game-card-value {
+  color: var(--color-ink-soft);
+}
+
+.game-card--value-3 {
+  background: linear-gradient(145deg, #E8F0E7 0%, #DCE8DB 100%);
+  border-color: rgba(140, 170, 140, 0.3);
+}
+.game-card--value-3 .game-card-value {
+  color: #4A7A4A;
+}
+
+.game-card--value-4 {
+  background: linear-gradient(145deg, #EEF3DD 0%, #E4EAD2 100%);
+  border-color: rgba(170, 180, 120, 0.35);
+}
+.game-card--value-4 .game-card-value {
+  color: #6A7A3A;
+}
+
+.game-card--value-5 {
+  background: linear-gradient(145deg, #F5EDD8 0%, #EDE4CA 100%);
+  border-color: rgba(200, 170, 100, 0.4);
+}
+.game-card--value-5 .game-card-value {
+  color: #9A7A2A;
+  font-size: 1.35em;
+}
+
+.game-card--value-6 {
+  background: linear-gradient(145deg, #F8E8D5 0%, #F0DCC5 100%);
+  border-color: rgba(210, 150, 90, 0.45);
+}
+.game-card--value-6 .game-card-value {
+  color: #B86A2A;
+  font-size: 1.4em;
+}
+
+/* Attack cards - distinctive purple/power theme */
+.game-card--attack .game-card-value {
+  color: #6B4A8A;
+  font-size: 1.4em;
+}
+
+/* Specialty cards */
+.game-card--specialty .game-card-value {
+  color: #4A7A5A;
 }
 
 /* Bottom row: context + actions side by side */
@@ -589,27 +836,141 @@ function onCardClick(card, isAttack) {
 .text-danger { color: var(--color-danger); }
 .text-muted { color: var(--color-ink-muted); }
 
-/* Responsive */
-@media (max-width: 768px) {
+/* Responsive - Mobile simplified */
+@media (max-width: 900px) {
+  .rider-panel {
+    font-size: 14px;
+  }
+
   .rider-panel-header {
-    flex-direction: column;
-    align-items: flex-start;
+    padding: var(--space-xs) var(--space-sm);
+    gap: var(--space-xs);
+  }
+
+  .rider-identity {
+    gap: var(--space-xs);
   }
 
   .rider-stats {
-    width: 100%;
+    gap: var(--space-xs);
+  }
+
+  .stat-pill {
+    padding: 2px var(--space-xs);
+    font-size: 11px;
   }
 
   .rider-energy-section {
-    width: 100%;
+    min-width: 100px;
   }
 
+  /* Cards - simplified for mobile */
+  .rider-panel-cards {
+    flex-direction: column;
+    gap: var(--space-xs);
+    padding: var(--space-xs) var(--space-sm);
+  }
+
+  .cards-section {
+    padding: var(--space-xs);
+    border-radius: var(--radius-sm);
+    background: var(--color-surface) !important;
+    border: 1px solid var(--color-line-subtle);
+  }
+
+  .cards-section-header {
+    margin-bottom: var(--space-xs);
+    padding-bottom: 0;
+    border-bottom: none;
+    font-size: 11px;
+  }
+
+  .cards-list {
+    gap: var(--space-xs);
+  }
+
+  /* Simplified cards on mobile - no fancy shadows */
+  .game-card {
+    min-width: 48px;
+    min-height: 44px;
+    padding: var(--space-xs);
+    border-radius: var(--radius-sm);
+    box-shadow: none;
+    border: 1px solid rgba(0, 0, 0, 0.1);
+  }
+
+  .game-card::before {
+    display: none;
+  }
+
+  .game-card--selectable {
+    border-color: var(--color-accent);
+    box-shadow: 0 1px 3px rgba(47, 111, 237, 0.15);
+  }
+
+  .game-card--selectable:hover {
+    transform: none;
+    box-shadow: 0 2px 6px rgba(47, 111, 237, 0.2);
+  }
+
+  .game-card-value {
+    font-size: 1.1em;
+  }
+
+  .game-card-name {
+    font-size: 9px;
+  }
+
+  /* Bottom row */
   .rider-bottom-row {
     flex-direction: column;
+    gap: var(--space-xs);
+    padding: var(--space-xs) var(--space-sm);
   }
 
-  .context-row {
-    grid-template-columns: 90px 1fr;
+  .context-panel {
+    padding: var(--space-xs) var(--space-sm);
+    gap: var(--space-xs);
+  }
+
+  .context-chips {
+    gap: 4px;
+  }
+
+  .context-chip {
+    font-size: 10px;
+    padding: 2px 6px;
+  }
+
+  .context-note {
+    font-size: 10px;
+  }
+
+  /* Summary bar */
+  .rider-summary-bar {
+    padding: var(--space-xs) var(--space-sm);
+    gap: var(--space-sm);
+  }
+
+  .summary-chip {
+    font-size: 10px;
+    padding: 2px 6px;
+  }
+}
+
+/* Extra small screens */
+@media (max-width: 400px) {
+  .game-card {
+    min-width: 40px;
+    min-height: 38px;
+  }
+
+  .game-card-name {
+    display: none;
+  }
+
+  .context-panel {
+    display: none;
   }
 }
 </style>
