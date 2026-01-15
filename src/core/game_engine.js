@@ -3,7 +3,7 @@
  * @module core/game_engine
  */
 
-import { roll1D6, rollFallTest } from './dice.js';
+import { roll1D6, rollFallTest, createSeededRng } from './dice.js';
 import { TerrainType, TerrainConfig, DescentRules, getTerrainBonus, generateCourse, generateCourseFromPreset, hasAspiration, findSummitPosition, isRefuelZone } from './terrain.js';
 import {
   RaceEventDefinitions,
@@ -67,6 +67,14 @@ import { getClassicPreset } from '../config/race-presets.js';
 const MAX_RIDERS_PER_CELL = 4;
 const WIND_PENALTY_DEFAULT = 3;
 const WIND_PENALTY_ROULEUR = 5;
+
+function resolveRng(gameConfig) {
+  if (typeof gameConfig?.rng === 'function') return gameConfig.rng;
+  if (gameConfig?.seed !== undefined && gameConfig?.seed !== null) {
+    return createSeededRng(gameConfig.seed);
+  }
+  return Math.random;
+}
 
 /**
  * Game phases
@@ -154,6 +162,11 @@ export function createGameState(options = {}) {
     gameConfig = null,
     courseLength = 80
   } = options;
+
+  const rng = resolveRng(gameConfig);
+  const courseRng = typeof gameConfig?.courseRng === 'function' ? gameConfig.courseRng : rng;
+  const eventRng = typeof gameConfig?.eventRng === 'function' ? gameConfig.eventRng : rng;
+  const weatherRng = typeof gameConfig?.weatherRng === 'function' ? gameConfig.weatherRng : rng;
   
   // Use gameConfig if provided, otherwise legacy 2-team mode
   const baseCourseLength = gameConfig?.courseLength || courseLength;
@@ -181,19 +194,19 @@ export function createGameState(options = {}) {
     });
     const currentStage = stageRace.stages[stageRace.currentStageIndex];
     effectiveCourseLength = stageLength;
-    course = generateStageCourse(currentStage.type, stageLength);
+    course = generateStageCourse(currentStage.type, stageLength, { rng: courseRng });
   } else if (gameConfig?.classicId) {
     const classicPreset = getClassicPreset(gameConfig.classicId);
     if (classicPreset) {
       course = generateCourseFromPreset({
         ...classicPreset,
         presetType: classicPreset.id
-      }, effectiveCourseLength);
+      }, effectiveCourseLength, { rng: courseRng });
     } else {
-      course = generateCourse(effectiveCourseLength);
+      course = generateCourse(effectiveCourseLength, null, { rng: courseRng });
     }
   } else {
-    course = generateCourse(effectiveCourseLength);
+    course = generateCourse(effectiveCourseLength, null, { rng: courseRng });
   }
 
   // All riders start at position 0 with arrival order
@@ -204,9 +217,9 @@ export function createGameState(options = {}) {
   }));
   
   // Random starting team from available teams
-  const startingTeam = teamIds[Math.floor(Math.random() * teamIds.length)];
+  const startingTeam = teamIds[Math.floor(rng() * teamIds.length)];
   
-  const weather = rollRaceWeather({ presetWeather: gameConfig?.weather, rng: gameConfig?.weatherRng });
+  const weather = rollRaceWeather({ presetWeather: gameConfig?.weather, rng: weatherRng });
 
   return {
     // Game configuration
@@ -225,8 +238,14 @@ export function createGameState(options = {}) {
       cooldownTurns: 0,
       weather,
       nextWeather: gameConfig?.weatherNext || null,
-      lastCobblePunctureTurn: null
+      lastCobblePunctureTurn: null,
+      rng: eventRng
     },
+    rng,
+    courseRng,
+    eventRng,
+    weatherRng,
+    rngSeed: gameConfig?.seed ?? null,
     
     // Riders
     riders,
@@ -547,7 +566,7 @@ export function rollDice(state) {
   if (!rider || !state.selectedCardId) return state;
   
   const terrain = getTerrainAt(state, rider.position);
-  const diceRoll = roll1D6();
+  const diceRoll = roll1D6(state.rng);
   
   let newState = {
     ...state,
@@ -556,7 +575,7 @@ export function rollDice(state) {
   
   // Check for fall in descent on 1
   if (terrain === TerrainType.DESCENT && diceRoll.isOne) {
-    const fallTest = rollFallTest();
+    const fallTest = rollFallTest(state.rng);
     newState.gameLog = [
       ...newState.gameLog,
       `🎲 ${rider.name} fait 1 en descente → Test de chute: ${fallTest.roll}`
@@ -1416,10 +1435,10 @@ export function acknowledgeEndTurnEffects(state) {
           stageRace: updatedStageRace,
           courseLength: updatedStageRace.stageLength,
           finishLine: updatedStageRace.stageLength,
-          course: generateStageCourse(nextStage.type, updatedStageRace.stageLength),
+          course: generateStageCourse(nextStage.type, updatedStageRace.stageLength, { rng: state.courseRng || state.rng }),
           phase: GamePhase.PLAYING,
           currentTurn: 1,
-          currentTeam: state.teamIds[Math.floor(Math.random() * state.teamIds.length)],
+          currentTeam: state.teamIds[Math.floor((state.rng || Math.random)() * state.teamIds.length)],
           ridersPlayedThisTurn: [],
           selectedRiderId: null,
           selectedCardId: null,

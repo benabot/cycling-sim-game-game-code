@@ -364,8 +364,9 @@ function applyCobblesOverlay(course, options = {}) {
  * @param {Object} distribution - Custom terrain distribution
  * @returns {Array} Course array with terrain info
  */
-export function generateCourse(length = 80, distribution = null) {
+export function generateCourse(length = 80, distribution = null, options = {}) {
   const dist = distribution || DefaultCourseDistribution;
+  const rng = options.rng || Math.random;
   const course = [];
   
   // Create terrain pool based on distribution
@@ -386,12 +387,12 @@ export function generateCourse(length = 80, distribution = null) {
   
   // Create logical course structure
   // Start with flat, end with sprint zone
-  const courseStructure = createCourseStructure(length, dist);
+  const courseStructure = createCourseStructure(length, dist, rng);
   
   // v4.0: Place 2 refuel zones of 3 cells each (~30% and ~65% of course)
   const refuelZone1Start = Math.floor(length * 0.30);
   const refuelZone2Start = Math.floor(length * 0.65);
-  const refuelZoneLength = getRefuelZoneLength();
+  const refuelZoneLength = getRefuelZoneLength(rng);
   
   for (let i = 0; i < length; i++) {
     const isInRefuelZone1 = i >= refuelZone1Start && i < refuelZone1Start + refuelZoneLength;
@@ -430,7 +431,7 @@ export function isRefuelZone(course, position) {
  * @param {Object} dist - Terrain distribution
  * @returns {Array} Array of terrain types
  */
-function createCourseStructure(length, dist) {
+function createCourseStructure(length, dist, rng = Math.random) {
   const structure = new Array(length);
   
   // Reserve last 8 cases for sprint zone
@@ -481,7 +482,7 @@ function createCourseStructure(length, dist) {
   // Hills are punchy short climbs, not long ascents
   let hillRemaining = remaining[TerrainType.HILL];
   while (hillRemaining >= 3) {
-    const len = Math.min(hillRemaining, 3 + Math.floor(Math.random() * 3)); // 3-5 cases
+    const len = Math.min(hillRemaining, 3 + Math.floor(rng() * 3)); // 3-5 cases
     segments.push({ terrain: TerrainType.HILL, length: len });
     hillRemaining -= len;
   }
@@ -501,7 +502,7 @@ function createCourseStructure(length, dist) {
     // Distribute flat in segments of 4-6
     let flatRemaining = flatNeeded;
     while (flatRemaining > 0) {
-      const len = Math.min(flatRemaining, 4 + Math.floor(Math.random() * 3)); // 4-6 cases
+      const len = Math.min(flatRemaining, 4 + Math.floor(rng() * 3)); // 4-6 cases
       segments.push({ terrain: TerrainType.FLAT, length: len });
       flatRemaining -= len;
     }
@@ -526,11 +527,11 @@ function createCourseStructure(length, dist) {
   }
   
   // Shuffle other segments
-  shuffleArray(segments);
+  shuffleArray(segments, rng);
   
   // Insert mountain at ~40-60% of the course (realistic race progression)
   if (mountainSegment) {
-    const insertPos = Math.floor(segments.length * 0.4) + Math.floor(Math.random() * (segments.length * 0.2));
+    const insertPos = Math.floor(segments.length * 0.4) + Math.floor(rng() * (segments.length * 0.2));
     segments.splice(insertPos, 0, mountainSegment);
     
     // Insert descent right after mountain

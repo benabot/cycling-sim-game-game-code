@@ -312,7 +312,7 @@ export function addFatigueCard(rider, value) {
  * @param {Object} rider - Rider object
  * @returns {Object} Updated rider
  */
-export function recycleCards(rider) {
+export function recycleCards(rider, rng = Math.random) {
   if (rider.hand.length > 0) {
     return rider; // Hand not empty, no need to recycle
   }
@@ -322,7 +322,7 @@ export function recycleCards(rider) {
   }
   
   // Shuffle discard pile
-  const shuffled = [...rider.discard].sort(() => Math.random() - 0.5);
+  const shuffled = [...rider.discard].sort(() => rng() - 0.5);
   
   return {
     ...rider,

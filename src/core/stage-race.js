@@ -181,7 +181,7 @@ export function applyStageRecovery(riders = [], recoveryConfig = StageRecovery) 
  * @param {number} length
  * @returns {Array} Course array
  */
-export function generateStageCourse(stageType, length = 80) {
+export function generateStageCourse(stageType, length = 80, options = {}) {
   const preset = getStageTypePreset(stageType);
   const withDefaults = {
     ...preset,
@@ -189,7 +189,7 @@ export function generateStageCourse(stageType, length = 80) {
     defaultLength: length,
     presetType: stageType
   };
-  return generateCourseFromPreset(withDefaults, length);
+  return generateCourseFromPreset(withDefaults, length, { rng: options.rng });
 }
 
 /**
