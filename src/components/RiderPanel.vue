@@ -141,56 +141,61 @@
       </div>
     </div>
 
-    <div class="rider-context">
-      <div v-if="!hasPlayedThisTurn" class="context-panel context-panel--secondary">
-        <div class="context-header">
-          <UIIcon type="cursor" :size="14" class="section-icon" />
-          <span class="type-label">Aide à la décision</span>
+    <!-- Bottom row: Context + Actions side by side -->
+    <div class="rider-bottom-row">
+      <div class="rider-context">
+        <div v-if="!hasPlayedThisTurn" class="context-panel context-panel--secondary">
+          <div class="context-header">
+            <UIIcon type="cursor" :size="14" class="section-icon" />
+            <span class="type-label">Aide à la décision</span>
+          </div>
+          <div class="context-chips">
+            <span class="context-chip">Terrain: {{ terrainName }}</span>
+            <span class="context-chip">Bonus: {{ formatBonus(terrainBonus) }}</span>
+            <span class="context-chip">Énergie estimée: {{ formatEnergyEstimate(decisionAid?.energyEstimate) }}</span>
+            <span class="context-chip">Vent: {{ formatWindRisk(decisionAid?.windRisk) }}</span>
+          </div>
+          <p class="context-note">{{ decisionAid?.coachNote || '—' }}</p>
         </div>
-        <div class="context-chips">
-          <span class="context-chip">Terrain: {{ terrainName }}</span>
-          <span class="context-chip">Bonus: {{ formatBonus(terrainBonus) }}</span>
-          <span class="context-chip">Énergie estimée: {{ formatEnergyEstimate(decisionAid?.energyEstimate) }}</span>
-          <span class="context-chip">Vent: {{ formatWindRisk(decisionAid?.windRisk) }}</span>
+        <div v-else class="context-panel">
+          <div class="context-header">
+            <UIIcon type="history" :size="14" class="section-icon" />
+            <span class="type-label">Résumé du tour</span>
+          </div>
+          <div class="context-summary">
+            <div class="context-row">
+              <span class="context-key">Carte</span>
+              <span class="context-value">{{ formatValue(turnSummary?.cardLabel) }}</span>
+            </div>
+            <div class="context-row">
+              <span class="context-key">Dé</span>
+              <span class="context-value">{{ formatValue(turnSummary?.dice) }}</span>
+            </div>
+            <div class="context-row">
+              <span class="context-key">Total</span>
+              <span class="context-value">{{ formatValue(turnSummary?.total) }}</span>
+            </div>
+            <div class="context-row">
+              <span class="context-key">Énergie</span>
+              <span class="context-value">{{ formatEnergySummary(turnSummary) }}</span>
+            </div>
+            <div class="context-row">
+              <span class="context-key">Récup</span>
+              <span class="context-value">{{ formatRecovery(turnSummary) }}</span>
+            </div>
+            <div class="context-row">
+              <span class="context-key">Spécialité</span>
+              <span class="context-value">{{ turnSummary ? (turnSummary.usedSpecialty ? 'Oui' : 'Non') : '—' }}</span>
+            </div>
+          </div>
         </div>
-        <p class="context-note">{{ decisionAid?.coachNote || '—' }}</p>
       </div>
-      <div v-else class="context-panel">
-        <div class="context-header">
-          <UIIcon type="history" :size="14" class="section-icon" />
-          <span class="type-label">Résumé du tour</span>
-        </div>
-        <div class="context-summary">
-          <div class="context-row">
-            <span class="context-key">Carte</span>
-            <span class="context-value">{{ formatValue(turnSummary?.cardLabel) }}</span>
-          </div>
-          <div class="context-row">
-            <span class="context-key">Dé</span>
-            <span class="context-value">{{ formatValue(turnSummary?.dice) }}</span>
-          </div>
-          <div class="context-row">
-            <span class="context-key">Total</span>
-            <span class="context-value">{{ formatValue(turnSummary?.total) }}</span>
-          </div>
-          <div class="context-row">
-            <span class="context-key">Énergie</span>
-            <span class="context-value">{{ formatEnergySummary(turnSummary) }}</span>
-          </div>
-          <div class="context-row">
-            <span class="context-key">Récup</span>
-            <span class="context-value">{{ formatRecovery(turnSummary) }}</span>
-          </div>
-          <div class="context-row">
-            <span class="context-key">Spécialité</span>
-            <span class="context-value">{{ turnSummary ? (turnSummary.usedSpecialty ? 'Oui' : 'Non') : '—' }}</span>
-          </div>
-        </div>
+
+      <!-- Action Slot -->
+      <div class="rider-actions">
+        <slot name="actions"></slot>
       </div>
     </div>
-
-    <!-- Action Slot -->
-    <slot name="actions"></slot>
   </div>
 </template>
 
@@ -307,8 +312,8 @@ function onCardClick(card, isAttack) {
   display: flex;
   align-items: center;
   flex-wrap: wrap;
-  gap: var(--space-md);
-  padding: var(--space-md) var(--space-lg);
+  gap: var(--space-sm);
+  padding: var(--space-sm) var(--space-md);
   background: var(--color-canvas);
   border-bottom: 1px solid var(--color-line);
 }
@@ -399,8 +404,8 @@ function onCardClick(card, isAttack) {
 .rider-panel-cards {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
-  gap: var(--space-md);
-  padding: var(--space-md);
+  gap: var(--space-sm);
+  padding: var(--space-sm) var(--space-md);
 }
 
 .cards-section-header {
@@ -481,9 +486,29 @@ function onCardClick(card, isAttack) {
   color: var(--color-ink-muted);
 }
 
-/* Context panel */
+/* Bottom row: context + actions side by side */
+.rider-bottom-row {
+  display: flex;
+  gap: var(--space-md);
+  padding: var(--space-sm) var(--space-md) var(--space-md);
+  align-items: stretch;
+}
+
 .rider-context {
-  padding: 0 var(--space-md) var(--space-md);
+  flex: 1;
+  min-width: 0;
+}
+
+.rider-actions {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  align-items: center;
+}
+
+.rider-actions > :deep(*) {
+  width: 100%;
+  margin: 0;
 }
 
 .context-panel {
@@ -570,13 +595,17 @@ function onCardClick(card, isAttack) {
     flex-direction: column;
     align-items: flex-start;
   }
-  
+
   .rider-stats {
     width: 100%;
   }
-  
+
   .rider-energy-section {
     width: 100%;
+  }
+
+  .rider-bottom-row {
+    flex-direction: column;
   }
 
   .context-row {
