@@ -124,7 +124,7 @@ const targetPosition = computed(() => props.currentPosition + props.totalMovemen
 
 <style scoped>
 .action-zone {
-  padding: var(--space-lg);
+  padding: var(--space-md) var(--space-lg);
   margin: 0 var(--space-md) var(--space-md);
   background: var(--color-surface);
   border: 1px solid var(--color-line);
@@ -141,7 +141,7 @@ const targetPosition = computed(() => props.currentPosition + props.totalMovemen
   align-items: center;
   justify-content: center;
   gap: var(--space-sm);
-  padding: var(--space-md);
+  padding: var(--space-xs) 0;
   color: var(--color-ink-muted);
 }
 
@@ -175,7 +175,7 @@ const targetPosition = computed(() => props.currentPosition + props.totalMovemen
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: var(--space-md);
+  gap: var(--space-sm);
 }
 
 /* Preview */
@@ -189,8 +189,8 @@ const targetPosition = computed(() => props.currentPosition + props.totalMovemen
 .action-preview-value {
   font-family: var(--font-mono);
   font-weight: 700;
-  font-size: 1.5em;
-  padding: var(--space-sm) var(--space-lg);
+  font-size: 1.25em;
+  padding: var(--space-xs) var(--space-md);
   background: color-mix(in srgb, var(--race-yellow) 18%, white);
   border: 1px solid rgba(31, 35, 40, 0.08);
   border-radius: var(--radius-md);
@@ -205,7 +205,7 @@ const targetPosition = computed(() => props.currentPosition + props.totalMovemen
   display: flex;
   align-items: center;
   gap: var(--space-sm);
-  padding: var(--space-md);
+  padding: var(--space-sm);
   background: var(--color-surface);
   border-radius: var(--radius-md);
   box-shadow: var(--shadow-sm);
@@ -237,7 +237,7 @@ const targetPosition = computed(() => props.currentPosition + props.totalMovemen
   display: flex;
   align-items: center;
   gap: var(--space-sm);
-  padding: var(--space-md) var(--space-lg);
+  padding: var(--space-sm) var(--space-md);
   background: var(--color-paper);
   border-radius: var(--radius-card);
   box-shadow: 0 4px 20px rgba(31, 35, 40, 0.08);
