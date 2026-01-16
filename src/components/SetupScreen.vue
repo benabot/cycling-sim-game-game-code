@@ -453,7 +453,7 @@ const teamRosters = ref({});
 const activeDraftTeamId = ref(null);
 const riderPoolIndex = new Map(RiderPool.map((rider, index) => [rider.id, index]));
 const raceHeaderTitle = 'Chasse-Patate';
-const raceHeaderSubtitle = 'Préparer la course';
+const raceHeaderSubtitle = 'Jeu de plateau – simulation cycliste tactique';
 const raceHeaderTheme = UIConfig.raceTheme;
 const isRulesOpen = ref(false);
 const isHelpOpen = ref(false);
