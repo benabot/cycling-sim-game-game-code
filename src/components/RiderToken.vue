@@ -79,14 +79,12 @@ const tooltip = computed(() => {
   const config = RiderConfig[props.rider.type];
   const parts = [
     props.rider.name,
-    config?.name,
-    `Case ${props.rider.position}`
+    config?.name
   ];
   if (props.rider.energy !== undefined) {
     parts.push(`⚡ ${props.rider.energy}`);
   }
   if (props.isLeader) parts.push('(LEADER - prend le vent)');
-  if (props.hasPlayed) parts.push('(déjà joué)');
   return parts.join(' | ');
 });
 </script>
