@@ -70,14 +70,16 @@ onBeforeUnmount(() => {
   width: 100%;
   height: auto;
   object-fit: contain;
+  opacity: 0.92;
   transform: scale(1.15);
-  transition: transform 800ms ease-out;
-  will-change: transform;
+  transition: transform 800ms ease-out, opacity 800ms ease-out;
+  will-change: transform, opacity;
   border-radius: var(--radius-card);
   box-shadow: var(--shadow-lg);
 }
 
 .intro-splash__image.is-entered {
+  opacity: 1;
   transform: scale(1);
 }
 
