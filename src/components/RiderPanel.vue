@@ -62,7 +62,7 @@
         </div>
         <div class="cards-list">
           <button
-            v-for="card in rider.hand"
+            v-for="card in sortedMovementCards"
             :key="card.id"
             class="game-card"
             :class="[getCardClasses(card, false), `game-card--value-${card.value}`]"
@@ -72,7 +72,7 @@
             <span class="game-card-value">+{{ card.value }}</span>
             <span class="game-card-name">{{ formatMovementCardName(card) }}</span>
           </button>
-          <span v-if="!rider.hand?.length" class="type-caption cards-empty">
+          <span v-if="!sortedMovementCards.length" class="type-caption cards-empty">
             Main vide — cartes fin de tour
           </span>
         </div>
@@ -199,7 +199,7 @@
 import { computed } from 'vue';
 import { RiderConfig, TerrainConfig } from '../config/game.config.js';
 import { getEnergyEffects } from '../core/energy.js';
-import { formatMovementCardName } from '../utils/movement_cards.js';
+import { formatMovementCardName, sortMovementCards } from '../utils/movement_cards.js';
 import RiderToken from './RiderToken.vue';
 import EnergyBar from './EnergyBar.vue';
 import { TerrainIcon, UIIcon } from './icons';
@@ -226,6 +226,7 @@ const specialtyTerrainName = computed(() => RiderConfig[props.rider.type]?.speci
 const energyEffects = computed(() => getEnergyEffects(props.rider.energy || 100));
 const canUseAttackCard = computed(() => energyEffects.value.canUseAttack);
 const canUseSpecialtyCard = computed(() => props.canUseSpecialty && energyEffects.value.canUseSpecialty);
+const sortedMovementCards = computed(() => sortMovementCards(props.rider.hand || []));
 
 const bonusClass = computed(() => ({
   'stat-pill--positive': props.terrainBonus > 0 && !energyEffects.value.bonusDisabled,
