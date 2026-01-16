@@ -70,7 +70,7 @@
             @click="onCardClick(card, false)"
           >
             <span class="game-card-value">+{{ card.value }}</span>
-            <span class="game-card-name">{{ card.name }}</span>
+            <span class="game-card-name">{{ formatMovementCardName(card) }}</span>
           </button>
           <span v-if="!rider.hand?.length" class="type-caption cards-empty">
             Main vide — cartes fin de tour
@@ -199,6 +199,7 @@
 import { computed } from 'vue';
 import { RiderConfig, TerrainConfig } from '../config/game.config.js';
 import { getEnergyEffects } from '../core/energy.js';
+import { formatMovementCardName } from '../utils/movement_cards.js';
 import RiderToken from './RiderToken.vue';
 import EnergyBar from './EnergyBar.vue';
 import { TerrainIcon, UIIcon } from './icons';
