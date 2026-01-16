@@ -34,7 +34,6 @@
             :course="course"
             :leaderPosition="leaderPosition"
             :activePosition="activePosition"
-            :showAction="false"
           />
           <TerrainLegend />
         </div>

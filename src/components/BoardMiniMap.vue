@@ -1,7 +1,7 @@
 <template>
   <section class="board-minimap">
     <div class="board-minimap__meta">
-      <span class="board-minimap__label">Parcours</span>
+      <span class="board-minimap__label">Profil de l’étape</span>
       <span class="board-minimap__value">Case {{ displayPosition }}</span>
     </div>
 
@@ -27,14 +27,6 @@
       </div>
     </div>
 
-    <button
-      v-if="showAction"
-      type="button"
-      class="board-minimap__action"
-      @click="$emit('focusCourse')"
-    >
-      Voir le parcours
-    </button>
   </section>
 </template>
 
@@ -44,11 +36,8 @@ import { computed } from 'vue';
 const props = defineProps({
   course: { type: Array, default: () => [] },
   leaderPosition: { type: Number, default: null },
-  activePosition: { type: Number, default: null },
-  showAction: { type: Boolean, default: true }
+  activePosition: { type: Number, default: null }
 });
-
-defineEmits(['focusCourse']);
 
 const miniCells = computed(() => {
   const cells = [{ terrain: 'start', position: 0 }];
@@ -91,11 +80,8 @@ function getCellClass(cell) {
 
 <style scoped>
 .board-minimap {
-  position: sticky;
-  top: calc(var(--space-md) + var(--status-bar-offset, 0px));
-  z-index: var(--z-sticky);
   display: grid;
-  grid-template-columns: auto 1fr auto;
+  grid-template-columns: auto 1fr;
   gap: var(--space-md);
   align-items: center;
   padding: var(--space-sm) var(--space-md);
@@ -191,23 +177,6 @@ function getCellClass(cell) {
   background: var(--race-yellow);
 }
 
-.board-minimap__action {
-  border: 1px solid rgba(31, 35, 40, 0.18);
-  background: rgba(255, 255, 255, 0.7);
-  color: var(--color-ink);
-  font-size: 12px;
-  padding: 6px 10px;
-  border-radius: 999px;
-  cursor: pointer;
-  transition: var(--transition-fast);
-  white-space: nowrap;
-}
-
-.board-minimap__action:hover {
-  background: rgba(255, 255, 255, 0.9);
-  border-color: rgba(31, 35, 40, 0.32);
-}
-
 @media (max-width: 700px) {
   .board-minimap {
     grid-template-columns: 1fr;
@@ -223,8 +192,5 @@ function getCellClass(cell) {
     overflow-x: auto;
   }
 
-  .board-minimap__action {
-    justify-self: start;
-  }
 }
 </style>

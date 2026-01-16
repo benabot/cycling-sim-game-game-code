@@ -49,15 +49,12 @@
       :course="course"
       :leaderPosition="leaderPosition"
       :activePosition="activePosition"
-      @focusCourse="handleCourseAction"
     />
 
     <!-- Course Board -->
     <div
       id="course-board"
-      ref="courseBoardShellRef"
       class="course-board-shell"
-      :class="{ 'course-board-shell--focus': isCourseFocusActive }"
     >
       <CourseBoard 
         ref="courseBoardRef"
@@ -368,8 +365,6 @@ const {
 
 // Ref for course board scrolling
 const courseBoardRef = ref(null);
-const courseBoardShellRef = ref(null);
-const isCourseFocusActive = ref(false);
 const isRulesOpen = ref(false);
 const isCourseModalOpen = ref(false);
 const isHistoryOpen = ref(false);
@@ -381,7 +376,6 @@ let reducedMotionMedia = null;
 let moveDiffHandler = null;
 const actionSheetState = ref('collapsed');
 const lastActionSheetRiderId = ref(null);
-let courseFocusTimeout = null;
 const headerTitle = computed(() => {
   if (stageRace.value) {
     const stageIndex = stageRace.value.currentStageIndex ?? 0;
@@ -487,26 +481,6 @@ function scrollToRider(riderId) {
   });
 }
 
-function focusCourseBoard() {
-  if (!courseBoardShellRef.value) return;
-  courseBoardShellRef.value.scrollIntoView({ behavior: 'smooth', block: 'center' });
-  isCourseFocusActive.value = true;
-  if (courseFocusTimeout) {
-    clearTimeout(courseFocusTimeout);
-  }
-  courseFocusTimeout = setTimeout(() => {
-    isCourseFocusActive.value = false;
-    courseFocusTimeout = null;
-  }, 1500);
-}
-
-function handleCourseAction() {
-  if (isMobile.value) {
-    isCourseModalOpen.value = true;
-    return;
-  }
-  focusCourseBoard();
-}
 
 // Quick rider selection from TeamsOverview
 // Allows viewing any rider's info (scroll + panel), but only playable riders can be played
@@ -728,9 +702,6 @@ onBeforeUnmount(() => {
   window.removeEventListener('resize', updateViewport);
   teardownReducedMotionListener();
   moveAnimator.value?.cancel();
-  if (courseFocusTimeout) {
-    clearTimeout(courseFocusTimeout);
-  }
 });
 
 watch(
@@ -836,12 +807,6 @@ watch(
     0 0 0 1px var(--color-line),
     0 8px 20px rgba(31, 35, 40, 0.08);
   scroll-margin-top: 120px;
-}
-
-.course-board-shell--focus {
-  box-shadow:
-    0 0 0 2px color-mix(in srgb, var(--race-yellow) 35%, transparent),
-    0 10px 24px rgba(31, 35, 40, 0.16);
 }
 
 h1 {
