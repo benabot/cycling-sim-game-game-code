@@ -92,6 +92,55 @@ function getCellClass(cell) {
   backdrop-filter: blur(8px);
 }
 
+.board-minimap--slate {
+  width: 100%;
+  max-width: 980px;
+  margin: 0 auto;
+  padding: 10px var(--space-md);
+  gap: var(--space-sm);
+  background: linear-gradient(135deg, #2e3540 0%, #232a33 100%);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.06),
+    0 12px 22px rgba(16, 18, 22, 0.28);
+  backdrop-filter: none;
+}
+
+.board-minimap--slate .board-minimap__meta {
+  gap: 1px;
+  min-width: 120px;
+}
+
+.board-minimap--slate .board-minimap__label {
+  font-size: 9px;
+  letter-spacing: 0.5px;
+  color: rgba(232, 238, 246, 0.7);
+}
+
+.board-minimap--slate .board-minimap__value {
+  font-size: 12px;
+  color: #f8fafc;
+}
+
+.board-minimap--slate .mini-map-rail {
+  gap: 1px;
+  min-height: 18px;
+  padding: 1px 0;
+}
+
+.board-minimap--slate .mini-map-cell {
+  width: 7px;
+  height: 16px;
+  border-radius: 3px;
+  border-color: rgba(255, 255, 255, 0.16);
+}
+
+.board-minimap--slate .mini-map-marker {
+  top: -3px;
+  width: 6px;
+  height: 6px;
+}
+
 .board-minimap__meta {
   display: flex;
   flex-direction: column;
@@ -177,10 +226,21 @@ function getCellClass(cell) {
   background: var(--race-yellow);
 }
 
+@media (max-width: 1100px) {
+  .board-minimap--slate {
+    max-width: 90vw;
+  }
+}
+
 @media (max-width: 700px) {
   .board-minimap {
     grid-template-columns: 1fr;
     gap: var(--space-sm);
+  }
+
+  .board-minimap--slate {
+    max-width: 100%;
+    padding: 10px var(--space-sm);
   }
 
   .board-minimap__meta {

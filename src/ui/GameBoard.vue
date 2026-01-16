@@ -46,6 +46,7 @@
     <TerrainLegend />
 
     <BoardMiniMap
+      class="board-minimap--slate"
       :course="course"
       :leaderPosition="leaderPosition"
       :activePosition="activePosition"
