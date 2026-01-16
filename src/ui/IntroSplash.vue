@@ -3,6 +3,7 @@
     <div class="intro-splash__backdrop" aria-hidden="true"></div>
     <img
       class="intro-splash__image"
+      :class="{ 'is-entered': isEntered }"
       src="/intro/chassepatate.webp"
       alt="Chasse-Patate"
     />
@@ -17,9 +18,10 @@
 </template>
 
 <script setup>
-import { onBeforeUnmount, onMounted } from 'vue';
+import { onBeforeUnmount, onMounted, ref } from 'vue';
 
 const emit = defineEmits(['skip']);
+const isEntered = ref(false);
 let previousOverflow = '';
 
 function skip() {
@@ -30,6 +32,9 @@ onMounted(() => {
   if (typeof document === 'undefined') return;
   previousOverflow = document.body.style.overflow;
   document.body.style.overflow = 'hidden';
+  requestAnimationFrame(() => {
+    isEntered.value = true;
+  });
 });
 
 onBeforeUnmount(() => {
@@ -65,8 +70,15 @@ onBeforeUnmount(() => {
   width: 100%;
   height: auto;
   object-fit: contain;
+  transform: scale(1.15);
+  transition: transform 800ms ease-out;
+  will-change: transform;
   border-radius: var(--radius-card);
   box-shadow: var(--shadow-lg);
+}
+
+.intro-splash__image.is-entered {
+  transform: scale(1);
 }
 
 .intro-splash__skip {
