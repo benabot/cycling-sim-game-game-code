@@ -9,6 +9,7 @@ const error = ref(null)
 export function useAuth() {
   const isAuthenticated = computed(() => !!user.value)
   const isConfigured = computed(() => isSupabaseConfigured())
+  const confirmationNotice = 'Compte créé. Confirmez votre email pour vous connecter.'
 
   // Initialiser la session au chargement
   async function initSession() {
@@ -76,8 +77,15 @@ export function useAuth() {
       if (checkError) throw checkError
       return { available: data, error: null }
     } catch (err) {
-      return { available: false, error: err.message }
+      return { available: false, error: 'Impossible de vérifier le pseudo' }
     }
+  }
+
+  function formatAuthError(err, fallback) {
+    const message = err?.message || ''
+    if (message.includes('User already registered')) return 'Cet email est déjà utilisé'
+    if (message.includes('Invalid login credentials')) return 'Email ou mot de passe incorrect'
+    return fallback
   }
 
   // Inscription
@@ -90,7 +98,11 @@ export function useAuth() {
       error.value = null
 
       // Vérifier username disponible
-      const { available } = await checkUsernameAvailable(username)
+      const trimmedUsername = username.trim()
+      const { available, error: usernameError } = await checkUsernameAvailable(trimmedUsername)
+      if (usernameError) {
+        return { success: false, error: usernameError }
+      }
       if (!available) {
         return { success: false, error: 'Ce pseudo est déjà pris' }
       }
@@ -98,30 +110,32 @@ export function useAuth() {
       // Créer l'utilisateur
       const { data: authData, error: authError } = await supabase.auth.signUp({
         email,
-        password
+        password,
+        options: {
+          data: {
+            username: trimmedUsername
+          }
+        }
       })
 
       if (authError) throw authError
 
-      // Créer le profil
-      if (authData.user) {
-        const { error: profileError } = await supabase
-          .from('profiles')
-          .insert({
-            id: authData.user.id,
-            username: username.trim()
-          })
-
-        if (profileError) throw profileError
-
-        user.value = authData.user
+      if (authData?.session?.user) {
+        user.value = authData.session.user
         await fetchProfile()
+        return { success: true, error: null, confirmationRequired: false }
       }
 
-      return { success: true, error: null }
+      return {
+        success: true,
+        error: null,
+        confirmationRequired: true,
+        message: confirmationNotice
+      }
     } catch (err) {
-      error.value = err.message
-      return { success: false, error: err.message }
+      const friendlyError = formatAuthError(err, "Erreur lors de l'inscription")
+      error.value = friendlyError
+      return { success: false, error: friendlyError }
     }
   }
 
@@ -146,8 +160,9 @@ export function useAuth() {
 
       return { success: true, error: null }
     } catch (err) {
-      error.value = err.message
-      return { success: false, error: err.message }
+      const friendlyError = formatAuthError(err, 'Erreur de connexion')
+      error.value = friendlyError
+      return { success: false, error: friendlyError }
     }
   }
 

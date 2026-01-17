@@ -29,6 +29,10 @@
         <UIIcon type="warning" size="sm" />
         <span>{{ serverError }}</span>
       </div>
+      <div v-if="serverNotice" class="auth-notice">
+        <UIIcon type="check" size="sm" />
+        <span>{{ serverNotice }}</span>
+      </div>
 
       <!-- Login form -->
       <form v-if="mode === 'login'" class="auth-form" @submit.prevent="handleLogin">
@@ -172,6 +176,7 @@ const { login, register, checkUsernameAvailable } = useAuth();
 const mode = ref('login');
 const isSubmitting = ref(false);
 const serverError = ref(null);
+const serverNotice = ref(null);
 const isCheckingUsername = ref(false);
 const usernameAvailable = ref(null);
 let usernameCheckTimeout = null;
@@ -224,6 +229,7 @@ const isRegisterValid = computed(() => {
 function switchMode(newMode) {
   mode.value = newMode;
   serverError.value = null;
+  serverNotice.value = null;
   // Reset errors when switching
   Object.keys(loginErrors).forEach(k => loginErrors[k] = null);
   Object.keys(registerErrors).forEach(k => registerErrors[k] = null);
@@ -337,6 +343,7 @@ async function handleLogin() {
 
   isSubmitting.value = true;
   serverError.value = null;
+  serverNotice.value = null;
 
   const result = await login(loginForm.email, loginForm.password);
 
@@ -368,6 +375,7 @@ async function handleRegister() {
 
   isSubmitting.value = true;
   serverError.value = null;
+  serverNotice.value = null;
 
   const result = await register(
     registerForm.email,
@@ -378,7 +386,11 @@ async function handleRegister() {
   isSubmitting.value = false;
 
   if (result.success) {
-    emit('update:modelValue', false);
+    if (result.confirmationRequired) {
+      serverNotice.value = result.message || 'Confirmez votre email pour vous connecter.';
+    } else {
+      emit('update:modelValue', false);
+    }
   } else {
     serverError.value = result.error || "Erreur lors de l'inscription";
   }
@@ -396,6 +408,7 @@ watch(() => props.modelValue, (isOpen) => {
     Object.keys(loginErrors).forEach(k => loginErrors[k] = null);
     Object.keys(registerErrors).forEach(k => registerErrors[k] = null);
     serverError.value = null;
+    serverNotice.value = null;
     usernameAvailable.value = null;
   }
 });
@@ -454,6 +467,22 @@ watch(() => props.modelValue, (isOpen) => {
 }
 
 .auth-error :deep(svg) {
+  flex-shrink: 0;
+}
+
+.auth-notice {
+  display: flex;
+  align-items: center;
+  gap: var(--space-sm);
+  padding: var(--space-sm) var(--space-md);
+  background: rgba(46, 125, 50, 0.08);
+  border: 1px solid rgba(46, 125, 50, 0.4);
+  border-radius: var(--radius-sm);
+  color: #2e7d32;
+  font-size: 13px;
+}
+
+.auth-notice :deep(svg) {
   flex-shrink: 0;
 }
 
