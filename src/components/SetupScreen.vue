@@ -4,6 +4,7 @@
       <!-- Header -->
       <RaceHeader :title="raceHeaderTitle" :subtitle="raceHeaderSubtitle" :theme="raceHeaderTheme">
         <template #actions>
+          <UserMenu />
           <button
             type="button"
             class="btn btn-ghost btn-sm load-trigger"
@@ -447,6 +448,7 @@ import StepHelpModal from './StepHelpModal.vue';
 import MobileStickyCTA from './MobileStickyCTA.vue';
 import AutoSavePrompt from './AutoSavePrompt.vue';
 import LoadGameModal from './LoadGameModal.vue';
+import UserMenu from './UserMenu.vue';
 import { getClassicPreset, StageRaceConfig } from '../config/race-presets.js';
 import { UIConfig } from '../config/ui.config.js';
 import { DraftConfig, DraftAIConfig, DraftStatLabels, DraftStatOrder, RiderPool } from '../config/draft.config.js';

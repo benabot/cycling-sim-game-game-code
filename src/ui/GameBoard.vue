@@ -6,6 +6,7 @@
         <h1>{{ headerTitle }}</h1>
       </div>
       <div class="header-actions">
+        <UserMenu />
         <button
           v-if="phase !== 'finished'"
           type="button"
@@ -326,6 +327,7 @@ import {
 } from '../components';
 import SaveGameModal from '../components/SaveGameModal.vue';
 import LoadGameModal from '../components/LoadGameModal.vue';
+import UserMenu from '../components/UserMenu.vue';
 
 // Props and emits
 const props = defineProps({

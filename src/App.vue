@@ -22,10 +22,17 @@
 </template>
 
 <script setup>
-import { ref, onBeforeUnmount } from 'vue';
+import { ref, onMounted, onBeforeUnmount } from 'vue';
 import { SetupScreen } from './components/index.js';
 import GameBoard from './ui/GameBoard.vue';
 import IntroSplash from './ui/IntroSplash.vue';
+import { useAuth } from './composables/useAuth.js';
+
+const { initSession } = useAuth();
+
+onMounted(() => {
+  initSession();
+});
 
 // Screen state: 'setup' | 'playing'
 const gameScreen = ref('setup');
