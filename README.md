@@ -110,6 +110,13 @@ Interpréter un échec :
 - Vitest affiche le fichier + le nom du test en échec.
 - Relancer le même fichier reproduit le comportement (les tests injectent leur RNG quand nécessaire).
 
+## Supabase Auth (profiles)
+
+- Les profils sont crees automatiquement via trigger `auth.users` -> `public.profiles`.
+- RLS est active et limitee a l'utilisateur courant (self only).
+- Migration: `supabase/migrations/002_profiles_rls_trigger.sql`
+- Variables requises: `VITE_SUPABASE_URL`, `VITE_SUPABASE_ANON_KEY`
+
 ## Structure du projet
 
 ```
