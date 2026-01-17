@@ -27,5 +27,11 @@ export { default as MobileStickyCTA } from './MobileStickyCTA.vue';
 export { default as WeatherChip } from './WeatherChip.vue';
 export { default as RiskChip } from './RiskChip.vue';
 
+// Save/Load components
+export { default as SaveGameModal } from './SaveGameModal.vue';
+export { default as LoadGameModal } from './LoadGameModal.vue';
+export { default as SavePreview } from './SavePreview.vue';
+export { default as AutoSavePrompt } from './AutoSavePrompt.vue';
+
 // Icon components
 export * from './icons';

@@ -6,6 +6,15 @@
         <template #actions>
           <button
             type="button"
+            class="btn btn-ghost btn-sm load-trigger"
+            aria-label="Charger une partie"
+            @click="openLoadModal"
+          >
+            <UIIcon type="upload" size="sm" />
+            Charger
+          </button>
+          <button
+            type="button"
             class="btn btn-ghost btn-sm rules-trigger"
             aria-label="Ouvrir les règles"
             @click="openRules"
@@ -406,6 +415,19 @@
       :body="activeHelp.body"
       :bullets="activeHelp.bullets"
     />
+
+    <!-- Auto-save prompt (shown once if detected) -->
+    <AutoSavePrompt
+      v-if="!hasShownAutoSave"
+      @resume="handleAutoSaveResume"
+      @ignore="hasShownAutoSave = true"
+    />
+
+    <!-- Load game modal -->
+    <LoadGameModal
+      v-model="showLoadModal"
+      @load="handleLoadGame"
+    />
   </div>
 </template>
 
@@ -423,11 +445,13 @@ import RaceHeader from './RaceHeader.vue';
 import RulesModal from './RulesModal.vue';
 import StepHelpModal from './StepHelpModal.vue';
 import MobileStickyCTA from './MobileStickyCTA.vue';
+import AutoSavePrompt from './AutoSavePrompt.vue';
+import LoadGameModal from './LoadGameModal.vue';
 import { getClassicPreset, StageRaceConfig } from '../config/race-presets.js';
 import { UIConfig } from '../config/ui.config.js';
 import { DraftConfig, DraftAIConfig, DraftStatLabels, DraftStatOrder, RiderPool } from '../config/draft.config.js';
 
-const emit = defineEmits(['start']);
+const emit = defineEmits(['start', 'restore']);
 
 const courseLengths = [
   { value: 60, duration: '18 min' },
@@ -458,6 +482,8 @@ const raceHeaderTheme = UIConfig.raceTheme;
 const isRulesOpen = ref(false);
 const isHelpOpen = ref(false);
 const activeHelpStep = ref(1);
+const showLoadModal = ref(false);
+const hasShownAutoSave = ref(false);
 
 const stepHelpContent = {
   1: {
@@ -1007,6 +1033,21 @@ function handleMobileCta() {
   }
 }
 
+// Gestion de la restauration d'une sauvegarde
+function handleAutoSaveResume({ meta, state }) {
+  hasShownAutoSave.value = true;
+  emit('restore', { meta, state });
+}
+
+function handleLoadGame({ meta, state }) {
+  showLoadModal.value = false;
+  emit('restore', { meta, state });
+}
+
+function openLoadModal() {
+  showLoadModal.value = true;
+}
+
 initializePlayers();
 </script>
 
@@ -1078,7 +1119,8 @@ initializePlayers();
   gap: var(--space-sm);
 }
 
-.rules-trigger {
+.rules-trigger,
+.load-trigger {
   display: inline-flex;
   align-items: center;
   gap: 6px;

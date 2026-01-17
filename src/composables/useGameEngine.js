@@ -1,6 +1,6 @@
 // Composable pour la logique du jeu - v4.0 Multi-teams + AI
 import { ref, computed, watch } from 'vue';
-import { 
+import {
   createGameState,
   getRidersAtPosition,
   getLeaderAtPosition,
@@ -26,6 +26,7 @@ import { EnergyConfig } from '../core/energy.js';
 import { isRefuelZone, TerrainType } from '../core/terrain.js';
 import { RaceWeather, getWeatherLogLine } from '../core/race_weather.js';
 import { computeRiskCue } from '../core/risk_cues.js';
+import { autoSave, clearAutoSave } from '../core/save-manager.js';
 
 export function useGameEngine() {
   // State
@@ -589,14 +590,19 @@ export function useGameEngine() {
   function acknowledgeEffects() {
     const newState = acknowledgeEndTurnEffectsEngine(gameState.value);
     gameState.value = newState;
-    
+
     log(`=== Tour ${newState.currentTurn} ===`);
-    
+
     if (newState.phase === 'finished') {
       const winner = newState.rankings?.[0];
       if (winner) {
         log(`🏆 ${TeamConfig[winner.team].name} remporte la course !`);
       }
+      // Clear auto-save when game finishes
+      clearAutoSave();
+    } else {
+      // Auto-save at the start of each new turn
+      performAutoSave();
     }
   }
 
@@ -625,6 +631,48 @@ export function useGameEngine() {
 
   function restartGame() {
     initialize();
+  }
+
+  // Perform auto-save after significant game state changes
+  function performAutoSave() {
+    if (!gameState.value || gameState.value.phase === 'finished') {
+      return;
+    }
+    autoSave(gameState.value);
+  }
+
+  // Restore game from saved state
+  function restoreFromSave(savedState) {
+    if (!savedState) return false;
+
+    // Restore the game state
+    gameState.value = savedState;
+
+    // Clear and rebuild AI instances based on players in saved state
+    aiInstances.value = {};
+    const players = savedState.players || [];
+    players
+      .filter(p => p.playerType === PlayerType.AI)
+      .forEach(p => {
+        const personality = p.personality || null;
+        const aiProfile = p.aiProfile || AITacticalProfile.EQUILIBRE;
+        const ai = createAI(p.difficulty, personality, { aiProfile });
+        aiInstances.value[p.teamId] = ai;
+      });
+
+    // Reset animation states
+    animatingRiders.value = [];
+    isAnimatingEffects.value = false;
+    aspirationAnimations.value = [];
+    isAIThinking.value = false;
+    lastActionSummaries.value = {};
+    isViewOnlySelection.value = false;
+
+    // Update log
+    const currentTurn = savedState.currentTurn || 1;
+    gameLog.value = [`📂 Partie restaurée - Tour ${currentTurn}`];
+
+    return true;
   }
 
   // v4.0: Execute AI turn - complete rider move without visible intermediate steps
@@ -832,6 +880,9 @@ export function useGameEngine() {
     return fromAttack;
   }
 
+  // Getter for raw game state (needed for save system)
+  const rawGameState = computed(() => gameState.value);
+
   return {
     // State
     gameLog,
@@ -844,6 +895,7 @@ export function useGameEngine() {
     aiMoveFlash,
     isViewOnlySelection,
     lastActionSummaries,
+    rawGameState,
     
     // Computed
     course,
@@ -888,6 +940,7 @@ export function useGameEngine() {
     acknowledgeEffects,
     restartGame,
     executeAITurn,
+    restoreFromSave,
     
     // Utils
     getRidersAt,

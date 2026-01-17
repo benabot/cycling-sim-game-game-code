@@ -1,16 +1,20 @@
 <template>
   <div class="app-root app-container">
     <!-- Setup Screen -->
-    <SetupScreen 
+    <SetupScreen
       v-if="gameScreen === 'setup'"
       @start="startGame"
+      @restore="handleRestore"
     />
 
     <!-- Game Board -->
-    <GameBoard 
+    <GameBoard
       v-else-if="gameScreen === 'playing'"
+      :key="gameKey"
       :gameConfig="gameConfig"
+      :savedState="savedState"
       @backToSetup="backToSetup"
+      @restore="handleRestore"
     />
 
     <IntroSplash v-if="isIntroVisible" @skip="dismissIntroSplash" />
@@ -26,6 +30,8 @@ import IntroSplash from './ui/IntroSplash.vue';
 // Screen state: 'setup' | 'playing'
 const gameScreen = ref('setup');
 const gameConfig = ref(null);
+const savedState = ref(null);
+const gameKey = ref(0); // Used to force GameBoard re-mount on restore
 const isIntroVisible = ref(false);
 let introTimer = null;
 
@@ -50,13 +56,26 @@ function dismissIntroSplash() {
 
 function startGame(config) {
   gameConfig.value = config;
+  savedState.value = null; // Clear any saved state for new game
+  gameKey.value++; // Force re-mount
   gameScreen.value = 'playing';
   showIntroSplash();
+}
+
+function handleRestore({ meta, state }) {
+  // Store the saved state to pass to GameBoard
+  savedState.value = state;
+  gameConfig.value = state.gameConfig || null;
+  gameKey.value++; // Force re-mount to trigger restore
+  gameScreen.value = 'playing';
+  // No intro splash for restored games
+  dismissIntroSplash();
 }
 
 function backToSetup() {
   gameScreen.value = 'setup';
   gameConfig.value = null;
+  savedState.value = null;
   dismissIntroSplash();
 }
 

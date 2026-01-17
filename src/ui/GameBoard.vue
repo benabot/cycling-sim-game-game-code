@@ -7,6 +7,25 @@
       </div>
       <div class="header-actions">
         <button
+          v-if="phase !== 'finished'"
+          type="button"
+          class="btn btn-ghost btn-sm"
+          aria-label="Sauvegarder la partie"
+          @click="openSaveModal"
+        >
+          <UIIcon type="save" size="sm" />
+          Sauvegarder
+        </button>
+        <button
+          type="button"
+          class="btn btn-ghost btn-sm"
+          aria-label="Charger une partie"
+          @click="openLoadModal"
+        >
+          <UIIcon type="upload" size="sm" />
+          Charger
+        </button>
+        <button
           type="button"
           class="btn btn-ghost btn-sm rules-trigger"
           aria-label="Ouvrir les règles"
@@ -15,7 +34,7 @@
           <UIIcon type="book" size="sm" />
           Règles
         </button>
-        <button v-if="phase === 'finished'" class="btn-back" @click="$emit('backToSetup')">
+        <button v-if="phase === 'finished'" class="btn-back" @click="emit('backToSetup')">
           <UIIcon type="chevron-up" size="sm" style="transform: rotate(-90deg)" />
           Retour
         </button>
@@ -263,6 +282,16 @@
       :activePosition="activePosition"
     />
     <HistoryModal v-model="isHistoryOpen" :log="gameLog" />
+
+    <!-- Save/Load modals -->
+    <SaveGameModal
+      v-model="showSaveModal"
+      :gameState="rawGameState"
+    />
+    <LoadGameModal
+      v-model="showLoadModal"
+      @load="handleLoadGame"
+    />
   </div>
 </template>
 
@@ -295,13 +324,16 @@ import {
   RiderToken,
   TerrainIcon
 } from '../components';
+import SaveGameModal from '../components/SaveGameModal.vue';
+import LoadGameModal from '../components/LoadGameModal.vue';
 
 // Props and emits
 const props = defineProps({
-  gameConfig: { type: Object, default: null }
+  gameConfig: { type: Object, default: null },
+  savedState: { type: Object, default: null }
 });
 
-defineEmits(['backToSetup']);
+const emit = defineEmits(['backToSetup', 'restore']);
 
 // Initialize game engine
 const {
@@ -322,6 +354,7 @@ const {
   aiMoveFlash,
   isViewOnlySelection,
   lastActionSummaries,
+  rawGameState,
   
   // Computed
   course,
@@ -358,6 +391,7 @@ const {
   acknowledgeEffects,
   restartGame,
   executeAITurn,
+  restoreFromSave,
   
   // Utils
   getLeaderAt,
@@ -369,6 +403,8 @@ const courseBoardRef = ref(null);
 const isRulesOpen = ref(false);
 const isCourseModalOpen = ref(false);
 const isHistoryOpen = ref(false);
+const showSaveModal = ref(false);
+const showLoadModal = ref(false);
 const isMobile = ref(false);
 const isMoveAnimating = ref(false);
 const prefersReducedMotion = ref(false);
@@ -647,6 +683,26 @@ function isTeamAI(teamId) {
   return player?.playerType === PlayerType.AI;
 }
 
+// Save/Load handlers
+function openSaveModal() {
+  showSaveModal.value = true;
+}
+
+function openLoadModal() {
+  // Confirm if game is in progress
+  if (phase.value !== 'finished' && turn.value > 1) {
+    if (!confirm('Charger une partie remplacera la partie en cours. Continuer ?')) {
+      return;
+    }
+  }
+  showLoadModal.value = true;
+}
+
+function handleLoadGame({ meta, state }) {
+  showLoadModal.value = false;
+  emit('restore', { meta, state });
+}
+
 function getWindRisk(rider) {
   if (!rider || rider.hasFinished) return null;
   if (rider.terrain === 'mountain' || rider.terrain === 'descent') return false;
@@ -690,13 +746,19 @@ function buildCoachNote({ rider, energyEstimate, windRisk }) {
   return 'Construire l’effort sans sur-risque.';
 }
 
-// Initialize on mount with game config
+// Initialize on mount with game config or restore from saved state
 onMounted(() => {
   updateViewport();
   window.addEventListener('resize', updateViewport);
   setupReducedMotionListener();
   setupMoveAnimator();
-  initialize(props.gameConfig);
+
+  // Check if we're restoring a saved game
+  if (props.savedState) {
+    restoreFromSave(props.savedState);
+  } else {
+    initialize(props.gameConfig);
+  }
 });
 
 onBeforeUnmount(() => {
