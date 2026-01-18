@@ -3,74 +3,198 @@
     :model-value="modelValue"
     @update:model-value="$emit('update:modelValue', $event)"
     title="Charger une partie"
-    max-width="520px"
+    max-width="560px"
   >
     <div class="load-content">
-      <!-- Zone de drop -->
-      <div
-        class="drop-zone"
-        :class="{ 'drop-zone--active': isDragging, 'drop-zone--error': error }"
-        @dragenter.prevent="handleDragEnter"
-        @dragover.prevent="handleDragOver"
-        @dragleave.prevent="handleDragLeave"
-        @drop.prevent="handleDrop"
-        @click="triggerFileInput"
-      >
-        <input
-          ref="fileInput"
-          type="file"
-          accept=".csg,.json"
-          class="file-input"
-          @change="handleFileSelect"
-        />
-        
-        <div v-if="isLoading" class="drop-zone-loading">
-          <div class="spinner"></div>
-          <span>Chargement...</span>
+      <!-- Header avec actions -->
+      <div class="load-header">
+        <div class="storage-indicator">
+          <span class="storage-mode" :class="`storage-mode--${storageMode}`">
+            <UIIcon :type="storageMode === 'cloud' ? 'save' : 'download'" size="sm" />
+            {{ storageMode === 'cloud' ? 'Cloud actif' : 'Local uniquement' }}
+          </span>
         </div>
-        
-        <div v-else-if="loadedMeta" class="drop-zone-loaded">
-          <UIIcon type="check" class="loaded-icon" />
-          <span>Fichier prêt</span>
-        </div>
-        
-        <div v-else class="drop-zone-empty">
-          <UIIcon type="upload" class="drop-icon" />
-          <p class="drop-text">
-            Glissez un fichier de sauvegarde ici<br>
-            <span class="drop-hint">ou cliquez pour parcourir</span>
-          </p>
-          <span class="drop-formats">.csg ou .json</span>
+        <div class="header-actions">
+          <button
+            type="button"
+            class="btn btn-ghost btn-sm"
+            @click="showFileImport = !showFileImport"
+            title="Importer un fichier .csg"
+          >
+            <UIIcon type="upload" size="sm" />
+            Importer
+          </button>
+          <button
+            type="button"
+            class="btn btn-ghost btn-sm"
+            @click="handleRefresh"
+            :disabled="isLoading"
+            title="Actualiser"
+          >
+            <UIIcon type="restart" size="sm" :class="{ spinning: isLoading }" />
+          </button>
         </div>
       </div>
 
-      <!-- Message d'erreur -->
+      <!-- Zone d'import de fichier (collapsible) -->
+      <Transition name="slide">
+        <div v-if="showFileImport" class="file-import-zone">
+          <div
+            class="drop-zone"
+            :class="{ 'drop-zone--active': isDragging, 'drop-zone--error': fileError }"
+            @dragenter.prevent="isDragging = true"
+            @dragover.prevent="isDragging = true"
+            @dragleave.prevent="isDragging = false"
+            @drop.prevent="handleDrop"
+          >
+            <label class="drop-zone-label">
+              <input
+                ref="fileInput"
+                type="file"
+                accept=".csg,.json"
+                class="file-input"
+                @change="handleFileSelect"
+              />
+            </label>
+            <UIIcon type="upload" class="drop-icon" />
+            <p class="drop-text">
+              Glissez un fichier .csg ici<br>
+              <span class="drop-hint">ou cliquez pour parcourir</span>
+            </p>
+          </div>
+          <div v-if="fileError" class="error-message error-message--sm">
+            <UIIcon type="warning" />
+            <span>{{ fileError }}</span>
+          </div>
+          <div v-if="importedGame" class="imported-preview">
+            <SavePreview :meta="importedGame.meta" />
+            <button type="button" class="btn btn-primary btn-sm" @click="loadImported">
+              <UIIcon type="play" size="sm" />
+              Charger
+            </button>
+          </div>
+        </div>
+      </Transition>
+
+      <!-- Message d'erreur global -->
       <div v-if="error" class="error-message">
         <UIIcon type="warning" />
         <span>{{ error }}</span>
       </div>
 
-      <!-- Aperçu de la sauvegarde chargée -->
-      <SavePreview v-if="loadedMeta" :meta="loadedMeta" />
+      <!-- Liste des parties -->
+      <div class="games-section">
+        <!-- État de chargement -->
+        <div v-if="isLoading && games.length === 0" class="list-state list-state--loading">
+          <div class="spinner"></div>
+          <span>Chargement...</span>
+        </div>
+
+        <!-- Liste vide -->
+        <div v-else-if="!isLoading && games.length === 0" class="list-state list-state--empty">
+          <UIIcon type="save" class="empty-icon" />
+          <p class="empty-text">Aucune partie sauvegardée</p>
+          <p class="empty-hint">Sauvegardez une partie pour la retrouver ici</p>
+        </div>
+
+        <!-- Liste des parties -->
+        <div v-else class="games-list">
+          <div
+            v-for="game in games"
+            :key="game.id"
+            class="game-card"
+            :class="{ 'game-card--loading': loadingGameId === game.id }"
+          >
+            <div class="game-header">
+              <span class="game-badge" :class="`game-badge--${game.source}`">
+                {{ game.source === 'cloud' ? 'Cloud' : 'Local' }}
+              </span>
+              <span class="game-name">{{ game.name }}</span>
+            </div>
+
+            <div class="game-details">
+              <div class="game-row">
+                <span class="game-label">Parcours</span>
+                <span class="game-value">{{ game.racePreset || 'Personnalisé' }} ({{ game.courseLength }})</span>
+              </div>
+              <div class="game-row">
+                <span class="game-label">Tour</span>
+                <span class="game-value">{{ game.currentTurn }}</span>
+              </div>
+              <div v-if="game.leader" class="game-row">
+                <span class="game-label">Leader</span>
+                <span class="game-value">{{ game.leader.name }}</span>
+              </div>
+              <div class="game-row game-row--muted">
+                <span class="game-label">Modifié</span>
+                <span class="game-value">{{ formatDate(game.updatedAt) }}</span>
+              </div>
+            </div>
+
+            <div class="game-actions">
+              <!-- Migration vers cloud -->
+              <button
+                v-if="game.source === 'local' && canUseCloud"
+                type="button"
+                class="btn btn-ghost btn-xs"
+                @click="handleMigrate(game)"
+                :disabled="loadingGameId === game.id"
+                title="Migrer vers le cloud"
+              >
+                <UIIcon type="upload" size="xs" />
+              </button>
+              <!-- Supprimer -->
+              <button
+                type="button"
+                class="btn btn-ghost btn-xs"
+                @click="confirmDelete(game)"
+                :disabled="loadingGameId === game.id"
+                title="Supprimer"
+              >
+                <UIIcon type="close" size="xs" />
+              </button>
+              <!-- Charger -->
+              <button
+                type="button"
+                class="btn btn-primary btn-sm"
+                @click="handleLoad(game)"
+                :disabled="loadingGameId === game.id"
+              >
+                <UIIcon type="play" size="sm" />
+                Charger
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
     </div>
+
+    <!-- Confirmation suppression -->
+    <Teleport to="body">
+      <Transition name="fade">
+        <div v-if="gameToDelete" class="confirm-overlay" @click.self="gameToDelete = null">
+          <div class="confirm-dialog">
+            <h3 class="confirm-title">Supprimer cette partie ?</h3>
+            <p class="confirm-message">
+              La partie <strong>{{ gameToDelete.name }}</strong> sera définitivement supprimée.
+            </p>
+            <div class="confirm-actions">
+              <button type="button" class="btn btn-secondary" @click="gameToDelete = null">
+                Annuler
+              </button>
+              <button type="button" class="btn btn-danger" @click="executeDelete" :disabled="isDeleting">
+                {{ isDeleting ? 'Suppression...' : 'Supprimer' }}
+              </button>
+            </div>
+          </div>
+        </div>
+      </Transition>
+    </Teleport>
 
     <template #footer>
       <div class="load-actions">
-        <button
-          type="button"
-          class="btn btn-secondary"
-          @click="handleCancel"
-        >
-          Annuler
-        </button>
-        <button
-          type="button"
-          class="btn btn-primary"
-          @click="handleConfirm"
-          :disabled="!loadedState"
-        >
-          <UIIcon type="play" />
-          Reprendre la partie
+        <button type="button" class="btn btn-secondary" @click="$emit('update:modelValue', false)">
+          Fermer
         </button>
       </div>
     </template>
@@ -78,11 +202,12 @@
 </template>
 
 <script setup>
-import { ref, watch } from 'vue';
+import { ref, watch, onMounted } from 'vue';
 import ModalShell from './ModalShell.vue';
 import SavePreview from './SavePreview.vue';
 import UIIcon from './icons/UIIcon.vue';
-import { useSaveGame } from '../composables/useSaveGame.js';
+import { useStorage } from '../composables/useStorage.js';
+import { readSaveFile } from '../core/save-manager.js';
 
 const props = defineProps({
   modelValue: Boolean
@@ -90,99 +215,137 @@ const props = defineProps({
 
 const emit = defineEmits(['update:modelValue', 'load']);
 
-const { loadFromFile, isLoading: saveLoading, error: saveError } = useSaveGame();
+const {
+  games,
+  isLoading,
+  error,
+  storageMode,
+  canUseCloud,
+  fetchGames,
+  loadGame,
+  deleteGame,
+  migrateToCloud
+} = useStorage();
 
+// File import state
+const showFileImport = ref(false);
 const fileInput = ref(null);
 const isDragging = ref(false);
-const isLoading = ref(false);
-const error = ref(null);
-const loadedMeta = ref(null);
-const loadedState = ref(null);
+const fileError = ref(null);
+const importedGame = ref(null);
 
-// Reset quand la modale s'ouvre/ferme
+// Actions state
+const loadingGameId = ref(null);
+const gameToDelete = ref(null);
+const isDeleting = ref(false);
+
+// Charger les parties à l'ouverture
 watch(() => props.modelValue, (isOpen) => {
   if (isOpen) {
-    resetState();
+    fetchGames();
+    resetFileImport();
   }
 });
 
-function resetState() {
+onMounted(() => {
+  if (props.modelValue) {
+    fetchGames();
+  }
+});
+
+function resetFileImport() {
+  showFileImport.value = false;
   isDragging.value = false;
-  isLoading.value = false;
-  error.value = null;
-  loadedMeta.value = null;
-  loadedState.value = null;
+  fileError.value = null;
+  importedGame.value = null;
   if (fileInput.value) {
     fileInput.value.value = '';
-  }
-}
-
-function triggerFileInput() {
-  fileInput.value?.click();
-}
-
-function handleDragEnter(e) {
-  isDragging.value = true;
-}
-
-function handleDragOver(e) {
-  isDragging.value = true;
-}
-
-function handleDragLeave(e) {
-  // Vérifier qu'on quitte vraiment la zone (pas juste un enfant)
-  if (!e.currentTarget.contains(e.relatedTarget)) {
-    isDragging.value = false;
   }
 }
 
 async function handleDrop(e) {
   isDragging.value = false;
   const file = e.dataTransfer?.files?.[0];
-  if (file) {
-    await processFile(file);
-  }
+  if (file) await processFile(file);
 }
 
 async function handleFileSelect(e) {
   const file = e.target?.files?.[0];
-  if (file) {
-    await processFile(file);
-  }
+  if (file) await processFile(file);
 }
 
 async function processFile(file) {
-  isLoading.value = true;
-  error.value = null;
-  loadedMeta.value = null;
-  loadedState.value = null;
+  fileError.value = null;
+  importedGame.value = null;
 
   try {
-    const { meta, state } = await loadFromFile(file);
-    loadedMeta.value = meta;
-    loadedState.value = state;
+    const { meta, state } = await readSaveFile(file);
+    importedGame.value = { meta, state };
   } catch (err) {
-    error.value = err.message || 'Erreur lors du chargement';
-    loadedMeta.value = null;
-    loadedState.value = null;
-  } finally {
-    isLoading.value = false;
+    fileError.value = err.message || 'Erreur lors de la lecture du fichier';
   }
 }
 
-function handleCancel() {
-  resetState();
+function loadImported() {
+  if (!importedGame.value) return;
+  emit('load', {
+    meta: importedGame.value.meta,
+    state: importedGame.value.state
+  });
   emit('update:modelValue', false);
 }
 
-function handleConfirm() {
-  if (!loadedState.value) return;
-  
-  emit('load', {
-    meta: loadedMeta.value,
-    state: loadedState.value
-  });
-  emit('update:modelValue', false);
+async function handleLoad(game) {
+  loadingGameId.value = game.id;
+
+  const result = await loadGame(game.id);
+
+  loadingGameId.value = null;
+
+  if (result.success) {
+    emit('load', {
+      meta: result.meta,
+      state: result.state
+    });
+    emit('update:modelValue', false);
+  }
+}
+
+function handleRefresh() {
+  fetchGames();
+}
+
+async function handleMigrate(game) {
+  loadingGameId.value = game.id;
+  await migrateToCloud(game.id, true);
+  loadingGameId.value = null;
+}
+
+function confirmDelete(game) {
+  gameToDelete.value = game;
+}
+
+async function executeDelete() {
+  if (!gameToDelete.value) return;
+
+  isDeleting.value = true;
+  await deleteGame(gameToDelete.value.id);
+  isDeleting.value = false;
+  gameToDelete.value = null;
+}
+
+function formatDate(date) {
+  if (!date) return '';
+  try {
+    return new Date(date).toLocaleDateString('fr-FR', {
+      day: 'numeric',
+      month: 'short',
+      hour: '2-digit',
+      minute: '2-digit'
+    });
+  } catch {
+    return '';
+  }
 }
 </script>
 
@@ -190,7 +353,53 @@ function handleConfirm() {
 .load-content {
   display: flex;
   flex-direction: column;
-  gap: var(--space-lg);
+  gap: var(--space-md);
+}
+
+.load-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.storage-indicator {
+  display: flex;
+  align-items: center;
+}
+
+.storage-mode {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-xs);
+  padding: 4px 10px;
+  font-size: 12px;
+  font-weight: 500;
+  border-radius: var(--radius-full);
+}
+
+.storage-mode--cloud {
+  background: rgba(59, 130, 246, 0.1);
+  color: var(--color-accent);
+}
+
+.storage-mode--local {
+  background: var(--color-canvas);
+  color: var(--color-ink-muted);
+}
+
+.header-actions {
+  display: flex;
+  gap: var(--space-xs);
+}
+
+/* File import zone */
+.file-import-zone {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-sm);
+  padding: var(--space-md);
+  background: var(--color-canvas);
+  border-radius: var(--radius-md);
 }
 
 .drop-zone {
@@ -199,59 +408,53 @@ function handleConfirm() {
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  min-height: 160px;
-  padding: var(--space-xl);
+  min-height: 100px;
+  padding: var(--space-lg);
   border: 2px dashed var(--color-line);
-  border-radius: var(--radius-lg);
-  background: var(--color-canvas);
+  border-radius: var(--radius-md);
+  background: var(--color-surface);
   cursor: pointer;
   transition: var(--transition-fast);
 }
 
-.drop-zone:hover {
+.drop-zone:hover,
+.drop-zone--active {
   border-color: var(--color-accent);
   background: rgba(59, 130, 246, 0.04);
 }
 
-.drop-zone--active {
-  border-color: var(--color-accent);
-  background: rgba(59, 130, 246, 0.08);
-}
-
 .drop-zone--error {
   border-color: var(--color-danger);
-  background: rgba(220, 38, 38, 0.04);
+}
+
+.drop-zone-label {
+  position: absolute;
+  inset: 0;
+  cursor: pointer;
+  z-index: 1;
 }
 
 .file-input {
   position: absolute;
-  inset: 0;
+  width: 1px;
+  height: 1px;
   opacity: 0;
-  cursor: pointer;
-}
-
-.drop-zone-empty,
-.drop-zone-loading,
-.drop-zone-loaded {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: var(--space-sm);
-  text-align: center;
-  pointer-events: none;
+  overflow: hidden;
 }
 
 .drop-icon {
-  width: 40px;
-  height: 40px;
+  width: 28px;
+  height: 28px;
   color: var(--color-ink-muted);
+  pointer-events: none;
 }
 
 .drop-text {
-  margin: 0;
-  font-size: 14px;
-  color: var(--color-ink);
-  line-height: 1.5;
+  margin: var(--space-xs) 0 0;
+  font-size: 13px;
+  text-align: center;
+  color: var(--color-ink-soft);
+  pointer-events: none;
 }
 
 .drop-hint {
@@ -259,12 +462,33 @@ function handleConfirm() {
   font-weight: 500;
 }
 
-.drop-formats {
-  font-size: 12px;
-  color: var(--color-ink-muted);
+.imported-preview {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-sm);
 }
 
-.drop-zone-loading {
+.imported-preview .btn {
+  align-self: flex-end;
+}
+
+/* Games list */
+.games-section {
+  max-height: 400px;
+  overflow-y: auto;
+}
+
+.list-state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: var(--space-2xl) var(--space-lg);
+  text-align: center;
+}
+
+.list-state--loading {
+  gap: var(--space-sm);
   color: var(--color-ink-muted);
 }
 
@@ -277,19 +501,130 @@ function handleConfirm() {
   animation: spin 0.8s linear infinite;
 }
 
+.spinning {
+  animation: spin 0.8s linear infinite;
+}
+
 @keyframes spin {
   to { transform: rotate(360deg); }
 }
 
-.drop-zone-loaded {
-  color: var(--color-success);
+.empty-icon {
+  width: 40px;
+  height: 40px;
+  color: var(--color-ink-subtle);
 }
 
-.loaded-icon {
-  width: 32px;
-  height: 32px;
+.empty-text {
+  margin: var(--space-sm) 0 0;
+  font-size: 14px;
+  font-weight: 500;
+  color: var(--color-ink);
 }
 
+.empty-hint {
+  margin: 0;
+  font-size: 13px;
+  color: var(--color-ink-muted);
+}
+
+.games-list {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-sm);
+}
+
+/* Game card */
+.game-card {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-xs);
+  padding: var(--space-sm) var(--space-md);
+  background: var(--color-surface);
+  border: 1px solid var(--color-line);
+  border-radius: var(--radius-md);
+  transition: var(--transition-fast);
+}
+
+.game-card:hover {
+  border-color: var(--color-line-strong);
+}
+
+.game-card--loading {
+  opacity: 0.6;
+  pointer-events: none;
+}
+
+.game-header {
+  display: flex;
+  align-items: center;
+  gap: var(--space-sm);
+}
+
+.game-badge {
+  padding: 2px 6px;
+  font-size: 10px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  border-radius: var(--radius-sm);
+}
+
+.game-badge--cloud {
+  background: rgba(59, 130, 246, 0.1);
+  color: var(--color-accent);
+}
+
+.game-badge--local {
+  background: var(--color-canvas);
+  color: var(--color-ink-muted);
+}
+
+.game-name {
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--color-ink);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.game-details {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-xs) var(--space-md);
+}
+
+.game-row {
+  display: flex;
+  gap: var(--space-xs);
+  font-size: 12px;
+}
+
+.game-row--muted {
+  opacity: 0.7;
+}
+
+.game-label {
+  color: var(--color-ink-muted);
+}
+
+.game-value {
+  color: var(--color-ink);
+  font-weight: 500;
+}
+
+.game-actions {
+  display: flex;
+  justify-content: flex-end;
+  align-items: center;
+  gap: var(--space-xs);
+  margin-top: var(--space-xs);
+  padding-top: var(--space-xs);
+  border-top: 1px solid var(--color-line-subtle);
+}
+
+/* Error message */
 .error-message {
   display: flex;
   align-items: center;
@@ -301,28 +636,49 @@ function handleConfirm() {
   border-radius: var(--radius-md);
 }
 
+.error-message--sm {
+  padding: var(--space-xs) var(--space-sm);
+  font-size: 12px;
+}
+
 .error-message :deep(svg) {
   width: 16px;
   height: 16px;
   flex-shrink: 0;
 }
 
-.load-actions {
-  display: flex;
-  justify-content: flex-end;
-  gap: var(--space-sm);
-}
-
+/* Buttons */
 .btn {
   display: inline-flex;
   align-items: center;
+  justify-content: center;
   gap: var(--space-xs);
-  padding: 10px 16px;
-  font-size: 14px;
+  font-family: var(--font-body);
   font-weight: 500;
-  border-radius: var(--radius-md);
+  border-radius: var(--radius-sm);
   cursor: pointer;
   transition: var(--transition-fast);
+}
+
+.btn-xs {
+  padding: 4px 6px;
+  font-size: 11px;
+}
+
+.btn-sm {
+  padding: 6px 10px;
+  font-size: 12px;
+}
+
+.btn-ghost {
+  background: transparent;
+  border: 1px solid transparent;
+  color: var(--color-ink-muted);
+}
+
+.btn-ghost:hover:not(:disabled) {
+  background: var(--color-canvas);
+  color: var(--color-ink);
 }
 
 .btn-secondary {
@@ -331,7 +687,7 @@ function handleConfirm() {
   color: var(--color-ink);
 }
 
-.btn-secondary:hover {
+.btn-secondary:hover:not(:disabled) {
   background: var(--color-canvas);
   border-color: var(--color-line-strong);
 }
@@ -346,13 +702,100 @@ function handleConfirm() {
   background: #2d3339;
 }
 
-.btn-primary:disabled {
+.btn-danger {
+  background: var(--color-danger);
+  border: 1px solid var(--color-danger);
+  color: white;
+}
+
+.btn-danger:hover:not(:disabled) {
+  background: #c62828;
+}
+
+.btn:disabled {
   opacity: 0.5;
   cursor: not-allowed;
 }
 
 .btn :deep(svg) {
-  width: 16px;
-  height: 16px;
+  width: 14px;
+  height: 14px;
+}
+
+.btn-xs :deep(svg) {
+  width: 12px;
+  height: 12px;
+}
+
+/* Confirmation dialog */
+.confirm-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(20, 22, 24, 0.75);
+  z-index: var(--z-modal);
+  display: grid;
+  place-items: center;
+  padding: var(--space-lg);
+}
+
+.confirm-dialog {
+  background: var(--color-surface);
+  border: 1px solid var(--color-line);
+  border-radius: var(--radius-md);
+  padding: var(--space-lg);
+  max-width: 360px;
+  width: 100%;
+  box-shadow: 0 18px 48px rgba(31, 35, 40, 0.25);
+}
+
+.confirm-title {
+  margin: 0 0 var(--space-sm);
+  font-size: 16px;
+  font-weight: 600;
+  color: var(--color-ink);
+}
+
+.confirm-message {
+  margin: 0 0 var(--space-lg);
+  font-size: 14px;
+  color: var(--color-ink-soft);
+  line-height: 1.5;
+}
+
+.confirm-message strong {
+  color: var(--color-ink);
+}
+
+.confirm-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: var(--space-sm);
+}
+
+.load-actions {
+  display: flex;
+  justify-content: flex-end;
+}
+
+/* Transitions */
+.slide-enter-active,
+.slide-leave-active {
+  transition: all 200ms ease;
+}
+
+.slide-enter-from,
+.slide-leave-to {
+  opacity: 0;
+  transform: translateY(-8px);
+}
+
+.fade-enter-active,
+.fade-leave-active {
+  transition: opacity 150ms ease;
+}
+
+.fade-enter-from,
+.fade-leave-to {
+  opacity: 0;
 }
 </style>

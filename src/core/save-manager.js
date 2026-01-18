@@ -402,10 +402,176 @@ export function getAutoSaveAge() {
 }
 
 // ============================================
+// Local Games Management (named saves)
+// ============================================
+
+const LOCAL_SAVE_PREFIX = 'cycling-sim-save-';
+
+/**
+ * Générer un ID unique pour une sauvegarde locale
+ * @returns {string} ID unique
+ */
+function generateLocalGameId() {
+  return `${LOCAL_SAVE_PREFIX}${Date.now()}-${Math.random().toString(36).slice(2, 8)}`;
+}
+
+/**
+ * Vérifier si une clé LocalStorage est une sauvegarde de partie
+ * @param {string} key - Clé LocalStorage
+ * @returns {boolean}
+ */
+function isLocalGameKey(key) {
+  return key.startsWith(LOCAL_SAVE_PREFIX);
+}
+
+/**
+ * Liste toutes les parties sauvegardées en local
+ * @returns {Array<{id: string, meta: object, state: object}>}
+ */
+export function listLocalGames() {
+  const games = [];
+
+  try {
+    for (let i = 0; i < localStorage.length; i++) {
+      const key = localStorage.key(i);
+      if (!isLocalGameKey(key)) continue;
+
+      try {
+        const raw = localStorage.getItem(key);
+        const saveData = JSON.parse(raw);
+
+        // Valider la structure minimale
+        if (saveData?.meta && saveData?.state) {
+          games.push({
+            id: key,
+            meta: saveData.meta,
+            state: saveData.state
+          });
+        }
+      } catch {
+        // Ignorer les sauvegardes corrompues
+        console.warn(`Sauvegarde locale corrompue ignorée: ${key}`);
+      }
+    }
+  } catch (err) {
+    console.error('Erreur lors de la lecture des sauvegardes locales:', err);
+  }
+
+  // Trier par date de sauvegarde (récent en premier)
+  games.sort((a, b) => {
+    const dateA = new Date(a.meta.savedAt || 0);
+    const dateB = new Date(b.meta.savedAt || 0);
+    return dateB - dateA;
+  });
+
+  return games;
+}
+
+/**
+ * Charge une partie locale par son ID
+ * @param {string} gameId - Clé LocalStorage
+ * @returns {{meta: object, state: object} | null}
+ */
+export function loadLocalGame(gameId) {
+  try {
+    const raw = localStorage.getItem(gameId);
+    if (!raw) return null;
+
+    const saveData = JSON.parse(raw);
+    validateSaveStructure(saveData);
+
+    return {
+      meta: saveData.meta,
+      state: deserializeSave(saveData)
+    };
+  } catch (err) {
+    console.error(`Erreur chargement partie locale ${gameId}:`, err);
+    return null;
+  }
+}
+
+/**
+ * Supprime une partie locale
+ * @param {string} gameId - Clé LocalStorage
+ * @returns {boolean} True si supprimé avec succès
+ */
+export function deleteLocalGame(gameId) {
+  try {
+    if (!isLocalGameKey(gameId)) {
+      console.warn('Tentative de suppression d\'une clé non-game:', gameId);
+      return false;
+    }
+
+    localStorage.removeItem(gameId);
+    return true;
+  } catch (err) {
+    console.error(`Erreur suppression partie locale ${gameId}:`, err);
+    return false;
+  }
+}
+
+/**
+ * Sauvegarde une partie en local avec un ID généré
+ * @param {string} name - Nom de la partie
+ * @param {Object} gameState - État du jeu
+ * @returns {{id: string, meta: object} | null} ID et meta créés, ou null si échec
+ */
+export function saveLocalGame(name, gameState) {
+  try {
+    const saveData = serializeSave(gameState, name);
+    const gameId = generateLocalGameId();
+
+    localStorage.setItem(gameId, JSON.stringify(saveData));
+
+    return {
+      id: gameId,
+      meta: saveData.meta
+    };
+  } catch (err) {
+    console.error('Erreur sauvegarde partie locale:', err);
+
+    // Détecter quota dépassé
+    if (err.name === 'QuotaExceededError' || err.code === 22) {
+      throw new SaveError('Espace de stockage local plein', SaveErrorCode.STORAGE_FULL);
+    }
+
+    return null;
+  }
+}
+
+/**
+ * Met à jour une partie locale existante
+ * @param {string} gameId - ID de la partie
+ * @param {string} name - Nouveau nom
+ * @param {Object} gameState - Nouvel état
+ * @returns {{id: string, meta: object} | null}
+ */
+export function updateLocalGame(gameId, name, gameState) {
+  if (!isLocalGameKey(gameId)) {
+    console.warn('Tentative de mise à jour d\'une clé non-game:', gameId);
+    return null;
+  }
+
+  try {
+    const saveData = serializeSave(gameState, name);
+    localStorage.setItem(gameId, JSON.stringify(saveData));
+
+    return {
+      id: gameId,
+      meta: saveData.meta
+    };
+  } catch (err) {
+    console.error(`Erreur mise à jour partie locale ${gameId}:`, err);
+    return null;
+  }
+}
+
+// ============================================
 // Exports
 // ============================================
 
 export {
   SAVE_VERSION,
-  FILE_EXTENSION
+  FILE_EXTENSION,
+  LOCAL_SAVE_PREFIX
 };

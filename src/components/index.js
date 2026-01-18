@@ -32,6 +32,8 @@ export { default as SaveGameModal } from './SaveGameModal.vue';
 export { default as LoadGameModal } from './LoadGameModal.vue';
 export { default as SavePreview } from './SavePreview.vue';
 export { default as AutoSavePrompt } from './AutoSavePrompt.vue';
+export { default as CloudSaveCard } from './CloudSaveCard.vue';
+export { default as CloudSaveList } from './CloudSaveList.vue';
 
 // Icon components
 export * from './icons';
