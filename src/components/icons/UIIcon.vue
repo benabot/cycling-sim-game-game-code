@@ -137,6 +137,16 @@
       <polyline points="18 15 12 9 6 15" />
     </g>
 
+    <!-- Chevron Left -->
+    <g v-else-if="type === 'chevron-left'">
+      <polyline points="15 18 9 12 15 6" />
+    </g>
+
+    <!-- Chevron Right -->
+    <g v-else-if="type === 'chevron-right'">
+      <polyline points="9 18 15 12 9 6" />
+    </g>
+
     <!-- Info -->
     <g v-else-if="type === 'info'">
       <circle cx="12" cy="12" r="10" />
@@ -340,10 +350,10 @@ const props = defineProps({
     validator: (v) => [
       'ai', 'human', 'die', 'card', 'attack', 'wind', 'rain', 'shelter', 'summit',
       'finish', 'aspiration', 'refuel', 'history', 'settings', 'start',
-      'check', 'close', 'chevron-down', 'chevron-up', 'info', 'warning',
-      'team', 'star', 'crash', 'energy', 'book', 'target', 'shield', 'balance',
-      'trophy', 'restart', 'discard', 'blocked', 'event', 'cursor', 'tempo',
-      'calendar', 'laurel', 'cobbles', 'road', 'hill', 'mountain',
+      'check', 'close', 'chevron-down', 'chevron-up', 'chevron-left', 'chevron-right',
+      'info', 'warning', 'team', 'star', 'crash', 'energy', 'book', 'target',
+      'shield', 'balance', 'trophy', 'restart', 'discard', 'blocked', 'event',
+      'cursor', 'tempo', 'calendar', 'laurel', 'cobbles', 'road', 'hill', 'mountain',
       'save', 'upload', 'download', 'play'
     ].includes(v)
   },

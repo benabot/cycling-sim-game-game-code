@@ -5,6 +5,7 @@
       v-if="gameScreen === 'setup'"
       @start="startGame"
       @restore="handleRestore"
+      @go-to-account="goToAccount"
     />
 
     <!-- Game Board -->
@@ -15,6 +16,14 @@
       :savedState="savedState"
       @backToSetup="backToSetup"
       @restore="handleRestore"
+      @go-to-account="goToAccount"
+    />
+
+    <!-- Account Page -->
+    <AccountPage
+      v-else-if="gameScreen === 'account'"
+      @back="backToSetup"
+      @load="handleAccountLoad"
     />
 
     <IntroSplash v-if="isIntroVisible" @skip="dismissIntroSplash" />
@@ -26,15 +35,18 @@ import { ref, onMounted, onBeforeUnmount } from 'vue';
 import { SetupScreen } from './components/index.js';
 import GameBoard from './ui/GameBoard.vue';
 import IntroSplash from './ui/IntroSplash.vue';
+import AccountPage from './views/AccountPage.vue';
 import { useAuth } from './composables/useAuth.js';
+import { useStorage } from './composables/useStorage.js';
 
 const { initSession } = useAuth();
+const { loadGame } = useStorage();
 
 onMounted(() => {
   initSession();
 });
 
-// Screen state: 'setup' | 'playing'
+// Screen state: 'setup' | 'playing' | 'account'
 const gameScreen = ref('setup');
 const gameConfig = ref(null);
 const savedState = ref(null);
@@ -79,11 +91,23 @@ function handleRestore({ meta, state }) {
   dismissIntroSplash();
 }
 
+async function handleAccountLoad(game) {
+  // Load the game from storage and restore
+  const result = await loadGame(game.id);
+  if (result.success) {
+    handleRestore({ meta: result.meta, state: result.state });
+  }
+}
+
 function backToSetup() {
   gameScreen.value = 'setup';
   gameConfig.value = null;
   savedState.value = null;
   dismissIntroSplash();
+}
+
+function goToAccount() {
+  gameScreen.value = 'account';
 }
 
 onBeforeUnmount(() => {

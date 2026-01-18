@@ -6,7 +6,10 @@
         <h1>{{ headerTitle }}</h1>
       </div>
       <div class="header-actions">
-        <UserMenu />
+        <UserMenu
+          @load-game="handleLoadGame"
+          @go-to-account="$emit('go-to-account')"
+        />
         <button
           v-if="phase !== 'finished'"
           type="button"
@@ -335,7 +338,7 @@ const props = defineProps({
   savedState: { type: Object, default: null }
 });
 
-const emit = defineEmits(['backToSetup', 'restore']);
+const emit = defineEmits(['backToSetup', 'restore', 'go-to-account']);
 
 // Initialize game engine
 const {

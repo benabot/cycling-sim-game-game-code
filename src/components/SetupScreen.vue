@@ -4,7 +4,10 @@
       <!-- Header -->
       <RaceHeader :title="raceHeaderTitle" :subtitle="raceHeaderSubtitle" :theme="raceHeaderTheme">
         <template #actions>
-          <UserMenu />
+          <UserMenu
+            @load-game="handleLoadGame"
+            @go-to-account="$emit('go-to-account')"
+          />
           <button
             type="button"
             class="btn btn-ghost btn-sm load-trigger"
@@ -453,7 +456,7 @@ import { getClassicPreset, StageRaceConfig } from '../config/race-presets.js';
 import { UIConfig } from '../config/ui.config.js';
 import { DraftConfig, DraftAIConfig, DraftStatLabels, DraftStatOrder, RiderPool } from '../config/draft.config.js';
 
-const emit = defineEmits(['start', 'restore']);
+const emit = defineEmits(['start', 'restore', 'go-to-account']);
 
 const courseLengths = [
   { value: 60, duration: '18 min' },
