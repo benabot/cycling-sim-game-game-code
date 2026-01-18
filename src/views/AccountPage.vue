@@ -228,17 +228,16 @@ function formatRelativeDate(date) {
   }
 }
 
-const racePresetLabels = {
-  ardennaise: 'Ardennaise',
-  lombarde: 'Lombarde',
-  riviera: 'Riviera',
-  nord: 'Nord'
-};
-
 function getRaceName(game) {
   if (game.raceMode === 'stage') return 'Course à étapes';
   if (game.racePreset) {
-    return racePresetLabels[game.racePreset] || game.racePreset;
+    const names = {
+      ardennaise: 'Ardennaise',
+      lombarde: 'Lombarde',
+      riviera: 'Riviera',
+      nord: 'Nord'
+    };
+    return names[game.racePreset] || game.racePreset;
   }
   return 'Course';
 }
@@ -246,6 +245,13 @@ function getRaceName(game) {
 function getRaceIcon(game) {
   return game.raceMode === 'stage' ? 'calendar' : 'laurel';
 }
+
+const racePresetLabels = {
+  ardennaise: 'Ardennaise',
+  lombarde: 'Lombarde',
+  riviera: 'Riviera',
+  nord: 'Nord'
+};
 
 function getRaceLabel({ raceMode, racePreset, raceName }) {
   if (raceName) return raceName;
@@ -373,8 +379,8 @@ async function executeDelete() {
   }
 }
 
-onMounted(() => {
-  fetchGames();
+onMounted(async () => {
+  await fetchGames();
   fetchFinishedGames();
 });
 </script>
