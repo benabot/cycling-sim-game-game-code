@@ -38,18 +38,35 @@
           <UIIcon type="trophy" size="md" />
           Statistiques
         </h2>
-        <div class="stats-grid">
-          <div class="stat-card">
-            <span class="stat-value">{{ stats.totalGames }}</span>
-            <span class="stat-label">Parties sauvegardées</span>
+        <div class="stats-block">
+          <div class="stats-block__header">
+            <span class="stats-block__title">Parties terminées</span>
+            <span v-if="!statsLoading && !statsError" class="stats-block__count">
+              {{ finishedGames.length }}
+            </span>
           </div>
-          <div class="stat-card">
-            <span class="stat-value">{{ stats.cloudGames }}</span>
-            <span class="stat-label">Dans le cloud</span>
+
+          <div v-if="statsLoading" class="stats-state">
+            Chargement...
           </div>
-          <div class="stat-card">
-            <span class="stat-value">{{ stats.localGames }}</span>
-            <span class="stat-label">En local</span>
+          <div v-else-if="statsError" class="stats-state stats-state--error">
+            {{ statsError }}
+          </div>
+          <div v-else-if="finishedGames.length === 0" class="stats-state">
+            Aucune partie terminée pour le moment.
+          </div>
+          <div v-else class="stats-list">
+            <div v-for="game in finishedGames" :key="game.id" class="stats-card">
+              <div class="stats-card__top">
+                <span class="stats-card__title">{{ game.name }}</span>
+                <span class="stats-card__date">{{ formatDate(game.finishedAt) }}</span>
+              </div>
+              <div class="stats-card__meta">
+                <span class="stats-card__item">Parcours: {{ game.raceLabel }}</span>
+                <span class="stats-card__item">Classement: {{ formatRanking(game) }}</span>
+                <span class="stats-card__item">Tours: {{ game.currentTurn || '—' }}</span>
+              </div>
+            </div>
           </div>
         </div>
       </section>
@@ -159,7 +176,9 @@
 </template>
 
 <script setup>
-import { ref, computed, onMounted } from 'vue';
+import { ref, onMounted } from 'vue';
+import { supabase } from '../lib/supabase.js';
+import { listLocalGames } from '../core/save-manager.js';
 import { useAuth } from '../composables/useAuth.js';
 import { useStorage } from '../composables/useStorage.js';
 import UIIcon from '../components/icons/UIIcon.vue';
@@ -171,12 +190,9 @@ const { games, isLoading, fetchGames, deleteGame } = useStorage();
 
 const gameToDelete = ref(null);
 const deletingId = ref(null);
-
-const stats = computed(() => ({
-  totalGames: games.value.length,
-  cloudGames: games.value.filter(g => g.source === 'cloud').length,
-  localGames: games.value.filter(g => g.source === 'local').length
-}));
+const finishedGames = ref([]);
+const statsLoading = ref(false);
+const statsError = ref('');
 
 function formatDate(date) {
   if (!date) return '-';
@@ -212,22 +228,119 @@ function formatRelativeDate(date) {
   }
 }
 
+const racePresetLabels = {
+  ardennaise: 'Ardennaise',
+  lombarde: 'Lombarde',
+  riviera: 'Riviera',
+  nord: 'Nord'
+};
+
 function getRaceName(game) {
   if (game.raceMode === 'stage') return 'Course à étapes';
   if (game.racePreset) {
-    const names = {
-      ardennaise: 'Ardennaise',
-      lombarde: 'Lombarde',
-      riviera: 'Riviera',
-      nord: 'Nord'
-    };
-    return names[game.racePreset] || game.racePreset;
+    return racePresetLabels[game.racePreset] || game.racePreset;
   }
   return 'Course';
 }
 
 function getRaceIcon(game) {
   return game.raceMode === 'stage' ? 'calendar' : 'laurel';
+}
+
+function getRaceLabel({ raceMode, racePreset, raceName }) {
+  if (raceName) return raceName;
+
+  const normalizedMode = String(raceMode || '').toLowerCase();
+  if (normalizedMode === 'stage') return 'Course à étapes';
+
+  if (racePreset) return racePresetLabels[racePreset] || racePreset;
+
+  return 'Course';
+}
+
+function normalizeFinishedLocalGame(localGame) {
+  const meta = localGame.meta || {};
+  const state = localGame.state || {};
+
+  return {
+    id: localGame.id,
+    source: 'local',
+    name: meta.name || 'Sans nom',
+    finishedAt: meta.savedAt || null,
+    raceLabel: getRaceLabel({
+      raceMode: meta.raceMode,
+      racePreset: null,
+      raceName: meta.raceName
+    }),
+    currentTurn: meta.currentTurn || null,
+    rankings: Array.isArray(state.rankings) ? state.rankings : []
+  };
+}
+
+function normalizeFinishedCloudGame(cloudGame) {
+  return {
+    id: cloudGame.id,
+    source: 'cloud',
+    name: cloudGame.name || 'Sans nom',
+    finishedAt: cloudGame.updated_at || cloudGame.created_at || null,
+    raceLabel: getRaceLabel({
+      raceMode: cloudGame.race_mode,
+      racePreset: cloudGame.race_preset,
+      raceName: null
+    }),
+    currentTurn: cloudGame.current_turn || null,
+    rankings: Array.isArray(cloudGame.state?.rankings) ? cloudGame.state.rankings : []
+  };
+}
+
+function formatRanking(game) {
+  const topRider = Array.isArray(game.rankings) ? game.rankings[0] : null;
+  if (topRider?.name) return `1er: ${topRider.name}`;
+  return '—';
+}
+
+async function fetchFinishedGames() {
+  statsLoading.value = true;
+  statsError.value = '';
+
+  const finished = [];
+  let cloudError = null;
+
+  try {
+    const localFinished = listLocalGames()
+      .filter(game => String(game.meta?.phase || '').toLowerCase() === 'finished')
+      .map(normalizeFinishedLocalGame);
+    finished.push(...localFinished);
+
+    if (supabase && user.value) {
+      const { data, error } = await supabase
+        .from('games')
+        .select('id,name,updated_at,created_at,race_mode,race_preset,current_turn,phase,state')
+        .eq('owner_id', user.value.id)
+        .eq('phase', 'finished')
+        .order('updated_at', { ascending: false })
+        .limit(20);
+
+      if (error) {
+        cloudError = error;
+      } else {
+        finished.push(...(data || []).map(normalizeFinishedCloudGame));
+      }
+    }
+
+    finished.sort((a, b) => new Date(b.finishedAt || 0) - new Date(a.finishedAt || 0));
+    finishedGames.value = finished.slice(0, 20);
+
+    if (!finishedGames.value.length && cloudError) {
+      statsError.value = 'Impossible de charger les statistiques.';
+    }
+  } catch (err) {
+    console.error('Fetch finished games error:', err);
+    statsError.value = 'Impossible de charger les statistiques.';
+    finishedGames.value = [];
+  } finally {
+    statsLoading.value = false;
+  }
 }
 
 function goBack() {
@@ -262,6 +375,7 @@ async function executeDelete() {
 
 onMounted(() => {
   fetchGames();
+  fetchFinishedGames();
 });
 </script>
 
@@ -354,36 +468,90 @@ onMounted(() => {
   color: var(--color-ink);
 }
 
-/* Stats grid */
-.stats-grid {
-  display: grid;
-  grid-template-columns: repeat(3, 1fr);
+/* Stats block */
+.stats-block {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-md);
+}
+
+.stats-block__header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-md);
+}
+
+.stats-block__title {
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: 0.18em;
+  color: var(--color-ink-muted);
+  font-weight: 600;
+}
+
+.stats-block__count {
+  font-size: 12px;
+  color: var(--color-ink-soft);
+}
+
+.stats-state {
+  font-size: 14px;
+  color: var(--color-ink-muted);
+  padding: var(--space-sm) 0;
+}
+
+.stats-state--error {
+  color: var(--color-danger, #dc2626);
+}
+
+.stats-list {
+  display: flex;
+  flex-direction: column;
   gap: var(--space-sm);
 }
 
-.stat-card {
+.stats-card {
   background: var(--color-paper);
   border: 1px solid var(--color-line);
   border-radius: var(--radius-md);
   padding: var(--space-md);
-  text-align: center;
   display: flex;
   flex-direction: column;
   gap: var(--space-xs);
 }
 
-.stat-value {
-  font-family: var(--font-mono, monospace);
-  font-size: 24px;
-  font-weight: 700;
+.stats-card__top {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-md);
+}
+
+.stats-card__title {
+  font-size: 14px;
+  font-weight: 600;
   color: var(--color-ink);
 }
 
-.stat-label {
-  font-size: 11px;
+.stats-card__date {
+  font-size: 12px;
   color: var(--color-ink-muted);
-  text-transform: uppercase;
-  letter-spacing: 0.5px;
+  white-space: nowrap;
+}
+
+.stats-card__meta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-xs) var(--space-md);
+  font-size: 12px;
+  color: var(--color-ink-soft);
+}
+
+.stats-card__item {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
 }
 
 /* Loading & empty states */
@@ -658,24 +826,13 @@ onMounted(() => {
     padding: var(--space-md);
   }
 
-  .stats-grid {
-    grid-template-columns: 1fr;
+  .stats-card__top {
+    flex-direction: column;
+    align-items: flex-start;
   }
 
-  .stat-card {
-    flex-direction: row;
-    justify-content: space-between;
-    align-items: center;
-    text-align: left;
-  }
-
-  .stat-value {
-    font-size: 20px;
-    order: 2;
-  }
-
-  .stat-label {
-    order: 1;
+  .stats-card__date {
+    white-space: normal;
   }
 }
 </style>
