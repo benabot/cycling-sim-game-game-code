@@ -271,13 +271,14 @@
     <HistoryModal v-model="isHistoryOpen" :log="gameLog" />
     <FinishResultsModal
       v-model="showFinishModal"
-      :race-title="headerTitle"
-      :rankings="rankings"
-      :riders="allRiders"
-      :turn="turn"
+      :race-title="finalRaceTitle || headerTitle"
+      :rankings="finalRankingsSnapshot.length ? finalRankingsSnapshot : rankings"
+      :riders="finalRidersSnapshot.length ? finalRidersSnapshot : allRiders"
+      :turn="finalTurnSnapshot || turn"
       :stage-race="stageRace"
       :can-restart="true"
       @restart="handleRestart"
+      @new-course="handleNewCourse"
     />
 
     <!-- Save/Load modals -->
@@ -405,6 +406,10 @@ const isHistoryOpen = ref(false);
 const showSaveModal = ref(false);
 const showLoadModal = ref(false);
 const showFinishModal = ref(false);
+const finalRankingsSnapshot = ref([]);
+const finalRidersSnapshot = ref([]);
+const finalRaceTitle = ref('');
+const finalTurnSnapshot = ref(null);
 const isMobile = ref(false);
 const isMoveAnimating = ref(false);
 const prefersReducedMotion = ref(false);
@@ -476,13 +481,23 @@ const mobileLogPreview = computed(() => {
   return truncateText(cleaned || 'Événement', 72);
 });
 
-watch(phase, (newPhase, oldPhase) => {
-  if (newPhase === 'finished' && oldPhase !== 'finished') {
+watch([phase, rankings], ([newPhase, newRankings]) => {
+  if (newPhase === 'finished') {
     showFinishModal.value = true;
+    if (!finalRankingsSnapshot.value.length && newRankings?.length) {
+      finalRankingsSnapshot.value = JSON.parse(JSON.stringify(newRankings));
+      finalRidersSnapshot.value = JSON.parse(JSON.stringify(allRiders.value || []));
+      finalRaceTitle.value = headerTitle.value;
+      finalTurnSnapshot.value = turn.value;
+    }
+    return;
   }
-  if (newPhase !== 'finished') {
-    showFinishModal.value = false;
-  }
+
+  showFinishModal.value = false;
+  finalRankingsSnapshot.value = [];
+  finalRidersSnapshot.value = [];
+  finalRaceTitle.value = '';
+  finalTurnSnapshot.value = null;
 });
 
 const animationSpeed = computed(() => {
@@ -709,7 +724,13 @@ function openLoadModal() {
 
 function handleRestart() {
   showFinishModal.value = false;
-  restartGame();
+  const config = rawGameState.value?.gameConfig || props.gameConfig || null;
+  initialize(config);
+}
+
+function handleNewCourse() {
+  showFinishModal.value = false;
+  emit('backToSetup');
 }
 
 function handleLoadGame({ meta, state }) {

@@ -74,14 +74,18 @@
           </div>
 
           <footer class="finish-modal__footer">
-            <button type="button" class="btn btn-secondary" @click="close">
-              Retour au plateau
-            </button>
             <button
-              v-if="canRestart"
               type="button"
               class="btn btn-primary"
+              :disabled="!canRestart"
               @click="handleRestart"
+            >
+              Rejouer la même course
+            </button>
+            <button
+              type="button"
+              class="btn btn-secondary"
+              @click="handleNewCourse"
             >
               Nouvelle course
             </button>
@@ -95,10 +99,8 @@
 <script setup>
 import { computed, onBeforeUnmount, watch, ref } from 'vue';
 import UIIcon from './icons/UIIcon.vue';
-import { RiderPool } from '../config/draft.config.js';
-import { RiderConfig } from '../config/game.config.js';
-import { TeamConfigs } from '../core/teams.js';
-import { PORTRAIT_FALLBACK_URL, getRiderPortraitUrl } from '../utils/portraits.js';
+import { PORTRAIT_FALLBACK_URL } from '../utils/portraits.js';
+import { buildFinalStandingsViewModel } from '../utils/standings.js';
 
 const props = defineProps({
   modelValue: { type: Boolean, default: false },
@@ -110,46 +112,18 @@ const props = defineProps({
   canRestart: { type: Boolean, default: false }
 });
 
-const emit = defineEmits(['update:modelValue', 'restart']);
+const emit = defineEmits(['update:modelValue', 'restart', 'new-course']);
 
 const titleId = `finish-modal-title-${Math.random().toString(36).slice(2, 10)}`;
 const portraitErrors = ref({});
 let previousBodyOverflow = '';
 
-const riderLookup = computed(() => {
-  const map = new Map();
-  (props.riders || []).forEach(rider => {
-    if (rider?.id) map.set(rider.id, rider);
-  });
-  return map;
-});
-
-const riderPoolLookup = computed(() => {
-  const map = new Map();
-  RiderPool.forEach(rider => map.set(rider.id, rider));
-  return map;
-});
-
-const finishEntries = computed(() => {
-  return (props.rankings || []).map((entry, index) => {
-    const riderFromState = riderLookup.value.get(entry?.id) || {};
-    const riderFromPool = riderPoolLookup.value.get(entry?.id) || {};
-    const teamId = entry?.team || riderFromState.team || riderFromPool.team || null;
-    const teamConfig = TeamConfigs[teamId] || null;
-    const roleKey = riderFromState.type || riderFromPool.role || entry?.type || null;
-    const portraitKey = riderFromState.portraitKey || riderFromPool.portraitKey || null;
-
-    return {
-      id: entry?.id || riderFromState.id || null,
-      rank: Number.isFinite(entry?.finalRank) ? entry.finalRank : index + 1,
-      name: entry?.name || riderFromState.name || riderFromPool.name || 'Coureur',
-      teamName: teamConfig?.name || teamId || 'Équipe',
-      teamColor: teamConfig?.color || 'rgba(255,255,255,0.4)',
-      roleLabel: roleKey ? (RiderConfig[roleKey]?.name || roleKey) : null,
-      portraitUrl: portraitKey ? getRiderPortraitUrl(portraitKey) : null
-    };
-  });
-});
+const finishEntries = computed(() => (
+  buildFinalStandingsViewModel({
+    rankings: props.rankings,
+    riders: props.riders
+  })
+));
 
 const metaLine = computed(() => {
   const parts = [];
@@ -186,6 +160,11 @@ function close() {
 
 function handleRestart() {
   emit('restart');
+  close();
+}
+
+function handleNewCourse() {
+  emit('new-course');
   close();
 }
 
