@@ -100,11 +100,13 @@
 import { computed, onBeforeUnmount, watch, ref } from 'vue';
 import UIIcon from './icons/UIIcon.vue';
 import { PORTRAIT_FALLBACK_URL } from '../utils/portraits.js';
+import { buildFinalStandingsViewModel } from '../utils/standings.js';
 
 const props = defineProps({
   modelValue: { type: Boolean, default: false },
   raceTitle: { type: String, default: '' },
-  standings: { type: Array, default: () => [] },
+  rankings: { type: Array, default: () => [] },
+  riders: { type: Array, default: () => [] },
   turn: { type: Number, default: null },
   stageRace: { type: Object, default: null },
   canRestart: { type: Boolean, default: false }
@@ -116,7 +118,12 @@ const titleId = `finish-modal-title-${Math.random().toString(36).slice(2, 10)}`;
 const portraitErrors = ref({});
 let previousBodyOverflow = '';
 
-const finishEntries = computed(() => props.standings || []);
+const finishEntries = computed(() => (
+  buildFinalStandingsViewModel({
+    rankings: props.rankings,
+    riders: props.riders
+  })
+));
 
 const metaLine = computed(() => {
   const parts = [];

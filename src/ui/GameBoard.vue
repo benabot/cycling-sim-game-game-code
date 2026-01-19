@@ -272,7 +272,8 @@
     <FinishResultsModal
       v-model="showFinishModal"
       :race-title="headerTitle"
-      :standings="finalStandings"
+      :rankings="rankings"
+      :riders="allRiders"
       :turn="turn"
       :stage-race="stageRace"
       :can-restart="true"
@@ -300,7 +301,6 @@ import { getClassicPreset } from '../config/race-presets.js';
 import { RiderConfig, TerrainConfig } from '../config/game.config.js';
 import { UIConfig } from '../config/ui.config.js';
 import { calculateMovementConsumption, calculateRecovery } from '../core/energy.js';
-import { buildFinalStandingsViewModel } from '../utils/standings.js';
 import { isRefuelZone } from '../core/terrain.js';
 import { createMoveAnimator, createMoveDiffHandler } from './anim/moveAnimator.js';
 import {
@@ -488,14 +488,9 @@ const isEffectsOverlayVisible = computed(() => (
   showEffectsOverlay.value && !shouldSkipEndTurnOverlay.value
 ));
 
-const finalStandings = computed(() => (
-  buildFinalStandingsViewModel({
-    rankings: rankings.value,
-    riders: allRiders.value
-  })
-));
-
 const autoEndTurnAck = ref(false);
+const DEBUG_FINISH_MODAL = false;
+const finishModalLogOnce = ref(false);
 
 watch(
   [turnPhase, phase, isAnimatingEffects, shouldSkipEndTurnOverlay],
@@ -515,15 +510,32 @@ watch(
   }
 );
 
-watch([phase, finalStandings], ([newPhase, standings]) => {
+watch([phase, rankings], ([newPhase, rankingsList]) => {
   if (newPhase === 'finished') {
-    if (standings?.length) {
+    if (rankingsList?.length) {
       showFinishModal.value = true;
     }
     return;
   }
 
   showFinishModal.value = false;
+});
+
+watch(showFinishModal, (isOpen) => {
+  if (!DEBUG_FINISH_MODAL) return;
+  if (isOpen && !finishModalLogOnce.value) {
+    finishModalLogOnce.value = true;
+    const length = rankings.value?.length || 0;
+    if (!length) {
+      console.info('[finish-modal] rankings empty on open', {
+        length,
+        first: rankings.value?.[0]
+      });
+    }
+  }
+  if (!isOpen) {
+    finishModalLogOnce.value = false;
+  }
 });
 
 const animationSpeed = computed(() => {
