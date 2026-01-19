@@ -516,16 +516,16 @@ export function deleteLocalGame(gameId) {
  * @param {Object} gameState - État du jeu
  * @returns {{id: string, meta: object} | null} ID et meta créés, ou null si échec
  */
-export function saveLocalGame(name, gameState) {
+export function saveLocalGame(name, gameState, saveData = null) {
   try {
-    const saveData = serializeSave(gameState, name);
+    const data = saveData || serializeSave(gameState, name);
     const gameId = generateLocalGameId();
 
-    localStorage.setItem(gameId, JSON.stringify(saveData));
+    localStorage.setItem(gameId, JSON.stringify(data));
 
     return {
       id: gameId,
-      meta: saveData.meta
+      meta: data.meta
     };
   } catch (err) {
     console.error('Erreur sauvegarde partie locale:', err);

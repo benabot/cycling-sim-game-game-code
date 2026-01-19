@@ -11,8 +11,10 @@ import {
   loadLocalGame,
   deleteLocalGame,
   saveLocalGame,
-  LOCAL_SAVE_PREFIX
+  LOCAL_SAVE_PREFIX,
+  serializeSave
 } from '../core/save-manager.js';
+import { downloadCSG } from '../services/localSave.service.js';
 
 // État partagé
 const games = ref([]);
@@ -162,8 +164,10 @@ export function useStorage() {
         }
       } else {
         // Sauvegarde locale
-        const localResult = saveLocalGame(name, gameState);
+        const saveData = serializeSave(gameState, name);
+        const localResult = saveLocalGame(name, gameState, saveData);
         if (localResult) {
+          downloadCSG({ filename: saveData.meta?.name || name, payload: saveData });
           await fetchGames();
           return { success: true, source: 'local', game: { id: localResult.id, ...localResult.meta } };
         }
