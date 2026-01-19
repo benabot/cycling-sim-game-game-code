@@ -36,35 +36,32 @@
           </header>
 
           <div class="finish-modal__body">
-            <div v-if="finishEntries.length" class="finish-modal__list">
+            <div v-if="rankings.length" class="finish-modal__list">
               <article
-                v-for="(entry, index) in finishEntries"
-                :key="entry.id || `${entry.rank}-${index}`"
+                v-for="(entry, index) in rankings"
+                :key="entry.id || `rank-${index}`"
                 class="finish-row"
-                :class="podiumClass(entry.rank)"
+                :class="podiumClass(getRank(entry, index))"
                 :style="{ '--reveal-delay': `${index * 40}ms` }"
               >
-                <div class="finish-row__rank">{{ entry.rank }}</div>
+                <div class="finish-row__rank">{{ getRank(entry, index) }}</div>
                 <div class="finish-row__portrait">
                   <img
                     :src="getPortraitSrc(entry)"
-                    :alt="entry.name"
+                    :alt="getRiderName(entry)"
                     class="finish-row__image"
                     @error="onPortraitError(entry.id)"
                   />
                 </div>
                 <div class="finish-row__identity">
-                  <div class="finish-row__name">{{ entry.name }}</div>
+                  <div class="finish-row__name">{{ getRiderName(entry) }}</div>
                   <div class="finish-row__details">
-                    <span v-if="entry.roleLabel" class="finish-row__role">
-                      {{ entry.roleLabel }}
-                    </span>
                     <span class="finish-row__team">
                       <span
                         class="finish-row__team-dot"
-                        :style="{ background: entry.teamColor }"
+                        :style="{ background: getTeamColor(entry) }"
                       ></span>
-                      {{ entry.teamName }}
+                      {{ getTeamName(entry) }}
                     </span>
                   </div>
                 </div>
@@ -99,8 +96,8 @@
 <script setup>
 import { computed, onBeforeUnmount, watch, ref } from 'vue';
 import UIIcon from './icons/UIIcon.vue';
-import { PORTRAIT_FALLBACK_URL } from '../utils/portraits.js';
-import { buildFinalStandingsViewModel } from '../utils/standings.js';
+import { PORTRAIT_FALLBACK_URL, getRiderPortraitUrl } from '../utils/portraits.js';
+import { TeamConfig } from '../config/game.config.js';
 
 const props = defineProps({
   modelValue: { type: Boolean, default: false },
@@ -117,13 +114,6 @@ const emit = defineEmits(['update:modelValue', 'restart', 'new-course']);
 const titleId = `finish-modal-title-${Math.random().toString(36).slice(2, 10)}`;
 const portraitErrors = ref({});
 let previousBodyOverflow = '';
-
-const finishEntries = computed(() => (
-  buildFinalStandingsViewModel({
-    rankings: props.rankings,
-    riders: props.riders
-  })
-));
 
 const metaLine = computed(() => {
   const parts = [];
@@ -142,11 +132,36 @@ function podiumClass(rank) {
   return '';
 }
 
+function getRank(entry, index) {
+  const rank = Number(entry?.rank ?? entry?.finalRank ?? entry?.place);
+  return Number.isFinite(rank) ? rank : index + 1;
+}
+
+function getRider(entry) {
+  if (!entry?.id) return null;
+  return props.riders?.find(rider => rider.id === entry.id) || null;
+}
+
 function getPortraitSrc(entry) {
-  if (!entry?.id || portraitErrors.value[entry.id]) {
+  const rider = getRider(entry);
+  if (!rider?.id || !rider.portraitKey || portraitErrors.value[rider.id]) {
     return PORTRAIT_FALLBACK_URL;
   }
-  return entry.portraitUrl || PORTRAIT_FALLBACK_URL;
+  return getRiderPortraitUrl(rider.portraitKey);
+}
+
+function getRiderName(entry) {
+  return entry?.name || getRider(entry)?.name || 'Coureur';
+}
+
+function getTeamName(entry) {
+  const teamId = entry?.team ?? entry?.teamId ?? getRider(entry)?.team ?? getRider(entry)?.teamId;
+  return TeamConfig[teamId]?.name || teamId || 'Équipe';
+}
+
+function getTeamColor(entry) {
+  const teamId = entry?.team ?? entry?.teamId ?? getRider(entry)?.team ?? getRider(entry)?.teamId;
+  return TeamConfig[teamId]?.color || 'rgba(255,255,255,0.4)';
 }
 
 function onPortraitError(id) {

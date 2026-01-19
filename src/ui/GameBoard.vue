@@ -491,6 +491,7 @@ const isEffectsOverlayVisible = computed(() => (
 const autoEndTurnAck = ref(false);
 const DEBUG_FINISH_MODAL = false;
 const finishModalLogOnce = ref(false);
+const finishPanelLogOnce = ref(false);
 
 watch(
   [turnPhase, phase, isAnimatingEffects, shouldSkipEndTurnOverlay],
@@ -526,16 +527,30 @@ watch(showFinishModal, (isOpen) => {
   if (isOpen && !finishModalLogOnce.value) {
     finishModalLogOnce.value = true;
     const length = rankings.value?.length || 0;
-    if (!length) {
-      console.info('[finish-modal] rankings empty on open', {
-        length,
-        first: rankings.value?.[0]
-      });
-    }
+    console.info('[finish-modal] rankings on open', {
+      length,
+      first: rankings.value?.[0]
+    });
   }
   if (!isOpen) {
     finishModalLogOnce.value = false;
   }
+});
+
+watch([phase, showFinishModal, rankings], ([gamePhase, isModalOpen, rankingsList]) => {
+  if (!DEBUG_FINISH_MODAL) return;
+  if (gamePhase === 'finished' && !isModalOpen) {
+    if (!finishPanelLogOnce.value) {
+      finishPanelLogOnce.value = true;
+      const length = rankingsList?.length || 0;
+      console.info('[game-over-panel] rankings visible', {
+        length,
+        first: rankingsList?.[0]
+      });
+    }
+    return;
+  }
+  finishPanelLogOnce.value = false;
 });
 
 const animationSpeed = computed(() => {
