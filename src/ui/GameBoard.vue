@@ -271,10 +271,9 @@
     <HistoryModal v-model="isHistoryOpen" :log="gameLog" />
     <FinishResultsModal
       v-model="showFinishModal"
-      :race-title="finalRaceTitle || headerTitle"
-      :rankings="finalRankingsSnapshot.length ? finalRankingsSnapshot : rankings"
-      :riders="finalRidersSnapshot.length ? finalRidersSnapshot : allRiders"
-      :turn="finalTurnSnapshot || turn"
+      :race-title="headerTitle"
+      :standings="finalStandings"
+      :turn="turn"
       :stage-race="stageRace"
       :can-restart="true"
       @restart="handleRestart"
@@ -301,6 +300,7 @@ import { getClassicPreset } from '../config/race-presets.js';
 import { RiderConfig, TerrainConfig } from '../config/game.config.js';
 import { UIConfig } from '../config/ui.config.js';
 import { calculateMovementConsumption, calculateRecovery } from '../core/energy.js';
+import { buildFinalStandingsViewModel } from '../utils/standings.js';
 import { isRefuelZone } from '../core/terrain.js';
 import { createMoveAnimator, createMoveDiffHandler } from './anim/moveAnimator.js';
 import {
@@ -406,10 +406,6 @@ const isHistoryOpen = ref(false);
 const showSaveModal = ref(false);
 const showLoadModal = ref(false);
 const showFinishModal = ref(false);
-const finalRankingsSnapshot = ref([]);
-const finalRidersSnapshot = ref([]);
-const finalRaceTitle = ref('');
-const finalTurnSnapshot = ref(null);
 const isMobile = ref(false);
 const isMoveAnimating = ref(false);
 const prefersReducedMotion = ref(false);
@@ -481,25 +477,22 @@ const mobileLogPreview = computed(() => {
   return truncateText(cleaned || 'Événement', 72);
 });
 
-watch([phase, rankings], ([newPhase, newRankings]) => {
+const finalStandings = computed(() => (
+  buildFinalStandingsViewModel({
+    rankings: rankings.value,
+    riders: allRiders.value
+  })
+));
+
+watch([phase, finalStandings], ([newPhase, standings]) => {
   if (newPhase === 'finished') {
-    if (newRankings?.length) {
+    if (standings?.length) {
       showFinishModal.value = true;
-      if (!finalRankingsSnapshot.value.length) {
-        finalRankingsSnapshot.value = JSON.parse(JSON.stringify(newRankings));
-        finalRidersSnapshot.value = JSON.parse(JSON.stringify(allRiders.value || []));
-        finalRaceTitle.value = headerTitle.value;
-        finalTurnSnapshot.value = turn.value;
-      }
     }
     return;
   }
 
   showFinishModal.value = false;
-  finalRankingsSnapshot.value = [];
-  finalRidersSnapshot.value = [];
-  finalRaceTitle.value = '';
-  finalTurnSnapshot.value = null;
 });
 
 const animationSpeed = computed(() => {
