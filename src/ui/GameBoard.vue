@@ -483,12 +483,14 @@ const mobileLogPreview = computed(() => {
 
 watch([phase, rankings], ([newPhase, newRankings]) => {
   if (newPhase === 'finished') {
-    showFinishModal.value = true;
-    if (!finalRankingsSnapshot.value.length && newRankings?.length) {
-      finalRankingsSnapshot.value = JSON.parse(JSON.stringify(newRankings));
-      finalRidersSnapshot.value = JSON.parse(JSON.stringify(allRiders.value || []));
-      finalRaceTitle.value = headerTitle.value;
-      finalTurnSnapshot.value = turn.value;
+    if (newRankings?.length) {
+      showFinishModal.value = true;
+      if (!finalRankingsSnapshot.value.length) {
+        finalRankingsSnapshot.value = JSON.parse(JSON.stringify(newRankings));
+        finalRidersSnapshot.value = JSON.parse(JSON.stringify(allRiders.value || []));
+        finalRaceTitle.value = headerTitle.value;
+        finalTurnSnapshot.value = turn.value;
+      }
     }
     return;
   }
