@@ -79,14 +79,14 @@
 
     <!-- Effects Overlay -->
     <EffectsOverlay 
-      v-if="showEffectsOverlay"
+      v-if="isEffectsOverlayVisible"
       :turn="turn"
       :effects="endTurnEffects"
       @acknowledge="acknowledgeEffects"
     />
 
     <!-- Selected Rider Panel -->
-    <template v-if="phase !== 'finished' && !showEffectsOverlay">
+    <template v-if="phase !== 'finished' && !isEffectsOverlayVisible">
       <div
         v-if="isMobile"
         class="rider-action-sheet"
@@ -211,7 +211,7 @@
     </template>
 
     <!-- Team Legend (dynamique) -->
-    <div class="team-legend" v-if="!showEffectsOverlay">
+    <div class="team-legend" v-if="!isEffectsOverlayVisible">
       <div 
         v-for="teamId in teamIds" 
         :key="teamId"
@@ -350,6 +350,7 @@ const {
   aspirationAnimations,
   showEffectsOverlay,
   endTurnEffects,
+  isAnimatingEffects,
   isAIThinking,
   aiMoveFlash,
   isViewOnlySelection,
@@ -477,12 +478,42 @@ const mobileLogPreview = computed(() => {
   return truncateText(cleaned || 'Événement', 72);
 });
 
+const shouldSkipEndTurnOverlay = computed(() => {
+  if (phase.value !== 'last_turn') return false;
+  if (!stageRace.value) return true;
+  return stageRace.value.currentStageIndex >= stageRace.value.numStages - 1;
+});
+
+const isEffectsOverlayVisible = computed(() => (
+  showEffectsOverlay.value && !shouldSkipEndTurnOverlay.value
+));
+
 const finalStandings = computed(() => (
   buildFinalStandingsViewModel({
     rankings: rankings.value,
     riders: allRiders.value
   })
 ));
+
+const autoEndTurnAck = ref(false);
+
+watch(
+  [turnPhase, phase, isAnimatingEffects, shouldSkipEndTurnOverlay],
+  ([tPhase, gamePhase, animating, skipOverlay]) => {
+    if (!skipOverlay) {
+      autoEndTurnAck.value = false;
+      return;
+    }
+    if (gamePhase !== 'last_turn') return;
+    if (tPhase !== 'end_turn_effects') return;
+    if (animating) return;
+    if (autoEndTurnAck.value) return;
+    autoEndTurnAck.value = true;
+    nextTick(() => {
+      acknowledgeEffects();
+    });
+  }
+);
 
 watch([phase, finalStandings], ([newPhase, standings]) => {
   if (newPhase === 'finished') {
@@ -845,7 +876,7 @@ watch(
 
 // v4.0: Watch for AI turns and execute automatically
 watch(
-  [isAITurn, turnPhase, showEffectsOverlay, phase, currentTeam, isMoveAnimating],
+  [isAITurn, turnPhase, isEffectsOverlayVisible, phase, currentTeam, isMoveAnimating],
   ([aiTurn, tPhase, effectsShowing, gamePhase, team, animating]) => {
     // Only execute AI if:
     // - It's an AI turn
