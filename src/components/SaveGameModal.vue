@@ -23,21 +23,44 @@
         />
       </div>
 
-      <!-- Indicateur de destination -->
-      <div class="storage-info">
-        <div class="storage-indicator">
-          <UIIcon :type="storageMode === 'cloud' ? 'save' : 'download'" size="sm" />
-          <span>{{ storageMode === 'cloud' ? 'Sauvegarde dans le cloud' : 'Sauvegarde locale' }}</span>
-        </div>
-        <button
-          v-if="canUseCloud"
-          type="button"
-          class="btn btn-ghost btn-xs"
-          @click="forceLocal = !forceLocal"
-          :title="forceLocal ? 'Utiliser le cloud' : 'Forcer sauvegarde locale'"
+      <!-- Destination de sauvegarde -->
+      <div class="storage-choice">
+        <span class="storage-choice__label">Destination</span>
+        <div
+          class="segmented storage-segmented"
+          role="radiogroup"
+          aria-label="Destination de sauvegarde"
         >
-          {{ forceLocal ? 'Cloud' : 'Local' }}
-        </button>
+          <button
+            type="button"
+            class="segmented-item"
+            :class="{ 'segmented-item-active': saveTarget === 'local' }"
+            role="radio"
+            :aria-checked="saveTarget === 'local'"
+            @click="setSaveTarget('local')"
+          >
+            <UIIcon type="download" size="sm" />
+            Local
+          </button>
+          <button
+            type="button"
+            class="segmented-item"
+            :class="{ 'segmented-item-active': saveTarget === 'cloud' }"
+            role="radio"
+            :aria-checked="saveTarget === 'cloud'"
+            :disabled="!canUseCloud"
+            :aria-disabled="!canUseCloud"
+            :title="canUseCloud ? 'Sauvegarde dans le cloud' : 'Connecte-toi pour activer la sauvegarde cloud.'"
+            @click="setSaveTarget('cloud')"
+          >
+            <UIIcon type="save" size="sm" />
+            Cloud
+          </button>
+        </div>
+        <p class="storage-helper">{{ storageHelper }}</p>
+        <p v-if="!canUseCloud" class="storage-helper storage-helper--muted">
+          Connecte-toi pour activer la sauvegarde cloud.
+        </p>
       </div>
 
       <!-- Message d'erreur -->
@@ -74,7 +97,7 @@
           </template>
           <template v-else>
             <UIIcon :type="effectiveMode === 'cloud' ? 'save' : 'download'" />
-            Sauvegarder
+            Sauvegarder ({{ effectiveMode === 'cloud' ? 'Cloud' : 'Local' }})
           </template>
         </button>
       </div>
@@ -112,6 +135,23 @@ const effectiveMode = computed(() => {
     return 'local';
   }
   return storageMode.value;
+});
+
+const saveTarget = computed({
+  get() {
+    return effectiveMode.value;
+  },
+  set(target) {
+    if (target === 'cloud' && !canUseCloud.value) return;
+    forceLocal.value = target === 'local';
+  }
+});
+
+const storageHelper = computed(() => {
+  if (saveTarget.value === 'cloud') {
+    return 'Sauvegarde liée à ton compte, accessible sur tous tes appareils.';
+  }
+  return 'Sauvegarde sur cet appareil.';
 });
 
 // Générer un nom par défaut basé sur l'état du jeu
@@ -152,6 +192,10 @@ watch(() => props.modelValue, (isOpen) => {
     forceLocal.value = false;
   }
 });
+
+function setSaveTarget(target) {
+  saveTarget.value = target;
+}
 
 async function handleSave() {
   if (!saveName.value.trim() || !props.gameState) return;
@@ -228,27 +272,49 @@ async function handleSave() {
   color: var(--color-ink-muted);
 }
 
-/* Storage info */
-.storage-info {
+/* Storage choice */
+.storage-choice {
   display: flex;
-  justify-content: space-between;
-  align-items: center;
-  padding: var(--space-sm) var(--space-md);
-  background: var(--color-canvas);
-  border-radius: var(--radius-md);
+  flex-direction: column;
+  gap: var(--space-xs);
 }
 
-.storage-indicator {
-  display: flex;
-  align-items: center;
-  gap: var(--space-xs);
+.storage-choice__label {
   font-size: 13px;
+  font-weight: 600;
+  color: var(--color-ink);
+}
+
+.storage-segmented {
+  width: 100%;
+}
+
+.storage-segmented .segmented-item {
+  flex: 1;
+}
+
+.storage-segmented .segmented-item-active {
+  background: var(--color-ink);
+  color: var(--color-paper);
+  border-color: var(--color-ink);
+}
+
+.storage-segmented .segmented-item-active :deep(svg) {
+  color: var(--color-paper);
+}
+
+.storage-segmented .segmented-item:focus-visible {
+  outline: 2px solid var(--color-accent);
+  outline-offset: 2px;
+}
+
+.storage-helper {
+  margin: 0;
+  font-size: 12px;
   color: var(--color-ink-soft);
 }
 
-.storage-indicator :deep(svg) {
-  width: 16px;
-  height: 16px;
+.storage-helper--muted {
   color: var(--color-ink-muted);
 }
 
