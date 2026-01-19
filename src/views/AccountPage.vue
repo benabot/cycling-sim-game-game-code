@@ -183,6 +183,13 @@ import { useAuth } from '../composables/useAuth.js';
 import { useStorage } from '../composables/useStorage.js';
 import UIIcon from '../components/icons/UIIcon.vue';
 
+const props = defineProps({
+  returnTarget: {
+    type: String,
+    default: 'setup'
+  }
+});
+
 const emit = defineEmits(['back', 'load']);
 
 const { user, profile } = useAuth();
@@ -350,7 +357,7 @@ async function fetchFinishedGames() {
 }
 
 function goBack() {
-  emit('back');
+  emit('back', props.returnTarget);
 }
 
 function handleLoad(game) {

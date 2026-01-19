@@ -22,7 +22,8 @@
     <!-- Account Page -->
     <AccountPage
       v-else-if="gameScreen === 'account'"
-      @back="backToSetup"
+      :returnTarget="accountReturnTarget"
+      @back="handleAccountBack"
       @load="handleAccountLoad"
     />
 
@@ -52,6 +53,7 @@ const gameConfig = ref(null);
 const savedState = ref(null);
 const gameKey = ref(0); // Used to force GameBoard re-mount on restore
 const isIntroVisible = ref(false);
+const accountReturnTarget = ref('setup');
 let introTimer = null;
 
 function showIntroSplash() {
@@ -99,6 +101,15 @@ async function handleAccountLoad(game) {
   }
 }
 
+function handleAccountBack(target) {
+  const destination = target || accountReturnTarget.value;
+  if (destination === 'game' && (gameConfig.value || savedState.value)) {
+    gameScreen.value = 'playing';
+    return;
+  }
+  backToSetup();
+}
+
 function backToSetup() {
   gameScreen.value = 'setup';
   gameConfig.value = null;
@@ -107,6 +118,7 @@ function backToSetup() {
 }
 
 function goToAccount() {
+  accountReturnTarget.value = gameScreen.value === 'playing' ? 'game' : 'setup';
   gameScreen.value = 'account';
 }
 
