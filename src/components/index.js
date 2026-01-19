@@ -10,6 +10,7 @@ export { default as ActionZone } from './ActionZone.vue';
 export { default as TeamsOverview } from './TeamsOverview.vue';
 export { default as GameLog } from './GameLog.vue';
 export { default as GameOverPanel } from './GameOverPanel.vue';
+export { default as FinishResultsModal } from './FinishResultsModal.vue';
 export { default as CourseModal } from './CourseModal.vue';
 export { default as HistoryModal } from './HistoryModal.vue';
 export { default as RulesSection } from './RulesSection.vue';

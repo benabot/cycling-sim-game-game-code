@@ -251,7 +251,7 @@
 
     <!-- Game Over -->
     <GameOverPanel 
-      v-if="phase === 'finished'"
+      v-if="phase === 'finished' && !showFinishModal"
       :winningTeam="winningTeam"
       :rankings="rankings"
       :stageRace="stageRace"
@@ -269,6 +269,16 @@
       :activePosition="activePosition"
     />
     <HistoryModal v-model="isHistoryOpen" :log="gameLog" />
+    <FinishResultsModal
+      v-model="showFinishModal"
+      :race-title="headerTitle"
+      :rankings="rankings"
+      :riders="allRiders"
+      :turn="turn"
+      :stage-race="stageRace"
+      :can-restart="true"
+      @restart="handleRestart"
+    />
 
     <!-- Save/Load modals -->
     <SaveGameModal
@@ -302,6 +312,7 @@ import {
   ActionZone,
   TeamsOverview,
   GameOverPanel,
+  FinishResultsModal,
   GameLog,
   CourseModal,
   HistoryModal,
@@ -393,6 +404,7 @@ const isCourseModalOpen = ref(false);
 const isHistoryOpen = ref(false);
 const showSaveModal = ref(false);
 const showLoadModal = ref(false);
+const showFinishModal = ref(false);
 const isMobile = ref(false);
 const isMoveAnimating = ref(false);
 const prefersReducedMotion = ref(false);
@@ -462,6 +474,15 @@ const mobileLogPreview = computed(() => {
   const lastEntry = gameLog.value[gameLog.value.length - 1];
   const cleaned = normalizeLogText(getEntryText(lastEntry));
   return truncateText(cleaned || 'Événement', 72);
+});
+
+watch(phase, (newPhase, oldPhase) => {
+  if (newPhase === 'finished' && oldPhase !== 'finished') {
+    showFinishModal.value = true;
+  }
+  if (newPhase !== 'finished') {
+    showFinishModal.value = false;
+  }
 });
 
 const animationSpeed = computed(() => {
@@ -684,6 +705,11 @@ function openLoadModal() {
     }
   }
   showLoadModal.value = true;
+}
+
+function handleRestart() {
+  showFinishModal.value = false;
+  restartGame();
 }
 
 function handleLoadGame({ meta, state }) {
