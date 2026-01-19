@@ -417,11 +417,13 @@ onMounted(async () => {
 
 .account-content {
   max-width: 640px;
+  width: 100%;
   margin: 0 auto;
   padding: var(--space-lg);
   display: flex;
   flex-direction: column;
   gap: var(--space-xl);
+  box-sizing: border-box;
 }
 
 /* Sections */
@@ -429,6 +431,7 @@ onMounted(async () => {
   display: flex;
   flex-direction: column;
   gap: var(--space-md);
+  min-width: 0;
 }
 
 .section-title {
@@ -454,6 +457,7 @@ onMounted(async () => {
   display: flex;
   flex-direction: column;
   gap: var(--space-sm);
+  min-width: 0;
 }
 
 .profile-field {
@@ -461,6 +465,8 @@ onMounted(async () => {
   justify-content: space-between;
   align-items: center;
   padding: var(--space-xs) 0;
+  gap: var(--space-sm);
+  min-width: 0;
 }
 
 .profile-label {
@@ -472,6 +478,9 @@ onMounted(async () => {
   font-size: 14px;
   font-weight: 500;
   color: var(--color-ink);
+  max-width: 60%;
+  overflow-wrap: anywhere;
+  text-align: right;
 }
 
 /* Stats block */
@@ -479,6 +488,7 @@ onMounted(async () => {
   display: flex;
   flex-direction: column;
   gap: var(--space-md);
+  min-width: 0;
 }
 
 .stats-block__header {
@@ -525,6 +535,7 @@ onMounted(async () => {
   display: flex;
   flex-direction: column;
   gap: var(--space-xs);
+  min-width: 0;
 }
 
 .stats-card__top {
@@ -532,12 +543,18 @@ onMounted(async () => {
   align-items: center;
   justify-content: space-between;
   gap: var(--space-md);
+  min-width: 0;
 }
 
 .stats-card__title {
   font-size: 14px;
   font-weight: 600;
   color: var(--color-ink);
+  min-width: 0;
+  max-width: 100%;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
 .stats-card__date {
@@ -552,12 +569,15 @@ onMounted(async () => {
   gap: var(--space-xs) var(--space-md);
   font-size: 12px;
   color: var(--color-ink-soft);
+  min-width: 0;
 }
 
 .stats-card__item {
   display: inline-flex;
   align-items: center;
   gap: 4px;
+  max-width: 100%;
+  overflow-wrap: anywhere;
 }
 
 /* Loading & empty states */
@@ -582,6 +602,7 @@ onMounted(async () => {
   display: flex;
   flex-direction: column;
   gap: var(--space-sm);
+  min-width: 0;
 }
 
 .game-card {
@@ -593,6 +614,7 @@ onMounted(async () => {
   flex-direction: column;
   gap: var(--space-sm);
   transition: var(--transition-fast);
+  min-width: 0;
 }
 
 .game-card:hover {
@@ -603,18 +625,27 @@ onMounted(async () => {
   display: flex;
   justify-content: space-between;
   align-items: flex-start;
+  gap: var(--space-sm);
+  min-width: 0;
 }
 
 .game-info {
   display: flex;
   align-items: center;
   gap: var(--space-sm);
+  min-width: 0;
+  flex: 1;
 }
 
 .game-name {
   font-size: 14px;
   font-weight: 600;
   color: var(--color-ink);
+  min-width: 0;
+  max-width: 100%;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
 .game-badge {
@@ -646,6 +677,7 @@ onMounted(async () => {
   gap: var(--space-md);
   font-size: 12px;
   color: var(--color-ink-soft);
+  min-width: 0;
 }
 
 .game-detail {
@@ -832,12 +864,35 @@ onMounted(async () => {
     padding: var(--space-md);
   }
 
+  .profile-field {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .profile-value {
+    max-width: 100%;
+    text-align: left;
+  }
+
   .stats-card__top {
     flex-direction: column;
     align-items: flex-start;
   }
 
+  .stats-card__title {
+    white-space: normal;
+  }
+
   .stats-card__date {
+    white-space: normal;
+  }
+
+  .game-header {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .game-name {
     white-space: normal;
   }
 }

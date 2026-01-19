@@ -51,6 +51,9 @@ onBeforeUnmount(() => {
   display: flex;
   align-items: center;
   justify-content: center;
+  width: 100vw;
+  height: 100vh;
+  height: 100dvh;
   padding: var(--space-lg);
   background: #1e242d;
   overflow: hidden;
@@ -65,8 +68,8 @@ onBeforeUnmount(() => {
 
 .intro-splash__image {
   position: relative;
-  max-width: min(960px, 92vw);
-  max-height: 80vh;
+  max-width: min(960px, 100vw);
+  max-height: min(80vh, 100dvh);
   width: 100%;
   height: auto;
   object-fit: contain;
@@ -90,6 +93,19 @@ onBeforeUnmount(() => {
 }
 
 @media (max-width: 700px) {
+  .intro-splash {
+    padding: 0;
+  }
+
+  .intro-splash__image {
+    width: 100%;
+    height: 100%;
+    max-width: 100vw;
+    max-height: 100dvh;
+    object-fit: cover;
+    border-radius: 0;
+  }
+
   .intro-splash__skip {
     bottom: var(--space-md);
     right: var(--space-md);

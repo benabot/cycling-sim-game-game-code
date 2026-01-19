@@ -7,28 +7,11 @@
       </div>
       <div class="header-actions">
         <UserMenu
+          :can-save="phase !== 'finished'"
           @load-game="handleLoadGame"
+          @save-game="openSaveModal"
           @go-to-account="$emit('go-to-account')"
         />
-        <button
-          v-if="phase !== 'finished'"
-          type="button"
-          class="btn btn-ghost btn-sm"
-          aria-label="Sauvegarder la partie"
-          @click="openSaveModal"
-        >
-          <UIIcon type="save" size="sm" />
-          Sauvegarder
-        </button>
-        <button
-          type="button"
-          class="btn btn-ghost btn-sm"
-          aria-label="Charger une partie"
-          @click="openLoadModal"
-        >
-          <UIIcon type="upload" size="sm" />
-          Charger
-        </button>
         <button
           type="button"
           class="btn btn-ghost btn-sm rules-trigger"

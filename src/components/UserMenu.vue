@@ -1,48 +1,57 @@
 <template>
   <div class="user-menu">
-    <template v-if="isAuthenticated">
-      <UserDropdown :username="profile?.username || 'Utilisateur'" ref="dropdownRef">
-        <button
-          type="button"
-          class="dropdown-item"
-          role="menuitem"
-          @click="handleLoadGame"
-        >
-          <UIIcon type="upload" size="sm" />
-          Charger une partie
-        </button>
-        <button
-          type="button"
-          class="dropdown-item"
-          role="menuitem"
-          @click="goToAccount"
-        >
-          <UIIcon type="human" size="sm" />
-          Mon compte
-        </button>
-        <hr class="dropdown-divider" />
-        <button
-          type="button"
-          class="dropdown-item dropdown-item--danger"
-          role="menuitem"
-          @click="handleLogout"
-        >
-          <UIIcon type="close" size="sm" />
-          Déconnexion
-        </button>
-      </UserDropdown>
-    </template>
-    <template v-else-if="isConfigured">
+    <UserDropdown :username="menuLabel" ref="dropdownRef">
+      <button
+        v-if="canSave"
+        type="button"
+        class="dropdown-item"
+        role="menuitem"
+        @click="handleSaveGame"
+      >
+        <UIIcon type="save" size="sm" />
+        Sauvegarder
+      </button>
       <button
         type="button"
-        class="btn btn-ghost btn-sm"
+        class="dropdown-item"
+        role="menuitem"
+        @click="handleLoadGame"
+      >
+        <UIIcon type="upload" size="sm" />
+        Charger une partie
+      </button>
+      <button
+        v-if="isAuthenticated"
+        type="button"
+        class="dropdown-item"
+        role="menuitem"
+        @click="goToAccount"
+      >
+        <UIIcon type="human" size="sm" />
+        Mon compte
+      </button>
+      <hr v-if="isAuthenticated" class="dropdown-divider" />
+      <button
+        v-if="isAuthenticated"
+        type="button"
+        class="dropdown-item dropdown-item--danger"
+        role="menuitem"
+        @click="handleLogout"
+      >
+        <UIIcon type="close" size="sm" />
+        Déconnexion
+      </button>
+      <button
+        v-else-if="isConfigured"
+        type="button"
+        class="dropdown-item"
+        role="menuitem"
         @click="showAuthModal = true"
       >
         <UIIcon type="human" size="sm" />
         Se connecter
       </button>
-    </template>
-    <!-- Si Supabase non configuré, on n'affiche rien -->
+    </UserDropdown>
 
     <AuthModal v-model="showAuthModal" />
     <LoadGameModal
@@ -53,20 +62,30 @@
 </template>
 
 <script setup>
-import { ref } from 'vue';
+import { ref, computed } from 'vue';
 import UIIcon from './icons/UIIcon.vue';
 import AuthModal from './AuthModal.vue';
 import LoadGameModal from './LoadGameModal.vue';
 import UserDropdown from './UserDropdown.vue';
 import { useAuth } from '../composables/useAuth.js';
 
-const emit = defineEmits(['load-game', 'go-to-account']);
+defineProps({
+  canSave: {
+    type: Boolean,
+    default: true
+  }
+});
+
+const emit = defineEmits(['load-game', 'go-to-account', 'save-game']);
 
 const { isAuthenticated, isConfigured, profile, logout } = useAuth();
 
 const showAuthModal = ref(false);
 const showLoadModal = ref(false);
 const dropdownRef = ref(null);
+const menuLabel = computed(() => (
+  isAuthenticated.value ? (profile.value?.username || 'Utilisateur') : 'Menu'
+));
 
 function handleLoadGame() {
   dropdownRef.value?.close();
@@ -76,6 +95,11 @@ function handleLoadGame() {
 function handleLoad(loadData) {
   showLoadModal.value = false;
   emit('load-game', loadData);
+}
+
+function handleSaveGame() {
+  dropdownRef.value?.close();
+  emit('save-game');
 }
 
 function goToAccount() {

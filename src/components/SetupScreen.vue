@@ -5,18 +5,10 @@
       <RaceHeader :title="raceHeaderTitle" :subtitle="raceHeaderSubtitle" :theme="raceHeaderTheme">
         <template #actions>
           <UserMenu
+            :can-save="false"
             @load-game="handleLoadGame"
             @go-to-account="$emit('go-to-account')"
           />
-          <button
-            type="button"
-            class="btn btn-ghost btn-sm load-trigger"
-            aria-label="Charger une partie"
-            @click="openLoadModal"
-          >
-            <UIIcon type="upload" size="sm" />
-            Charger
-          </button>
           <button
             type="button"
             class="btn btn-ghost btn-sm rules-trigger"
