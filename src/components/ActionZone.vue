@@ -1,9 +1,20 @@
 <template>
   <div class="action-zone">
     <!-- Phase: Select Card -->
-    <div v-if="turnPhase === 'select_card'" class="action-prompt">
-      <span class="action-prompt-step">1</span>
-      <span class="type-body">Choisissez une carte.</span>
+    <div v-if="turnPhase === 'select_card'" class="action-content">
+      <div class="action-prompt">
+        <span class="action-prompt-step">1</span>
+        <span class="type-body">Choisissez une carte.</span>
+      </div>
+      <div class="action-buttons">
+        <button type="button" class="btn btn-secondary" @click="$emit('cancelSelection')">
+          <UIIcon type="chevron-up" :size="16" class="icon-back" />
+          Retour
+        </button>
+        <button type="button" class="btn btn-primary" disabled>
+          Sélectionner une carte
+        </button>
+      </div>
     </div>
 
     <!-- Phase: Roll Dice -->
@@ -15,14 +26,14 @@
         </span>
       </div>
       <div class="action-buttons">
-        <button @click="$emit('rollDice')" class="btn btn-primary btn-lg">
+        <button type="button" @click="$emit('cancelCard')" class="btn btn-secondary">
+          <UIIcon type="chevron-up" :size="16" class="icon-back" />
+          Retour
+        </button>
+        <button type="button" @click="$emit('rollDice')" class="btn btn-primary">
           <span class="step-badge">2</span>
           <UIIcon type="die" :size="18" />
           Lancer le dé
-        </button>
-        <button @click="$emit('cancelCard')" class="btn btn-ghost">
-          <UIIcon type="chevron-up" :size="16" class="icon-back" />
-          Retour
         </button>
       </div>
     </div>
@@ -48,21 +59,22 @@
       </div>
       <p class="type-body">Spécialité (+2) ?</p>
       <div class="action-buttons">
+        <button
+          type="button"
+          @click="$emit('skipSpecialty')"
+          class="btn btn-secondary"
+        >
+          Sans spécialité
+          <UIIcon type="chevron-down" :size="16" class="icon-forward" />
+        </button>
         <button 
           v-if="hasSpecialtyCards"
+          type="button"
           @click="$emit('useSpecialty')" 
           class="btn btn-primary"
         >
           <UIIcon type="star" :size="16" />
           Utiliser +2
-        </button>
-        <button
-          @click="$emit('skipSpecialty')"
-          class="btn"
-          :class="hasSpecialtyCards ? 'btn-ghost' : 'btn-primary'"
-        >
-          Sans spécialité
-          <UIIcon type="chevron-down" :size="16" class="icon-forward" />
         </button>
       </div>
     </div>
@@ -93,10 +105,17 @@
         <span class="calc-op">=</span>
         <span class="calc-result type-numeric-lg">{{ totalMovement }}</span>
       </div>
-      <button @click="$emit('resolve')" class="btn btn-primary btn-lg">
-        <UIIcon type="check" :size="18" />
-        Valider : {{ totalMovement }} cases (case {{ targetPosition }})
-      </button>
+      <div class="movement-summary type-caption">
+        Déplacement : {{ totalMovement }} cases → case {{ targetPosition }}
+      </div>
+      <div class="action-buttons">
+        <button type="button" class="btn btn-secondary" disabled>
+          Retour
+        </button>
+        <button type="button" @click="$emit('resolve')" class="btn btn-primary btn-primary--confirm">
+          ✓ Confirmer le déplacement
+        </button>
+      </div>
     </div>
   </div>
 </template>
@@ -117,7 +136,7 @@ const props = defineProps({
   currentPosition: { type: Number, default: 0 }
 });
 
-defineEmits(['rollDice', 'cancelCard', 'useSpecialty', 'skipSpecialty', 'resolve']);
+defineEmits(['cancelSelection', 'rollDice', 'cancelCard', 'useSpecialty', 'skipSpecialty', 'resolve']);
 
 const targetPosition = computed(() => props.currentPosition + props.totalMovement);
 </script>
@@ -286,12 +305,17 @@ const targetPosition = computed(() => props.currentPosition + props.totalMovemen
   text-align: center;
 }
 
+.movement-summary {
+  text-align: center;
+  color: var(--color-ink-muted);
+}
+
 /* Buttons */
 .action-buttons {
-  display: flex;
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
   gap: var(--space-sm);
-  flex-wrap: wrap;
-  justify-content: center;
+  width: 100%;
 }
 
 .action-zone .btn {
@@ -299,21 +323,33 @@ const targetPosition = computed(() => props.currentPosition + props.totalMovemen
   box-shadow: 0 6px 14px rgba(31, 35, 40, 0.12);
   border: 1px solid rgba(31, 35, 40, 0.12);
   font-weight: 600;
+  min-height: 46px;
+  padding: 10px 16px;
+  width: 100%;
 }
 
 .action-zone .btn-primary {
   color: #2f2418;
 }
 
-.action-zone .btn-ghost {
-  border-color: transparent;
+.action-zone .btn-secondary {
+  background: transparent;
+  color: var(--color-ink);
+  border-color: rgba(31, 35, 40, 0.2);
   box-shadow: none;
-  color: var(--color-ink-muted);
 }
 
-.action-zone .btn-ghost:hover:not(:disabled) {
+.action-zone .btn-secondary:hover:not(:disabled) {
   background: rgba(31, 35, 40, 0.06);
-  color: var(--color-ink);
+}
+
+.action-zone .btn-primary--confirm {
+  box-shadow: 0 10px 20px rgba(31, 35, 40, 0.18);
+}
+
+.action-zone .btn:focus-visible {
+  outline: 2px solid var(--color-accent);
+  outline-offset: 2px;
 }
 
 .icon-back {
@@ -330,6 +366,10 @@ const targetPosition = computed(() => props.currentPosition + props.totalMovemen
   .movement-calc {
     flex-wrap: wrap;
     justify-content: center;
+  }
+
+  .action-buttons {
+    grid-template-columns: 1fr;
   }
 }
 </style>
