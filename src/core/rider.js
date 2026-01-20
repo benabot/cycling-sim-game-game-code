@@ -194,6 +194,7 @@ export function createRiderFromDraft(draftRider, teamId, customName = null) {
 
   return {
     ...base,
+    portraitKey: draftRider.portraitKey,
     stats: { ...draftRider.stats },
     draft: {
       price: draftRider.price,

@@ -115,6 +115,19 @@ const titleId = `finish-modal-title-${Math.random().toString(36).slice(2, 10)}`;
 const portraitErrors = ref({});
 let previousBodyOverflow = '';
 
+// Debug: log rankings when modal opens
+watch(
+  () => props.modelValue,
+  (isOpen) => {
+    if (isOpen) {
+      console.info('[FinishResultsModal] opened with rankings:', {
+        length: props.rankings?.length,
+        rankings: props.rankings
+      });
+    }
+  }
+);
+
 const metaLine = computed(() => {
   const parts = [];
   if (props.turn) parts.push(`Tour ${props.turn}`);
@@ -143,11 +156,14 @@ function getRider(entry) {
 }
 
 function getPortraitSrc(entry) {
-  const rider = getRider(entry);
-  if (!rider?.id || !rider.portraitKey || portraitErrors.value[rider.id]) {
+  // First check if entry has portraitKey directly (rankings are full rider objects)
+  const portraitKey = entry?.portraitKey || getRider(entry)?.portraitKey;
+  const riderId = entry?.id || getRider(entry)?.id;
+
+  if (!riderId || !portraitKey || portraitErrors.value[riderId]) {
     return PORTRAIT_FALLBACK_URL;
   }
-  return getRiderPortraitUrl(rider.portraitKey);
+  return getRiderPortraitUrl(portraitKey);
 }
 
 function getRiderName(entry) {
@@ -557,6 +573,8 @@ onBeforeUnmount(() => {
   .finish-modal-enter-active .finish-modal__card,
   .finish-row {
     animation: none;
+    opacity: 1;
+    transform: none;
   }
 }
 </style>

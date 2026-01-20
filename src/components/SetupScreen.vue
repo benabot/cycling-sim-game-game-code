@@ -991,6 +991,7 @@ function buildDraftRosters() {
       name: rider.name,
       role: rider.role,
       price: rider.price,
+      portraitKey: rider.portraitKey,
       stats: { ...rider.stats }
     }));
     return acc;

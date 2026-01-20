@@ -272,7 +272,7 @@
     <FinishResultsModal
       v-model="showFinishModal"
       :race-title="headerTitle"
-      :rankings="rankings"
+      :rankings="finishModalRankings"
       :riders="allRiders"
       :turn="turn"
       :stage-race="stageRace"
@@ -407,6 +407,7 @@ const isHistoryOpen = ref(false);
 const showSaveModal = ref(false);
 const showLoadModal = ref(false);
 const showFinishModal = ref(false);
+const finishModalRankings = ref([]);
 const isMobile = ref(false);
 const isMoveAnimating = ref(false);
 const prefersReducedMotion = ref(false);
@@ -489,7 +490,7 @@ const isEffectsOverlayVisible = computed(() => (
 ));
 
 const autoEndTurnAck = ref(false);
-const DEBUG_FINISH_MODAL = false;
+const DEBUG_FINISH_MODAL = true;
 const finishModalLogOnce = ref(false);
 const finishPanelLogOnce = ref(false);
 
@@ -511,15 +512,26 @@ watch(
   }
 );
 
-watch([phase, rankings], ([newPhase, rankingsList]) => {
+watch([phase, rankings], async ([newPhase, rankingsList]) => {
   if (newPhase === 'finished') {
     if (rankingsList?.length) {
+      // Capture rankings at the moment we decide to open the modal
+      finishModalRankings.value = [...rankingsList];
+      console.info('[GameBoard] captured rankings:', {
+        length: rankingsList.length,
+        captured: finishModalRankings.value.length,
+        first: finishModalRankings.value[0]
+      });
+      // Wait for Vue to process the rankings update before opening modal
+      await nextTick();
       showFinishModal.value = true;
+      console.info('[GameBoard] modal opened');
     }
     return;
   }
 
   showFinishModal.value = false;
+  finishModalRankings.value = [];
 });
 
 watch(showFinishModal, (isOpen) => {
