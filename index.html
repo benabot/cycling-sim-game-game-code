@@ -1,72 +1,1162 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="fr">
   <head>
     <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Chasse-Patate</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+
+    <title>
+      Chasse-Patate — Jeu de plateau de course cycliste tactique (tour par tour)
+    </title>
+    <meta
+      name="description"
+      content="Chasse-Patate : jeu de plateau de course cycliste tactique à jouer en ligne. Placement, aspiration, énergie, pavés, vent, attaques. Lance une course et joue tour par tour."
+    />
+    <meta name="robots" content="index,follow" />
+
+    <!-- Canonical: mets une URL absolue en production -->
+    <link rel="canonical" href="https://TON-DOMAINE.TLD/" />
+
+    <!-- Open Graph -->
+    <meta property="og:type" content="website" />
+    <meta property="og:site_name" content="Chasse-Patate" />
+    <meta
+      property="og:title"
+      content="Chasse-Patate — Course cycliste tactique (jeu de plateau)"
+    />
+    <meta
+      property="og:description"
+      content="Jeu de plateau à jouer en ligne : placement, aspiration, énergie, pavés, vent, attaques. Lance une course et joue tour par tour."
+    />
+    <meta property="og:url" content="https://TON-DOMAINE.TLD/" />
+    <meta
+      property="og:image"
+      content="https://TON-DOMAINE.TLD/og/chasse-patate.jpg"
+    />
+
+    <!-- Twitter -->
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta
+      name="twitter:title"
+      content="Chasse-Patate — Course cycliste tactique (tour par tour)"
+    />
+    <meta
+      name="twitter:description"
+      content="Jeu de plateau à jouer en ligne : placement, aspiration, énergie, pavés, vent, attaques."
+    />
+    <meta
+      name="twitter:image"
+      content="https://TON-DOMAINE.TLD/og/chasse-patate.jpg"
+    />
+
+    <!-- JSON-LD: VideoGame + FAQPage -->
+    <script type="application/ld+json">
+      {
+        "@context": "https://schema.org",
+        "@graph": [
+          {
+            "@type": "VideoGame",
+            "name": "Chasse-Patate",
+            "inLanguage": "fr",
+            "genre": ["Strategy", "Sports"],
+            "description": "Jeu de plateau de course cycliste tactique à jouer en ligne, en tour par tour : placement, aspiration, gestion d’énergie, pavés, vent et attaques.",
+            "operatingSystem": "Web",
+            "applicationCategory": "GameApplication",
+            "isAccessibleForFree": true
+          },
+          {
+            "@type": "FAQPage",
+            "mainEntity": [
+              {
+                "@type": "Question",
+                "name": "C’est quoi une “chasse-patate” ?",
+                "acceptedAnswer": {
+                  "@type": "Answer",
+                  "text": "C’est quand un coureur (ou un petit groupe) roule entre deux groupes sans réussir à faire la jonction. Ça peut être une erreur… ou un piège si tu forces les autres à se griller."
+                }
+              },
+              {
+                "@type": "Question",
+                "name": "Est-ce que je dois connaître le cyclisme pour jouer ?",
+                "acceptedAnswer": {
+                  "@type": "Answer",
+                  "text": "Non. Le jeu utilise des idées simples (abri, effort, terrain, timing) et le vocabulaire est expliqué sans jargon obscur."
+                }
+              },
+              {
+                "@type": "Question",
+                "name": "Combien de temps dure une course ?",
+                "acceptedAnswer": {
+                  "@type": "Answer",
+                  "text": "Variable selon le profil et les réglages. Le jeu vise un rythme rapide et des décisions fréquentes."
+                }
+              },
+              {
+                "@type": "Question",
+                "name": "Peut-on jouer en solo ?",
+                "acceptedAnswer": {
+                  "@type": "Answer",
+                  "text": "Oui. Tu peux jouer en solo contre une IA dont l’objectif est d’être crédible : prudente sur les pavés, cohérente dans ses prises de risque, pas “parfaitement optimisée”."
+                }
+              },
+              {
+                "@type": "Question",
+                "name": "Le jeu est-il jouable sur mobile ?",
+                "acceptedAnswer": {
+                  "@type": "Answer",
+                  "text": "Oui : l’interface est conçue pour rester lisible et jouable sur mobile, sans transformer l’écran en tableau de bord."
+                }
+              }
+            ]
+          }
+        ]
+      }
+    </script>
+
     <style>
+      :root {
+        --bg: #0b0f14;
+        --panel: #111824;
+        --panel2: #0f1622;
+        --text: #e8eef7;
+        --muted: #b7c2d3;
+        --line: rgba(232, 238, 247, 0.12);
+        --accent: #e9c46a; /* “Tour” */
+        --accent2: #63b3ed; /* “info” */
+        --shadow: 0 12px 40px rgba(0, 0, 0, 0.35);
+        --radius: 16px;
+        --max: 1080px;
+        --pad: 20px;
+
+        --font-ui:
+          ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Arial,
+          sans-serif;
+        --font-display:
+          ui-serif, "Iowan Old Style", "Palatino Linotype", Palatino, Georgia,
+          serif;
+
+        --focus: 0 0 0 3px rgba(233, 196, 106, 0.35);
+        /* réserve pour éviter que la sticky recouvre le bas de page */
+        --sticky-safe: 128px;
+      }
+      @media (max-width: 768px) {
+        :root {
+          --sticky-safe: 112px;
+        }
+      }
+
       * {
         box-sizing: border-box;
       }
+      html {
+        scroll-behavior: smooth;
+      }
       body {
         margin: 0;
-        min-height: 100vh;
+        font-family: var(--font-ui);
+        background:
+          radial-gradient(
+            1200px 700px at 25% 10%,
+            rgba(99, 179, 237, 0.14),
+            transparent 60%
+          ),
+          radial-gradient(
+            900px 500px at 75% 20%,
+            rgba(233, 196, 106, 0.1),
+            transparent 55%
+          ),
+          linear-gradient(180deg, rgba(255, 255, 255, 0.02), transparent 22%),
+          var(--bg);
+        color: var(--text);
+        line-height: 1.5;
+      }
+
+      a {
+        color: inherit;
+      }
+      .wrap {
+        max-width: var(--max);
+        margin: 0 auto;
+        padding: 0 var(--pad);
+         /* padding-bottom: var(--sticky-safe);  */
+      }
+      main.wrap {
+  padding-bottom: var(--sticky-safe, 72px);
+}
+
+      /* Accessibilité: lien d’évitement */
+      .skip {
+        position: absolute;
+        left: -9999px;
+        top: 10px;
+        padding: 10px 12px;
+        background: rgba(17, 24, 36, 0.95);
+        border: 1px solid var(--line);
+        border-radius: 12px;
+        color: var(--text);
+        text-decoration: none;
+        z-index: 1000;
+      }
+      .skip:focus {
+        left: 12px;
+        outline: none;
+        box-shadow: var(--focus);
+      }
+
+      header {
+        padding: 52px 0 18px;
+      }
+
+      .hero {
+        background: linear-gradient(
+          180deg,
+          rgba(17, 24, 36, 0.82),
+          rgba(15, 22, 34, 0.78)
+        );
+        border: 1px solid var(--line);
+        border-radius: var(--radius);
+        box-shadow: var(--shadow);
+        overflow: hidden;
+        position: relative;
+      }
+
+      /* Trame légère */
+      .hero::after {
+        content: "";
+        position: absolute;
+        inset: 0;
+        pointer-events: none;
+        background:
+          radial-gradient(
+            circle at 20% 10%,
+            rgba(233, 196, 106, 0.08),
+            transparent 40%
+          ),
+          radial-gradient(
+            circle at 80% 0%,
+            rgba(99, 179, 237, 0.06),
+            transparent 45%
+          ),
+          repeating-linear-gradient(
+            135deg,
+            rgba(255, 255, 255, 0.03) 0px,
+            rgba(255, 255, 255, 0.03) 1px,
+            transparent 1px,
+            transparent 7px
+          );
+        opacity: 0.55;
+        mix-blend-mode: overlay;
+      }
+
+      .hero__inner {
+        position: relative;
+        z-index: 1;
+        padding: 26px 22px;
         display: grid;
-        place-items: center;
-        font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-        background: radial-gradient(circle at top, #f6f3ea 0%, #efe9dc 55%, #e7dfd0 100%);
-        color: #1f2937;
+        grid-template-columns: 1.1fr 0.9fr; /* texte + affiche */
+        gap: 18px;
+        align-items: stretch;
       }
-      .intro-card {
-        display: grid;
-        gap: 16px;
-        padding: 32px 36px;
-        border-radius: 18px;
-        background: #ffffff;
-        box-shadow: 0 18px 40px rgba(31, 41, 55, 0.18);
-        text-align: center;
-        max-width: 420px;
-        width: min(92vw, 420px);
+
+      @media (max-width: 920px) {
+        .hero__inner {
+          grid-template-columns: 1fr;
+        }
       }
-      .intro-title {
-        margin: 0;
-        font-size: 24px;
-        font-weight: 600;
+
+      .kicker {
+        display: inline-flex;
+        align-items: center;
+        gap: 10px;
+        color: var(--muted);
+        text-transform: uppercase;
+        letter-spacing: 0.12em;
+        font-size: 12px;
       }
-      .intro-text {
-        margin: 0;
-        color: #6b7280;
-        font-size: 14px;
+      .kicker::before {
+        content: "";
+        width: 26px;
+        height: 2px;
+        background: var(--accent);
+        opacity: 0.9;
       }
-      .intro-cta {
+
+      h1 {
+        margin: 14px 0 10px;
+        font-family: var(--font-display);
+        font-size: clamp(38px, 5vw, 58px);
+        letter-spacing: -0.02em;
+        line-height: 1.02;
+      }
+
+      .subtitle {
+        margin: 0 0 10px;
+        font-size: 16px;
+        color: var(--muted);
+      }
+
+      /* Définition tôt: explicite “de quoi il s’agit” */
+      .definition {
+        margin: 0 0 14px;
+        font-size: 13px;
+        color: rgba(232, 238, 247, 0.78);
+      }
+      .definition strong {
+        color: rgba(233, 196, 106, 0.95);
+        font-weight: 900;
+      }
+
+      .hero__pitch {
+        font-size: 16px;
+        color: var(--text);
+        opacity: 0.95;
+        max-width: 66ch;
+        margin: 0 0 2px;
+      }
+      .hero__pitch strong {
+        color: rgba(233, 196, 106, 0.92);
+        font-weight: 900;
+      }
+
+      /* Header: 2 CTA max */
+      .ctaRow {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 12px;
+        margin-top: 12px;
+        align-items: center;
+      }
+
+      .btn {
         display: inline-flex;
         align-items: center;
         justify-content: center;
-        gap: 8px;
-        padding: 12px 18px;
-        border-radius: 999px;
-        background: #f7c948;
-        color: #3b2f1c;
-        font-weight: 600;
+        gap: 10px;
+        padding: 12px 14px;
+        border-radius: 12px;
+        border: 1px solid var(--line);
         text-decoration: none;
-        box-shadow: 0 10px 20px rgba(247, 201, 72, 0.35);
-        transition: transform 0.2s ease, box-shadow 0.2s ease;
+        font-weight: 900;
+        cursor: pointer;
+        user-select: none;
+        white-space: nowrap;
+        transition:
+          transform 120ms ease,
+          filter 120ms ease;
       }
-      .intro-cta:focus-visible {
-        outline: 2px solid #1f2937;
-        outline-offset: 2px;
+      .btn:focus {
+        outline: none;
+        box-shadow: var(--focus);
       }
-      .intro-cta:hover {
+      .btn:hover {
+        filter: brightness(1.08);
         transform: translateY(-1px);
-        box-shadow: 0 12px 24px rgba(247, 201, 72, 0.4);
+      }
+
+      .btn--primary {
+        background: rgba(233, 196, 106, 0.16);
+        border-color: rgba(233, 196, 106, 0.42);
+      }
+
+      /* “Secondaire” moins bouton: lien/ghost */
+      .btn--link {
+        background: rgba(17, 24, 36, 0.28);
+        border-color: rgba(232, 238, 247, 0.1);
+        font-weight: 800;
+      }
+
+      main {
+         padding: 22px 0 72px;              /* fallback */
+  /* padding-bottom: var(--sticky-safe);  */
+      }
+
+      /* Smooth scroll: éviter que les ancres soient collées */
+      #principle,
+      #comment,
+      #keys,
+      #faq {
+        scroll-margin-top: 18px;
+      }
+
+      h2 {
+        margin: 34px 0 14px;
+        font-size: 22px;
+        letter-spacing: -0.01em;
+      }
+
+      h3 {
+        margin: 0 0 8px;
+        font-size: 16px;
+      }
+      .muted {
+        color: var(--muted);
+      }
+
+      .grid3 {
+        display: grid;
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+        gap: 14px;
+      }
+      @media (max-width: 920px) {
+        .grid3 {
+          grid-template-columns: 1fr;
+        }
+      }
+
+      .card {
+        background: rgba(17, 24, 36, 0.55);
+        border: 1px solid var(--line);
+        border-radius: var(--radius);
+        padding: 18px;
+      }
+
+      /* Cartes: icône + titre */
+      .cardHead {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        margin-bottom: 6px;
+      }
+      .ico {
+        width: 22px;
+        height: 22px;
+        border-radius: 8px;
+        display: inline-grid;
+        place-items: center;
+        border: 1px solid rgba(232, 238, 247, 0.12);
+        background: rgba(17, 24, 36, 0.35);
+      }
+      .ico svg {
+        width: 14px;
+        height: 14px;
+        opacity: 0.95;
+      }
+
+      /* Comment ça marche: steps scannables */
+      .steps {
+        display: grid;
+        gap: 12px;
+        margin: 8px 0 0;
+        padding: 0;
+        list-style: none;
+      }
+      .step {
+        display: grid;
+        grid-template-columns: 34px 1fr;
+        gap: 12px;
+        align-items: start;
+        padding: 12px;
+        border-radius: 14px;
+        border: 1px solid rgba(232, 238, 247, 0.1);
+        background: rgba(15, 22, 34, 0.35);
+      }
+      .stepNum {
+        width: 34px;
+        height: 34px;
+        border-radius: 12px;
+        display: grid;
+        place-items: center;
+        font-weight: 900;
+        background: rgba(233, 196, 106, 0.14);
+        border: 1px solid rgba(233, 196, 106, 0.3);
+        color: rgba(233, 196, 106, 0.96);
+      }
+      .stepTitle {
+        font-weight: 900;
+        margin: 0;
+      }
+      .stepText {
+        margin: 2px 0 0;
+        color: var(--muted);
+      }
+
+      .ruleline {
+        border-top: 1px solid var(--line);
+        margin: 16px 0;
+      }
+
+      /* Callout jargon */
+      .callout {
+        display: grid;
+        gap: 6px;
+        padding: 12px 12px;
+        border-radius: 14px;
+        border: 1px solid rgba(99, 179, 237, 0.22);
+        background: rgba(99, 179, 237, 0.08);
+      }
+      .callout strong {
+        color: rgba(232, 238, 247, 0.92);
+      }
+      .callout .sub {
+        color: rgba(232, 238, 247, 0.78);
+        font-weight: 800;
+        font-size: 13px;
+      }
+      .jargonList {
+        margin: 6px 0 0;
+        padding-left: 18px;
+        color: var(--muted);
+      }
+      .jargonList li {
+        margin: 6px 0;
+      }
+      .jargonList strong {
+        color: rgba(232, 238, 247, 0.92);
+      }
+
+      /* Affiche vintage: image réelle */
+      figure.poster {
+        border-radius: 14px;
+        border: 1px solid rgba(232, 238, 247, 0.14);
+        background: rgba(17, 24, 36, 0.35);
+        box-shadow: 0 16px 44px rgba(0, 0, 0, 0.35);
+        overflow: hidden;
+        min-height: 260px;
+        display: grid;
+        align-content: end;
+        position: relative;
+      }
+      .poster img {
+        position: absolute;
+        inset: 0;
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+        opacity: 0.95;
+        transform: scale(1.01);
+      }
+      .poster__overlay {
+        position: relative;
+        z-index: 1;
+        padding: 14px 14px 12px;
+        background: linear-gradient(180deg, transparent, rgba(0, 0, 0, 0.45));
+        border-top: 1px solid rgba(232, 238, 247, 0.1);
+      }
+      .poster__title {
+        font-family: var(--font-display);
+        letter-spacing: 0.02em;
+        text-transform: uppercase;
+        font-size: 12px;
+        color: rgba(232, 238, 247, 0.88);
+      }
+      .poster__cta {
+        margin-top: 6px;
+        font-size: 18px;
+        font-weight: 900;
+        color: rgba(233, 196, 106, 0.95);
+        text-transform: lowercase;
+      }
+
+      .faq details {
+        background: rgba(17, 24, 36, 0.45);
+        border: 1px solid var(--line);
+        border-radius: 14px;
+        padding: 14px 14px;
+        margin: 10px 0;
+      }
+
+      .faq summary {
+        cursor: pointer;
+        font-weight: 900;
+        list-style: none;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 12px;
+      }
+      .faq summary::-webkit-details-marker {
+        display: none;
+      }
+      .faq summary:focus {
+        outline: none;
+        box-shadow: var(--focus);
+        border-radius: 10px;
+        padding: 2px 4px;
+      }
+
+      /* Chevron FAQ */
+      .faq summary::after {
+        content: "▾";
+        opacity: 0.75;
+        transform: rotate(0deg);
+        transition:
+          transform 160ms ease,
+          opacity 160ms ease;
+      }
+      .faq details[open] summary::after {
+        transform: rotate(180deg);
+        opacity: 1;
+      }
+
+      .faq p {
+        margin: 10px 0 0;
+        color: var(--muted);
+      }
+
+      .anchorLink {
+        text-decoration: none;
+        border-bottom: 1px dashed rgba(232, 238, 247, 0.35);
+      }
+      .anchorLink:hover {
+        border-bottom-color: rgba(232, 238, 247, 0.7);
+      }
+
+     
+
+
+      /* Footer */
+.siteFooter {
+  margin-top: 34px;
+  padding: 18px 0 26px;
+  border-top: 1px solid var(--line);
+  color: var(--muted);
+}
+
+.footerInner {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 14px;
+}
+
+.footerBrand {
+  display: grid;
+  gap: 6px;
+  max-width: 62ch;
+}
+
+.footerBrand strong {
+  color: rgba(232, 238, 247, 0.92);
+}
+
+.footerLinks {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px 14px;
+  align-items: center;
+  justify-content: flex-end;
+}
+
+.footerLinks a {
+  text-decoration: none;
+  border-bottom: 1px dashed rgba(232, 238, 247, 0.25);
+}
+.footerLinks a:hover {
+  border-bottom-color: rgba(232, 238, 247, 0.6);
+}
+
+.footerMeta {
+  margin-top: 10px;
+  font-size: 12px;
+  opacity: 0.9;
+}
+
+@media (max-width: 768px) {
+  .footerInner { flex-direction: column; }
+  .footerLinks { justify-content: flex-start; }
+}
+
+      /* Sticky CTA: apparaît une fois le hero sorti */
+      .stickyCta {
+        position: fixed;
+        left: 50%;
+        transform: translateX(-50%);
+        bottom: 14px;
+        width: min(var(--max), calc(100% - 2 * var(--pad)));
+        z-index: 999;
+        display: none;
+      }
+      .stickyCta__inner {
+        display: flex;
+        justify-content: space-between;
+        gap: 12px;
+        align-items: center;
+        padding: 10px;
+        border-radius: 16px;
+        border: 1px solid rgba(232, 238, 247, 0.14);
+        background: rgba(11, 15, 20, 0.72);
+        backdrop-filter: blur(10px);
+        box-shadow: 0 18px 50px rgba(0, 0, 0, 0.45);
+      }
+      .stickyCta__text {
+        display: grid;
+        gap: 2px;
+        padding-left: 6px;
+      }
+      .stickyCta__text strong {
+        color: rgba(232, 238, 247, 0.92);
+      }
+      .stickyCta__text span {
+        color: var(--muted);
+        font-size: 12px;
+      }
+
+      /* Mobile: sticky simplifié (1 bouton) */
+      @media (max-width: 768px) {
+        .stickyCta__text span {
+          display: none;
+        }
+        .stickyCta__inner {
+          justify-content: center;
+        }
+        .stickyCta .btn--link {
+          display: none;
+        }
+      }
+
+      @media (prefers-reduced-motion: reduce) {
+        html {
+          scroll-behavior: auto;
+        }
+        .btn {
+          transition: none;
+        }
+        .faq summary::after {
+          transition: none;
+        }
       }
     </style>
   </head>
+
   <body>
-    <main class="intro-card">
-      <h1 class="intro-title">Chasse-Patate</h1>
-      <p class="intro-text">Simulation cycliste tactique a lancer en un clic.</p>
-      <a class="intro-cta" href="/app/">Lancer le jeu</a>
+    <a class="skip" href="#main">Aller au contenu</a>
+
+    <header class="wrap" id="top">
+      <div class="hero" id="hero">
+        <div class="hero__inner">
+          <!-- Colonne texte -->
+          <div>
+            <div class="kicker">AVANT-COURSE</div>
+            <h1>Chasse-Patate</h1>
+            <p class="subtitle">
+              Jeu de plateau – course cycliste tactique (tour par tour)
+            </p>
+
+            <!-- Définition haute: explicite immédiatement -->
+            <p class="definition">
+              <strong>Une chasse-patate</strong> : un coureur piégé entre deux
+              groupes, à rouler “dans le vide”.
+            </p>
+
+            <!-- Pitch A -->
+            <p class="hero__pitch">
+              <strong>Une course cycliste = un tour = une décision.</strong>
+              Tu gagnes en lisant la route, pas en roulant plus vite.
+            </p>
+
+            <!-- 2 CTA max -->
+            <div class="ctaRow" aria-label="Actions principales">
+              <a class="btn btn--primary" href="/app/">Préparer une course</a>
+              <a class="btn btn--link" href="#comment">Comment ça marche</a>
+            </div>
+          </div>
+
+          <!-- Affiche vintage: image fournie -->
+          <figure
+            class="poster"
+            aria-label="Affiche vintage de lancement de course"
+          >
+            <!-- Chemin: adapte si besoin (ex: /img/chassepatate.webp) -->
+            <img
+              src="public/intro/chassepatate.webp"
+              alt="Affiche vintage Chasse-Patate : cyclistes en file, départ de course"
+              width="800"
+              height="600"
+              decoding="async"
+              fetchpriority="high"
+            />
+            <figcaption class="poster__overlay">
+              <div class="poster__title">Affiche de départ</div>
+              <div class="poster__cta">en selle !</div>
+            </figcaption>
+          </figure>
+        </div>
+      </div>
+    </header>
+
+    <main class="wrap" id="main">
+      <section aria-labelledby="principle">
+        <h2 id="principle">Le principe</h2>
+        <p class="muted">
+          <strong>Un tour = une décision.</strong> Placement, énergie, terrain :
+          c’est ça qui compte. Le peloton t’aide… jusqu’au moment où il te
+          piège.
+        </p>
+
+        <div class="grid3">
+          <div class="card">
+            <div class="cardHead">
+              <span class="ico" aria-hidden="true">
+                <svg
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  stroke-width="2"
+                >
+                  <path d="M4 14c3-2 5-2 8 0s5 2 8 0" />
+                  <path d="M4 10c3-2 5-2 8 0s5 2 8 0" />
+                </svg>
+              </span>
+              <h3>Placement & abri</h3>
+            </div>
+            <p class="muted">
+              “Prendre la roue” compte. Être au mauvais endroit au mauvais
+              moment, c’est payer l’effort… ou sortir du coup.
+            </p>
+          </div>
+
+          <div class="card">
+            <div class="cardHead">
+              <span class="ico" aria-hidden="true">
+                <svg
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  stroke-width="2"
+                >
+                  <path d="M12 2v6" />
+                  <path d="M12 22v-6" />
+                  <path d="M4 12h6" />
+                  <path d="M20 12h-6" />
+                  <path d="M7 7l4 4" />
+                  <path d="M17 17l-4-4" />
+                </svg>
+              </span>
+              <h3>Énergie & timing</h3>
+            </div>
+            <p class="muted">
+              Un gros effort trop tôt, c’est souvent une fringale plus tard.
+              Temporiser peut être un bon coup.
+            </p>
+          </div>
+
+          <div class="card">
+            <div class="cardHead">
+              <span class="ico" aria-hidden="true">
+                <svg
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  stroke-width="2"
+                >
+                  <path d="M3 18l6-8 5 6 7-10" />
+                  <path d="M3 18h18" />
+                </svg>
+              </span>
+              <h3>Terrain & risques</h3>
+            </div>
+            <p class="muted">
+              Pavés, bosses, météo : ça tape, ça secoue, et parfois ça casse. Tu
+              limites le risque sans devenir spectateur.
+            </p>
+          </div>
+        </div>
+      </section>
+
+      <section id="comment" aria-labelledby="how">
+        <h2 id="how">Comment ça marche</h2>
+
+        <div class="card">
+          <ul class="steps" aria-label="Étapes de jeu">
+            <li class="step">
+              <div class="stepNum" aria-hidden="true">1</div>
+              <div>
+                <p class="stepTitle">Choisis un profil d’étape</p>
+                <p class="stepText">
+                  Terrain, longueur, ambiance : tu définis le contexte tactique.
+                </p>
+              </div>
+            </li>
+            <li class="step">
+              <div class="stepNum" aria-hidden="true">2</div>
+              <div>
+                <p class="stepTitle">Compose le peloton</p>
+                <p class="stepText">
+                  Équipes, coureurs, budget (si applicable). Tu prépares la
+                  bataille.
+                </p>
+              </div>
+            </li>
+            <li class="step">
+              <div class="stepNum" aria-hidden="true">3</div>
+              <div>
+                <p class="stepTitle">Joue tour par tour</p>
+                <p class="stepText">
+                  Cartes, déplacement, aspiration, et gestion des moments
+                  chauds.
+                </p>
+              </div>
+            </li>
+          </ul>
+
+          <div class="ruleline"></div>
+
+          <div class="callout" role="note" aria-label="Jargon du peloton">
+            <strong>Le jargon du peloton (traduction incluse)</strong>
+            <div class="sub">Tu peux jouer sans connaître le cyclisme.</div>
+
+            <ul class="jargonList">
+              <li>
+                <strong>Prendre le vent</strong> = tu t’exposes → tu dépenses
+                plus → tu t’uses.
+              </li>
+              <li>
+                <strong>Prendre la roue</strong> = tu restes abrité → tu
+                économises.
+              </li>
+              <li>
+                <strong>Sauter le verrou</strong> = tu accélères au bon moment →
+                tu fais céder le groupe.
+              </li>
+            </ul>
+          </div>
+        </div>
+      </section>
+
+      <section aria-labelledby="keys">
+        <h2 id="keys">Mécaniques clés</h2>
+
+        <!-- Une seule grille: 6 cartes -->
+        <div class="grid3">
+          <div class="card">
+            <div class="cardHead">
+              <span class="ico" aria-hidden="true">
+                <svg
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  stroke-width="2"
+                >
+                  <path d="M4 12c4-3 6-3 10 0s6 3 6 0" />
+                  <path d="M4 16c4-3 6-3 10 0s6 3 6 0" />
+                </svg>
+              </span>
+              <h3>Aspiration (peloton)</h3>
+            </div>
+            <p class="muted">
+              Rester abrité économise. Se retrouver seul devant, c’est parfois
+              héroïque… souvent un mauvais calcul.
+            </p>
+          </div>
+
+          <div class="card">
+            <div class="cardHead">
+              <span class="ico" aria-hidden="true">
+                <svg
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  stroke-width="2"
+                >
+                  <path d="M3 12h18" />
+                  <path d="M7 8l-4 4 4 4" />
+                  <path d="M17 16l4-4-4-4" />
+                </svg>
+              </span>
+              <h3>Vent & exposition</h3>
+            </div>
+            <p class="muted">
+              Quand tu te découvres, tu paies. L’abri devient une ressource :
+              rouler… ou attendre le moment juste.
+            </p>
+          </div>
+
+          <div class="card">
+            <div class="cardHead">
+              <span class="ico" aria-hidden="true">
+                <svg
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  stroke-width="2"
+                >
+                  <path d="M4 18l4-6 4 4 4-8 4 6" />
+                  <path d="M4 18h16" />
+                </svg>
+              </span>
+              <h3>Pavés & profils</h3>
+            </div>
+            <p class="muted">
+              Les pavés, “ça frotte”. Le placement avant secteur vaut souvent
+              plus que l’action pendant.
+            </p>
+          </div>
+
+          <div class="card">
+            <div class="cardHead">
+              <span class="ico" aria-hidden="true">
+                <svg
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  stroke-width="2"
+                >
+                  <path
+                    d="M12 3l2.2 6.6H21l-5.4 3.9 2.1 6.5L12 16.4 6.3 20l2.1-6.5L3 9.6h6.8z"
+                  />
+                </svg>
+              </span>
+              <h3>Gestion d’énergie</h3>
+            </div>
+            <p class="muted">
+              Tu gagnes aussi en gardant de quoi répondre aux moments clés.
+              Sinon, tu subis.
+            </p>
+          </div>
+
+          <div class="card">
+            <div class="cardHead">
+              <span class="ico" aria-hidden="true">
+                <svg
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  stroke-width="2"
+                >
+                  <path d="M4 20l8-16 3 7 5-3-8 16-3-7z" />
+                </svg>
+              </span>
+              <h3>Attaques</h3>
+            </div>
+            <p class="muted">
+              Attaquer, c’est choisir l’endroit, le moment, et le coût
+              acceptable. Pas “aller vite”.
+            </p>
+          </div>
+
+          <div class="card">
+            <div class="cardHead">
+              <span class="ico" aria-hidden="true">
+                <svg
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  stroke-width="2"
+                >
+                  <path d="M12 3v18" />
+                  <path d="M7 8h10" />
+                  <path d="M7 16h10" />
+                  <path d="M5 12h14" />
+                </svg>
+              </span>
+              <h3>Lecture du risque</h3>
+            </div>
+            <p class="muted">
+              Des choix crédibles, pas une optimisation robotique parfaite. Tu
+              joues le risque, pas le tableau.
+            </p>
+          </div>
+        </div>
+      </section>
+
+      <section class="faq" aria-labelledby="faq">
+        <h2 id="faq">FAQ</h2>
+
+        <details>
+          <summary>C’est quoi une “chasse-patate” ?</summary>
+          <p>
+            C’est quand un coureur (ou un petit groupe) roule entre deux groupes
+            sans réussir à faire la jonction. Ça peut être une erreur… ou un
+            piège si tu forces les autres à se griller.
+          </p>
+        </details>
+
+        <details>
+          <summary>
+            Est-ce que je dois connaître le cyclisme pour jouer ?
+          </summary>
+          <p>
+            Non. Le jeu utilise des idées simples (abri, effort, terrain,
+            timing) et le vocabulaire est expliqué sans jargon obscur.
+          </p>
+        </details>
+
+        <details>
+          <summary>Combien de temps dure une course ?</summary>
+          <p>
+            Variable selon le profil et les réglages. Le jeu vise un rythme
+            rapide et des décisions fréquentes.
+          </p>
+        </details>
+
+        <details>
+          <summary>Peut-on jouer en solo ?</summary>
+          <p>
+            Oui. Tu peux jouer en solo contre une IA dont l’objectif est d’être
+            crédible : prudente sur les pavés, cohérente dans ses prises de
+            risque, pas “parfaitement optimisée”.
+          </p>
+        </details>
+
+        <details>
+          <summary>Le jeu est-il jouable sur mobile ?</summary>
+          <p>
+            Oui : lisible et jouable sans transformer l’écran en tableau de
+            bord.
+          </p>
+        </details>
+      </section>
+
+      <footer class="siteFooter" aria-label="Pied de page">
+        <div class="footerInner">
+          <div class="footerBrand">
+            <strong>Chasse-Patate</strong>
+            <div>
+              Jeu de plateau – course cycliste tactique (tour par tour).
+            </div>
+            <div class="footerMeta">
+              © <span id="year"></span> —
+              <a href="https://beabot.fr" target="_blank">beAbot</a>
+            </div>
+          </div>
+
+          <nav class="footerLinks" aria-label="Liens légaux">
+            <a href="/cgu/">CGU</a>
+            <a href="/confidentialite/">Confidentialité</a>
+            <a href="https://beabot.fr/contact/" target="_blank">Contact</a>
+          </nav>
+        </div>
+      </footer>
     </main>
+
+    <!-- Sticky CTA: apparaît une fois le hero sorti -->
+    <div class="stickyCta" id="stickyCta" aria-label="Action rapide">
+      <div class="stickyCta__inner">
+        <div class="stickyCta__text">
+          <strong>Prêt à lancer une course ?</strong>
+          <span
+            >Choisis un profil, compose le peloton, joue tour par tour.</span
+          >
+        </div>
+        <div style="display: flex; gap: 10px; align-items: center">
+          <a class="btn btn--link" href="#comment">Comment ça marche</a>
+          <a class="btn btn--primary" href="/app/">Préparer une course</a>
+        </div>
+      </div>
+    </div>
+
+    <script>
+      (function () {
+        const hero = document.getElementById("hero");
+        const sticky = document.getElementById("stickyCta");
+        if (!hero || !sticky) return;
+
+        const io = new IntersectionObserver(
+          (entries) => {
+            const visible = entries[0]?.isIntersecting;
+            sticky.style.display = visible ? "none" : "block";
+          },
+          { root: null, threshold: 0.15 },
+        );
+
+        io.observe(hero);
+      })();
+    </script>
+    <script>
+      document
+        .getElementById("year")
+        ?.appendChild(
+          document.createTextNode(String(new Date().getFullYear())),
+        );
+    </script>
   </body>
 </html>
