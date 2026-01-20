@@ -1,0 +1,262 @@
+<!doctype html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Conditions Générales d'Utilisation — Chasse-Patate</title>
+    <meta name="robots" content="noindex,follow" />
+    <meta name="description" content="Conditions générales d'utilisation du jeu Chasse-Patate" />
+    <style>
+        :root {
+            --bg: #0b0f14;
+            --panel: #111824;
+            --text: #e8eef7;
+            --muted: #b7c2d3;
+            --line: rgba(232, 238, 247, 0.12);
+            --accent: #e9c46a;
+            --max: 800px;
+            --pad: 20px;
+        }
+        * { 
+            box-sizing: border-box; 
+            margin: 0;
+            padding: 0;
+        }
+        html {
+            scroll-behavior: smooth;
+        }
+        body {
+            font-family: ui-sans-serif, system-ui, -apple-system, sans-serif;
+            background: var(--bg);
+            color: var(--text);
+            line-height: 1.6;
+        }
+        .wrap {
+            max-width: var(--max);
+            margin: 0 auto;
+            padding: 40px var(--pad) 80px;
+        }
+        .back {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            margin-bottom: 24px;
+            color: var(--accent);
+            text-decoration: none;
+            border-bottom: 1px solid transparent;
+            transition: border-color 0.2s;
+        }
+        .back:hover {
+            border-bottom-color: var(--accent);
+        }
+        h1 {
+            font-size: clamp(28px, 4vw, 38px);
+            margin: 0 0 8px;
+            letter-spacing: -0.02em;
+        }
+        .meta {
+            font-size: 14px;
+            color: var(--muted);
+            margin-bottom: 32px;
+            padding-bottom: 24px;
+            border-bottom: 1px solid var(--line);
+        }
+        h2 {
+            margin: 40px 0 16px;
+            font-size: 20px;
+            color: var(--accent);
+            font-weight: 600;
+        }
+        h2:first-of-type {
+            margin-top: 0;
+        }
+        h3 {
+            margin: 24px 0 12px;
+            font-size: 16px;
+            font-weight: 600;
+        }
+        p {
+            margin: 0 0 16px;
+            color: var(--muted);
+        }
+        ul, ol {
+            margin: 0 0 16px;
+            padding-left: 24px;
+            color: var(--muted);
+        }
+        li {
+            margin-bottom: 8px;
+        }
+        strong {
+            color: var(--text);
+            font-weight: 600;
+        }
+        a {
+            color: var(--accent);
+            text-decoration: none;
+            border-bottom: 1px solid transparent;
+        }
+        a:hover {
+            border-bottom-color: var(--accent);
+        }
+        .highlight {
+            background: rgba(233, 196, 106, 0.1);
+            border-left: 3px solid var(--accent);
+            padding: 16px;
+            margin: 24px 0;
+            border-radius: 4px;
+        }
+        .footer-nav {
+            margin-top: 48px;
+            padding-top: 24px;
+            border-top: 1px solid var(--line);
+            text-align: center;
+        }
+    </style>
+</head>
+<body>
+    <div class="wrap">
+        <a href="/" class="back">← Retour à l'accueil</a>
+        
+        <h1>Conditions Générales d'Utilisation</h1>
+        <p class="meta">Dernière mise à jour : 20 janvier 2026</p>
+
+        <h2>1. Objet</h2>
+        <p>
+            Les présentes Conditions Générales d'Utilisation (CGU) régissent l'accès et l'utilisation du jeu en ligne <strong>Chasse-Patate</strong>, accessible à l'adresse <a href="/">https://chasse-patate.netlify.app</a> (ci-après "le Service").
+        </p>
+        <p>
+            En accédant au Service, vous acceptez sans réserve les présentes CGU. Si vous n'acceptez pas ces conditions, veuillez ne pas utiliser le Service.
+        </p>
+
+        <h2>2. Description du Service</h2>
+        <p>
+            Chasse-Patate est un jeu de plateau de course cycliste tactique jouable en ligne, tour par tour. Le Service permet aux utilisateurs de :
+        </p>
+        <ul>
+            <li>Jouer à des courses cyclistes simulées</li>
+            <li>Créer un compte utilisateur (optionnel)</li>
+            <li>Sauvegarder leur progression (pour les utilisateurs connectés)</li>
+            <li>Jouer contre une intelligence artificielle</li>
+        </ul>
+        <p>
+            Le Service est fourni gratuitement et hébergé sur <strong>Netlify</strong>. L'authentification et le stockage des données utilisateur sont gérés par <strong>Supabase</strong>.
+        </p>
+
+        <h2>3. Accès au Service</h2>
+        <h3>3.1 Conditions d'accès</h3>
+        <p>
+            Le Service est accessible gratuitement à toute personne disposant d'un accès Internet et d'un navigateur web compatible. Aucune installation n'est requise.
+        </p>
+        
+        <h3>3.2 Création de compte (optionnel)</h3>
+        <p>
+            La création d'un compte utilisateur est <strong>optionnelle</strong>. Elle permet de :
+        </p>
+        <ul>
+            <li>Sauvegarder votre progression</li>
+            <li>Accéder à vos parties depuis différents appareils</li>
+            <li>Bénéficier de fonctionnalités avancées futures</li>
+        </ul>
+        <p>
+            Pour créer un compte, vous devez fournir une adresse email valide et choisir un mot de passe sécurisé. Vous êtes responsable de la confidentialité de vos identifiants.
+        </p>
+
+        <h3>3.3 Disponibilité</h3>
+        <p>
+            Nous nous efforçons de maintenir le Service accessible 24h/24 et 7j/7. Toutefois, nous ne garantissons pas une disponibilité continue et nous nous réservons le droit d'interrompre temporairement le Service pour maintenance ou mise à jour, sans préavis.
+        </p>
+
+        <h2>4. Utilisation du Service</h2>
+        <h3>4.1 Utilisation autorisée</h3>
+        <p>
+            Vous vous engagez à utiliser le Service de manière conforme à sa finalité (jouer à des parties de course cycliste) et aux lois en vigueur.
+        </p>
+
+        <h3>4.2 Utilisation interdite</h3>
+        <p>
+            Il est strictement interdit de :
+        </p>
+        <ul>
+            <li>Utiliser des robots, scripts ou tout moyen automatisé pour accéder au Service</li>
+            <li>Tenter de contourner les mesures de sécurité du Service</li>
+            <li>Perturber le fonctionnement du Service ou surcharger les serveurs</li>
+            <li>Extraire, copier ou réutiliser le code source ou les contenus du Service</li>
+            <li>Utiliser le Service à des fins commerciales sans autorisation</li>
+        </ul>
+
+        <div class="highlight">
+            <strong>Prototypage en cours :</strong> Ce jeu est actuellement en phase de développement (prototype). Des bugs, des changements de règles et des interruptions de service peuvent survenir sans préavis.
+        </div>
+
+        <h2>5. Propriété intellectuelle</h2>
+        <p>
+            Le Service, son code source, son design, ses graphismes et tous les éléments qui le composent sont protégés par le droit d'auteur et restent la propriété exclusive de l'éditeur, sauf mention contraire.
+        </p>
+        <p>
+            Vous ne pouvez pas reproduire, modifier, distribuer ou exploiter commercialement tout ou partie du Service sans autorisation écrite préalable.
+        </p>
+
+        <h2>6. Données personnelles</h2>
+        <p>
+            Les données personnelles collectées dans le cadre de l'utilisation du Service sont traitées conformément à notre <a href="/confidentialite.html">Politique de Confidentialité</a>.
+        </p>
+        <p>
+            En résumé :
+        </p>
+        <ul>
+            <li>Nous utilisons <strong>Supabase</strong> pour gérer l'authentification et le stockage des données</li>
+            <li>Nous ne collectons que les données strictement nécessaires au fonctionnement du Service</li>
+            <li>Vous disposez d'un droit d'accès, de rectification et de suppression de vos données</li>
+        </ul>
+
+        <h2>7. Responsabilité</h2>
+        <h3>7.1 Limitation de responsabilité</h3>
+        <p>
+            Le Service est fourni "tel quel" sans garantie d'aucune sorte. Nous ne pouvons être tenus responsables :
+        </p>
+        <ul>
+            <li>Des interruptions, bugs ou dysfonctionnements du Service</li>
+            <li>De la perte de données (sauvegardes de parties, progression, etc.)</li>
+            <li>Des dommages indirects liés à l'utilisation du Service</li>
+        </ul>
+
+        <h3>7.2 Contenu utilisateur</h3>
+        <p>
+            Actuellement, le Service ne permet pas aux utilisateurs de publier du contenu. Si cette fonctionnalité est ajoutée à l'avenir, vous serez seul responsable du contenu que vous publiez.
+        </p>
+
+        <h2>8. Résiliation</h2>
+        <p>
+            Nous nous réservons le droit de suspendre ou de supprimer votre compte à tout moment, sans préavis, en cas de violation des présentes CGU.
+        </p>
+        <p>
+            Vous pouvez supprimer votre compte à tout moment depuis les paramètres de votre profil ou en nous contactant.
+        </p>
+
+        <h2>9. Modifications des CGU</h2>
+        <p>
+            Nous nous réservons le droit de modifier les présentes CGU à tout moment. Les modifications entrent en vigueur dès leur publication sur cette page.
+        </p>
+        <p>
+            Nous vous encourageons à consulter régulièrement cette page pour prendre connaissance des éventuelles modifications.
+        </p>
+
+        <h2>10. Droit applicable et juridiction</h2>
+        <p>
+            Les présentes CGU sont régies par le droit français. En cas de litige, les tribunaux français seront seuls compétents.
+        </p>
+
+        <h2>11. Contact</h2>
+        <p>
+            Pour toute question concernant les présentes CGU ou le Service, vous pouvez nous contacter à l'adresse : <a href="mailto:contact@chasse-patate.fr">contact@chasse-patate.fr</a>
+        </p>
+
+        <div class="footer-nav">
+            <a href="/" class="back">← Retour à l'accueil</a>
+            <span style="color: var(--muted); margin: 0 12px;">•</span>
+            <a href="/confidentialite.html">Politique de Confidentialité</a>
+        </div>
+    </div>
+</body>
+</html>
