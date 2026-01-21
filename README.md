@@ -1,4 +1,4 @@
-# Chasse-Patate / Cycling Race Game
+# BORDUR / Cycling Race Game
 
 Prototype jouable de course cycliste tour par tour (jeu de plateau), moteur JS + UI Vue 3.
 

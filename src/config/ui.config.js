@@ -1,5 +1,5 @@
 export const RaceTitleVariants = [
-  'Chasse-Patate',
+  'BORDUR',
   'À Bloc',
   'Dans la Bordure',
   'La Grande Échappée',
@@ -8,7 +8,7 @@ export const RaceTitleVariants = [
 ];
 
 export const UIConfig = {
-  titleVariant: 'Chasse-Patate',
+  titleVariant: 'BORDUR',
   subtitle: 'Préparer la course',
   raceTheme: 'poster',
   animationSpeed: 1

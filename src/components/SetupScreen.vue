@@ -473,7 +473,7 @@ const riderPool = ref([]);
 const teamRosters = ref({});
 const activeDraftTeamId = ref(null);
 const riderPoolIndex = new Map(RiderPool.map((rider, index) => [rider.id, index]));
-const raceHeaderTitle = 'Chasse-Patate';
+const raceHeaderTitle = 'BORDUR';
 const raceHeaderSubtitle = 'Jeu de plateau – simulation cycliste tactique';
 const raceHeaderTheme = UIConfig.raceTheme;
 const isRulesOpen = ref(false);
