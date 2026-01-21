@@ -1,8 +1,6 @@
 [[redirects]]
-  from = "/*"
-  to = "https://bordur.fr/:splat"
-  status = 301
-  force = true
-
-  [redirects.conditions]
-    Host = ["topette.netlify.app"]
+from = "/*"
+to = "https://bordur.fr/:splat"
+status = 301
+force = true
+conditions = { Host = ["topette.netlify.app"] }
