@@ -1,13 +1,16 @@
-# 1 PRIORITÉ ABSOLUE : topette.netlify.app -> bordur.fr
 [[redirects]]
-from = "/*"
-to = "https://bordur.fr/:splat"
-status = 301
-force = true
-conditions = { Host = ["topette.netlify.app"] }
+  from = "https://topette.netlify.app/*"
+  to = "https://bordur.fr/:splat"
+  status = 301
+  force = true
 
-# 2 Ensuite seulement : SPA sous /app
 [[redirects]]
-from = "/app/*"
-to = "/app/index.html"
-status = 200
+  from = "http://topette.netlify.app/*"
+  to = "https://bordur.fr/:splat"
+  status = 301
+  force = true
+
+[[redirects]]
+  from = "/app/*"
+  to = "/app/index.html"
+  status = 200
