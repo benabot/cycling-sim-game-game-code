@@ -1,0 +1,53 @@
+<!doctype html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Page introuvable — BORDUR</title>
+  <meta name="robots" content="noindex">
+  <link rel="icon" type="image/svg+xml" href="/favicon-bib-B-outline.svg">
+  <style>
+    :root {
+      --bg: #0b0f14;
+      --text: #e8eef7;
+      --muted: #b7c2d3;
+      --accent: #e9c46a;
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: ui-sans-serif, system-ui, -apple-system, sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      text-align: center;
+      padding: 20px;
+    }
+    h1 {
+      font-size: clamp(48px, 10vw, 96px);
+      color: var(--accent);
+      margin-bottom: 16px;
+    }
+    p {
+      color: var(--muted);
+      margin-bottom: 24px;
+      max-width: 400px;
+    }
+    a {
+      color: var(--accent);
+      text-decoration: none;
+      border-bottom: 1px dashed var(--accent);
+      transition: border-color 0.2s;
+    }
+    a:hover { border-bottom-style: solid; }
+  </style>
+</head>
+<body>
+  <h1>404</h1>
+  <p>Cette page n'existe pas ou a été déplacée.</p>
+  <a href="/">Retour à l'accueil</a>
+</body>
+</html>
