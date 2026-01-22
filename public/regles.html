@@ -1,0 +1,905 @@
+<!doctype html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+
+  <title>Règles du jeu BORDUR — Comment jouer | Course cycliste tactique</title>
+  <meta
+    name="description"
+    content="Règles complètes de BORDUR : mouvement, cartes, énergie, aspiration, vent, pavés, événements. Apprenez à jouer au jeu de plateau de course cycliste tactique."
+  >
+  <meta name="robots" content="index,follow">
+
+  <link rel="canonical" href="https://bordur.fr/regles.html">
+  <link rel="icon" type="image/svg+xml" href="/favicon-bib-B-outline.svg">
+  <link rel="mask-icon" href="/safari-pinned-tab-bib-B.svg" color="#000000">
+  <meta name="theme-color" content="#0b0f14">
+
+  <!-- Open Graph -->
+  <meta property="og:type" content="website">
+  <meta property="og:locale" content="fr_FR">
+  <meta property="og:site_name" content="BORDUR">
+  <meta property="og:title" content="Règles du jeu BORDUR — Comment jouer">
+  <meta property="og:description" content="Règles complètes : mouvement, cartes, énergie, aspiration, vent, pavés, événements. Apprenez à jouer.">
+  <meta property="og:url" content="https://bordur.fr/regles.html">
+  <meta property="og:image" content="https://bordur.fr/intro/chassepatate.webp">
+
+  <!-- Twitter -->
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="twitter:title" content="Règles du jeu BORDUR — Comment jouer">
+  <meta name="twitter:description" content="Règles complètes du jeu de plateau de course cycliste tactique.">
+  <meta name="twitter:image" content="https://bordur.fr/intro/chassepatate.webp">
+
+  <!-- JSON-LD: HowTo -->
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "HowTo",
+    "name": "Comment jouer à BORDUR",
+    "description": "Règles complètes du jeu de plateau de course cycliste tactique BORDUR.",
+    "url": "https://bordur.fr/regles.html",
+    "inLanguage": "fr",
+    "totalTime": "PT30M",
+    "step": [
+      {
+        "@type": "HowToStep",
+        "name": "Choisir un profil d'étape",
+        "text": "Sélectionne le type de course : classique (pavés, montagne, sprint) ou étape d'un mini-tour."
+      },
+      {
+        "@type": "HowToStep",
+        "name": "Composer son équipe",
+        "text": "Recrute 5 coureurs avec un budget limité : grimpeur, sprinteur, rouleur, puncheur, polyvalent."
+      },
+      {
+        "@type": "HowToStep",
+        "name": "Jouer tour par tour",
+        "text": "Chaque tour, choisis un coureur et joue une carte mouvement. Gère l'énergie, l'aspiration et le vent."
+      },
+      {
+        "@type": "HowToStep",
+        "name": "Franchir la ligne d'arrivée",
+        "text": "Le premier coureur à franchir la ligne déclenche le dernier tour. Le plus avancé à la fin gagne."
+      }
+    ]
+  }
+  </script>
+
+  <style>
+    :root {
+      --bg: #0b0f14;
+      --panel: #111824;
+      --panel2: #0f1622;
+      --text: #e8eef7;
+      --muted: #b7c2d3;
+      --line: rgba(232, 238, 247, 0.12);
+      --accent: #e9c46a;
+      --accent2: #63b3ed;
+      --radius: 12px;
+      --max: 860px;
+      --pad: 20px;
+      --font-ui: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;
+      --font-display: ui-serif, "Iowan Old Style", "Palatino Linotype", Palatino, Georgia, serif;
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    html { scroll-behavior: smooth; }
+
+    body {
+      font-family: var(--font-ui);
+      background: var(--bg);
+      color: var(--text);
+      line-height: 1.6;
+    }
+
+    a { color: inherit; }
+
+    .wrap {
+      max-width: var(--max);
+      margin: 0 auto;
+      padding: 0 var(--pad);
+    }
+
+    /* Header */
+    header {
+      padding: 48px 0 32px;
+      border-bottom: 1px solid var(--line);
+    }
+    header h1 {
+      font-family: var(--font-display);
+      font-size: clamp(28px, 5vw, 40px);
+      margin-bottom: 8px;
+    }
+    header p {
+      color: var(--muted);
+      font-size: 16px;
+      max-width: 600px;
+    }
+    header nav {
+      margin-top: 16px;
+    }
+    header nav a {
+      color: var(--accent);
+      text-decoration: none;
+      font-size: 14px;
+    }
+    header nav a:hover {
+      text-decoration: underline;
+    }
+
+    /* Table des matières */
+    .toc {
+      padding: 24px 0;
+      border-bottom: 1px solid var(--line);
+    }
+    .toc h2 {
+      font-size: 14px;
+      font-weight: 600;
+      color: var(--muted);
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      margin-bottom: 12px;
+    }
+    .toc ul {
+      list-style: none;
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px 16px;
+    }
+    .toc a {
+      color: var(--accent);
+      text-decoration: none;
+      font-size: 14px;
+    }
+    .toc a:hover {
+      text-decoration: underline;
+    }
+
+    /* Sections */
+    .rule-section {
+      padding: 40px 0;
+      border-bottom: 1px solid var(--line);
+    }
+    .rule-section h2 {
+      font-family: var(--font-display);
+      font-size: 28px;
+      color: var(--accent);
+      margin-bottom: 20px;
+    }
+    .rule-section h3 {
+      font-size: 18px;
+      font-weight: 600;
+      margin: 24px 0 12px;
+      color: var(--text);
+    }
+    .rule-section p {
+      color: var(--muted);
+      margin-bottom: 12px;
+    }
+    .rule-section p strong {
+      color: var(--text);
+    }
+
+    /* Listes */
+    .rule-section ul,
+    .rule-section ol {
+      color: var(--muted);
+      margin: 12px 0 12px 24px;
+    }
+    .rule-section li {
+      margin-bottom: 8px;
+    }
+    .rule-section li strong {
+      color: var(--text);
+    }
+
+    /* Encadrés */
+    .callout {
+      background: var(--panel);
+      border-left: 3px solid var(--accent);
+      border-radius: var(--radius);
+      padding: 16px 20px;
+      margin: 20px 0;
+    }
+    .callout.info {
+      border-left-color: var(--accent2);
+    }
+    .callout strong {
+      color: var(--accent);
+      display: block;
+      margin-bottom: 8px;
+    }
+    .callout.info strong {
+      color: var(--accent2);
+    }
+    .callout p {
+      margin: 0;
+      font-size: 14px;
+    }
+
+    /* Tableaux */
+    .table-wrap {
+      overflow-x: auto;
+      margin: 20px 0;
+    }
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 14px;
+    }
+    th, td {
+      padding: 12px;
+      text-align: left;
+      border-bottom: 1px solid var(--line);
+    }
+    th {
+      color: var(--text);
+      font-weight: 600;
+      background: var(--panel);
+    }
+    td {
+      color: var(--muted);
+    }
+    td strong {
+      color: var(--text);
+    }
+    tr:hover td {
+      background: rgba(233, 196, 106, 0.05);
+    }
+
+    /* Grille cards */
+    .card-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      gap: 16px;
+      margin: 20px 0;
+    }
+    .mini-card {
+      background: var(--panel);
+      border-radius: var(--radius);
+      padding: 16px;
+      border: 1px solid var(--line);
+    }
+    .mini-card h4 {
+      font-size: 15px;
+      margin-bottom: 8px;
+      color: var(--text);
+    }
+    .mini-card p {
+      font-size: 13px;
+      margin: 0;
+      color: var(--muted);
+    }
+    .mini-card .value {
+      font-size: 24px;
+      font-weight: 600;
+      color: var(--accent);
+      margin-bottom: 4px;
+    }
+
+    /* Back to top */
+    .back-top {
+      display: inline-block;
+      margin: 24px 0;
+      color: var(--accent);
+      text-decoration: none;
+      font-size: 14px;
+    }
+    .back-top:hover {
+      text-decoration: underline;
+    }
+
+    /* CTA */
+    .cta-box {
+      background: linear-gradient(135deg, var(--panel) 0%, var(--panel2) 100%);
+      border: 1px solid var(--line);
+      border-radius: var(--radius);
+      padding: 32px;
+      text-align: center;
+      margin: 40px 0;
+    }
+    .cta-box h3 {
+      font-family: var(--font-display);
+      font-size: 24px;
+      margin-bottom: 12px;
+      color: var(--text);
+    }
+    .cta-box p {
+      color: var(--muted);
+      margin-bottom: 20px;
+    }
+    .cta-box .btn {
+      display: inline-block;
+      padding: 14px 28px;
+      background: var(--accent);
+      color: var(--bg);
+      font-weight: 600;
+      text-decoration: none;
+      border-radius: 8px;
+      transition: transform 0.2s, box-shadow 0.2s;
+    }
+    .cta-box .btn:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 8px 24px rgba(233, 196, 106, 0.25);
+    }
+
+    /* Footer */
+    .siteFooter {
+      margin-top: 48px;
+      padding: 32px 0 40px;
+      border-top: 1px solid var(--line);
+    }
+    .footerInner {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: space-between;
+      align-items: flex-start;
+      gap: 24px;
+    }
+    .footerBrand strong {
+      font-size: 15px;
+      color: var(--text);
+    }
+    .footerBrand > div {
+      margin-top: 4px;
+      font-size: 13px;
+      color: var(--muted);
+    }
+    .footerMeta {
+      margin-top: 8px;
+      font-size: 12px;
+      color: var(--muted);
+    }
+    .footerMeta a {
+      color: var(--accent);
+      text-decoration: none;
+    }
+    .footerMeta a:hover {
+      text-decoration: underline;
+    }
+    .footerLinks {
+      display: flex;
+      gap: 20px;
+    }
+    .footerLinks a {
+      font-size: 13px;
+      color: var(--muted);
+      text-decoration: none;
+    }
+    .footerLinks a:hover {
+      color: var(--accent);
+    }
+
+    @media (max-width: 600px) {
+      header { padding: 32px 0 24px; }
+      .rule-section { padding: 32px 0; }
+      .rule-section h2 { font-size: 24px; }
+      .footerInner { flex-direction: column; align-items: center; text-align: center; }
+      .footerLinks { justify-content: center; }
+      .cta-box { padding: 24px 16px; }
+    }
+  </style>
+</head>
+
+<body>
+  <header class="wrap" id="top">
+    <nav aria-label="Fil d'Ariane">
+      <a href="/">← Retour à BORDUR</a>
+    </nav>
+    <h1>Règles du jeu</h1>
+    <p>
+      Tout ce qu'il faut savoir pour jouer à BORDUR : mouvement, cartes,
+      énergie, aspiration, vent, événements. Tu peux aussi apprendre en
+      jouant.
+    </p>
+  </header>
+
+  <main class="wrap">
+    <!-- Table des matières -->
+    <nav class="toc" aria-label="Sommaire">
+      <h2>Sommaire</h2>
+      <ul>
+        <li><a href="#principe">Principe du jeu</a></li>
+        <li><a href="#equipe">Composition d'équipe</a></li>
+        <li><a href="#cartes">Cartes & mouvement</a></li>
+        <li><a href="#energie">Énergie & fatigue</a></li>
+        <li><a href="#aspiration">Aspiration & peloton</a></li>
+        <li><a href="#vent">Vent & bordures</a></li>
+        <li><a href="#terrain">Terrains</a></li>
+        <li><a href="#evenements">Événements</a></li>
+        <li><a href="#fin">Fin de course</a></li>
+      </ul>
+    </nav>
+
+    <!-- 1. Principe -->
+    <section class="rule-section" id="principe">
+      <h2>1. Principe du jeu</h2>
+
+      <p>
+        BORDUR est un jeu de <strong>course cycliste tactique</strong> en
+        tour par tour. Tu incarnes un <strong>directeur sportif</strong> et
+        tu gères une équipe de 5 coureurs sur un parcours généré.
+      </p>
+
+      <p>
+        Chaque tour, tu choisis <strong>un coureur</strong> et tu joues
+        <strong>une carte mouvement</strong>. Le coureur avance, dépense de
+        l'énergie, et subit (ou profite) des effets du terrain, du vent et
+        du peloton.
+      </p>
+
+      <div class="callout">
+        <strong>Objectif</strong>
+        <p>
+          Être le premier à franchir la ligne d'arrivée. Le coureur qui
+          déclenche le dernier tour n'est pas forcément le vainqueur : c'est
+          celui qui est le plus avancé à la fin du dernier tour.
+        </p>
+      </div>
+
+      <h3>Déroulement d'un tour</h3>
+      <ol>
+        <li>Chaque joueur/équipe joue son action (coureur + carte).</li>
+        <li><strong>Aspiration</strong> : les groupes se reforment.</li>
+        <li><strong>Vent</strong> : les coureurs exposés sont marqués.</li>
+        <li><strong>Cartes fin de tour</strong> : chaque coureur reçoit une carte.</li>
+        <li><strong>Récupération</strong> : les coureurs abrités récupèrent.</li>
+        <li>Tour suivant.</li>
+      </ol>
+    </section>
+
+    <!-- 2. Équipe -->
+    <section class="rule-section" id="equipe">
+      <h2>2. Composition d'équipe</h2>
+
+      <p>
+        Chaque équipe compte <strong>5 coureurs</strong> recrutés dans un
+        vivier avec un <strong>budget limité</strong>. Les coureurs ont des
+        profils différents avec des bonus selon le terrain.
+      </p>
+
+      <div class="card-grid">
+        <div class="mini-card">
+          <h4>🏔️ Grimpeur</h4>
+          <p>Roi des cols. Bonus en montagne, malus sur le plat et dans le vent.</p>
+        </div>
+        <div class="mini-card">
+          <h4>⚡ Sprinteur</h4>
+          <p>Explosif sur les derniers mètres. Bonus au sprint, souffre en montagne.</p>
+        </div>
+        <div class="mini-card">
+          <h4>🔄 Rouleur</h4>
+          <p>Machine sur le plat. Excellent dans le vent, résiste aux pavés.</p>
+        </div>
+        <div class="mini-card">
+          <h4>💥 Puncheur</h4>
+          <p>Spécialiste des côtes courtes. Bonus sur les bosses et les murs.</p>
+        </div>
+        <div class="mini-card">
+          <h4>⭐ Polyvalent</h4>
+          <p>Équilibré, pas de bonus ni de malus. Solide partout, excellent nulle part.</p>
+        </div>
+      </div>
+
+      <div class="callout info">
+        <strong>Conseil</strong>
+        <p>
+          Adapte ta composition au parcours : plus de grimpeurs pour une
+          étape de montagne, des rouleurs pour les pavés, des sprinteurs
+          pour les arrivées au sprint.
+        </p>
+      </div>
+    </section>
+
+    <!-- 3. Cartes -->
+    <section class="rule-section" id="cartes">
+      <h2>3. Cartes & mouvement</h2>
+
+      <p>
+        Chaque coureur possède une <strong>main de cartes</strong> qui
+        détermine ses options de déplacement. Les cartes jouées vont en
+        défausse et ne reviennent pas.
+      </p>
+
+      <h3>Main initiale (6 cartes)</h3>
+      <p>
+        Au départ, chaque coureur a : <strong>+2, +3, +3, +4, +4, +5</strong>.
+      </p>
+
+      <h3>Types de cartes</h3>
+
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr>
+              <th>Type</th>
+              <th>Valeur</th>
+              <th>Effet</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><strong>Mouvement</strong></td>
+              <td>+2 à +5</td>
+              <td>Avance du nombre de cases indiqué.</td>
+            </tr>
+            <tr>
+              <td><strong>Attaque</strong></td>
+              <td>+6</td>
+              <td>Gros déplacement, coût en énergie élevé.</td>
+            </tr>
+            <tr>
+              <td><strong>Spécialité</strong></td>
+              <td>+2</td>
+              <td>Bonus terrain si le profil correspond (grimpeur en montagne, etc.).</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <h3>Cartes de fin de tour</h3>
+      <p>
+        À la fin de chaque tour, chaque coureur reçoit une carte générée :
+      </p>
+      <ul>
+        <li><strong>Normal / Montagne / Descente</strong> : +2</li>
+        <li><strong>Sous le vent</strong> : +1 (sauf Rouleur : +2)</li>
+      </ul>
+
+      <div class="callout">
+        <strong>Stratégie</strong>
+        <p>
+          Les grosses cartes (+4, +5, Attaque) sont précieuses. Si tu les
+          joues trop tôt, ta main s'affaiblit pour le final. Temporise si
+          tu peux rester abrité.
+        </p>
+      </div>
+    </section>
+
+    <!-- 4. Énergie -->
+    <section class="rule-section" id="energie">
+      <h2>4. Énergie & fatigue</h2>
+
+      <p>
+        Chaque coureur a une jauge d'énergie de <strong>0 à 100</strong>
+        (départ à 100). Chaque déplacement coûte de l'énergie selon le
+        terrain et la carte jouée.
+      </p>
+
+      <h3>Seuils d'énergie</h3>
+
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr>
+              <th>Statut</th>
+              <th>Énergie</th>
+              <th>Effets</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><strong>Normal</strong></td>
+              <td>51–100</td>
+              <td>Aucun malus.</td>
+            </tr>
+            <tr>
+              <td><strong>Fatigué</strong></td>
+              <td>26–50</td>
+              <td>Attaque -1, Spécialité -1.</td>
+            </tr>
+            <tr>
+              <td><strong>Épuisé</strong></td>
+              <td>1–25</td>
+              <td>Attaque et Spécialité interdites, bonus terrain annulés.</td>
+            </tr>
+            <tr>
+              <td><strong>Fringale</strong></td>
+              <td>0</td>
+              <td>Action "Récupérer" uniquement : 0 déplacement, +10 énergie.</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <h3>Récupération</h3>
+      <ul>
+        <li><strong>Descente</strong> : +1 énergie par case parcourue.</li>
+        <li><strong>Abri (fin de tour)</strong> : +3 énergie si pas sous le vent.</li>
+        <li><strong>Ravitaillement</strong> : +25 énergie si on termine sur la zone.</li>
+      </ul>
+
+      <div class="callout info">
+        <strong>La fringale</strong>
+        <p>
+          À 0 énergie, le coureur est en fringale : il ne peut plus avancer,
+          seulement récupérer. C'est souvent fatal pour la victoire.
+        </p>
+      </div>
+    </section>
+
+    <!-- 5. Aspiration -->
+    <section class="rule-section" id="aspiration">
+      <h2>5. Aspiration & peloton</h2>
+
+      <p>
+        L'aspiration simule l'avantage aérodynamique de rouler dans les
+        roues. En fin de tour, les groupes se <strong>reforment
+        automatiquement</strong>.
+      </p>
+
+      <h3>Règle d'aspiration</h3>
+      <p>
+        Si entre deux coureurs/groupes il y a <strong>exactement 1 case
+        vide</strong>, le groupe de derrière avance d'1 case pour combler
+        l'écart. L'aspiration se répète en cascade jusqu'à stabilisation.
+      </p>
+
+      <h3>Restrictions</h3>
+      <ul>
+        <li><strong>Montagne</strong> : pas d'aspiration vers une case montagne.</li>
+        <li><strong>Descente</strong> : pas d'aspiration.</li>
+        <li><strong>Cases pleines</strong> : max 4 coureurs par case.</li>
+      </ul>
+
+      <div class="callout">
+        <strong>Tactique</strong>
+        <p>
+          L'aspiration permet de "surfer" sur les efforts des autres. Rester
+          dans le peloton sans tirer est économe mais risqué : tu subis les
+          accélérations sans les contrôler.
+        </p>
+      </div>
+    </section>
+
+    <!-- 6. Vent -->
+    <section class="rule-section" id="vent">
+      <h2>6. Vent & bordures</h2>
+
+      <p>
+        Un coureur <strong>"prend le vent"</strong> s'il est en tête de sa
+        case (ou seul) et que la case devant est vide. Le vent est évalué
+        après l'aspiration.
+      </p>
+
+      <h3>Effets du vent</h3>
+      <ul>
+        <li><strong>Carte fin de tour</strong> : +1 au lieu de +2 (sauf Rouleur : +2).</li>
+        <li><strong>Pénalité énergie</strong> : +3 au prochain déplacement (+5 pour Rouleur).</li>
+        <li><strong>Pas de récupération</strong> : pas de +3 "abri" en fin de tour.</li>
+      </ul>
+
+      <h3>Exceptions</h3>
+      <ul>
+        <li><strong>Montagne</strong> : pas de vent (chacun pour soi).</li>
+        <li><strong>Descente</strong> : pas de vent.</li>
+      </ul>
+
+      <div class="callout info">
+        <strong>Bordures</strong>
+        <p>
+          En météo "vent latéral", les effets du vent sont amplifiés. Le
+          peloton s'étire et forme des bordures. Être mal placé avant
+          l'accélération = être lâché.
+        </p>
+      </div>
+    </section>
+
+    <!-- 7. Terrain -->
+    <section class="rule-section" id="terrain">
+      <h2>7. Terrains</h2>
+
+      <p>
+        Le parcours est composé de différents types de terrain. Chaque
+        terrain a un coût en énergie et des bonus/malus selon le profil
+        du coureur.
+      </p>
+
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr>
+              <th>Terrain</th>
+              <th>Effet</th>
+              <th>Profil avantagé</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><strong>Plat</strong></td>
+              <td>Coût standard.</td>
+              <td>Rouleur, Sprinteur</td>
+            </tr>
+            <tr>
+              <td><strong>Côte (bosse)</strong></td>
+              <td>Coût élevé.</td>
+              <td>Puncheur</td>
+            </tr>
+            <tr>
+              <td><strong>Montagne</strong></td>
+              <td>Coût très élevé. Pas d'aspiration.</td>
+              <td>Grimpeur</td>
+            </tr>
+            <tr>
+              <td><strong>Descente</strong></td>
+              <td>Récupération +1/case. Pas d'aspiration.</td>
+              <td>Tous</td>
+            </tr>
+            <tr>
+              <td><strong>Sprint</strong></td>
+              <td>Bonus sprinteur au dernier tour.</td>
+              <td>Sprinteur</td>
+            </tr>
+            <tr>
+              <td><strong>Pavés</strong></td>
+              <td>Risque de crevaison par case.</td>
+              <td>Rouleur</td>
+            </tr>
+            <tr>
+              <td><strong>Ravitaillement</strong></td>
+              <td>+25 énergie si on s'arrête dessus.</td>
+              <td>Tous</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <h3>Pavés (secteurs)</h3>
+      <p>
+        Les pavés sont un <strong>overlay</strong> sur plat/côte/descente.
+        Chaque case traversée déclenche un test de crevaison (~10% de
+        base). Une crevaison coûte +2 énergie au prochain déplacement.
+      </p>
+
+      <div class="callout">
+        <strong>Conseil pavés</strong>
+        <p>
+          Être bien placé <em>avant</em> le secteur est crucial. Les
+          rouleurs et sprinteurs sont avantagés, les grimpeurs souffrent.
+        </p>
+      </div>
+    </section>
+
+    <!-- 8. Événements -->
+    <section class="rule-section" id="evenements">
+      <h2>8. Événements de course</h2>
+
+      <p>
+        Des événements aléatoires peuvent survenir en cours de partie :
+        crevaisons, chutes, incidents mécaniques. Ils ciblent en priorité
+        les coureurs <strong>exposés</strong> (isolés, sous le vent,
+        terrain à risque).
+      </p>
+
+      <h3>Types d'événements</h3>
+
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr>
+              <th>Événement</th>
+              <th>Effet</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><strong>Crevaison</strong></td>
+              <td>+2 énergie au prochain déplacement.</td>
+            </tr>
+            <tr>
+              <td><strong>Chute</strong></td>
+              <td>Déplacement limité à 1 case + coût +5 énergie.</td>
+            </tr>
+            <tr>
+              <td><strong>Incident mécanique</strong></td>
+              <td>Carte fin de tour dégradée (-1, min 1).</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <h3>Météo</h3>
+      <p>
+        La météo est tirée au départ et modifie les probabilités :
+      </p>
+      <ul>
+        <li><strong>Normal</strong> : pas de modification.</li>
+        <li><strong>Vent latéral</strong> : pénalités vent augmentées, abri réduit.</li>
+        <li><strong>Pluie</strong> : chutes plus fréquentes (descente, pavés).</li>
+      </ul>
+
+      <div class="callout info">
+        <strong>Garde-fous</strong>
+        <p>
+          Max 1 événement par tour. Pas d'événements sur deux tours
+          consécutifs. Pénalités énergie plafonnées à +5.
+        </p>
+      </div>
+    </section>
+
+    <!-- 9. Fin -->
+    <section class="rule-section" id="fin">
+      <h2>9. Fin de course</h2>
+
+      <h3>Déclenchement du dernier tour</h3>
+      <p>
+        Dès qu'un coureur franchit la ligne d'arrivée (position ≥ arrivée)
+        <strong>par son action</strong>, le dernier tour est déclenché.
+        Les autres joueurs terminent ce tour, puis l'aspiration s'applique.
+      </p>
+
+      <div class="callout">
+        <strong>Attention</strong>
+        <p>
+          Franchir la ligne par aspiration ne déclenche pas le dernier tour.
+          Le vainqueur est le coureur le plus avancé à la <em>fin</em> du
+          dernier tour, pas forcément celui qui a déclenché la fin.
+        </p>
+      </div>
+
+      <h3>Mode Classique (1 étape)</h3>
+      <p>
+        Classement = positions finales décroissantes. En cas d'égalité, le
+        coureur le plus "à droite" dans la case est devant (premier arrivé
+        sur la case).
+      </p>
+
+      <h3>Mode Étapes (mini-tour)</h3>
+      <p>
+        Le classement général se calcule par <strong>retards cumulés</strong>.
+        Chaque case d'écart avec le leader de l'étape = 10 secondes de
+        retard.
+      </p>
+      <ul>
+        <li><strong>Maillot jaune</strong> : leader du classement général.</li>
+        <li><strong>Maillot vert</strong> : meilleur aux sprints intermédiaires.</li>
+        <li><strong>Maillot à pois</strong> : meilleur aux sommets.</li>
+      </ul>
+    </section>
+
+    <!-- CTA -->
+    <div class="cta-box">
+      <h3>Prêt à jouer ?</h3>
+      <p>Choisis un profil d'étape, compose ton équipe, et lance la course.</p>
+      <a class="btn" href="/app/">Lancer une partie</a>
+    </div>
+
+    <p style="text-align: center; margin-bottom: 24px;">
+      <a href="/lexique-cyclisme.html" style="color: var(--accent);">
+        → Consulter le lexique du cyclisme
+      </a>
+    </p>
+
+    <a class="back-top" href="#top">↑ Retour en haut</a>
+  </main>
+
+  <footer class="siteFooter wrap" aria-label="Pied de page">
+    <div class="footerInner">
+      <div class="footerBrand">
+        <strong>BORDUR</strong>
+        <div>Jeu de plateau – course cycliste tactique (tour par tour).</div>
+        <div class="footerMeta">
+          © <span id="year"></span> —
+          <a href="https://beabot.fr" target="_blank">beAbot</a>
+        </div>
+      </div>
+
+      <nav class="footerLinks" aria-label="Liens légaux">
+        <a href="/app/">Jouer</a>
+        <a href="/lexique-cyclisme.html">Lexique</a>
+        <a href="/cgu.html">CGU</a>
+        <a href="/confidentialite.html">Confidentialité</a>
+        <a href="https://beabot.fr/contact/" target="_blank">Contact</a>
+      </nav>
+    </div>
+  </footer>
+
+  <script>
+    document.getElementById("year")?.appendChild(
+      document.createTextNode(String(new Date().getFullYear()))
+    );
+  </script>
+</body>
+</html>
