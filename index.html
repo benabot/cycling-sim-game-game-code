@@ -17,9 +17,11 @@
 
     <!-- Canonical: mets une URL absolue en production -->
     <link rel="canonical" href="https://bordur.fr" />
+    <meta name="theme-color" content="#0b0f14">
 
     <!-- Open Graph -->
     <meta property="og:type" content="website" />
+    <meta property="og:locale" content="fr_FR" />
     <meta property="og:site_name" content="BORDUR" />
     <meta
       property="og:title"
@@ -62,12 +64,19 @@
           {
             "@type": "VideoGame",
             "name": "BORDUR",
+            "url": "https://bordur.fr",
+            "image": "https://bordur.fr/intro/chassepatate.webp",
             "inLanguage": "fr",
             "genre": ["Strategy", "Sports"],
-            "description": "Jeu de plateau de course cycliste tactique à jouer en ligne, en tour par tour : placement, aspiration, gestion d’énergie, pavés, vent et attaques.",
+            "description": "Jeu de plateau de course cycliste tactique à jouer en ligne, en tour par tour : placement, aspiration, gestion d'énergie, pavés, vent et attaques.",
             "operatingSystem": "Web",
             "applicationCategory": "GameApplication",
-            "isAccessibleForFree": true
+            "isAccessibleForFree": true,
+            "publisher": {
+              "@type": "Organization",
+              "name": "beAbot",
+              "url": "https://beabot.fr"
+            }
           },
           {
             "@type": "FAQPage",
