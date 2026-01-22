@@ -83,10 +83,42 @@
             "mainEntity": [
               {
                 "@type": "Question",
-                "name": "C’est quoi une chasse-patate ?",
+                "name": "C'est quoi une bordure en cyclisme ?",
                 "acceptedAnswer": {
                   "@type": "Answer",
-                  "text": "C’est quand un coureur (ou un petit groupe) roule entre deux groupes sans réussir à faire la jonction. Ça peut être une erreur… ou un piège si tu forces les autres à se griller."
+                  "text": "Quand le vent souffle de côté, le peloton s'étire en diagonale. Les coureurs mal placés se retrouvent dans la bordure, séparés du groupe de tête."
+                }
+              },
+              {
+                "@type": "Question",
+                "name": "BORDUR est-il un jeu type Flamme Rouge ?",
+                "acceptedAnswer": {
+                  "@type": "Answer",
+                  "text": "BORDUR s'inspire des mécaniques de jeux de plateau cyclistes comme Flamme Rouge, mais avec un système d'énergie, de vent et d'événements plus poussé."
+                }
+              },
+              {
+                "@type": "Question",
+                "name": "Peut-on jouer les classiques comme Paris-Roubaix ?",
+                "acceptedAnswer": {
+                  "@type": "Answer",
+                  "text": "Oui. Le jeu propose des profils d'étapes inspirés des monuments : pavés du Nord, Mur de Huy, cols alpins."
+                }
+              },
+              {
+                "@type": "Question",
+                "name": "C'est quoi une échappée dans le jeu ?",
+                "acceptedAnswer": {
+                  "@type": "Answer",
+                  "text": "Quand tu places un coureur devant le peloton, seul ou en petit groupe. Tu dépenses de l'énergie pour maintenir l'écart."
+                }
+              },
+              {
+                "@type": "Question",
+                "name": "C'est quoi une chasse-patate ?",
+                "acceptedAnswer": {
+                  "@type": "Answer",
+                  "text": "C'est quand un coureur roule entre deux groupes sans réussir à faire la jonction. Il se grille tout seul."
                 }
               },
               {
@@ -94,15 +126,7 @@
                 "name": "Est-ce que je dois connaître le cyclisme pour jouer ?",
                 "acceptedAnswer": {
                   "@type": "Answer",
-                  "text": "Non. Le jeu utilise des idées simples (abri, effort, terrain, timing) et le vocabulaire est expliqué sans jargon obscur."
-                }
-              },
-              {
-                "@type": "Question",
-                "name": "Combien de temps dure une course ?",
-                "acceptedAnswer": {
-                  "@type": "Answer",
-                  "text": "Variable selon le profil et les réglages. Le jeu vise un rythme rapide et des décisions fréquentes."
+                  "text": "Non. Le jeu utilise des idées simples et le vocabulaire est expliqué. Tu peux découvrir le jargon en jouant."
                 }
               },
               {
@@ -110,7 +134,7 @@
                 "name": "Peut-on jouer en solo ?",
                 "acceptedAnswer": {
                   "@type": "Answer",
-                  "text": "Oui. Tu peux jouer en solo contre une IA dont l’objectif est d’être crédible : prudente sur les pavés, cohérente dans ses prises de risque, pas “parfaitement optimisée”."
+                  "text": "Oui. Tu peux jouer contre une IA qui prend des décisions crédibles."
                 }
               },
               {
@@ -118,7 +142,7 @@
                 "name": "Le jeu est-il jouable sur mobile ?",
                 "acceptedAnswer": {
                   "@type": "Answer",
-                  "text": "Oui : l’interface est conçue pour rester lisible et jouable sur mobile, sans transformer l’écran en tableau de bord."
+                  "text": "Oui : interface responsive, lisible et jouable sur smartphone."
                 }
               }
             ]
@@ -741,9 +765,9 @@
           <!-- Colonne texte -->
           <div>
             <div class="kicker">AVANT-COURSE</div>
-            <h1>BORDUR</h1>
+            <h1>BORDUR — Jeu de course cycliste tactique</h1>
             <p class="subtitle">
-              Jeu de plateau – course cycliste tactique (tour par tour)
+              Simulation de peloton en tour par tour
             </p>
 
             <!-- Définition haute: explicite immédiatement -->
@@ -866,6 +890,150 @@
         </div>
       </section>
 
+      <section aria-labelledby="riders">
+        <h2 id="riders">Les profils de coureurs</h2>
+        <p class="muted">
+          Chaque coureur a sa spécialité. Tu composes ton équipe comme un
+          <strong>directeur sportif</strong> : équilibre entre profils pour
+          couvrir tous les terrains.
+        </p>
+
+        <div class="grid3">
+          <div class="card">
+            <div class="cardHead">
+              <span class="ico" aria-hidden="true">
+                <svg
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  stroke-width="2"
+                >
+                  <path d="M4 18l4-4 4 2 4-6 4 4" />
+                  <path d="M20 6l-4 4" />
+                  <path d="M20 6v4h-4" />
+                </svg>
+              </span>
+              <h3>Grimpeur</h3>
+            </div>
+            <p class="muted">
+              Roi des cols. Léger, endurant en montée, il souffre sur le plat
+              et dans le vent.
+            </p>
+          </div>
+
+          <div class="card">
+            <div class="cardHead">
+              <span class="ico" aria-hidden="true">
+                <svg
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  stroke-width="2"
+                >
+                  <path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z" />
+                </svg>
+              </span>
+              <h3>Sprinteur</h3>
+            </div>
+            <p class="muted">
+              Explosif sur les derniers mètres. Puissance brute, mais il doit
+              survivre jusqu'à l'arrivée.
+            </p>
+          </div>
+
+          <div class="card">
+            <div class="cardHead">
+              <span class="ico" aria-hidden="true">
+                <svg
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  stroke-width="2"
+                >
+                  <circle cx="12" cy="12" r="9" />
+                  <path d="M12 7v5l3 3" />
+                </svg>
+              </span>
+              <h3>Rouleur</h3>
+            </div>
+            <p class="muted">
+              Machine sur le plat. Il tire le peloton, protège le leader, et
+              excelle dans le vent.
+            </p>
+          </div>
+
+          <div class="card">
+            <div class="cardHead">
+              <span class="ico" aria-hidden="true">
+                <svg
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  stroke-width="2"
+                >
+                  <path d="M12 2v4" />
+                  <path d="M12 18v4" />
+                  <path d="M4.93 4.93l2.83 2.83" />
+                  <path d="M16.24 16.24l2.83 2.83" />
+                  <path d="M2 12h4" />
+                  <path d="M18 12h4" />
+                  <path d="M4.93 19.07l2.83-2.83" />
+                  <path d="M16.24 7.76l2.83-2.83" />
+                </svg>
+              </span>
+              <h3>Puncheur</h3>
+            </div>
+            <p class="muted">
+              Spécialiste des côtes courtes et des murs. Accélération violente,
+              idéal pour les classiques ardennaises.
+            </p>
+          </div>
+
+          <div class="card">
+            <div class="cardHead">
+              <span class="ico" aria-hidden="true">
+                <svg
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  stroke-width="2"
+                >
+                  <path d="M12 2l2 7h7l-5.5 4 2 7-5.5-4-5.5 4 2-7L3 9h7z" />
+                </svg>
+              </span>
+              <h3>Baroudeur</h3>
+            </div>
+            <p class="muted">
+              L'aventurier des échappées. Polyvalent, endurant, il tente sa
+              chance loin de l'arrivée.
+            </p>
+          </div>
+
+          <div class="card">
+            <div class="cardHead">
+              <span class="ico" aria-hidden="true">
+                <svg
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  stroke-width="2"
+                >
+                  <path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2" />
+                  <circle cx="9" cy="7" r="4" />
+                  <path d="M22 21v-2a4 4 0 0 0-3-3.87" />
+                  <path d="M16 3.13a4 4 0 0 1 0 7.75" />
+                </svg>
+              </span>
+              <h3>Équipier (domestique)</h3>
+            </div>
+            <p class="muted">
+              Il roule pour les autres. Ravitaillement, abri, tempo : sans lui,
+              pas de victoire pour le leader.
+            </p>
+          </div>
+        </div>
+      </section>
+
       <section id="comment" aria-labelledby="how">
         <h2 id="how">Comment ça marche</h2>
 
@@ -929,7 +1097,6 @@
       <section aria-labelledby="keys">
         <h2 id="keys">Mécaniques clés</h2>
 
-        <!-- Une seule grille: 6 cartes -->
         <div class="grid3">
           <div class="card">
             <div class="cardHead">
@@ -944,11 +1111,12 @@
                   <path d="M4 16c4-3 6-3 10 0s6 3 6 0" />
                 </svg>
               </span>
-              <h3>Aspiration (peloton)</h3>
+              <h3>Prendre la roue : l'aspiration</h3>
             </div>
             <p class="muted">
-              Rester abrité économise. Se retrouver seul devant, c’est parfois
-              héroïque… souvent un mauvais calcul.
+              Rester dans le sillage du peloton économise l'énergie. Se
+              retrouver seul devant, c'est parfois héroïque… souvent un mauvais
+              calcul.
             </p>
           </div>
 
@@ -966,11 +1134,11 @@
                   <path d="M17 16l4-4-4-4" />
                 </svg>
               </span>
-              <h3>Vent & exposition</h3>
+              <h3>Bordures et vent latéral</h3>
             </div>
             <p class="muted">
-              Quand tu te découvres, tu paies. L’abri devient une ressource :
-              rouler… ou attendre le moment juste.
+              Quand le vent souffle de côté, le peloton s'étire. Les bordures
+              cassent la course : tu es dedans ou tu es lâché.
             </p>
           </div>
 
@@ -987,11 +1155,11 @@
                   <path d="M4 18h16" />
                 </svg>
               </span>
-              <h3>Pavés & profils</h3>
+              <h3>Pavés : survivre à l'Enfer du Nord</h3>
             </div>
             <p class="muted">
-              Les pavés, “ça frotte”. Le placement avant secteur vaut souvent
-              plus que l’action pendant.
+              Les secteurs pavés, "ça frotte". Crevaisons, chutes : le
+              placement avant le secteur vaut plus que l'action pendant.
             </p>
           </div>
 
@@ -1009,11 +1177,11 @@
                   />
                 </svg>
               </span>
-              <h3>Gestion d’énergie</h3>
+              <h3>Fringale et gestion d'énergie</h3>
             </div>
             <p class="muted">
-              Tu gagnes aussi en gardant de quoi répondre aux moments clés.
-              Sinon, tu subis.
+              Un gros effort trop tôt, c'est la fringale assurée. Garder des
+              cartouches pour les moments clés, c'est ça la tactique.
             </p>
           </div>
 
@@ -1029,11 +1197,11 @@
                   <path d="M4 20l8-16 3 7 5-3-8 16-3-7z" />
                 </svg>
               </span>
-              <h3>Attaques</h3>
+              <h3>Attaques et échappées</h3>
             </div>
             <p class="muted">
-              Attaquer, c’est choisir l’endroit, le moment, et le coût
-              acceptable. Pas “aller vite”.
+              Attaquer, c'est choisir l'endroit, le moment, et le coût
+              acceptable. Une échappée bien placée force le peloton à réagir.
             </p>
           </div>
 
@@ -1052,25 +1220,65 @@
                   <path d="M5 12h14" />
                 </svg>
               </span>
-              <h3>Lecture du risque</h3>
+              <h3>Chasse-patate : le piège</h3>
             </div>
             <p class="muted">
-              Des choix crédibles, pas une optimisation robotique parfaite. Tu
-              joues le risque, pas le tableau.
+              Rouler seul entre deux groupes sans faire la jonction. Tu te
+              grilles… ou tu forces les autres à se griller pour toi.
             </p>
           </div>
         </div>
       </section>
 
       <section class="faq" aria-labelledby="faq">
-        <h2 id="faq">FAQ</h2>
+        <h2 id="faq">Questions fréquentes</h2>
 
         <details>
-          <summary>C’est quoi une “BORDUR” ?</summary>
+          <summary>C'est quoi une "bordure" en cyclisme ?</summary>
           <p>
-            C’est quand un coureur (ou un petit groupe) roule entre deux groupes
-            sans réussir à faire la jonction. Ça peut être une erreur… ou un
-            piège si tu forces les autres à se griller.
+            Quand le vent souffle de côté, le peloton s'étire en diagonale. Les
+            coureurs mal placés se retrouvent "dans la bordure" : séparés du
+            groupe de tête, ils doivent rouler à bloc pour revenir. Dans le
+            jeu, c'est pareil : ton placement avant l'accélération décide de
+            tout.
+          </p>
+        </details>
+
+        <details>
+          <summary>BORDUR est-il un jeu type Flamme Rouge ?</summary>
+          <p>
+            BORDUR s'inspire des mécaniques de jeux de plateau cyclistes comme
+            <em>Flamme Rouge</em>, mais avec un système d'énergie, de vent et
+            d'événements plus poussé. C'est une simulation tactique de course,
+            pas un jeu de hasard.
+          </p>
+        </details>
+
+        <details>
+          <summary>Peut-on jouer les classiques comme Paris-Roubaix ?</summary>
+          <p>
+            Oui. Le jeu propose des profils d'étapes inspirés des monuments :
+            pavés du Nord (Paris-Roubaix), Mur de Huy (Flèche Wallonne), cols
+            alpins (Tour de Lombardie). Tu choisis ton terrain de jeu.
+          </p>
+        </details>
+
+        <details>
+          <summary>C'est quoi une échappée dans le jeu ?</summary>
+          <p>
+            Quand tu places un coureur devant le peloton, seul ou en petit
+            groupe. Tu dépenses de l'énergie pour maintenir l'écart, mais tu
+            forces les autres à réagir. Bien calculée, l'échappée peut tenir
+            jusqu'au bout.
+          </p>
+        </details>
+
+        <details>
+          <summary>C'est quoi une "chasse-patate" ?</summary>
+          <p>
+            C'est quand un coureur roule entre deux groupes sans réussir à faire
+            la jonction. Il se "grille" tout seul. Dans le jeu, c'est un risque
+            calculé : tu peux forcer les autres à rouler pour te reprendre.
           </p>
         </details>
 
@@ -1080,33 +1288,22 @@
           </summary>
           <p>
             Non. Le jeu utilise des idées simples (abri, effort, terrain,
-            timing) et le vocabulaire est expliqué sans jargon obscur.
-          </p>
-        </details>
-
-        <details>
-          <summary>Combien de temps dure une course ?</summary>
-          <p>
-            Variable selon le profil et les réglages. Le jeu vise un rythme
-            rapide et des décisions fréquentes.
+            timing) et le vocabulaire est expliqué. Tu peux découvrir le jargon
+            en jouant.
           </p>
         </details>
 
         <details>
           <summary>Peut-on jouer en solo ?</summary>
           <p>
-            Oui. Tu peux jouer en solo contre une IA dont l’objectif est d’être
-            crédible : prudente sur les pavés, cohérente dans ses prises de
-            risque, pas “parfaitement optimisée”.
+            Oui. Tu peux jouer contre une IA qui prend des décisions crédibles :
+            prudente sur les pavés, cohérente dans ses prises de risque.
           </p>
         </details>
 
         <details>
           <summary>Le jeu est-il jouable sur mobile ?</summary>
-          <p>
-            Oui : lisible et jouable sans transformer l’écran en tableau de
-            bord.
-          </p>
+          <p>Oui : interface responsive, lisible et jouable sur smartphone.</p>
         </details>
       </section>
 
