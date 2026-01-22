@@ -428,7 +428,7 @@
 </template>
 
 <script setup>
-import { ref, computed, watch, nextTick, reactive } from 'vue';
+import { ref, computed, watch, nextTick, reactive, onMounted } from 'vue';
 import { PlayerType, AIDifficulty, TeamConfigs, getTeamIds, createPlayerConfig } from '../core/teams.js';
 import { AIPersonality } from '../core/ai.js';
 import RiderToken from './RiderToken.vue';
@@ -447,6 +447,7 @@ import UserMenu from './UserMenu.vue';
 import { getClassicPreset, StageRaceConfig } from '../config/race-presets.js';
 import { UIConfig } from '../config/ui.config.js';
 import { DraftConfig, DraftAIConfig, DraftStatLabels, DraftStatOrder, RiderPool } from '../config/draft.config.js';
+import { trackEvent } from '../analytics/goatcounter.js';
 
 const emit = defineEmits(['start', 'restore', 'go-to-account']);
 
@@ -522,6 +523,10 @@ const stepHelpContent = {
 };
 
 const activeHelp = computed(() => stepHelpContent[activeHelpStep.value] || stepHelpContent[1]);
+
+onMounted(() => {
+  trackEvent('setup_open');
+});
 
 
 function openRules() {
@@ -935,16 +940,19 @@ function confirmStep(step) {
     stepConfirmed.step1 = true;
     activeStep.value = 2;
     scrollToSection(teamsStepRef);
+    trackEvent('setup_option_confirm');
   }
   if (step === 2 && isTeamsReady.value) {
     stepConfirmed.step2 = true;
     activeStep.value = 3;
     scrollToSection(draftStepRef);
+    trackEvent('setup_option_confirm');
   }
   if (step === 3 && isDraftReady.value) {
     stepConfirmed.step3 = true;
     activeStep.value = 4;
     scrollToSection(launchStepRef);
+    trackEvent('setup_option_confirm');
   }
 }
 
@@ -984,6 +992,12 @@ watch(manualDraftTeamIds, (teamIds) => {
   }
 });
 
+watch(isRulesOpen, (isOpen) => {
+  if (isOpen) {
+    trackEvent('rules_open');
+  }
+});
+
 function buildDraftRosters() {
   return draftTeamIds.value.reduce((acc, teamId) => {
     acc[teamId] = getRoster(teamId).map(rider => ({
@@ -1000,6 +1014,7 @@ function buildDraftRosters() {
 
 function startGame() {
   if (!canStart.value) return;
+  trackEvent('setup_complete');
   autoDraftAITeams();
   const stageRace = isStageRace.value
     ? {

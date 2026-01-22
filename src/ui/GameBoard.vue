@@ -304,6 +304,7 @@ import { RiderConfig, TerrainConfig } from '../config/game.config.js';
 import { UIConfig } from '../config/ui.config.js';
 import { calculateMovementConsumption, calculateRecovery } from '../core/energy.js';
 import { isRefuelZone } from '../core/terrain.js';
+import { trackEvent } from '../analytics/goatcounter.js';
 import { createMoveAnimator, createMoveDiffHandler } from './anim/moveAnimator.js';
 import {
   GameStatusBar,
@@ -495,6 +496,7 @@ const autoEndTurnAck = ref(false);
 const DEBUG_FINISH_MODAL = true;
 const finishModalLogOnce = ref(false);
 const finishPanelLogOnce = ref(false);
+const hasTrackedRaceFinish = ref(false);
 
 watch(
   [turnPhase, phase, isAnimatingEffects, shouldSkipEndTurnOverlay],
@@ -517,6 +519,10 @@ watch(
 watch([phase, rankings], async ([newPhase, rankingsList]) => {
   if (newPhase === 'finished') {
     if (rankingsList?.length) {
+      if (!hasTrackedRaceFinish.value) {
+        trackEvent('race_finish');
+        hasTrackedRaceFinish.value = true;
+      }
       // Capture rankings at the moment we decide to open the modal
       finishModalRankings.value = [...rankingsList];
       console.info('[GameBoard] captured rankings:', {
@@ -534,6 +540,7 @@ watch([phase, rankings], async ([newPhase, rankingsList]) => {
 
   showFinishModal.value = false;
   finishModalRankings.value = [];
+  hasTrackedRaceFinish.value = false;
 });
 
 watch(showFinishModal, (isOpen) => {
@@ -565,6 +572,12 @@ watch([phase, showFinishModal, rankings], ([gamePhase, isModalOpen, rankingsList
     return;
   }
   finishPanelLogOnce.value = false;
+});
+
+watch(isRulesOpen, (isOpen) => {
+  if (isOpen) {
+    trackEvent('rules_open');
+  }
 });
 
 const animationSpeed = computed(() => {

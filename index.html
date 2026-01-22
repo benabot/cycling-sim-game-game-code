@@ -1389,5 +1389,26 @@
           document.createTextNode(String(new Date().getFullYear())),
         );
     </script>
+    <script>
+      (function () {
+        function shouldSkip() {
+          try {
+            return localStorage.getItem('analytics_optout') === '1';
+          } catch (err) {
+            return false;
+          }
+        }
+
+        document.addEventListener('click', (event) => {
+          const link = event.target.closest('a[href^="/app/"]');
+          if (!link || shouldSkip()) return;
+          try {
+            if (window.goatcounter && typeof window.goatcounter.count === 'function') {
+              window.goatcounter.count({ event: true, path: 'landing_prepare_click' });
+            }
+          } catch (err) {}
+        });
+      })();
+    </script>
   </body>
 </html>

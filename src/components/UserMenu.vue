@@ -62,12 +62,13 @@
 </template>
 
 <script setup>
-import { ref, computed } from 'vue';
+import { ref, computed, watch } from 'vue';
 import UIIcon from './icons/UIIcon.vue';
 import AuthModal from './AuthModal.vue';
 import LoadGameModal from './LoadGameModal.vue';
 import UserDropdown from './UserDropdown.vue';
 import { useAuth } from '../composables/useAuth.js';
+import { trackEvent } from '../analytics/goatcounter.js';
 
 defineProps({
   canSave: {
@@ -86,6 +87,12 @@ const dropdownRef = ref(null);
 const menuLabel = computed(() => (
   isAuthenticated.value ? (profile.value?.username || 'Utilisateur') : 'Menu'
 ));
+
+watch(showAuthModal, (isOpen) => {
+  if (isOpen) {
+    trackEvent('auth_open');
+  }
+});
 
 function handleLoadGame() {
   dropdownRef.value?.close();

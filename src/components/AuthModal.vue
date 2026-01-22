@@ -164,6 +164,7 @@ import { ref, reactive, computed, watch } from 'vue';
 import ModalShell from './ModalShell.vue';
 import UIIcon from './icons/UIIcon.vue';
 import { useAuth } from '../composables/useAuth.js';
+import { trackEvent } from '../analytics/goatcounter.js';
 
 const props = defineProps({
   modelValue: Boolean
@@ -350,6 +351,7 @@ async function handleLogin() {
   isSubmitting.value = false;
 
   if (result.success) {
+    trackEvent('auth_success');
     emit('update:modelValue', false);
   } else {
     serverError.value = result.error || 'Erreur de connexion';
@@ -386,6 +388,7 @@ async function handleRegister() {
   isSubmitting.value = false;
 
   if (result.success) {
+    trackEvent('auth_success');
     if (result.confirmationRequired) {
       serverNotice.value = result.message || 'Confirmez votre email pour vous connecter.';
     } else {
