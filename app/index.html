@@ -42,6 +42,17 @@
     <link rel="icon" type="image/svg+xml" href="/favicon-bib-B-outline.svg" />
     <link rel="mask-icon" href="/safari-pinned-tab-bib-B.svg" color="#000000" />
 
+    <script>
+      try {
+        if (localStorage.getItem('analytics_optout') === '1') {
+          window.goatcounter = window.goatcounter || {};
+          window.goatcounter.no_onload = true;
+        }
+      } catch (err) {}
+    </script>
+    <script data-goatcounter="https://bordur.goatcounter.com/count"
+            async src="//gc.zgo.at/count.js"></script>
+
   </head>
   <body>
     <div id="app"></div>

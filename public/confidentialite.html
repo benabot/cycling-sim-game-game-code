@@ -6,6 +6,16 @@
     <title>Politique de Confidentialité — BORDUR</title>
     <meta name="description" content="Politique de confidentialité et traitement des données personnelles du jeu BORDUR" />
     <link rel="canonical" href="https://bordur.fr/confidentialite.html" />
+    <script>
+        try {
+            if (localStorage.getItem('analytics_optout') === '1') {
+                window.goatcounter = window.goatcounter || {};
+                window.goatcounter.no_onload = true;
+            }
+        } catch (err) {}
+    </script>
+    <script data-goatcounter="https://bordur.goatcounter.com/count"
+            async src="//gc.zgo.at/count.js"></script>
     <style>
         :root {
             --bg: #0b0f14;
@@ -134,6 +144,38 @@
         tr:last-child td {
             border-bottom: none;
         }
+        .optout-panel {
+            margin: 24px 0;
+            padding: 16px;
+            border: 1px solid var(--line);
+            border-radius: 8px;
+            background: rgba(17, 24, 36, 0.4);
+        }
+        .optout-actions {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 12px;
+            margin: 12px 0;
+        }
+        .optout-btn {
+            background: var(--accent);
+            color: #0b0f14;
+            border: none;
+            padding: 10px 14px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-weight: 600;
+        }
+        .optout-btn--ghost {
+            background: transparent;
+            color: var(--accent);
+            border: 1px solid var(--accent);
+        }
+        .optout-status,
+        .optout-hint {
+            color: var(--muted);
+            margin: 0;
+        }
         .footer-nav {
             margin-top: 48px;
             padding-top: 24px;
@@ -228,6 +270,27 @@
         <p>
             Ces données sont conservées par Netlify pour une durée maximale de 30 jours à des fins de statistiques et de sécurité.
         </p>
+
+        <h2>Mesure d'audience (GoatCounter)</h2>
+        <p>
+            Nous utilisons <strong>GoatCounter</strong> pour mesurer l'audience de manière
+            minimale, sans cookies ni profilage. Les données collectées sont strictement
+            techniques et servent uniquement à améliorer le service.
+        </p>
+        <div class="optout-panel" role="group" aria-label="Mesure d'audience GoatCounter">
+            <p class="optout-status" id="optout-status">État : mesure d'audience active.</p>
+            <div class="optout-actions">
+                <button type="button" class="optout-btn" data-optout="1">
+                    Désactiver la mesure d'audience
+                </button>
+                <button type="button" class="optout-btn optout-btn--ghost" data-optout="0">
+                    Réactiver la mesure d'audience
+                </button>
+            </div>
+            <p class="optout-hint">
+                Ce choix est enregistré localement sur cet appareil.
+            </p>
+        </div>
 
         <h2>3. Comment utilisons-nous vos données ?</h2>
         <p>
@@ -344,5 +407,37 @@
             <a href="/cgu.html">Conditions Générales d'Utilisation</a>
         </div>
     </div>
+    <script>
+        (function () {
+            const statusEl = document.getElementById('optout-status');
+            const buttons = document.querySelectorAll('[data-optout]');
+
+            function updateStatus() {
+                if (!statusEl) return;
+                let isOptout = false;
+                try {
+                    isOptout = localStorage.getItem('analytics_optout') === '1';
+                } catch (err) {}
+                statusEl.textContent = isOptout
+                    ? 'État : mesure d’audience désactivée.'
+                    : 'État : mesure d’audience active.';
+            }
+
+            buttons.forEach((button) => {
+                button.addEventListener('click', () => {
+                    try {
+                        if (button.dataset.optout === '1') {
+                            localStorage.setItem('analytics_optout', '1');
+                        } else {
+                            localStorage.removeItem('analytics_optout');
+                        }
+                    } catch (err) {}
+                    window.location.reload();
+                });
+            });
+
+            updateStatus();
+        })();
+    </script>
 </body>
 </html>

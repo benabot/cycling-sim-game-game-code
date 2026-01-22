@@ -56,6 +56,17 @@
       content="https://bordur.fr/intro/chassepatate.webp"
     />
 
+    <script>
+      try {
+        if (localStorage.getItem('analytics_optout') === '1') {
+          window.goatcounter = window.goatcounter || {};
+          window.goatcounter.no_onload = true;
+        }
+      } catch (err) {}
+    </script>
+    <script data-goatcounter="https://bordur.goatcounter.com/count"
+            async src="//gc.zgo.at/count.js"></script>
+
     <!-- JSON-LD: VideoGame + FAQPage -->
     <script type="application/ld+json">
       {
