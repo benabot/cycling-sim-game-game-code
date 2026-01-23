@@ -25,6 +25,13 @@
       :returnTarget="accountReturnTarget"
       @back="handleAccountBack"
       @load="handleAccountLoad"
+      @account-deleted="handleAccountDeleted"
+    />
+
+    <!-- Reset Password Page -->
+    <ResetPasswordPage
+      v-else-if="gameScreen === 'reset-password'"
+      @go-to-login="handleResetComplete"
     />
 
     <IntroSplash v-if="isIntroVisible" @skip="dismissIntroSplash" />
@@ -37,13 +44,30 @@ import { SetupScreen } from './components/index.js';
 import GameBoard from './ui/GameBoard.vue';
 import IntroSplash from './ui/IntroSplash.vue';
 import AccountPage from './views/AccountPage.vue';
+import ResetPasswordPage from './views/ResetPasswordPage.vue';
 import { useAuth } from './composables/useAuth.js';
 import { useStorage } from './composables/useStorage.js';
+import { supabase } from './lib/supabase.js';
 
 const { initSession } = useAuth();
 const { loadGame } = useStorage();
 
-onMounted(() => {
+onMounted(async () => {
+  // Vérifier si on est sur la page de reset password
+  if (window.location.pathname.includes('/reset-password')) {
+    // Attendre que Supabase traite le token dans l'URL
+    if (supabase) {
+      const { data: { session } } = await supabase.auth.getSession();
+      if (session) {
+        gameScreen.value = 'reset-password';
+        return;
+      }
+    }
+    // Si pas de session valide, afficher quand même la page (elle gérera l'erreur)
+    gameScreen.value = 'reset-password';
+    return;
+  }
+
   initSession();
 });
 
@@ -120,6 +144,21 @@ function backToSetup() {
 function goToAccount() {
   accountReturnTarget.value = gameScreen.value === 'playing' ? 'game' : 'setup';
   gameScreen.value = 'account';
+}
+
+function handleResetComplete() {
+  // Nettoyer l'URL après le reset
+  if (window.history.replaceState) {
+    window.history.replaceState({}, document.title, '/app/');
+  }
+  gameScreen.value = 'setup';
+}
+
+function handleAccountDeleted() {
+  // Retourner à l'écran de setup après suppression du compte
+  gameScreen.value = 'setup';
+  gameConfig.value = null;
+  savedState.value = null;
 }
 
 onBeforeUnmount(() => {

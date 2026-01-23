@@ -6,8 +6,8 @@
     max-width="400px"
   >
     <div class="auth-modal">
-      <!-- Tabs -->
-      <div class="auth-tabs">
+      <!-- Tabs (hidden in forgot mode) -->
+      <div v-if="mode !== 'forgot'" class="auth-tabs">
         <button
           type="button"
           :class="['auth-tab', { 'auth-tab--active': mode === 'login' }]"
@@ -22,6 +22,11 @@
         >
           Inscription
         </button>
+      </div>
+
+      <!-- Forgot password header -->
+      <div v-else class="forgot-header">
+        <h3 class="forgot-title">Mot de passe oublié</h3>
       </div>
 
       <!-- Server error -->
@@ -74,7 +79,56 @@
           <span v-if="isSubmitting" class="btn-spinner"></span>
           <span v-else>Se connecter</span>
         </button>
+
+        <button
+          type="button"
+          class="forgot-password-link"
+          @click="switchMode('forgot')"
+        >
+          Mot de passe oublié ?
+        </button>
       </form>
+
+      <!-- Forgot password form -->
+      <div v-else-if="mode === 'forgot'" class="auth-form">
+        <p class="forgot-intro">
+          Entrez votre adresse email pour recevoir un lien de réinitialisation.
+        </p>
+
+        <form @submit.prevent="handleForgotPassword">
+          <div class="form-group">
+            <label for="forgot-email" class="form-label">Email</label>
+            <input
+              id="forgot-email"
+              v-model="forgotForm.email"
+              type="email"
+              class="form-input"
+              :class="{ 'form-input--error': forgotErrors.email }"
+              placeholder="votre@email.com"
+              autocomplete="email"
+              @blur="validateForgotField('email')"
+            />
+            <span v-if="forgotErrors.email" class="field-error">{{ forgotErrors.email }}</span>
+          </div>
+
+          <button
+            type="submit"
+            class="btn btn-primary btn-full"
+            :disabled="isSubmitting"
+          >
+            <span v-if="isSubmitting" class="btn-spinner"></span>
+            <span v-else>Envoyer le lien</span>
+          </button>
+        </form>
+
+        <button
+          type="button"
+          class="back-to-login-link"
+          @click="switchMode('login')"
+        >
+          ← Retour à la connexion
+        </button>
+      </div>
 
       <!-- Register form -->
       <form v-else class="auth-form" @submit.prevent="handleRegister">
@@ -172,7 +226,7 @@ const props = defineProps({
 
 const emit = defineEmits(['update:modelValue']);
 
-const { login, register, checkUsernameAvailable } = useAuth();
+const { login, register, checkUsernameAvailable, resetPasswordForEmail } = useAuth();
 
 const mode = ref('login');
 const isSubmitting = ref(false);
@@ -208,6 +262,15 @@ const registerErrors = reactive({
   confirmPassword: null
 });
 
+// Forgot password form
+const forgotForm = reactive({
+  email: ''
+});
+
+const forgotErrors = reactive({
+  email: null
+});
+
 // Email validation regex
 const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 // Username: 3-20 chars, alphanumeric + underscores
@@ -234,6 +297,7 @@ function switchMode(newMode) {
   // Reset errors when switching
   Object.keys(loginErrors).forEach(k => loginErrors[k] = null);
   Object.keys(registerErrors).forEach(k => registerErrors[k] = null);
+  Object.keys(forgotErrors).forEach(k => forgotErrors[k] = null);
 }
 
 function validateLoginField(field) {
@@ -299,6 +363,42 @@ function validateRegisterField(field) {
         registerErrors.confirmPassword = null;
       }
       break;
+  }
+}
+
+function validateForgotField(field) {
+  if (field === 'email') {
+    if (!forgotForm.email) {
+      forgotErrors.email = 'Email requis';
+    } else if (!emailRegex.test(forgotForm.email)) {
+      forgotErrors.email = 'Email invalide';
+    } else {
+      forgotErrors.email = null;
+    }
+  }
+}
+
+async function handleForgotPassword() {
+  validateForgotField('email');
+
+  if (forgotErrors.email) {
+    return;
+  }
+
+  isSubmitting.value = true;
+  serverError.value = null;
+  serverNotice.value = null;
+
+  const result = await resetPasswordForEmail(forgotForm.email);
+
+  isSubmitting.value = false;
+
+  if (result.success) {
+    // Message volontairement vague pour des raisons de sécurité
+    serverNotice.value = 'Si un compte existe avec cet email, vous recevrez un lien de réinitialisation.';
+    forgotForm.email = '';
+  } else {
+    serverError.value = result.error;
   }
 }
 
@@ -408,11 +508,14 @@ watch(() => props.modelValue, (isOpen) => {
     registerForm.username = '';
     registerForm.password = '';
     registerForm.confirmPassword = '';
+    forgotForm.email = '';
     Object.keys(loginErrors).forEach(k => loginErrors[k] = null);
     Object.keys(registerErrors).forEach(k => registerErrors[k] = null);
+    Object.keys(forgotErrors).forEach(k => forgotErrors[k] = null);
     serverError.value = null;
     serverNotice.value = null;
     usernameAvailable.value = null;
+    mode.value = 'login'; // Reset to login mode
   }
 });
 </script>
@@ -605,5 +708,60 @@ watch(() => props.modelValue, (isOpen) => {
   to {
     transform: rotate(360deg);
   }
+}
+
+/* Forgot password styles */
+.forgot-password-link {
+  background: none;
+  border: none;
+  padding: 0;
+  margin-top: var(--space-xs);
+  font-size: 13px;
+  color: var(--color-ink-muted);
+  cursor: pointer;
+  text-align: center;
+  transition: var(--transition-fast);
+}
+
+.forgot-password-link:hover {
+  color: var(--color-ink);
+  text-decoration: underline;
+}
+
+.forgot-intro {
+  font-size: 14px;
+  color: var(--color-ink-soft);
+  margin: 0;
+  line-height: 1.5;
+}
+
+.back-to-login-link {
+  background: none;
+  border: none;
+  padding: 0;
+  font-size: 13px;
+  color: var(--color-ink-muted);
+  cursor: pointer;
+  text-align: center;
+  transition: var(--transition-fast);
+}
+
+.back-to-login-link:hover {
+  color: var(--color-ink);
+}
+
+.forgot-header {
+  margin: calc(-1 * var(--space-lg));
+  margin-bottom: 0;
+  padding: var(--space-md) var(--space-lg);
+  border-bottom: 1px solid var(--color-line);
+}
+
+.forgot-title {
+  font-size: 16px;
+  font-weight: 600;
+  color: var(--color-ink);
+  margin: 0;
+  text-align: center;
 }
 </style>

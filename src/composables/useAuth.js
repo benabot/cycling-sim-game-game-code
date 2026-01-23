@@ -179,6 +179,106 @@ export function useAuth() {
     }
   }
 
+  // Envoi d'un email de réinitialisation de mot de passe
+  async function resetPasswordForEmail(email) {
+    if (!supabase) {
+      return { success: false, error: 'Supabase non configuré' }
+    }
+
+    try {
+      // Déterminer l'URL de redirection selon l'environnement
+      const redirectTo = import.meta.env.PROD
+        ? 'https://bordur.fr/app/reset-password'
+        : `${window.location.origin}/app/reset-password`
+
+      const { error: resetError } = await supabase.auth.resetPasswordForEmail(email, {
+        redirectTo
+      })
+
+      if (resetError) throw resetError
+
+      return { success: true, error: null }
+    } catch (err) {
+      console.error('Reset password error:', err)
+      return { success: false, error: 'Erreur lors de l\'envoi du lien' }
+    }
+  }
+
+  // Mise à jour du mot de passe (après clic sur le lien email)
+  async function updatePassword(newPassword) {
+    if (!supabase) {
+      return { success: false, error: 'Supabase non configuré' }
+    }
+
+    try {
+      const { error: updateError } = await supabase.auth.updateUser({
+        password: newPassword
+      })
+
+      if (updateError) throw updateError
+
+      return { success: true, error: null }
+    } catch (err) {
+      console.error('Update password error:', err)
+      const message = err?.message || ''
+      if (message.includes('New password should be different')) {
+        return { success: false, error: 'Le nouveau mot de passe doit être différent de l\'ancien' }
+      }
+      return { success: false, error: 'Erreur lors de la mise à jour du mot de passe' }
+    }
+  }
+
+  // Suppression complète du compte utilisateur via Edge Function
+  async function deleteAccount() {
+    if (!supabase || !user.value) {
+      return { success: false, error: 'Utilisateur non connecté' }
+    }
+
+    try {
+      // Récupérer le token d'accès
+      const { data: { session } } = await supabase.auth.getSession()
+      if (!session?.access_token) {
+        return { success: false, error: 'Session expirée' }
+      }
+
+      // Construire l'URL de l'edge function
+      const supabaseUrl = import.meta.env.VITE_SUPABASE_URL
+      const anonKey = import.meta.env.VITE_SUPABASE_ANON_KEY
+      const functionUrl = `${supabaseUrl}/functions/v1/delete-account`
+
+      // Appeler l'Edge Function via fetch direct (pour passer apikey + Authorization)
+      const response = await fetch(functionUrl, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${session.access_token}`,
+          'apikey': anonKey
+        }
+      })
+
+      const data = await response.json()
+      const error = !response.ok ? { message: data.error || 'Erreur serveur' } : null
+
+      if (error) {
+        console.error('Delete account error:', error)
+        return { success: false, error: 'Erreur lors de la suppression du compte' }
+      }
+
+      if (!data?.success) {
+        return { success: false, error: data?.error || 'Erreur lors de la suppression' }
+      }
+
+      // Nettoyer l'état local
+      user.value = null
+      profile.value = null
+
+      return { success: true, error: null }
+    } catch (err) {
+      console.error('Delete account error:', err)
+      return { success: false, error: 'Erreur lors de la suppression du compte' }
+    }
+  }
+
   return {
     // State (readonly)
     user: readonly(user),
@@ -196,6 +296,9 @@ export function useAuth() {
     login,
     logout,
     checkUsernameAvailable,
-    fetchProfile
+    fetchProfile,
+    resetPasswordForEmail,
+    updatePassword,
+    deleteAccount
   }
 }

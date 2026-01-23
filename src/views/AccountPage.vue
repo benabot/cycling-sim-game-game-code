@@ -138,9 +138,30 @@
           </div>
         </div>
       </section>
+
+      <!-- Section Zone de danger -->
+      <section class="account-section danger-section">
+        <h2 class="section-title section-title--danger">
+          <UIIcon type="warning" size="md" />
+          Zone de danger
+        </h2>
+        <div class="danger-content">
+          <p class="danger-text">
+            La suppression de votre compte est définitive. Toutes vos données seront effacées.
+          </p>
+          <button
+            type="button"
+            class="delete-account-link"
+            @click="showDeleteAccountModal = true"
+          >
+            <UIIcon type="close" size="xs" />
+            Supprimer mon compte
+          </button>
+        </div>
+      </section>
     </main>
 
-    <!-- Confirmation de suppression -->
+    <!-- Confirmation de suppression de partie -->
     <Teleport to="body">
       <Transition name="modal">
         <div v-if="gameToDelete" class="modal-overlay" @click.self="cancelDelete">
@@ -172,6 +193,61 @@
         </div>
       </Transition>
     </Teleport>
+
+    <!-- Modal de suppression de compte -->
+    <Teleport to="body">
+      <Transition name="modal">
+        <div v-if="showDeleteAccountModal" class="modal-overlay" @click.self="cancelDeleteAccount">
+          <div class="modal-dialog modal-dialog--danger">
+            <h3 class="modal-title modal-title--danger">
+              <UIIcon type="warning" size="md" />
+              Supprimer votre compte ?
+            </h3>
+            <p class="modal-text">
+              Cette action est <strong>irréversible</strong>. Toutes vos données (parties sauvegardées, préférences) seront définitivement supprimées.
+            </p>
+
+            <div v-if="deleteAccountError" class="modal-error">
+              {{ deleteAccountError }}
+            </div>
+
+            <div class="form-group">
+              <label for="delete-confirm" class="form-label">
+                Pour confirmer, tapez <strong>SUPPRIMER</strong>
+              </label>
+              <input
+                id="delete-confirm"
+                v-model="deleteConfirmText"
+                type="text"
+                class="form-input"
+                placeholder="SUPPRIMER"
+                autocomplete="off"
+              />
+            </div>
+
+            <div class="modal-actions">
+              <button type="button" class="btn btn-secondary" @click="cancelDeleteAccount">
+                Annuler
+              </button>
+              <button
+                type="button"
+                class="btn btn-danger"
+                :disabled="deleteConfirmText !== 'SUPPRIMER' || isDeletingAccount"
+                @click="executeDeleteAccount"
+              >
+                <template v-if="isDeletingAccount">
+                  <span class="spinner-small"></span>
+                  Suppression...
+                </template>
+                <template v-else>
+                  Supprimer définitivement
+                </template>
+              </button>
+            </div>
+          </div>
+        </div>
+      </Transition>
+    </Teleport>
   </div>
 </template>
 
@@ -190,9 +266,9 @@ const props = defineProps({
   }
 });
 
-const emit = defineEmits(['back', 'load']);
+const emit = defineEmits(['back', 'load', 'account-deleted']);
 
-const { user, profile } = useAuth();
+const { user, profile, deleteAccount } = useAuth();
 const { games, isLoading, fetchGames, deleteGame } = useStorage();
 
 const gameToDelete = ref(null);
@@ -200,6 +276,12 @@ const deletingId = ref(null);
 const finishedGames = ref([]);
 const statsLoading = ref(false);
 const statsError = ref('');
+
+// Delete account state
+const showDeleteAccountModal = ref(false);
+const deleteConfirmText = ref('');
+const isDeletingAccount = ref(false);
+const deleteAccountError = ref('');
 
 function formatDate(date) {
   if (!date) return '-';
@@ -383,6 +465,31 @@ async function executeDelete() {
 
   if (result.success) {
     gameToDelete.value = null;
+  }
+}
+
+// Delete account functions
+function cancelDeleteAccount() {
+  showDeleteAccountModal.value = false;
+  deleteConfirmText.value = '';
+  deleteAccountError.value = '';
+}
+
+async function executeDeleteAccount() {
+  if (deleteConfirmText.value !== 'SUPPRIMER') return;
+
+  isDeletingAccount.value = true;
+  deleteAccountError.value = '';
+
+  const result = await deleteAccount();
+
+  isDeletingAccount.value = false;
+
+  if (result.success) {
+    showDeleteAccountModal.value = false;
+    emit('account-deleted');
+  } else {
+    deleteAccountError.value = result.error || 'Erreur lors de la suppression';
   }
 }
 
@@ -859,6 +966,112 @@ onMounted(async () => {
 
 @keyframes spin {
   to { transform: rotate(360deg); }
+}
+
+/* Danger section */
+.danger-section {
+  margin-top: var(--space-xl);
+  padding-top: var(--space-xl);
+  border-top: 1px solid var(--color-line);
+}
+
+.section-title--danger {
+  color: var(--color-ink-muted);
+}
+
+.section-title--danger :deep(svg) {
+  color: var(--color-danger, #dc2626);
+  opacity: 0.6;
+}
+
+.danger-content {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-md);
+}
+
+.danger-text {
+  font-size: 13px;
+  color: var(--color-ink-muted);
+  margin: 0;
+  line-height: 1.5;
+}
+
+.delete-account-link {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-xs);
+  background: none;
+  border: none;
+  padding: 0;
+  font-size: 13px;
+  color: var(--color-ink-muted);
+  cursor: pointer;
+  transition: var(--transition-fast);
+  align-self: flex-start;
+}
+
+.delete-account-link:hover {
+  color: var(--color-danger, #dc2626);
+}
+
+.delete-account-link :deep(svg) {
+  width: 12px;
+  height: 12px;
+}
+
+/* Delete account modal */
+.modal-dialog--danger {
+  border-top: 3px solid var(--color-danger, #dc2626);
+}
+
+.modal-title--danger {
+  display: flex;
+  align-items: center;
+  gap: var(--space-sm);
+}
+
+.modal-title--danger :deep(svg) {
+  color: var(--color-danger, #dc2626);
+}
+
+.modal-error {
+  padding: var(--space-sm) var(--space-md);
+  background: rgba(220, 38, 38, 0.08);
+  border: 1px solid var(--color-danger, #dc2626);
+  border-radius: var(--radius-sm);
+  color: var(--color-danger, #dc2626);
+  font-size: 13px;
+  margin-bottom: var(--space-md);
+}
+
+.form-group {
+  margin-bottom: var(--space-lg);
+}
+
+.form-label {
+  display: block;
+  font-size: 14px;
+  color: var(--color-ink-soft);
+  margin-bottom: var(--space-xs);
+}
+
+.form-input {
+  width: 100%;
+  padding: 10px 12px;
+  font-size: 14px;
+  font-family: var(--font-body, inherit);
+  border: 1px solid var(--color-line);
+  border-radius: var(--radius-sm);
+  background: var(--color-surface);
+  color: var(--color-ink);
+  box-sizing: border-box;
+}
+
+.form-input:focus {
+  outline: none;
+  border-color: var(--color-accent);
+  box-shadow: 0 0 0 3px var(--color-accent-light);
 }
 
 /* Mobile */
