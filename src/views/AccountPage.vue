@@ -388,8 +388,8 @@ async function shareGame() {
   if (!canShare.value) return;
   try {
     await navigator.share({
-      title: 'BORDUR - Jeu de course cycliste',
-      text: '🚴 Découvre BORDUR, un jeu de simulation de course cycliste !',
+      title: 'BORDUR - Jeu de plateau – simulation cycliste tactique',
+      text: '🚴 Découvre BORDUR, un jeu de plateau – simulation cycliste tactique !',
       url: inviteLink.value
     });
   } catch (err) {
