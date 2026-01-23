@@ -26,9 +26,14 @@ import { EnergyConfig } from '../core/energy.js';
 import { isRefuelZone, TerrainType } from '../core/terrain.js';
 import { RaceWeather, getWeatherLogLine } from '../core/race_weather.js';
 import { computeRiskCue } from '../core/risk_cues.js';
-import { autoSave, clearAutoSave } from '../core/save-manager.js';
+import { autoSave, clearAutoSave, saveLocalGame, serializeSave } from '../core/save-manager.js';
+import { useCloudSave } from './useCloudSave.js';
+import { useAuth } from './useAuth.js';
 
 export function useGameEngine() {
+  // Cloud save integration
+  const { saveToCloud, canUseCloud } = useCloudSave();
+  const { isAuthenticated } = useAuth();
   // State
   const gameState = ref(null);
   const gameLog = ref([]);
@@ -598,7 +603,22 @@ export function useGameEngine() {
       if (winner) {
         log(`🏆 ${TeamConfig[winner.team].name} remporte la course !`);
       }
-      // Clear auto-save when game finishes
+      // Save finished game for statistics
+      const gameName = newState.stageRace
+        ? `Étape ${newState.stageRace.currentStageIndex + 1} - Terminée`
+        : 'Partie terminée';
+
+      // Save to cloud if user is authenticated (priority)
+      if (isAuthenticated.value && canUseCloud.value) {
+        saveToCloud(gameName, newState).catch(err => {
+          console.warn('Cloud save failed, falling back to local:', err);
+          saveLocalGame(gameName, newState);
+        });
+      } else {
+        // Fallback to local storage
+        saveLocalGame(gameName, newState);
+      }
+      // Clear auto-save (no need to keep it for finished games)
       clearAutoSave();
     } else {
       // Auto-save at the start of each new turn

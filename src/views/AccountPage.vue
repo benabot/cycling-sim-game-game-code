@@ -42,7 +42,7 @@
           <UIIcon type="trophy" size="md" />
           <h2 class="block-title">Palmarès</h2>
         </header>
-        <div class="stats-grid">
+        <div class="stats-grid stats-grid--3">
           <div class="stat-card">
             <UIIcon type="laurel" size="md" class="stat-icon" />
             <span class="stat-value">{{ finishedGames.length }}</span>
@@ -57,11 +57,6 @@
             <UIIcon type="star" size="md" class="stat-icon" />
             <span class="stat-value">{{ podiums }}</span>
             <span class="stat-label">Podiums</span>
-          </div>
-          <div class="stat-card">
-            <UIIcon type="history" size="md" class="stat-icon" />
-            <span class="stat-value">{{ totalTurns }}</span>
-            <span class="stat-label">Tours</span>
           </div>
         </div>
       </section>
@@ -335,14 +330,12 @@ const victories = computed(() => {
 });
 
 const podiums = computed(() => {
-  return finishedGames.value.filter(game => {
+  // Compter le nombre total de coureurs de team_a dans le top 3 de chaque course
+  return finishedGames.value.reduce((total, game) => {
     const top3 = game.rankings?.slice(0, 3) || [];
-    return top3.some(r => r?.team === 'team_a' || r?.teamId === 'team_a');
-  }).length;
-});
-
-const totalTurns = computed(() => {
-  return finishedGames.value.reduce((sum, game) => sum + (game.currentTurn || 0), 0);
+    const teamAPodiums = top3.filter(r => r?.team === 'team_a' || r?.teamId === 'team_a').length;
+    return total + teamAPodiums;
+  }, 0);
 });
 
 function copyInviteLink() {
@@ -490,8 +483,15 @@ async function fetchFinishedGames() {
   let cloudError = null;
 
   try {
-    const localFinished = listLocalGames()
-      .filter(game => String(game.meta?.phase || '').toLowerCase() === 'finished')
+    const allLocalGames = listLocalGames();
+
+    const localFinished = allLocalGames
+      .filter(game => {
+        const metaPhase = String(game.meta?.phase || '').toLowerCase();
+        const statePhase = String(game.state?.phase || '').toLowerCase();
+        // Check both meta.phase AND state.phase for backwards compatibility
+        return metaPhase === 'finished' || statePhase === 'finished';
+      })
       .map(normalizeFinishedLocalGame);
     finished.push(...localFinished);
 
@@ -833,6 +833,10 @@ watch(authLoading, (isLoading, wasLoading) => {
   display: grid;
   grid-template-columns: repeat(4, 1fr);
   gap: var(--space-sm);
+}
+
+.stats-grid--3 {
+  grid-template-columns: repeat(3, 1fr);
 }
 
 .stat-card {
@@ -1320,9 +1324,9 @@ watch(authLoading, (isLoading, wasLoading) => {
     gap: var(--space-xs);
   }
 
-  /* Stats grid mobile - 2x2 */
-  .stats-grid {
-    grid-template-columns: repeat(2, 1fr);
+  /* Stats grid mobile - 3 colonnes restent */
+  .stats-grid--3 {
+    grid-template-columns: repeat(3, 1fr);
   }
 
   .stat-value {
