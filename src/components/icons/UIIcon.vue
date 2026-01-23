@@ -331,6 +331,36 @@
       <polygon points="5,3 19,12 5,21" />
     </g>
 
+    <!-- Link/Share -->
+    <g v-else-if="type === 'link'">
+      <path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71" />
+      <path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71" />
+    </g>
+
+    <!-- Copy/Clipboard -->
+    <g v-else-if="type === 'copy'">
+      <rect x="9" y="9" width="13" height="13" rx="2" ry="2" />
+      <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1" />
+    </g>
+
+    <!-- Medal -->
+    <g v-else-if="type === 'medal'">
+      <circle cx="12" cy="8" r="6" />
+      <path d="M15.477 12.89L17 22l-5-3-5 3 1.523-9.11" />
+    </g>
+
+    <!-- Chart/Stats -->
+    <g v-else-if="type === 'chart'">
+      <path d="M18 20V10M12 20V4M6 20v-6" />
+    </g>
+
+    <!-- Bike/Cycling -->
+    <g v-else-if="type === 'bike'">
+      <circle cx="5.5" cy="17.5" r="3.5" />
+      <circle cx="18.5" cy="17.5" r="3.5" />
+      <path d="M15 6a1 1 0 1 0 0-2 1 1 0 0 0 0 2zm-3 11.5V14l-3-3 4-3 2 3h3" />
+    </g>
+
     <!-- Fallback: question mark -->
     <g v-else>
       <circle cx="12" cy="12" r="10" />
@@ -354,7 +384,7 @@ const props = defineProps({
       'info', 'warning', 'team', 'star', 'crash', 'energy', 'book', 'target',
       'shield', 'balance', 'trophy', 'restart', 'discard', 'blocked', 'event',
       'cursor', 'tempo', 'calendar', 'laurel', 'cobbles', 'road', 'hill', 'mountain',
-      'save', 'upload', 'download', 'play'
+      'save', 'upload', 'download', 'play', 'link', 'copy', 'medal', 'chart', 'bike'
     ].includes(v)
   },
   size: {

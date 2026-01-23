@@ -1,163 +1,196 @@
 <template>
   <div class="account-page">
     <header class="account-header">
-      <button type="button" class="btn btn-ghost" @click="goBack">
+      <button type="button" class="btn btn-back" @click="goBack">
         <UIIcon type="chevron-left" size="sm" />
-        Retour
+        <span>Retour</span>
       </button>
-      <h1 class="account-title">Mon compte</h1>
+      <h1 class="account-title">
+        <UIIcon type="bike" size="lg" />
+        <span>Directeur Sportif</span>
+      </h1>
       <div class="header-spacer"></div>
     </header>
 
     <main class="account-content">
-      <!-- Section Profil -->
-      <section class="account-section">
-        <h2 class="section-title">
-          <UIIcon type="human" size="md" />
-          Profil
-        </h2>
-        <div class="profile-card">
-          <div class="profile-field">
-            <span class="profile-label">Nom d'utilisateur</span>
-            <span class="profile-value">{{ profile?.username || '-' }}</span>
+      <!-- DS Card - Profil -->
+      <section class="block block--profile">
+        <div class="profile-header">
+          <div class="profile-avatar">
+            <UIIcon type="human" size="xl" />
           </div>
-          <div class="profile-field">
-            <span class="profile-label">Email</span>
-            <span class="profile-value">{{ user?.email || '-' }}</span>
+          <div class="profile-info">
+            <h2 class="profile-name">{{ profile?.username || user?.user_metadata?.username || 'Directeur' }}</h2>
+            <span class="profile-badge">Directeur Sportif</span>
           </div>
-          <div class="profile-field">
-            <span class="profile-label">Membre depuis</span>
-            <span class="profile-value">{{ formatDate(profile?.created_at) }}</span>
+        </div>
+        <div class="profile-details">
+          <div class="detail-row">
+            <span class="detail-label">Email</span>
+            <span class="detail-value">{{ user?.email || '-' }}</span>
+          </div>
+          <div class="detail-row">
+            <span class="detail-label">Membre depuis</span>
+            <span class="detail-value">{{ formatDate(profile?.created_at) }}</span>
           </div>
         </div>
       </section>
 
-      <!-- Section Statistiques -->
-      <section class="account-section">
-        <h2 class="section-title">
+      <!-- Palmarès -->
+      <section class="block">
+        <header class="block-header">
           <UIIcon type="trophy" size="md" />
-          Statistiques
-        </h2>
-        <div class="stats-block">
-          <div class="stats-block__header">
-            <span class="stats-block__title">Parties terminées</span>
-            <span v-if="!statsLoading && !statsError" class="stats-block__count">
-              {{ finishedGames.length }}
-            </span>
+          <h2 class="block-title">Palmarès</h2>
+        </header>
+        <div class="stats-grid">
+          <div class="stat-card">
+            <UIIcon type="laurel" size="md" class="stat-icon" />
+            <span class="stat-value">{{ finishedGames.length }}</span>
+            <span class="stat-label">Courses</span>
           </div>
-
-          <div v-if="statsLoading" class="stats-state">
-            Chargement...
+          <div class="stat-card stat-card--gold">
+            <UIIcon type="medal" size="md" class="stat-icon" />
+            <span class="stat-value">{{ victories }}</span>
+            <span class="stat-label">Victoires</span>
           </div>
-          <div v-else-if="statsError" class="stats-state stats-state--error">
-            {{ statsError }}
+          <div class="stat-card stat-card--silver">
+            <UIIcon type="star" size="md" class="stat-icon" />
+            <span class="stat-value">{{ podiums }}</span>
+            <span class="stat-label">Podiums</span>
           </div>
-          <div v-else-if="finishedGames.length === 0" class="stats-state">
-            Aucune partie terminée pour le moment.
-          </div>
-          <div v-else class="stats-list">
-            <div v-for="game in finishedGames" :key="game.id" class="stats-card">
-              <div class="stats-card__top">
-                <span class="stats-card__title">{{ game.name }}</span>
-                <span class="stats-card__date">{{ formatDate(game.finishedAt) }}</span>
-              </div>
-              <div class="stats-card__meta">
-                <span class="stats-card__item">Parcours: {{ game.raceLabel }}</span>
-                <span class="stats-card__item">Classement: {{ formatRanking(game) }}</span>
-                <span class="stats-card__item">Tours: {{ game.currentTurn || '—' }}</span>
-              </div>
-            </div>
+          <div class="stat-card">
+            <UIIcon type="history" size="md" class="stat-icon" />
+            <span class="stat-value">{{ totalTurns }}</span>
+            <span class="stat-label">Tours</span>
           </div>
         </div>
       </section>
 
-      <!-- Section Mes parties -->
-      <section class="account-section">
-        <h2 class="section-title">
-          <UIIcon type="save" size="md" />
-          Mes parties sauvegardées
-        </h2>
+      <!-- Inviter un ami -->
+      <section class="block">
+        <header class="block-header">
+          <UIIcon type="link" size="md" />
+          <h2 class="block-title">Inviter un ami</h2>
+        </header>
+        <p class="block-text">
+          Partagez le jeu avec vos amis cyclistes.
+        </p>
+        <div class="invite-row">
+          <input
+            type="text"
+            :value="inviteLink"
+            readonly
+            class="invite-input"
+          />
+          <button
+            type="button"
+            class="btn btn-action"
+            @click="copyInviteLink"
+          >
+            <UIIcon :type="linkCopied ? 'check' : 'copy'" size="sm" />
+            <span>{{ linkCopied ? 'Copié' : 'Copier' }}</span>
+          </button>
+        </div>
+      </section>
 
-        <div v-if="isLoading" class="loading-state">
+      <!-- Historique -->
+      <section class="block">
+        <header class="block-header">
+          <UIIcon type="chart" size="md" />
+          <h2 class="block-title">Historique</h2>
+          <span v-if="finishedGames.length" class="block-count">{{ finishedGames.length }}</span>
+        </header>
+        <div v-if="statsLoading" class="block-empty">
           <span class="spinner"></span>
           Chargement...
         </div>
-
-        <div v-else-if="games.length === 0" class="empty-state">
-          <UIIcon type="save" size="xl" />
-          <p>Aucune partie sauvegardée</p>
+        <div v-else-if="statsError" class="block-empty block-empty--error">
+          {{ statsError }}
         </div>
+        <div v-else-if="finishedGames.length === 0" class="block-empty">
+          Aucune course terminée
+        </div>
+        <div v-else class="history-list">
+          <div v-for="game in finishedGames" :key="game.id" class="history-row">
+            <span class="history-rank" :class="getRankClass(game)">{{ getRankDisplay(game) }}</span>
+            <div class="history-info">
+              <span class="history-name">{{ game.name }}</span>
+              <span class="history-meta">{{ game.raceLabel }} · {{ game.currentTurn || '?' }}t</span>
+            </div>
+            <span class="history-date">{{ formatRelativeDate(game.finishedAt) }}</span>
+          </div>
+        </div>
+      </section>
 
+      <!-- Parties en cours -->
+      <section class="block">
+        <header class="block-header">
+          <UIIcon type="save" size="md" />
+          <h2 class="block-title">Parties en cours</h2>
+          <span v-if="games.length" class="block-count">{{ games.length }}</span>
+        </header>
+
+        <div v-if="isLoading" class="block-empty">
+          <span class="spinner"></span>
+          Chargement...
+        </div>
+        <div v-else-if="games.length === 0" class="block-empty">
+          Aucune partie sauvegardée
+        </div>
         <div v-else class="games-list">
-          <div
-            v-for="game in games"
-            :key="game.id"
-            class="game-card"
-          >
-            <div class="game-header">
-              <div class="game-info">
-                <span class="game-name">{{ game.name }}</span>
-                <span class="game-badge" :class="'game-badge--' + game.source">
-                  {{ game.source === 'cloud' ? 'Cloud' : 'Local' }}
-                </span>
-              </div>
-              <span class="game-date">{{ formatRelativeDate(game.updatedAt) }}</span>
-            </div>
-
-            <div class="game-details">
-              <span class="game-detail">
-                <UIIcon :type="getRaceIcon(game)" size="xs" />
-                {{ getRaceName(game) }}
-              </span>
-              <span class="game-detail">
-                Tour {{ game.currentTurn }}
-              </span>
-              <span v-if="game.leader" class="game-detail">
-                Leader: {{ game.leader.name }}
+          <div v-for="game in games" :key="game.id" class="game-row">
+            <div class="game-main">
+              <span class="game-name">{{ game.name }}</span>
+              <span class="game-tag" :class="'game-tag--' + game.source">
+                {{ game.source === 'cloud' ? 'Cloud' : 'Local' }}
               </span>
             </div>
-
+            <div class="game-meta">
+              <UIIcon :type="getRaceIcon(game)" size="xs" />
+              <span>{{ getRaceName(game) }}</span>
+              <span class="game-sep">·</span>
+              <span>Tour {{ game.currentTurn }}</span>
+            </div>
             <div class="game-actions">
               <button
                 type="button"
-                class="btn btn-danger-ghost btn-sm"
+                class="btn btn-icon btn-icon--danger"
                 @click="confirmDelete(game)"
                 :disabled="deletingId === game.id"
+                title="Supprimer"
               >
                 <UIIcon type="close" size="sm" />
               </button>
               <button
                 type="button"
-                class="btn btn-primary btn-sm"
+                class="btn btn-action"
                 @click="handleLoad(game)"
               >
                 <UIIcon type="play" size="sm" />
-                Charger
+                <span>Charger</span>
               </button>
             </div>
           </div>
         </div>
       </section>
 
-      <!-- Section Zone de danger -->
-      <section class="account-section danger-section">
-        <h2 class="section-title section-title--danger">
+      <!-- Zone de danger -->
+      <section class="block block--danger">
+        <header class="block-header">
           <UIIcon type="warning" size="md" />
-          Zone de danger
-        </h2>
-        <div class="danger-content">
-          <p class="danger-text">
-            La suppression de votre compte est définitive. Toutes vos données seront effacées.
-          </p>
-          <button
-            type="button"
-            class="delete-account-link"
-            @click="showDeleteAccountModal = true"
-          >
-            <UIIcon type="close" size="xs" />
-            Supprimer mon compte
-          </button>
-        </div>
+          <h2 class="block-title">Zone de danger</h2>
+        </header>
+        <p class="block-text">
+          La suppression de votre compte est irréversible.
+        </p>
+        <button
+          type="button"
+          class="btn btn-danger"
+          @click="showDeleteAccountModal = true"
+        >
+          <UIIcon type="close" size="sm" />
+          <span>Supprimer mon compte</span>
+        </button>
       </section>
     </main>
 
@@ -252,7 +285,7 @@
 </template>
 
 <script setup>
-import { ref, onMounted } from 'vue';
+import { ref, computed, onMounted, watch } from 'vue';
 import { supabase } from '../lib/supabase.js';
 import { listLocalGames } from '../core/save-manager.js';
 import { useAuth } from '../composables/useAuth.js';
@@ -268,7 +301,7 @@ const props = defineProps({
 
 const emit = defineEmits(['back', 'load', 'account-deleted']);
 
-const { user, profile, deleteAccount } = useAuth();
+const { user, profile, loading: authLoading, deleteAccount } = useAuth();
 const { games, isLoading, fetchGames, deleteGame } = useStorage();
 
 const gameToDelete = ref(null);
@@ -282,6 +315,67 @@ const showDeleteAccountModal = ref(false);
 const deleteConfirmText = ref('');
 const isDeletingAccount = ref(false);
 const deleteAccountError = ref('');
+
+// Invite link
+const linkCopied = ref(false);
+const inviteLinkInput = ref(null);
+const inviteLink = computed(() => {
+  // Lien vers la page d'accueil de l'app
+  const baseUrl = window.location.origin;
+  return `${baseUrl}/app/`;
+});
+
+// Statistiques avancées
+const victories = computed(() => {
+  return finishedGames.value.filter(game => {
+    const firstRider = game.rankings?.[0];
+    // Considérer comme victoire si le premier est de l'équipe du joueur (team_a par défaut)
+    return firstRider?.team === 'team_a' || firstRider?.teamId === 'team_a';
+  }).length;
+});
+
+const podiums = computed(() => {
+  return finishedGames.value.filter(game => {
+    const top3 = game.rankings?.slice(0, 3) || [];
+    return top3.some(r => r?.team === 'team_a' || r?.teamId === 'team_a');
+  }).length;
+});
+
+const totalTurns = computed(() => {
+  return finishedGames.value.reduce((sum, game) => sum + (game.currentTurn || 0), 0);
+});
+
+function copyInviteLink() {
+  navigator.clipboard.writeText(inviteLink.value).then(() => {
+    linkCopied.value = true;
+    setTimeout(() => {
+      linkCopied.value = false;
+    }, 2000);
+  });
+}
+
+function getRankClass(game) {
+  const firstRider = game.rankings?.[0];
+  if (firstRider?.team === 'team_a' || firstRider?.teamId === 'team_a') {
+    return 'history-card__rank--gold';
+  }
+  const top3 = game.rankings?.slice(0, 3) || [];
+  if (top3.some(r => r?.team === 'team_a' || r?.teamId === 'team_a')) {
+    return 'history-card__rank--podium';
+  }
+  return '';
+}
+
+function getRankDisplay(game) {
+  const rankings = game.rankings || [];
+  for (let i = 0; i < rankings.length; i++) {
+    const r = rankings[i];
+    if (r?.team === 'team_a' || r?.teamId === 'team_a') {
+      return i === 0 ? '1er' : i === 1 ? '2e' : i === 2 ? '3e' : `${i + 1}e`;
+    }
+  }
+  return '—';
+}
 
 function formatDate(date) {
   if (!date) return '-';
@@ -388,12 +482,6 @@ function normalizeFinishedCloudGame(cloudGame) {
   };
 }
 
-function formatRanking(game) {
-  const topRider = Array.isArray(game.rankings) ? game.rankings[0] : null;
-  if (topRider?.name) return `1er: ${topRider.name}`;
-  return '—';
-}
-
 async function fetchFinishedGames() {
   statsLoading.value = true;
   statsError.value = '';
@@ -493,16 +581,34 @@ async function executeDeleteAccount() {
   }
 }
 
-onMounted(async () => {
+// Attendre que l'auth soit prête avant de charger les données
+async function loadData() {
   await fetchGames();
   fetchFinishedGames();
+}
+
+onMounted(() => {
+  // Si l'auth est déjà chargée, charger les données immédiatement
+  if (!authLoading.value) {
+    loadData();
+  }
+});
+
+// Si l'auth n'était pas prête au mount, attendre qu'elle le soit
+watch(authLoading, (isLoading, wasLoading) => {
+  if (wasLoading && !isLoading) {
+    loadData();
+  }
 });
 </script>
 
 <style scoped>
+/* ========================================
+   Account Page - Dark Block Design
+   ======================================== */
 .account-page {
   min-height: 100vh;
-  background: var(--color-canvas);
+  background: #1a1d21;
 }
 
 .account-header {
@@ -510,298 +616,452 @@ onMounted(async () => {
   align-items: center;
   justify-content: space-between;
   padding: var(--space-md) var(--space-lg);
-  background: var(--color-paper);
-  border-bottom: 1px solid var(--color-line);
+  background: #22262b;
+  border-bottom: 1px solid #2d3238;
   position: sticky;
   top: 0;
   z-index: var(--z-sticky, 200);
 }
 
 .account-title {
+  display: flex;
+  align-items: center;
+  gap: var(--space-sm);
   font-family: var(--font-display, inherit);
-  font-size: 18px;
+  font-size: 15px;
   font-weight: 600;
-  color: var(--color-ink);
+  color: #e8e9eb;
   margin: 0;
+}
+
+.account-title :deep(svg) {
+  color: #8b9199;
 }
 
 .header-spacer {
   width: 80px;
 }
 
+.btn-back {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 8px 12px;
+  background: transparent;
+  border: 1px solid #3d444d;
+  border-radius: 6px;
+  color: #9ca3af;
+  font-size: 13px;
+  font-family: inherit;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.btn-back:hover {
+  background: #2d3238;
+  color: #e8e9eb;
+  border-color: #4d545e;
+}
+
+.btn-back :deep(svg) {
+  width: 14px;
+  height: 14px;
+}
+
+/* ========================================
+   Content Area
+   ======================================== */
 .account-content {
-  max-width: 640px;
+  max-width: 560px;
   width: 100%;
   margin: 0 auto;
   padding: var(--space-lg);
   display: flex;
   flex-direction: column;
-  gap: var(--space-xl);
+  gap: var(--space-md);
   box-sizing: border-box;
 }
 
-/* Sections */
-.account-section {
+/* ========================================
+   Blocks - Dark card style
+   ======================================== */
+.block {
+  background: #22262b;
+  border: 1px solid #2d3238;
+  border-radius: 10px;
+  padding: var(--space-lg);
   display: flex;
   flex-direction: column;
   gap: var(--space-md);
-  min-width: 0;
 }
 
-.section-title {
+.block--profile {
+  border-left: 3px solid #d4a21a;
+}
+
+.block--danger {
+  border-color: #5c2626;
+  background: #251c1c;
+}
+
+.block-header {
   display: flex;
   align-items: center;
   gap: var(--space-sm);
-  font-size: 16px;
-  font-weight: 600;
-  color: var(--color-ink);
-  margin: 0;
 }
 
-.section-title :deep(svg) {
-  color: var(--color-ink-muted);
+.block-header :deep(svg) {
+  color: #6b7280;
+  width: 18px;
+  height: 18px;
 }
 
-/* Profile card */
-.profile-card {
-  background: var(--color-paper);
-  border: 1px solid var(--color-line);
-  border-radius: var(--radius-md);
-  padding: var(--space-md);
-  display: flex;
-  flex-direction: column;
-  gap: var(--space-sm);
-  min-width: 0;
-}
-
-.profile-field {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  padding: var(--space-xs) 0;
-  gap: var(--space-sm);
-  min-width: 0;
-}
-
-.profile-label {
+.block-title {
   font-size: 13px;
-  color: var(--color-ink-muted);
-}
-
-.profile-value {
-  font-size: 14px;
-  font-weight: 500;
-  color: var(--color-ink);
-  max-width: 60%;
-  overflow-wrap: anywhere;
-  text-align: right;
-}
-
-/* Stats block */
-.stats-block {
-  display: flex;
-  flex-direction: column;
-  gap: var(--space-md);
-  min-width: 0;
-}
-
-.stats-block__header {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: var(--space-md);
-}
-
-.stats-block__title {
-  font-size: 11px;
+  font-weight: 600;
+  color: #9ca3af;
   text-transform: uppercase;
-  letter-spacing: 0.18em;
-  color: var(--color-ink-muted);
-  font-weight: 600;
-}
-
-.stats-block__count {
-  font-size: 12px;
-  color: var(--color-ink-soft);
-}
-
-.stats-state {
-  font-size: 14px;
-  color: var(--color-ink-muted);
-  padding: var(--space-sm) 0;
-}
-
-.stats-state--error {
-  color: var(--color-danger, #dc2626);
-}
-
-.stats-list {
-  display: flex;
-  flex-direction: column;
-  gap: var(--space-sm);
-}
-
-.stats-card {
-  background: var(--color-paper);
-  border: 1px solid var(--color-line);
-  border-radius: var(--radius-md);
-  padding: var(--space-md);
-  display: flex;
-  flex-direction: column;
-  gap: var(--space-xs);
-  min-width: 0;
-}
-
-.stats-card__top {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: var(--space-md);
-  min-width: 0;
-}
-
-.stats-card__title {
-  font-size: 14px;
-  font-weight: 600;
-  color: var(--color-ink);
-  min-width: 0;
-  max-width: 100%;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-}
-
-.stats-card__date {
-  font-size: 12px;
-  color: var(--color-ink-muted);
-  white-space: nowrap;
-}
-
-.stats-card__meta {
-  display: flex;
-  flex-wrap: wrap;
-  gap: var(--space-xs) var(--space-md);
-  font-size: 12px;
-  color: var(--color-ink-soft);
-  min-width: 0;
-}
-
-.stats-card__item {
-  display: inline-flex;
-  align-items: center;
-  gap: 4px;
-  max-width: 100%;
-  overflow-wrap: anywhere;
-}
-
-/* Loading & empty states */
-.loading-state,
-.empty-state {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  gap: var(--space-md);
-  padding: var(--space-xl);
-  color: var(--color-ink-muted);
-  font-size: 14px;
-}
-
-.empty-state :deep(svg) {
-  opacity: 0.3;
-}
-
-/* Games list */
-.games-list {
-  display: flex;
-  flex-direction: column;
-  gap: var(--space-sm);
-  min-width: 0;
-}
-
-.game-card {
-  background: var(--color-paper);
-  border: 1px solid var(--color-line);
-  border-radius: var(--radius-md);
-  padding: var(--space-md);
-  display: flex;
-  flex-direction: column;
-  gap: var(--space-sm);
-  transition: var(--transition-fast);
-  min-width: 0;
-}
-
-.game-card:hover {
-  border-color: var(--color-line-strong);
-}
-
-.game-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: flex-start;
-  gap: var(--space-sm);
-  min-width: 0;
-}
-
-.game-info {
-  display: flex;
-  align-items: center;
-  gap: var(--space-sm);
-  min-width: 0;
+  letter-spacing: 0.05em;
+  margin: 0;
   flex: 1;
 }
 
-.game-name {
-  font-size: 14px;
-  font-weight: 600;
-  color: var(--color-ink);
-  min-width: 0;
-  max-width: 100%;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
+.block-count {
+  font-size: 12px;
+  color: #6b7280;
+  background: #2d3238;
+  padding: 2px 8px;
+  border-radius: 10px;
 }
 
-.game-badge {
-  font-size: 10px;
+.block-text {
+  font-size: 13px;
+  color: #6b7280;
+  margin: 0;
+  line-height: 1.5;
+}
+
+.block-empty {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-sm);
+  padding: var(--space-lg);
+  color: #4b5563;
+  font-size: 13px;
+}
+
+.block-empty--error {
+  color: #ef4444;
+}
+
+/* ========================================
+   Profile Block
+   ======================================== */
+.profile-header {
+  display: flex;
+  align-items: center;
+  gap: var(--space-md);
+}
+
+.profile-avatar {
+  width: 48px;
+  height: 48px;
+  background: #2d3238;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.profile-avatar :deep(svg) {
+  color: #6b7280;
+  width: 24px;
+  height: 24px;
+}
+
+.profile-info {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.profile-name {
+  font-size: 16px;
   font-weight: 600;
+  color: #e8e9eb;
+  margin: 0;
+}
+
+.profile-badge {
+  font-size: 11px;
   text-transform: uppercase;
-  padding: 2px 6px;
-  border-radius: var(--radius-sm);
+  letter-spacing: 0.08em;
+  color: #d4a21a;
+  font-weight: 500;
 }
 
-.game-badge--cloud {
-  background: rgba(59, 130, 246, 0.1);
-  color: #3b82f6;
+.profile-details {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-xs);
+  padding-top: var(--space-sm);
+  border-top: 1px solid #2d3238;
 }
 
-.game-badge--local {
-  background: rgba(107, 114, 128, 0.1);
+.detail-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 6px 0;
+}
+
+.detail-label {
+  font-size: 12px;
   color: #6b7280;
 }
 
-.game-date {
-  font-size: 12px;
-  color: var(--color-ink-muted);
+.detail-value {
+  font-size: 13px;
+  color: #9ca3af;
 }
 
-.game-details {
+/* ========================================
+   Stats Grid
+   ======================================== */
+.stats-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: var(--space-sm);
+}
+
+.stat-card {
+  background: #2d3238;
+  border-radius: 8px;
+  padding: var(--space-md) var(--space-sm);
   display: flex;
-  flex-wrap: wrap;
-  gap: var(--space-md);
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+  text-align: center;
+}
+
+.stat-card--gold {
+  background: linear-gradient(145deg, #3d3520 0%, #2d2818 100%);
+  border: 1px solid #5c4a1a;
+}
+
+.stat-card--gold .stat-value {
+  color: #d4a21a;
+}
+
+.stat-card--gold .stat-icon {
+  color: #d4a21a;
+}
+
+.stat-card--silver {
+  background: linear-gradient(145deg, #32363d 0%, #282c32 100%);
+  border: 1px solid #4d545e;
+}
+
+.stat-card--silver .stat-value {
+  color: #9ca3af;
+}
+
+.stat-icon {
+  color: #4b5563;
+}
+
+.stat-value {
+  font-size: 22px;
+  font-weight: 700;
+  color: #e8e9eb;
+  line-height: 1;
+}
+
+.stat-label {
+  font-size: 10px;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: #6b7280;
+  font-weight: 500;
+}
+
+/* ========================================
+   Invite Row
+   ======================================== */
+.invite-row {
+  display: flex;
+  gap: var(--space-sm);
+}
+
+.invite-input {
+  flex: 1;
+  padding: 10px 12px;
   font-size: 12px;
-  color: var(--color-ink-soft);
+  font-family: var(--font-mono, monospace);
+  border: 1px solid #3d444d;
+  border-radius: 6px;
+  background: #1a1d21;
+  color: #6b7280;
   min-width: 0;
 }
 
-.game-detail {
-  display: flex;
-  align-items: center;
-  gap: 4px;
+.invite-input:focus {
+  outline: none;
+  border-color: #4d545e;
 }
 
-.game-detail :deep(svg) {
-  color: var(--color-ink-muted);
+/* ========================================
+   History List
+   ======================================== */
+.history-list {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.history-row {
+  display: flex;
+  align-items: center;
+  gap: var(--space-md);
+  padding: 10px 12px;
+  background: #2d3238;
+  border-radius: 6px;
+  transition: background 0.15s ease;
+}
+
+.history-row:hover {
+  background: #353a42;
+}
+
+.history-rank {
+  width: 32px;
+  height: 24px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 11px;
+  font-weight: 600;
+  color: #6b7280;
+  background: #1a1d21;
+  border-radius: 4px;
+  flex-shrink: 0;
+}
+
+.history-rank.history-card__rank--gold {
+  background: #3d3520;
+  color: #d4a21a;
+}
+
+.history-rank.history-card__rank--podium {
+  background: #2d3238;
+  color: #9ca3af;
+}
+
+.history-info {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.history-name {
+  font-size: 13px;
+  font-weight: 500;
+  color: #e8e9eb;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.history-meta {
+  font-size: 11px;
+  color: #6b7280;
+}
+
+.history-date {
+  font-size: 11px;
+  color: #4b5563;
+  white-space: nowrap;
+}
+
+/* ========================================
+   Games List
+   ======================================== */
+.games-list {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.game-row {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-sm);
+  padding: 12px;
+  background: #2d3238;
+  border-radius: 6px;
+  transition: background 0.15s ease;
+}
+
+.game-row:hover {
+  background: #353a42;
+}
+
+.game-main {
+  display: flex;
+  align-items: center;
+  gap: var(--space-sm);
+}
+
+.game-name {
+  font-size: 13px;
+  font-weight: 500;
+  color: #e8e9eb;
+  flex: 1;
+  min-width: 0;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.game-tag {
+  font-size: 9px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  padding: 3px 6px;
+  border-radius: 4px;
+}
+
+.game-tag--cloud {
+  background: rgba(59, 130, 246, 0.15);
+  color: #60a5fa;
+}
+
+.game-tag--local {
+  background: rgba(107, 114, 128, 0.15);
+  color: #9ca3af;
+}
+
+.game-meta {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 11px;
+  color: #6b7280;
+}
+
+.game-meta :deep(svg) {
+  width: 12px;
+  height: 12px;
+  color: #4b5563;
+}
+
+.game-sep {
+  color: #4b5563;
 }
 
 .game-actions {
@@ -809,84 +1069,25 @@ onMounted(async () => {
   justify-content: flex-end;
   gap: var(--space-xs);
   padding-top: var(--space-sm);
-  border-top: 1px solid var(--color-line-subtle);
+  border-top: 1px solid #1a1d21;
 }
 
-/* Buttons */
+
+/* ========================================
+   Buttons - Dark theme
+   ======================================== */
 .btn {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  gap: var(--space-xs);
-  font-family: var(--font-body, inherit);
-  font-weight: 500;
-  border-radius: var(--radius-sm);
-  cursor: pointer;
-  transition: var(--transition-fast);
-}
-
-.btn-sm {
-  padding: 6px 10px;
+  gap: 6px;
+  padding: 8px 14px;
+  font-family: inherit;
   font-size: 12px;
-}
-
-.btn-ghost {
-  background: transparent;
-  border: 1px solid transparent;
-  color: var(--color-ink-soft);
-}
-
-.btn-ghost:hover {
-  background: var(--color-canvas);
-  color: var(--color-ink);
-}
-
-.btn-secondary {
-  background: var(--color-surface);
-  border: 1px solid var(--color-line);
-  color: var(--color-ink);
-}
-
-.btn-secondary:hover:not(:disabled) {
-  background: var(--color-canvas);
-  border-color: var(--color-line-strong);
-}
-
-.btn-primary {
-  background: var(--color-ink);
-  border: 1px solid var(--color-ink);
-  color: var(--color-paper);
-}
-
-.btn-primary:hover:not(:disabled) {
-  background: #2d3339;
-}
-
-.btn-danger-ghost {
-  background: transparent;
-  border: 1px solid var(--color-line);
-  color: var(--color-ink-muted);
-}
-
-.btn-danger-ghost:hover:not(:disabled) {
-  background: rgba(220, 38, 38, 0.08);
-  border-color: var(--color-danger, #dc2626);
-  color: var(--color-danger, #dc2626);
-}
-
-.btn-danger {
-  background: var(--color-danger, #dc2626);
-  border: 1px solid var(--color-danger, #dc2626);
-  color: white;
-}
-
-.btn-danger:hover:not(:disabled) {
-  background: #b91c1c;
-}
-
-.btn:disabled {
-  opacity: 0.5;
-  cursor: not-allowed;
+  font-weight: 500;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: all 0.15s ease;
 }
 
 .btn :deep(svg) {
@@ -894,11 +1095,68 @@ onMounted(async () => {
   height: 14px;
 }
 
-/* Modal */
+.btn:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
+.btn-action {
+  background: #3d444d;
+  border: 1px solid #4d545e;
+  color: #e8e9eb;
+}
+
+.btn-action:hover:not(:disabled) {
+  background: #4d545e;
+  border-color: #5d646e;
+}
+
+.btn-icon {
+  padding: 8px;
+  background: transparent;
+  border: 1px solid #3d444d;
+  color: #6b7280;
+}
+
+.btn-icon:hover:not(:disabled) {
+  background: #2d3238;
+  color: #9ca3af;
+}
+
+.btn-icon--danger:hover:not(:disabled) {
+  background: rgba(239, 68, 68, 0.1);
+  border-color: #ef4444;
+  color: #ef4444;
+}
+
+.btn-danger {
+  background: #7f1d1d;
+  border: 1px solid #991b1b;
+  color: #fecaca;
+}
+
+.btn-danger:hover:not(:disabled) {
+  background: #991b1b;
+}
+
+.btn-secondary {
+  background: #2d3238;
+  border: 1px solid #3d444d;
+  color: #9ca3af;
+}
+
+.btn-secondary:hover:not(:disabled) {
+  background: #353a42;
+  color: #e8e9eb;
+}
+
+/* ========================================
+   Modal - Dark theme
+   ======================================== */
 .modal-overlay {
   position: fixed;
   inset: 0;
-  background: rgba(0, 0, 0, 0.5);
+  background: rgba(0, 0, 0, 0.7);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -907,25 +1165,27 @@ onMounted(async () => {
 }
 
 .modal-dialog {
-  background: var(--color-paper);
-  border-radius: var(--radius-lg);
+  background: #22262b;
+  border: 1px solid #2d3238;
+  border-radius: 12px;
   padding: var(--space-lg);
   max-width: 400px;
   width: 100%;
-  box-shadow: var(--shadow-lg);
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5);
 }
 
 .modal-title {
-  font-size: 16px;
+  font-size: 15px;
   font-weight: 600;
-  color: var(--color-ink);
+  color: #e8e9eb;
   margin: 0 0 var(--space-sm);
 }
 
 .modal-text {
-  font-size: 14px;
-  color: var(--color-ink-soft);
+  font-size: 13px;
+  color: #9ca3af;
   margin: 0 0 var(--space-lg);
+  line-height: 1.5;
 }
 
 .modal-actions {
@@ -947,10 +1207,10 @@ onMounted(async () => {
 
 /* Spinner */
 .spinner {
-  width: 20px;
-  height: 20px;
-  border: 2px solid var(--color-line);
-  border-top-color: var(--color-ink);
+  width: 18px;
+  height: 18px;
+  border: 2px solid #3d444d;
+  border-top-color: #9ca3af;
   border-radius: 50%;
   animation: spin 0.8s linear infinite;
 }
@@ -958,7 +1218,7 @@ onMounted(async () => {
 .spinner-small {
   width: 14px;
   height: 14px;
-  border: 2px solid rgba(255, 255, 255, 0.3);
+  border: 2px solid rgba(255, 255, 255, 0.2);
   border-top-color: white;
   border-radius: 50%;
   animation: spin 0.8s linear infinite;
@@ -968,61 +1228,9 @@ onMounted(async () => {
   to { transform: rotate(360deg); }
 }
 
-/* Danger section */
-.danger-section {
-  margin-top: var(--space-xl);
-  padding-top: var(--space-xl);
-  border-top: 1px solid var(--color-line);
-}
-
-.section-title--danger {
-  color: var(--color-ink-muted);
-}
-
-.section-title--danger :deep(svg) {
-  color: var(--color-danger, #dc2626);
-  opacity: 0.6;
-}
-
-.danger-content {
-  display: flex;
-  flex-direction: column;
-  gap: var(--space-md);
-}
-
-.danger-text {
-  font-size: 13px;
-  color: var(--color-ink-muted);
-  margin: 0;
-  line-height: 1.5;
-}
-
-.delete-account-link {
-  display: inline-flex;
-  align-items: center;
-  gap: var(--space-xs);
-  background: none;
-  border: none;
-  padding: 0;
-  font-size: 13px;
-  color: var(--color-ink-muted);
-  cursor: pointer;
-  transition: var(--transition-fast);
-  align-self: flex-start;
-}
-
-.delete-account-link:hover {
-  color: var(--color-danger, #dc2626);
-}
-
-.delete-account-link :deep(svg) {
-  width: 12px;
-  height: 12px;
-}
-
 /* Delete account modal */
 .modal-dialog--danger {
-  border-top: 3px solid var(--color-danger, #dc2626);
+  border-top: 3px solid #ef4444;
 }
 
 .modal-title--danger {
@@ -1032,15 +1240,15 @@ onMounted(async () => {
 }
 
 .modal-title--danger :deep(svg) {
-  color: var(--color-danger, #dc2626);
+  color: #ef4444;
 }
 
 .modal-error {
   padding: var(--space-sm) var(--space-md);
-  background: rgba(220, 38, 38, 0.08);
-  border: 1px solid var(--color-danger, #dc2626);
-  border-radius: var(--radius-sm);
-  color: var(--color-danger, #dc2626);
+  background: rgba(239, 68, 68, 0.1);
+  border: 1px solid #7f1d1d;
+  border-radius: 6px;
+  color: #fca5a5;
   font-size: 13px;
   margin-bottom: var(--space-md);
 }
@@ -1051,8 +1259,8 @@ onMounted(async () => {
 
 .form-label {
   display: block;
-  font-size: 14px;
-  color: var(--color-ink-soft);
+  font-size: 13px;
+  color: #9ca3af;
   margin-bottom: var(--space-xs);
 }
 
@@ -1061,17 +1269,17 @@ onMounted(async () => {
   padding: 10px 12px;
   font-size: 14px;
   font-family: var(--font-body, inherit);
-  border: 1px solid var(--color-line);
-  border-radius: var(--radius-sm);
-  background: var(--color-surface);
-  color: var(--color-ink);
+  border: 1px solid #3d444d;
+  border-radius: 6px;
+  background: #1a1d21;
+  color: #e8e9eb;
   box-sizing: border-box;
 }
 
 .form-input:focus {
   outline: none;
-  border-color: var(--color-accent);
-  box-shadow: 0 0 0 3px var(--color-accent-light);
+  border-color: #4d545e;
+  box-shadow: 0 0 0 3px rgba(77, 84, 94, 0.3);
 }
 
 /* Mobile */
@@ -1080,40 +1288,87 @@ onMounted(async () => {
     padding: var(--space-sm) var(--space-md);
   }
 
+  .account-title {
+    font-size: 14px;
+  }
+
+  .header-spacer {
+    width: 60px;
+  }
+
   .account-content {
     padding: var(--space-md);
   }
 
-  .profile-field {
+  /* Profile block mobile */
+  .profile-avatar {
+    width: 40px;
+    height: 40px;
+  }
+
+  .profile-avatar :deep(svg) {
+    width: 20px;
+    height: 20px;
+  }
+
+  .profile-name {
+    font-size: 15px;
+  }
+
+  .profile-details {
     flex-direction: column;
-    align-items: flex-start;
+    gap: var(--space-xs);
   }
 
-  .profile-value {
-    max-width: 100%;
-    text-align: left;
+  /* Stats grid mobile - 2x2 */
+  .stats-grid {
+    grid-template-columns: repeat(2, 1fr);
   }
 
-  .stats-card__top {
+  .stat-value {
+    font-size: 18px;
+  }
+
+  /* Invite row mobile */
+  .invite-row {
     flex-direction: column;
-    align-items: flex-start;
   }
 
-  .stats-card__title {
-    white-space: normal;
+  .invite-input {
+    font-size: 11px;
   }
 
-  .stats-card__date {
-    white-space: normal;
+  /* History mobile */
+  .history-row {
+    padding: 8px 10px;
+    gap: var(--space-sm);
   }
 
-  .game-header {
-    flex-direction: column;
-    align-items: flex-start;
+  .history-rank {
+    width: 28px;
+    font-size: 10px;
+  }
+
+  .history-name {
+    font-size: 12px;
+  }
+
+  .history-date {
+    display: none;
+  }
+
+  /* Games list mobile */
+  .game-row {
+    padding: 10px;
   }
 
   .game-name {
+    font-size: 12px;
     white-space: normal;
+  }
+
+  .game-actions {
+    flex-wrap: wrap;
   }
 }
 </style>
