@@ -350,7 +350,7 @@ const inviteLink = computed(() => {
 });
 const statsText = computed(() => {
   const username = profile.value?.username || 'Un directeur sportif';
-  return `🚴 ${username} sur Cycling Race Board Game\n\n` +
+  return `🚴 ${username} sur BORDUR\n\n` +
     `🏆 ${finishedGames.value.length} courses\n` +
     `🥇 ${victories.value} victoires\n` +
     `🏅 ${podiums.value} podiums\n\n` +
@@ -388,8 +388,8 @@ async function shareGame() {
   if (!canShare.value) return;
   try {
     await navigator.share({
-      title: 'Cycling Race Board Game',
-      text: '🚴 Découvre ce jeu de simulation de course cycliste !',
+      title: 'BORDUR - Jeu de course cycliste',
+      text: '🚴 Découvre BORDUR, un jeu de simulation de course cycliste !',
       url: inviteLink.value
     });
   } catch (err) {
@@ -404,7 +404,7 @@ async function shareStats() {
   if (!canShare.value) return;
   try {
     await navigator.share({
-      title: 'Mon palmarès - Cycling Race',
+      title: 'Mon palmarès - BORDUR',
       text: statsText.value,
       url: inviteLink.value
     });
