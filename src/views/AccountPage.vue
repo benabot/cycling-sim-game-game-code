@@ -61,30 +61,59 @@
         </div>
       </section>
 
-      <!-- Inviter un ami -->
+      <!-- Partager -->
       <section class="block">
         <header class="block-header">
           <UIIcon type="link" size="md" />
-          <h2 class="block-title">Inviter un ami</h2>
+          <h2 class="block-title">Partager</h2>
         </header>
-        <p class="block-text">
-          Partagez le jeu avec vos amis cyclistes.
-        </p>
-        <div class="invite-row">
-          <input
-            type="text"
-            :value="inviteLink"
-            readonly
-            class="invite-input"
-          />
-          <button
-            type="button"
-            class="btn btn-action"
-            @click="copyInviteLink"
-          >
-            <UIIcon :type="linkCopied ? 'check' : 'copy'" size="sm" />
-            <span>{{ linkCopied ? 'Copié' : 'Copier' }}</span>
-          </button>
+
+        <!-- Partager le jeu -->
+        <div class="share-section">
+          <p class="block-text">Invitez vos amis cyclistes à jouer</p>
+          <div class="share-buttons">
+            <button
+              v-if="canShare"
+              type="button"
+              class="btn btn-action btn-action--primary"
+              @click="shareGame"
+            >
+              <UIIcon type="link" size="sm" />
+              <span>Partager le jeu</span>
+            </button>
+            <button
+              type="button"
+              class="btn btn-action"
+              @click="copyInviteLink"
+            >
+              <UIIcon :type="linkCopied ? 'check' : 'copy'" size="sm" />
+              <span>{{ linkCopied ? 'Copié' : 'Copier le lien' }}</span>
+            </button>
+          </div>
+        </div>
+
+        <!-- Partager ses stats -->
+        <div v-if="finishedGames.length > 0" class="share-section share-section--stats">
+          <p class="block-text">Partagez votre palmarès</p>
+          <div class="share-buttons">
+            <button
+              v-if="canShare"
+              type="button"
+              class="btn btn-action btn-action--gold"
+              @click="shareStats"
+            >
+              <UIIcon type="trophy" size="sm" />
+              <span>Partager mes stats</span>
+            </button>
+            <button
+              type="button"
+              class="btn btn-action"
+              @click="copyStats"
+            >
+              <UIIcon :type="statsCopied ? 'check' : 'copy'" size="sm" />
+              <span>{{ statsCopied ? 'Copié' : 'Copier' }}</span>
+            </button>
+          </div>
         </div>
       </section>
 
@@ -311,13 +340,21 @@ const deleteConfirmText = ref('');
 const isDeletingAccount = ref(false);
 const deleteAccountError = ref('');
 
-// Invite link
+// Share state
 const linkCopied = ref(false);
-const inviteLinkInput = ref(null);
+const statsCopied = ref(false);
+const canShare = computed(() => typeof navigator.share === 'function');
 const inviteLink = computed(() => {
-  // Lien vers la page d'accueil de l'app
   const baseUrl = window.location.origin;
   return `${baseUrl}/app/`;
+});
+const statsText = computed(() => {
+  const username = profile.value?.username || 'Un directeur sportif';
+  return `🚴 ${username} sur Cycling Race Board Game\n\n` +
+    `🏆 ${finishedGames.value.length} courses\n` +
+    `🥇 ${victories.value} victoires\n` +
+    `🏅 ${podiums.value} podiums\n\n` +
+    `Rejoins-moi sur ${inviteLink.value}`;
 });
 
 // Statistiques avancées
@@ -343,6 +380,46 @@ function copyInviteLink() {
     linkCopied.value = true;
     setTimeout(() => {
       linkCopied.value = false;
+    }, 2000);
+  });
+}
+
+async function shareGame() {
+  if (!canShare.value) return;
+  try {
+    await navigator.share({
+      title: 'Cycling Race Board Game',
+      text: '🚴 Découvre ce jeu de simulation de course cycliste !',
+      url: inviteLink.value
+    });
+  } catch (err) {
+    // User cancelled or share failed - ignore
+    if (err.name !== 'AbortError') {
+      console.warn('Share failed:', err);
+    }
+  }
+}
+
+async function shareStats() {
+  if (!canShare.value) return;
+  try {
+    await navigator.share({
+      title: 'Mon palmarès - Cycling Race',
+      text: statsText.value,
+      url: inviteLink.value
+    });
+  } catch (err) {
+    if (err.name !== 'AbortError') {
+      console.warn('Share failed:', err);
+    }
+  }
+}
+
+function copyStats() {
+  navigator.clipboard.writeText(statsText.value).then(() => {
+    statsCopied.value = true;
+    setTimeout(() => {
+      statsCopied.value = false;
     }, 2000);
   });
 }
@@ -892,28 +969,49 @@ watch(authLoading, (isLoading, wasLoading) => {
 }
 
 /* ========================================
-   Invite Row
+   Share Section
    ======================================== */
-.invite-row {
+.share-section {
   display: flex;
+  flex-direction: column;
   gap: var(--space-sm);
 }
 
-.invite-input {
-  flex: 1;
-  padding: 10px 12px;
-  font-size: 12px;
-  font-family: var(--font-mono, monospace);
-  border: 1px solid #3d444d;
-  border-radius: 6px;
-  background: #1a1d21;
-  color: #6b7280;
-  min-width: 0;
+.share-section--stats {
+  margin-top: var(--space-md);
+  padding-top: var(--space-md);
+  border-top: 1px solid #2d3238;
 }
 
-.invite-input:focus {
-  outline: none;
-  border-color: #4d545e;
+.share-buttons {
+  display: flex;
+  gap: var(--space-sm);
+  flex-wrap: wrap;
+}
+
+.btn-action--primary {
+  background: #2563eb;
+  border-color: #3b82f6;
+}
+
+.btn-action--primary:hover:not(:disabled) {
+  background: #1d4ed8;
+  border-color: #2563eb;
+}
+
+.btn-action--gold {
+  background: linear-gradient(145deg, #92711a 0%, #6b5315 100%);
+  border-color: #a37f1e;
+  color: #fef3c7;
+}
+
+.btn-action--gold:hover:not(:disabled) {
+  background: linear-gradient(145deg, #a37f1e 0%, #7c5f18 100%);
+}
+
+.btn-action--gold .stat-icon,
+.btn-action--gold :deep(svg) {
+  color: #fef3c7;
 }
 
 /* ========================================
@@ -1333,13 +1431,14 @@ watch(authLoading, (isLoading, wasLoading) => {
     font-size: 18px;
   }
 
-  /* Invite row mobile */
-  .invite-row {
+  /* Share buttons mobile */
+  .share-buttons {
     flex-direction: column;
   }
 
-  .invite-input {
-    font-size: 11px;
+  .share-buttons .btn {
+    width: 100%;
+    justify-content: center;
   }
 
   /* History mobile */
