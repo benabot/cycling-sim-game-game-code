@@ -79,14 +79,16 @@ defineProps({
 
 const emit = defineEmits(['load-game', 'go-to-account', 'save-game']);
 
-const { isAuthenticated, isConfigured, profile, logout } = useAuth();
+const { isAuthenticated, isConfigured, profile, user, logout } = useAuth();
 
 const showAuthModal = ref(false);
 const showLoadModal = ref(false);
 const dropdownRef = ref(null);
-const menuLabel = computed(() => (
-  isAuthenticated.value ? (profile.value?.username || 'Utilisateur') : 'Menu'
-));
+const menuLabel = computed(() => {
+  if (!isAuthenticated.value) return 'Menu';
+  // Priorité : profile.username > user_metadata.username > fallback
+  return profile.value?.username || user.value?.user_metadata?.username || 'Utilisateur';
+});
 
 watch(showAuthModal, (isOpen) => {
   if (isOpen) {

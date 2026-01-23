@@ -53,22 +53,13 @@ const { initSession } = useAuth();
 const { loadGame } = useStorage();
 
 onMounted(async () => {
+  // Toujours initialiser la session pour restaurer l'authentification
+  await initSession();
+
   // Vérifier si on est sur la page de reset password
   if (window.location.pathname.includes('/reset-password')) {
-    // Attendre que Supabase traite le token dans l'URL
-    if (supabase) {
-      const { data: { session } } = await supabase.auth.getSession();
-      if (session) {
-        gameScreen.value = 'reset-password';
-        return;
-      }
-    }
-    // Si pas de session valide, afficher quand même la page (elle gérera l'erreur)
     gameScreen.value = 'reset-password';
-    return;
   }
-
-  initSession();
 });
 
 // Screen state: 'setup' | 'playing' | 'account'

@@ -200,6 +200,25 @@
           <span v-if="registerErrors.confirmPassword" class="field-error">{{ registerErrors.confirmPassword }}</span>
         </div>
 
+        <div class="form-group form-group--checkbox">
+          <label class="checkbox-label">
+            <input
+              id="accept-privacy"
+              v-model="registerForm.acceptPrivacy"
+              type="checkbox"
+              class="checkbox-input"
+              @change="validateRegisterField('acceptPrivacy')"
+            />
+            <span class="checkbox-text">
+              J'accepte la
+              <a href="/confidentialite.html" target="_blank" rel="noopener noreferrer" class="privacy-link">
+                politique de confidentialité
+              </a>
+            </span>
+          </label>
+          <span v-if="registerErrors.acceptPrivacy" class="field-error">{{ registerErrors.acceptPrivacy }}</span>
+        </div>
+
         <button
           type="submit"
           class="btn btn-primary btn-full"
@@ -252,14 +271,16 @@ const registerForm = reactive({
   email: '',
   username: '',
   password: '',
-  confirmPassword: ''
+  confirmPassword: '',
+  acceptPrivacy: false
 });
 
 const registerErrors = reactive({
   email: null,
   username: null,
   password: null,
-  confirmPassword: null
+  confirmPassword: null,
+  acceptPrivacy: null
 });
 
 // Forgot password form
@@ -282,10 +303,12 @@ const isRegisterValid = computed(() => {
     registerForm.username &&
     registerForm.password &&
     registerForm.confirmPassword &&
+    registerForm.acceptPrivacy &&
     !registerErrors.email &&
     !registerErrors.username &&
     !registerErrors.password &&
     !registerErrors.confirmPassword &&
+    !registerErrors.acceptPrivacy &&
     usernameAvailable.value === true
   );
 });
@@ -361,6 +384,13 @@ function validateRegisterField(field) {
         registerErrors.confirmPassword = 'Les mots de passe ne correspondent pas';
       } else {
         registerErrors.confirmPassword = null;
+      }
+      break;
+    case 'acceptPrivacy':
+      if (!registerForm.acceptPrivacy) {
+        registerErrors.acceptPrivacy = 'Vous devez accepter la politique de confidentialité';
+      } else {
+        registerErrors.acceptPrivacy = null;
       }
       break;
   }
@@ -464,12 +494,14 @@ async function handleRegister() {
   validateRegisterField('username');
   validateRegisterField('password');
   validateRegisterField('confirmPassword');
+  validateRegisterField('acceptPrivacy');
 
   if (
     registerErrors.email ||
     registerErrors.username ||
     registerErrors.password ||
     registerErrors.confirmPassword ||
+    registerErrors.acceptPrivacy ||
     usernameAvailable.value !== true
   ) {
     return;
@@ -508,6 +540,7 @@ watch(() => props.modelValue, (isOpen) => {
     registerForm.username = '';
     registerForm.password = '';
     registerForm.confirmPassword = '';
+    registerForm.acceptPrivacy = false;
     forgotForm.email = '';
     Object.keys(loginErrors).forEach(k => loginErrors[k] = null);
     Object.keys(registerErrors).forEach(k => registerErrors[k] = null);
@@ -763,5 +796,48 @@ watch(() => props.modelValue, (isOpen) => {
   color: var(--color-ink);
   margin: 0;
   text-align: center;
+}
+
+/* Checkbox styles */
+.form-group--checkbox {
+  margin-top: var(--space-sm);
+}
+
+.checkbox-label {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--space-sm);
+  cursor: pointer;
+  font-size: 13px;
+  color: var(--color-ink-soft);
+  line-height: 1.5;
+}
+
+.checkbox-input {
+  margin-top: 2px;
+  width: 16px;
+  height: 16px;
+  cursor: pointer;
+  flex-shrink: 0;
+}
+
+.checkbox-text {
+  flex: 1;
+}
+
+.privacy-link {
+  color: var(--color-accent);
+  text-decoration: none;
+  transition: var(--transition-fast);
+}
+
+.privacy-link:hover {
+  text-decoration: underline;
+}
+
+.privacy-link:focus {
+  outline: 2px solid var(--color-accent);
+  outline-offset: 2px;
+  border-radius: 2px;
 }
 </style>
