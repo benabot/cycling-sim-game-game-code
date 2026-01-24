@@ -41,6 +41,9 @@ export function useStorage() {
    */
   function normalizeLocalGame(localGame) {
     const meta = localGame.meta || {};
+    const state = localGame.state || {};
+    // Phase peut être dans meta ou state selon la version de sauvegarde
+    const phase = (meta.phase || state.phase || '').toLowerCase();
     return {
       id: localGame.id,
       source: 'local',
@@ -49,6 +52,7 @@ export function useStorage() {
       racePreset: meta.raceName || null,
       courseLength: meta.courseLength || 80,
       currentTurn: meta.currentTurn || 1,
+      phase,
       leader: meta.leaderName ? {
         name: meta.leaderName,
         team: meta.leaderTeam,
@@ -72,6 +76,7 @@ export function useStorage() {
       racePreset: cloudGame.race_preset || null,
       courseLength: cloudGame.course_length || 80,
       currentTurn: cloudGame.current_turn || 1,
+      phase: (cloudGame.phase || '').toLowerCase(),
       leader: cloudGame.leader_name ? {
         name: cloudGame.leader_name,
         team: cloudGame.leader_team,

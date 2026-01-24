@@ -201,18 +201,18 @@
         <header class="block-header">
           <UIIcon type="save" size="md" />
           <h2 class="block-title">Parties en cours</h2>
-          <span v-if="games.length" class="block-count">{{ games.length }}</span>
+          <span v-if="inProgressGames.length" class="block-count">{{ inProgressGames.length }}</span>
         </header>
 
         <div v-if="isLoading" class="block-empty">
           <span class="spinner"></span>
           Chargement...
         </div>
-        <div v-else-if="games.length === 0" class="block-empty">
+        <div v-else-if="inProgressGames.length === 0" class="block-empty">
           Aucune partie sauvegardée
         </div>
         <div v-else class="games-list">
-          <div v-for="game in games" :key="game.id" class="game-row">
+          <div v-for="game in inProgressGames" :key="game.id" class="game-row">
             <div class="game-main">
               <span class="game-name">{{ game.name }}</span>
               <span class="game-tag" :class="'game-tag--' + game.source">
@@ -377,6 +377,11 @@ const emit = defineEmits(['back', 'load', 'account-deleted']);
 
 const { user, profile, loading: authLoading, deleteAccount } = useAuth();
 const { games, isLoading, fetchGames, deleteGame } = useStorage();
+
+// Parties en cours = exclure les parties terminées (phase === 'finished')
+const inProgressGames = computed(() =>
+  games.value.filter(g => g.phase !== 'finished')
+);
 
 const gameToDelete = ref(null);
 const deletingId = ref(null);
