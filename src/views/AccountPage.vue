@@ -734,25 +734,40 @@ async function executeDeleteAccount() {
   }
 }
 
-// Attendre que l'auth soit prête avant de charger les données
+// Chargement des données
+const dataLoadState = ref('pending'); // 'pending' | 'loading' | 'loaded' | 'error'
+
 async function loadData() {
-  await fetchGames();
-  fetchFinishedGames();
+  // Éviter double chargement
+  if (dataLoadState.value === 'loading' || dataLoadState.value === 'loaded') {
+    return;
+  }
+
+  dataLoadState.value = 'loading';
+
+  try {
+    // Charger en parallèle pour plus de rapidité
+    await Promise.all([
+      fetchGames(),
+      fetchFinishedGames()
+    ]);
+    dataLoadState.value = 'loaded';
+  } catch (err) {
+    console.error('AccountPage loadData error:', err);
+    dataLoadState.value = 'error';
+  }
 }
 
-onMounted(() => {
-  // Si l'auth est déjà chargée, charger les données immédiatement
-  if (!authLoading.value) {
-    loadData();
-  }
-});
-
-// Si l'auth n'était pas prête au mount, attendre qu'elle le soit
-watch(authLoading, (isLoading, wasLoading) => {
-  if (wasLoading && !isLoading) {
-    loadData();
-  }
-});
+// Watch avec immediate: true qui se déclenche dès que authLoading devient false
+watch(
+  authLoading,
+  (isLoading) => {
+    if (!isLoading && dataLoadState.value === 'pending') {
+      loadData();
+    }
+  },
+  { immediate: true }
+);
 </script>
 
 <style scoped>
