@@ -117,25 +117,23 @@ export const ClassicPresets = {
     icon: 'mountain',
     defaultLength: 80,
     distribution: {
-      [TerrainType.FLAT]: 20,
-      [TerrainType.HILL]: 15,
-      [TerrainType.MOUNTAIN]: 35,
+      [TerrainType.FLAT]: 15,
+      [TerrainType.HILL]: 10,
+      [TerrainType.MOUNTAIN]: 45,
       [TerrainType.DESCENT]: 20,
       [TerrainType.SPRINT]: 10
     },
     structure: {
       startFlat: 5,
-      endSprint: 8,
-      sprintFinishChance: 0.15,
+      endSprint: 8,              // Sprint si sprintFinishChance se déclenche
+      sprintFinishChance: 0.15,  // 85% arrivée au sommet, 15% sprint final
       segmentPattern: [
-        { terrain: TerrainType.FLAT, min: 5, max: 10 },
-        { terrain: TerrainType.HILL, min: 6, max: 8 },
-        { terrain: TerrainType.MOUNTAIN, min: 15, max: 22 },
-        { terrain: TerrainType.DESCENT, min: 6, max: 10 },
         { terrain: TerrainType.FLAT, min: 4, max: 8 },
-        { terrain: TerrainType.MOUNTAIN, min: 15, max: 22 },
-        { terrain: TerrainType.DESCENT, min: 6, max: 10 },
-        { terrain: TerrainType.FLAT, min: 4, max: 8 }
+        { terrain: TerrainType.HILL, min: 6, max: 8 },
+        { terrain: TerrainType.MOUNTAIN, min: 15, max: 20 },
+        { terrain: TerrainType.DESCENT, min: 8, max: 12 },
+        { terrain: TerrainType.FLAT, min: 4, max: 8 },
+        { terrain: TerrainType.MOUNTAIN, min: 15, max: 20 }  // Arrivée au sommet (si pas sprint)
       ]
     }
   },
@@ -340,25 +338,23 @@ export const StageRaceConfig = {
       name: 'Montagne',
       icon: 'summit',
       distribution: {
-        [TerrainType.FLAT]: 20,
-        [TerrainType.HILL]: 20,
-        [TerrainType.MOUNTAIN]: 35,
-        [TerrainType.DESCENT]: 15,
+        [TerrainType.FLAT]: 15,
+        [TerrainType.HILL]: 10,
+        [TerrainType.MOUNTAIN]: 45,
+        [TerrainType.DESCENT]: 20,
         [TerrainType.SPRINT]: 10
       },
       structure: {
         startFlat: 5,
-        endSprint: 8,
-        sprintFinishChance: 0.15,
+        endSprint: 8,              // Sprint si sprintFinishChance se déclenche
+        sprintFinishChance: 0.15,  // 85% arrivée au sommet, 15% sprint final
         segmentPattern: [
-          { terrain: TerrainType.FLAT, min: 5, max: 10 },
-          { terrain: TerrainType.HILL, min: 6, max: 8 },
-          { terrain: TerrainType.MOUNTAIN, min: 15, max: 22 },
-          { terrain: TerrainType.DESCENT, min: 6, max: 10 },
           { terrain: TerrainType.FLAT, min: 4, max: 8 },
-          { terrain: TerrainType.MOUNTAIN, min: 15, max: 22 },
-          { terrain: TerrainType.DESCENT, min: 6, max: 10 },
-          { terrain: TerrainType.FLAT, min: 4, max: 8 }
+          { terrain: TerrainType.HILL, min: 6, max: 8 },
+          { terrain: TerrainType.MOUNTAIN, min: 15, max: 20 },
+          { terrain: TerrainType.DESCENT, min: 8, max: 12 },
+          { terrain: TerrainType.FLAT, min: 4, max: 8 },
+          { terrain: TerrainType.MOUNTAIN, min: 15, max: 20 }  // Arrivée au sommet (si pas sprint)
         ]
       }
     },
