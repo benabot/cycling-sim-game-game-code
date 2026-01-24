@@ -384,6 +384,18 @@
       <path d="M12 2a10 10 0 0 0-8.6 15.1L2 22l5-1.4A10 10 0 1 0 12 2z" />
     </g>
 
+    <!-- Instagram -->
+    <g v-else-if="type === 'instagram'">
+      <rect x="2" y="2" width="20" height="20" rx="5" />
+      <circle cx="12" cy="12" r="4" />
+      <circle cx="17.5" cy="6.5" r="1.5" fill="currentColor" stroke="none" />
+    </g>
+
+    <!-- TikTok -->
+    <g v-else-if="type === 'tiktok'">
+      <path d="M9 12a4 4 0 1 0 4 4V4a5 5 0 0 0 5 5" fill="none" />
+    </g>
+
     <!-- Fallback: question mark -->
     <g v-else>
       <circle cx="12" cy="12" r="10" />
@@ -408,7 +420,7 @@ const props = defineProps({
       'shield', 'balance', 'trophy', 'restart', 'discard', 'blocked', 'event',
       'cursor', 'tempo', 'calendar', 'laurel', 'cobbles', 'road', 'hill', 'mountain',
       'save', 'upload', 'download', 'play', 'link', 'copy', 'medal', 'chart', 'bike',
-      'twitter', 'facebook', 'linkedin', 'whatsapp'
+      'twitter', 'facebook', 'linkedin', 'whatsapp', 'instagram', 'tiktok'
     ].includes(v)
   },
   size: {

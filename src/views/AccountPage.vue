@@ -68,142 +68,102 @@
           <h2 class="block-title">Partager</h2>
         </header>
 
-        <!-- Partager le jeu -->
-        <div class="share-section">
-          <p class="block-text">Invitez vos amis cyclistes à jouer</p>
-
-          <!-- Mobile: Web Share API natif -->
-          <div v-if="isMobile && canShare" class="share-buttons">
-            <button
-              type="button"
-              class="btn btn-action btn-action--primary"
-              @click="shareGame"
-            >
-              <UIIcon type="link" size="sm" />
-              <span>Partager le jeu</span>
-            </button>
-          </div>
-
-          <!-- Desktop: Boutons réseaux sociaux directs -->
-          <div v-else class="share-social">
-            <a
-              :href="shareUrls.twitter"
-              target="_blank"
-              rel="noopener noreferrer"
-              class="share-social-btn share-social-btn--twitter"
-              title="Partager sur X (Twitter)"
-            >
-              <UIIcon type="twitter" size="sm" />
-            </a>
-            <a
-              :href="shareUrls.facebook"
-              target="_blank"
-              rel="noopener noreferrer"
-              class="share-social-btn share-social-btn--facebook"
-              title="Partager sur Facebook"
-            >
-              <UIIcon type="facebook" size="sm" />
-            </a>
-            <a
-              :href="shareUrls.linkedin"
-              target="_blank"
-              rel="noopener noreferrer"
-              class="share-social-btn share-social-btn--linkedin"
-              title="Partager sur LinkedIn"
-            >
-              <UIIcon type="linkedin" size="sm" />
-            </a>
-            <a
-              :href="shareUrls.whatsapp"
-              target="_blank"
-              rel="noopener noreferrer"
-              class="share-social-btn share-social-btn--whatsapp"
-              title="Partager sur WhatsApp"
-            >
-              <UIIcon type="whatsapp" size="sm" />
-            </a>
-          </div>
-
-          <!-- Copier le lien (toujours disponible) -->
-          <div class="share-buttons share-buttons--copy">
-            <button
-              type="button"
-              class="btn btn-action"
-              @click="copyInviteLink"
-            >
-              <UIIcon :type="linkCopied ? 'check' : 'copy'" size="sm" />
-              <span>{{ linkCopied ? 'Copié' : 'Copier le lien' }}</span>
-            </button>
-          </div>
+        <!-- Tabs pour choisir quoi partager -->
+        <div v-if="finishedGames.length > 0" class="share-tabs">
+          <button
+            type="button"
+            :class="['share-tab', { 'share-tab--active': shareMode === 'game' }]"
+            @click="shareMode = 'game'"
+          >
+            <UIIcon type="link" size="sm" />
+            <span>Le jeu</span>
+          </button>
+          <button
+            type="button"
+            :class="['share-tab', { 'share-tab--active': shareMode === 'stats' }]"
+            @click="shareMode = 'stats'"
+          >
+            <UIIcon type="trophy" size="sm" />
+            <span>Mon palmarès</span>
+          </button>
         </div>
 
-        <!-- Partager ses stats -->
-        <div v-if="finishedGames.length > 0" class="share-section share-section--stats">
-          <p class="block-text">Partagez votre palmarès</p>
+        <!-- Description contextuelle -->
+        <p class="block-text share-description">
+          {{ shareMode === 'stats' ? 'Partagez vos performances' : 'Invitez vos amis cyclistes' }}
+        </p>
 
-          <!-- Mobile: Web Share API natif -->
-          <div v-if="isMobile && canShare" class="share-buttons">
-            <button
-              type="button"
-              class="btn btn-action btn-action--gold"
-              @click="shareStats"
-            >
-              <UIIcon type="trophy" size="sm" />
-              <span>Partager mes stats</span>
-            </button>
-          </div>
+        <!-- Mobile: Web Share API natif -->
+        <div v-if="isMobile && canShare" class="share-buttons">
+          <button
+            type="button"
+            :class="['btn', 'btn-action', shareMode === 'stats' ? 'btn-action--gold' : 'btn-action--primary']"
+            @click="shareMode === 'stats' ? shareStats() : shareGame()"
+          >
+            <UIIcon :type="shareMode === 'stats' ? 'trophy' : 'link'" size="sm" />
+            <span>{{ shareMode === 'stats' ? 'Partager mes stats' : 'Partager le jeu' }}</span>
+          </button>
+        </div>
 
-          <!-- Desktop: Boutons réseaux sociaux directs -->
-          <div v-else class="share-social">
-            <a
-              :href="statsShareUrls.twitter"
-              target="_blank"
-              rel="noopener noreferrer"
-              class="share-social-btn share-social-btn--twitter"
-              title="Partager sur X (Twitter)"
-            >
-              <UIIcon type="twitter" size="sm" />
-            </a>
-            <a
-              :href="statsShareUrls.facebook"
-              target="_blank"
-              rel="noopener noreferrer"
-              class="share-social-btn share-social-btn--facebook"
-              title="Partager sur Facebook"
-            >
-              <UIIcon type="facebook" size="sm" />
-            </a>
-            <a
-              :href="statsShareUrls.linkedin"
-              target="_blank"
-              rel="noopener noreferrer"
-              class="share-social-btn share-social-btn--linkedin"
-              title="Partager sur LinkedIn"
-            >
-              <UIIcon type="linkedin" size="sm" />
-            </a>
-            <a
-              :href="statsShareUrls.whatsapp"
-              target="_blank"
-              rel="noopener noreferrer"
-              class="share-social-btn share-social-btn--whatsapp"
-              title="Partager sur WhatsApp"
-            >
-              <UIIcon type="whatsapp" size="sm" />
-            </a>
-          </div>
+        <!-- Desktop: Boutons réseaux sociaux directs -->
+        <div v-else class="share-social">
+          <a
+            :href="currentShareUrls.twitter"
+            target="_blank"
+            rel="noopener noreferrer"
+            class="share-social-btn share-social-btn--twitter"
+            title="Partager sur X"
+          >
+            <UIIcon type="twitter" size="sm" />
+          </a>
+          <a
+            :href="currentShareUrls.facebook"
+            target="_blank"
+            rel="noopener noreferrer"
+            class="share-social-btn share-social-btn--facebook"
+            title="Partager sur Facebook"
+          >
+            <UIIcon type="facebook" size="sm" />
+          </a>
+          <a
+            :href="currentShareUrls.instagram"
+            target="_blank"
+            rel="noopener noreferrer"
+            class="share-social-btn share-social-btn--instagram"
+            title="Partager sur Instagram"
+          >
+            <UIIcon type="instagram" size="sm" />
+          </a>
+          <a
+            :href="currentShareUrls.tiktok"
+            target="_blank"
+            rel="noopener noreferrer"
+            class="share-social-btn share-social-btn--tiktok"
+            title="Partager sur TikTok"
+          >
+            <UIIcon type="tiktok" size="sm" />
+          </a>
+          <a
+            :href="currentShareUrls.whatsapp"
+            target="_blank"
+            rel="noopener noreferrer"
+            class="share-social-btn share-social-btn--whatsapp"
+            title="Partager sur WhatsApp"
+          >
+            <UIIcon type="whatsapp" size="sm" />
+          </a>
+        </div>
 
-          <!-- Copier les stats (toujours disponible) -->
-          <div class="share-buttons share-buttons--copy">
-            <button
-              type="button"
-              class="btn btn-action"
-              @click="copyStats"
-            >
-              <UIIcon :type="statsCopied ? 'check' : 'copy'" size="sm" />
-              <span>{{ statsCopied ? 'Copié' : 'Copier' }}</span>
-            </button>
-          </div>
+        <!-- Copier le lien/texte -->
+        <div class="share-buttons share-buttons--copy">
+          <button
+            type="button"
+            class="btn btn-action"
+            @click="shareMode === 'stats' ? copyStats() : copyInviteLink()"
+          >
+            <UIIcon :type="(shareMode === 'stats' ? statsCopied : linkCopied) ? 'check' : 'copy'" size="sm" />
+            <span>{{ (shareMode === 'stats' ? statsCopied : linkCopied) ? 'Copié !' : 'Copier le texte' }}</span>
+          </button>
         </div>
       </section>
 
@@ -433,6 +393,7 @@ const deleteAccountError = ref('');
 // Share state
 const linkCopied = ref(false);
 const statsCopied = ref(false);
+const shareMode = ref('game'); // 'game' ou 'stats'
 const canShare = computed(() => typeof navigator.share === 'function');
 const isMobile = computed(() => {
   if (typeof window === 'undefined') return false;
@@ -445,19 +406,6 @@ const inviteLink = computed(() => {
 });
 const shareText = 'Découvre BORDUR, un jeu de plateau – simulation cycliste tactique !';
 
-// URLs de partage direct pour desktop
-const shareUrls = computed(() => {
-  const url = encodeURIComponent(inviteLink.value);
-  const text = encodeURIComponent(shareText);
-  const title = encodeURIComponent('BORDUR - Jeu de plateau – simulation cycliste tactique');
-  return {
-    twitter: `https://twitter.com/intent/tweet?text=${text}&url=${url}`,
-    facebook: `https://www.facebook.com/sharer/sharer.php?u=${url}`,
-    linkedin: `https://www.linkedin.com/sharing/share-offsite/?url=${url}`,
-    whatsapp: `https://wa.me/?text=${text}%20${url}`
-  };
-});
-
 const statsText = computed(() => {
   const username = profile.value?.username || 'Un directeur sportif';
   return `🚴 ${username} sur BORDUR\n\n` +
@@ -467,15 +415,21 @@ const statsText = computed(() => {
     `Rejoins-moi sur ${inviteLink.value}`;
 });
 
-// URLs de partage stats pour desktop
-const statsShareUrls = computed(() => {
+// URLs de partage dynamiques selon le mode
+const currentShareUrls = computed(() => {
   const url = encodeURIComponent(inviteLink.value);
-  const text = encodeURIComponent(statsText.value);
+  const text = shareMode.value === 'stats'
+    ? encodeURIComponent(statsText.value)
+    : encodeURIComponent(shareText);
+
   return {
-    twitter: `https://twitter.com/intent/tweet?text=${text}`,
+    twitter: `https://twitter.com/intent/tweet?text=${text}${shareMode.value === 'game' ? '&url=' + url : ''}`,
     facebook: `https://www.facebook.com/sharer/sharer.php?u=${url}`,
-    linkedin: `https://www.linkedin.com/sharing/share-offsite/?url=${url}`,
-    whatsapp: `https://wa.me/?text=${text}`
+    // Instagram n'a pas d'API de partage web, on redirige vers le profil BORDUR
+    instagram: 'https://instagram.com/bordur.game',
+    // TikTok n'a pas d'API de partage web, on redirige vers le profil BORDUR
+    tiktok: 'https://tiktok.com/@bordur.game',
+    whatsapp: `https://wa.me/?text=${text}${shareMode.value === 'game' ? '%20' + url : ''}`
   };
 });
 
@@ -1093,16 +1047,43 @@ watch(authLoading, (isLoading, wasLoading) => {
 /* ========================================
    Share Section
    ======================================== */
-.share-section {
+.share-tabs {
   display: flex;
-  flex-direction: column;
-  gap: var(--space-sm);
+  gap: 4px;
+  margin-bottom: var(--space-sm);
+  padding: 4px;
+  background: #1a1d21;
+  border-radius: 8px;
 }
 
-.share-section--stats {
-  margin-top: var(--space-md);
-  padding-top: var(--space-md);
-  border-top: 1px solid #2d3238;
+.share-tab {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  padding: 8px 12px;
+  border: none;
+  border-radius: 6px;
+  background: transparent;
+  color: #6b7280;
+  font-size: 13px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.share-tab:hover {
+  color: #9ca3af;
+}
+
+.share-tab--active {
+  background: #2d3238;
+  color: #e8e9eb;
+}
+
+.share-description {
+  margin-bottom: var(--space-sm);
 }
 
 .share-buttons {
@@ -1137,7 +1118,7 @@ watch(authLoading, (isLoading, wasLoading) => {
 }
 
 .share-buttons--copy {
-  margin-top: var(--space-xs);
+  margin-top: var(--space-sm);
 }
 
 /* Social share buttons */
@@ -1150,16 +1131,15 @@ watch(authLoading, (isLoading, wasLoading) => {
   display: flex;
   align-items: center;
   justify-content: center;
-  width: 40px;
-  height: 40px;
-  border-radius: 8px;
+  width: 44px;
+  height: 44px;
+  border-radius: 10px;
   color: #fff;
   transition: transform 0.15s ease, opacity 0.15s ease;
 }
 
 .share-social-btn:hover {
-  transform: scale(1.1);
-  opacity: 0.9;
+  transform: scale(1.08);
 }
 
 .share-social-btn--twitter {
@@ -1170,8 +1150,13 @@ watch(authLoading, (isLoading, wasLoading) => {
   background: #1877f2;
 }
 
-.share-social-btn--linkedin {
-  background: #0a66c2;
+.share-social-btn--instagram {
+  background: linear-gradient(45deg, #f09433 0%, #e6683c 25%, #dc2743 50%, #cc2366 75%, #bc1888 100%);
+}
+
+.share-social-btn--tiktok {
+  background: #000;
+  position: relative;
 }
 
 .share-social-btn--whatsapp {
@@ -1595,7 +1580,20 @@ watch(authLoading, (isLoading, wasLoading) => {
     font-size: 18px;
   }
 
-  /* Share buttons mobile */
+  /* Share section mobile */
+  .share-tabs {
+    margin-bottom: var(--space-xs);
+  }
+
+  .share-tab {
+    font-size: 12px;
+    padding: 6px 8px;
+  }
+
+  .share-social {
+    justify-content: center;
+  }
+
   .share-buttons {
     flex-direction: column;
   }
