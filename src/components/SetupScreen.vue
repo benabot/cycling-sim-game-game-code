@@ -248,22 +248,24 @@
                       </select>
                     </div>
                     <div class="ai-field">
-                      <span class="type-caption">Comportement</span>
+                      <span class="type-caption">Style de jeu</span>
                       <select v-model="player.personality" @change="updatePlayer(index)" class="select select--sm">
                         <option value="">Aléatoire</option>
-                        <option value="attacker">Attaquant</option>
-                        <option value="conservative">Conservateur</option>
+                        <option value="attacker">Offensif</option>
+                        <option value="conservative">Prudent</option>
                         <option value="opportunist">Opportuniste</option>
                         <option value="balanced">Équilibré</option>
                       </select>
+                      <span class="ai-field-hint">Draft et décisions de course</span>
                     </div>
                     <div class="ai-field">
-                      <span class="type-caption">Profil tactique</span>
+                      <span class="type-caption">Gestion du risque</span>
                       <select v-model="player.aiProfile" @change="updatePlayer(index)" class="select select--sm">
-                        <option value="conservateur">Conservateur</option>
-                        <option value="equilibre">Équilibré</option>
-                        <option value="opportuniste">Opportuniste</option>
+                        <option value="conservateur">Prudent</option>
+                        <option value="equilibre">Neutre</option>
+                        <option value="opportuniste">Agressif</option>
                       </select>
+                      <span class="ai-field-hint">Prudence face au vent et aux pavés</span>
                     </div>
                   </div>
                 </div>
@@ -1414,6 +1416,12 @@ initializePlayers();
   display: flex;
   flex-direction: column;
   gap: var(--space-xs);
+}
+
+.ai-field-hint {
+  font-size: 11px;
+  color: var(--sp-text-muted);
+  line-height: 1.3;
 }
 
 .draft-placeholder {
