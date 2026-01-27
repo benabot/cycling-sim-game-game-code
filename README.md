@@ -44,8 +44,9 @@ npm run preview
 
 - Terminologie : remplacement de “domestique” par “coéquipier” dans le lexique statique.
 - Nouvelle page : `public/tutoriel.html` (Tutoriel — Bien démarrer sur BORDUR).
-- Maillage interne : lien “Tutoriels” ajouté depuis la landing + footers des pages statiques, et liens de retour sur la page tutoriel.
+- Maillage interne : section “Ressources” sur la landing + lien “Tutoriels” dans les footers statiques, et liens de retour sur la page tutoriel.
 - Sitemap : `public/sitemap.xml` mis à jour avec l’URL du tutoriel et les dates.
+- SEO vidéo : ajout du balisage VideoObject et des meta og:video sur la page tutoriel.
 
 ## Ce que le projet fait
 
