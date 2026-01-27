@@ -122,11 +122,101 @@
             margin: 24px 0;
             border-radius: 4px;
         }
-        .footer-nav {
-            margin-top: 48px;
-            padding-top: 24px;
+        .siteFooter {
             border-top: 1px solid var(--line);
-            text-align: center;
+            margin-top: 48px;
+            padding: 40px 0 56px;
+        }
+        .footerInner {
+            display: flex;
+            gap: 28px;
+            align-items: flex-start;
+            justify-content: space-between;
+        }
+        .footerBrandTitle {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            font-size: 18px;
+        }
+        .footerBrandIcon {
+            width: 36px;
+            height: 36px;
+        }
+        .footerBrandTagline {
+            color: var(--muted);
+            margin: 8px 0 4px;
+        }
+        .footerMeta {
+            color: var(--muted);
+            font-size: 14px;
+        }
+        .footerMeta a {
+            color: var(--accent);
+            text-decoration: none;
+        }
+        .footerMeta a:hover {
+            text-decoration: underline;
+        }
+        .footerLinks {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px 14px;
+            justify-content: flex-end;
+            margin-bottom: 16px;
+        }
+        .footerLinks a {
+            color: var(--muted);
+            text-decoration: none;
+            font-size: 14px;
+        }
+        .footerLinks a:hover {
+            color: var(--text);
+            text-decoration: underline;
+        }
+        .footerRight {
+            display: flex;
+            flex-direction: column;
+            align-items: flex-end;
+            gap: 12px;
+        }
+        .footerSocial {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+        .footerSocialLabel {
+            font-size: 12px;
+            letter-spacing: 2px;
+            color: var(--muted);
+        }
+        .footerSocialIcons {
+            display: flex;
+            gap: 12px;
+        }
+        .socialLink {
+            color: var(--muted);
+            width: 32px;
+            height: 32px;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 50%;
+            background: rgba(255, 255, 255, 0.06);
+            transition: color 0.2s, background 0.2s;
+        }
+        .socialLink:hover {
+            color: var(--text);
+            background: rgba(255, 255, 255, 0.12);
+        }
+        .socialIcon { width: 16px; height: 16px; }
+
+        @media (max-width: 840px) {
+            .footerInner { flex-direction: column; align-items: center; text-align: center; }
+            .footerRight { align-items: center; }
+            .footerLinks { justify-content: center; white-space: normal; }
+            .footerSocial { align-items: center; }
+            .footerBrandTitle { justify-content: center; }
         }
     </style>
 </head>
@@ -268,11 +358,113 @@
             Pour toute question concernant les présentes CGU ou le Service, vous pouvez nous contacter à l'adresse : <a href="mailto:contact@BORDUR.fr">contact@BORDUR.fr</a>
         </p>
 
-        <div class="footer-nav">
-            <a href="/" class="back">← Retour à l'accueil</a>
-            <span style="color: var(--muted); margin: 0 12px;">•</span>
-            <a href="/confidentialite.html">Politique de Confidentialité</a>
-        </div>
     </div>
+
+    <footer class="siteFooter wrap" aria-label="Pied de page">
+        <div class="footerInner">
+            <div class="footerBrand">
+                <div class="footerBrandTitle">
+                    <strong>BORDUR</strong>
+                    <svg
+                        class="footerBrandIcon"
+                        width="128"
+                        height="128"
+                        viewBox="0 0 128 128"
+                        fill="none"
+                        xmlns="http://www.w3.org/2000/svg"
+                        aria-hidden="true"
+                        focusable="false"
+                    >
+                        <g clip-path="url(#clip0_31_49)">
+                            <line x1="123.868" y1="52.0197" x2="106.227" y2="55.5991" stroke="currentColor" stroke-width="5" stroke-linecap="round"/>
+                            <line x1="124.111" y1="73.9868" x2="106.471" y2="77.5661" stroke="currentColor" stroke-width="5" stroke-linecap="round"/>
+                            <path d="M26 40C26 29 33 23 44 23H84C95 23 102 29 102 40V88C102 102 93 111 80 111H48C35 111 26 102 26 88V40Z" stroke="currentColor" stroke-width="6" stroke-linecap="round" stroke-linejoin="round"/>
+                            <path d="M44 43.5999C48.1974 43.5999 51.6 40.1973 51.6 35.9999C51.6 31.8025 48.1974 28.3999 44 28.3999C39.8027 28.3999 36.4 31.8025 36.4 35.9999C36.4 40.1973 39.8027 43.5999 44 43.5999Z" stroke="currentColor" stroke-width="5"/>
+                            <path d="M84 43.5999C88.1974 43.5999 91.6 40.1973 91.6 35.9999C91.6 31.8025 88.1974 28.3999 84 28.3999C79.8027 28.3999 76.4 31.8025 76.4 35.9999C76.4 40.1973 79.8027 43.5999 84 43.5999Z" stroke="currentColor" stroke-width="5"/>
+                            <mask id="path-6-inside-1_31_49" fill="currentColor">
+                                <path d="M46.8892 98V51.4545H65.5256C68.9498 51.4545 71.8059 51.9621 74.0938 52.9773C76.3816 53.9924 78.1013 55.4015 79.2528 57.2045C80.4044 58.9924 80.9801 61.053 80.9801 63.3864C80.9801 65.2045 80.6165 66.803 79.8892 68.1818C79.1619 69.5455 78.1619 70.6667 76.8892 71.5455C75.6316 72.4091 74.1922 73.0227 72.571 73.3864V73.8409C74.3438 73.9167 76.0028 74.4167 77.5483 75.3409C79.1089 76.2652 80.3741 77.5606 81.3438 79.2273C82.3134 80.8788 82.7983 82.8485 82.7983 85.1364C82.7983 87.6061 82.1847 89.8106 80.9574 91.75C79.7453 93.6742 77.9498 95.197 75.571 96.3182C73.1922 97.4394 70.2604 98 66.7756 98H46.8892ZM56.7301 89.9545H64.7528C67.4953 89.9545 69.4953 89.4318 70.7528 88.3864C72.0104 87.3258 72.6392 85.9167 72.6392 84.1591C72.6392 82.8712 72.3286 81.7348 71.7074 80.75C71.0862 79.7652 70.1998 78.9924 69.0483 78.4318C67.9119 77.8712 66.5559 77.5909 64.9801 77.5909H56.7301V89.9545ZM56.7301 70.9318H64.0256C65.3741 70.9318 66.571 70.697 67.6165 70.2273C68.6771 69.7424 69.5104 69.0606 70.1165 68.1818C70.7377 67.303 71.0483 66.25 71.0483 65.0227C71.0483 63.3409 70.4498 61.9848 69.2528 60.9545C68.071 59.9242 66.3892 59.4091 64.2074 59.4091H56.7301V70.9318Z"/>
+                            </mask>
+                            <path d="M46.8892 98V51.4545H65.5256C68.9498 51.4545 71.8059 51.9621 74.0938 52.9773C76.3816 53.9924 78.1013 55.4015 79.2528 57.2045C80.4044 58.9924 80.9801 61.053 80.9801 63.3864C80.9801 65.2045 80.6165 66.803 79.8892 68.1818C79.1619 69.5455 78.1619 70.6667 76.8892 71.5455C75.6316 72.4091 74.1922 73.0227 72.571 73.3864V73.8409C74.3438 73.9167 76.0028 74.4167 77.5483 75.3409C79.1089 76.2652 80.3741 77.5606 81.3438 79.2273C82.3134 80.8788 82.7983 82.8485 82.7983 85.1364C82.7983 87.6061 82.1847 89.8106 80.9574 91.75C79.7453 93.6742 77.9498 95.197 75.571 96.3182C73.1922 97.4394 70.2604 98 66.7756 98H46.8892ZM56.7301 89.9545H64.7528C67.4953 89.9545 69.4953 89.4318 70.7528 88.3864C72.0104 87.3258 72.6392 85.9167 72.6392 84.1591C72.6392 82.8712 72.3286 81.7348 71.7074 80.75C71.0862 79.7652 70.1998 78.9924 69.0483 78.4318C67.9119 77.8712 66.5559 77.5909 64.9801 77.5909H56.7301V89.9545ZM56.7301 70.9318H64.0256C65.3741 70.9318 66.571 70.697 67.6165 70.2273C68.6771 69.7424 69.5104 69.0606 70.1165 68.1818C70.7377 67.303 71.0483 66.25 71.0483 65.0227C71.0483 63.3409 70.4498 61.9848 69.2528 60.9545C68.071 59.9242 66.3892 59.4091 64.2074 59.4091H56.7301V70.9318Z" fill="currentColor"/>
+                            <path d="M46.8892 98H45.8892V99H46.8892V98ZM46.8892 51.4545V50.4545H45.8892V51.4545H46.8892ZM74.0938 52.9773L73.6882 53.8913V53.8913L74.0938 52.9773ZM79.2528 57.2045L78.41 57.7428L78.4121 57.746L79.2528 57.2045ZM79.8892 68.1818L80.7716 68.6524L80.7737 68.6484L79.8892 68.1818ZM76.8892 71.5455L77.4553 72.3698L77.4574 72.3684L76.8892 71.5455ZM72.571 73.3864L72.3522 72.4106L71.571 72.5858V73.3864H72.571ZM72.571 73.8409H71.571V74.7991L72.5283 74.84L72.571 73.8409ZM77.5483 75.3409L77.035 76.1992L77.0387 76.2013L77.5483 75.3409ZM81.3438 79.2273L80.4794 79.7302L80.4814 79.7336L81.3438 79.2273ZM80.9574 91.75L80.1124 91.2153L80.1113 91.217L80.9574 91.75ZM75.571 96.3182L75.1447 95.4136V95.4136L75.571 96.3182ZM56.7301 89.9545H55.7301V90.9545H56.7301V89.9545ZM70.7528 88.3864L71.3921 89.1554L71.3975 89.1508L70.7528 88.3864ZM71.7074 80.75L70.8616 81.2835V81.2835L71.7074 80.75ZM69.0483 78.4318L68.6059 79.3286L68.6106 79.3309L69.0483 78.4318ZM56.7301 77.5909V76.5909H55.7301V77.5909H56.7301ZM56.7301 70.9318H55.7301V71.9318H56.7301V70.9318ZM67.6165 70.2273L68.0263 71.1395L68.0322 71.1367L67.6165 70.2273ZM70.1165 68.1818L69.2998 67.6045L69.2933 67.6141L70.1165 68.1818ZM69.2528 60.9545L68.5957 61.7083L68.6005 61.7124L69.2528 60.9545ZM56.7301 59.4091V58.4091H55.7301V59.4091H56.7301ZM46.8892 98H47.8892V51.4545H46.8892H45.8892V98H46.8892ZM46.8892 51.4545V52.4545H65.5256V51.4545V50.4545H46.8892V51.4545ZM65.5256 51.4545V52.4545C68.8584 52.4545 71.5658 52.9496 73.6882 53.8913L74.0938 52.9773L74.4993 52.0632C72.0459 50.9746 69.0412 50.4545 65.5256 50.4545V51.4545ZM74.0938 52.9773L73.6882 53.8913C75.8278 54.8407 77.3812 56.1318 78.4101 57.7428L79.2528 57.2045L80.0956 56.6663C78.8215 54.6712 76.9355 53.1442 74.4993 52.0632L74.0938 52.9773ZM79.2528 57.2045L78.4121 57.746C79.4496 59.3569 79.9801 61.2257 79.9801 63.3864H80.9801H81.9801C81.9801 60.8804 81.3591 58.628 80.0936 56.6631L79.2528 57.2045ZM80.9801 63.3864H79.9801C79.9801 65.0691 79.6444 66.5025 79.0047 67.7153L79.8892 68.1818L80.7737 68.6484C81.5885 67.1036 81.9801 65.34 81.9801 63.3864H80.9801ZM79.8892 68.1818L79.0069 67.7112C78.3547 68.9339 77.4625 69.9344 76.321 70.7226L76.8892 71.5455L77.4574 72.3684C78.8614 71.399 79.9691 70.157 80.7716 68.6524L79.8892 68.1818ZM76.8892 71.5455L76.3231 70.7211C75.1796 71.5064 73.8602 72.0724 72.3522 72.4106L72.571 73.3864L72.7899 74.3621C74.5243 73.9731 76.0837 73.3117 77.4553 72.3698L76.8892 71.5455ZM72.571 73.3864H71.571V73.8409H72.571H73.571V73.3864H72.571ZM72.571 73.8409L72.5283 74.84C74.1324 74.9085 75.6301 75.3589 77.035 76.1991L77.5483 75.3409L78.0616 74.4827C76.3756 73.4744 74.5551 72.9248 72.6137 72.8418L72.571 73.8409ZM77.5483 75.3409L77.0387 76.2013C78.4432 77.0331 79.5899 78.2014 80.4794 79.7302L81.3438 79.2273L82.2081 78.7244C81.1582 76.9198 79.7746 75.4972 78.0579 74.4805L77.5483 75.3409ZM81.3438 79.2273L80.4814 79.7336C81.3449 81.2042 81.7983 82.9917 81.7983 85.1364H82.7983H83.7983C83.7983 82.7052 83.282 80.5534 82.2061 78.7209L81.3438 79.2273ZM82.7983 85.1364H81.7983C81.7983 87.4318 81.2307 89.4481 80.1124 91.2153L80.9574 91.75L81.8024 92.2847C83.1387 90.1731 83.7983 87.7804 83.7983 85.1364H82.7983ZM80.9574 91.75L80.1113 91.217C79.0159 92.9559 77.3785 94.3607 75.1447 95.4136L75.571 96.3182L75.9974 97.2227C78.5211 96.0332 80.4746 94.3926 81.8035 92.283L80.9574 91.75ZM75.571 96.3182L75.1447 95.4136C72.9352 96.455 70.1587 97 66.7756 97V98V99C70.3621 99 73.4493 98.4238 75.9974 97.2227L75.571 96.3182ZM66.7756 98V97H46.8892V98V99H66.7756V98ZM56.7301 89.9545V90.9545H64.7528V89.9545V88.9545H56.7301V89.9545ZM64.7528 89.9545V90.9545C67.5835 90.9545 69.8683 90.4222 71.3921 89.1553L70.7528 88.3864L70.1136 87.6174C69.1223 88.4415 67.407 88.9545 64.7528 88.9545V89.9545ZM70.7528 88.3864L71.3975 89.1508C72.8974 87.8859 73.6392 86.1884 73.6392 84.1591H72.6392H71.6392C71.6392 85.6449 71.1234 86.7656 70.1081 87.6219L70.7528 88.3864ZM72.6392 84.1591H73.6392C73.6392 82.7031 73.2856 81.3777 72.5532 80.2165L71.7074 80.75L70.8616 81.2835C71.3716 82.092 71.6392 83.0393 71.6392 84.1591H72.6392ZM71.7074 80.75L72.5532 80.2165C71.8229 79.0587 70.7877 78.1664 69.486 77.5327L69.0483 78.4318L68.6106 79.3309C69.612 79.8185 70.3495 80.4716 70.8616 81.2835L71.7074 80.75ZM69.0483 78.4318L69.4907 77.535C68.1874 76.892 66.6728 76.5909 64.9801 76.5909V77.5909V78.5909C66.439 78.5909 67.6365 78.8504 68.6059 79.3286L69.0483 78.4318ZM64.9801 77.5909V76.5909H56.7301V77.5909V78.5909H64.9801V77.5909ZM56.7301 77.5909H55.7301V89.9545H56.7301H57.7301V77.5909H56.7301ZM56.7301 70.9318V71.9318H64.0256V70.9318V69.9318H56.7301V70.9318ZM64.0256 70.9318V71.9318C65.4907 71.9318 66.8312 71.6764 68.0263 71.1394L67.6165 70.2273L67.2067 69.3151C66.3108 69.7176 65.2574 69.9318 64.0256 69.9318V70.9318ZM67.6165 70.2273L68.0322 71.1367C69.2414 70.584 70.2218 69.7905 70.9397 68.7495L70.1165 68.1818L69.2933 67.6141C68.799 68.3307 68.1128 68.9008 67.2007 69.3178L67.6165 70.2273ZM70.1165 68.1818L70.9331 68.7591C71.6899 67.6884 72.0483 66.4266 72.0483 65.0227H71.0483H70.0483C70.0483 66.0734 69.7855 66.9176 69.2999 67.6046L70.1165 68.1818ZM71.0483 65.0227H72.0483C72.0483 63.0712 71.3387 61.4305 69.9052 60.1966L69.2528 60.9545L68.6005 61.7124C69.561 62.5392 70.0483 63.6106 70.0483 65.0227H71.0483ZM69.2528 60.9545L69.91 60.2008C68.4857 58.9591 66.5365 58.4091 64.2074 58.4091V59.4091V60.4091C66.2419 60.4091 67.6563 60.8894 68.5957 61.7083L69.2528 60.9545ZM64.2074 59.4091V58.4091H56.7301V59.4091V60.4091H64.2074V59.4091ZM56.7301 59.4091H55.7301V70.9318H56.7301H57.7301V59.4091H56.7301Z" fill="currentColor" mask="url(#path-6-inside-1_31_49)"/>
+                        </g>
+                        <defs>
+                            <clipPath id="clip0_31_49">
+                                <rect width="128" height="128" fill="currentColor"/>
+                            </clipPath>
+                        </defs>
+                    </svg>
+                </div>
+                <div class="footerBrandTagline">Jeu de plateau – course cycliste tactique (tour par tour).</div>
+                <div class="footerMeta">
+                    © <span id="year"></span> —
+                    <a href="https://beabot.fr" target="_blank">beAbot</a>
+                </div>
+            </div>
+
+            <div class="footerRight">
+                <nav class="footerLinks" aria-label="Liens légaux">
+                    <a href="/">Accueil</a>
+                    <a href="/app/">Jouer</a>
+                    <a href="/lexique-cyclisme.html">Lexique</a>
+                    <a href="/tutoriel.html">Tutoriels</a>
+                    <a href="/confidentialite.html">Confidentialité</a>
+                    <a href="https://beabot.fr/contact/" target="_blank">Contact</a>
+                </nav>
+
+                <div class="footerSocial" aria-label="Suivre BORDUR">
+                    <div class="footerSocialLabel">SUIVRE BORDUR</div>
+                    <div class="footerSocialIcons">
+                        <a
+                            class="socialLink socialLink--x"
+                            href="https://x.com/bordur_game"
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            aria-label="BORDUR sur X"
+                        >
+                            <svg class="socialIcon" viewBox="0 0 24 24" aria-hidden="true" focusable="false">
+                                <path
+                                    fill="currentColor"
+                                    d="M18.244 2.25h3.308l-7.227 8.26L22.5 21.75h-6.7l-5.25-6.86-6.01 6.86H1.23l7.73-8.84L1.5 2.25h6.86l4.75 6.23 5.134-6.23z"
+                                />
+                            </svg>
+                        </a>
+                        <a
+                            class="socialLink socialLink--yt"
+                            href="https://www.youtube.com/@bordur_game"
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            aria-label="BORDUR sur YouTube"
+                        >
+                            <svg class="socialIcon" viewBox="0 0 24 24" aria-hidden="true" focusable="false">
+                                <path
+                                    fill="currentColor"
+                                    d="M21.6 7.2a2.7 2.7 0 0 0-1.9-1.9C18.1 5 12 5 12 5s-6.1 0-7.7.3a2.7 2.7 0 0 0-1.9 1.9A28.6 28.6 0 0 0 2 12a28.6 28.6 0 0 0 .4 4.8 2.7 2.7 0 0 0 1.9 1.9C5.9 19 12 19 12 19s6.1 0 7.7-.3a2.7 2.7 0 0 0 1.9-1.9A28.6 28.6 0 0 0 22 12a28.6 28.6 0 0 0-.4-4.8zM10 15V9l5 3-5 3z"
+                                />
+                            </svg>
+                        </a>
+                        <a
+                            class="socialLink socialLink--ig"
+                            href="https://www.instagram.com/bordur_game/"
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            aria-label="BORDUR sur Instagram"
+                        >
+                            <svg class="socialIcon" viewBox="0 0 24 24" aria-hidden="true" focusable="false">
+                                <rect x="3" y="3" width="18" height="18" rx="5" ry="5" fill="none" stroke="currentColor" stroke-width="2"/>
+                                <circle cx="12" cy="12" r="4" fill="none" stroke="currentColor" stroke-width="2"/>
+                                <circle cx="17" cy="7" r="1.5" fill="currentColor"/>
+                            </svg>
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </footer>
+
+    <script>
+        document.getElementById("year")?.appendChild(
+            document.createTextNode(String(new Date().getFullYear()))
+        );
+    </script>
 </body>
 </html>
