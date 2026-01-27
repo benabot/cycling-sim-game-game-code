@@ -40,6 +40,13 @@ npm run build
 npm run preview
 ```
 
+## Notes pages statiques (2026-01-27)
+
+- Terminologie : remplacement de “domestique” par “coéquipier” dans le lexique statique.
+- Nouvelle page : `public/tutoriel.html` (Tutoriel — Bien démarrer sur BORDUR).
+- Maillage interne : lien “Tutoriels” ajouté depuis la landing + footers des pages statiques, et liens de retour sur la page tutoriel.
+- Sitemap : `public/sitemap.xml` mis à jour avec l’URL du tutoriel et les dates.
+
 ## Ce que le projet fait
 
 ### Gameplay
