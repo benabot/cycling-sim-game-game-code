@@ -4,14 +4,14 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
 
-  <title>Tutoriel — Bien démarrer sur BORDUR</title>
+  <title>Parcours BORDUR — Choisir sa classique</title>
   <meta
     name="description"
-    content="Tutoriel vidéo pour bien démarrer sur BORDUR : principes, interface et premières décisions de course."
+    content="Découvrez les parcours BORDUR : Nord, Ardennaise, Lombarde, Riviera. Choisis le terrain qui correspond à ton style de course."
   >
   <meta name="robots" content="index,follow">
 
-  <link rel="canonical" href="https://bordur.fr/tutoriel.html">
+  <link rel="canonical" href="https://bordur.fr/parcours/">
   <link rel="icon" href="/favicon.ico" sizes="any">
   <link rel="icon" type="image/png" href="/favicon-32x32.png" sizes="32x32">
   <link rel="icon" type="image/svg+xml" href="/favicon-bib-B-outline.svg">
@@ -23,33 +23,16 @@
   <meta property="og:type" content="website">
   <meta property="og:locale" content="fr_FR">
   <meta property="og:site_name" content="BORDUR">
-  <meta property="og:title" content="Tutoriel — Bien démarrer sur BORDUR">
-  <meta property="og:description" content="Tutoriel vidéo pour bien démarrer sur BORDUR.">
-  <meta property="og:url" content="https://bordur.fr/tutoriel.html">
-  <meta property="og:image" content="https://bordur.fr/intro/chassepatate.webp">
-  <meta property="og:video:url" content="https://www.youtube.com/watch?v=YvWhbvmsW78">
-  <meta property="og:video:type" content="text/html">
-  <meta property="og:video:width" content="1280">
-  <meta property="og:video:height" content="720">
+  <meta property="og:title" content="Parcours BORDUR — Choisir sa classique">
+  <meta property="og:description" content="Nord, Ardennaise, Lombarde, Riviera : découvre les parcours et les styles de course.">
+  <meta property="og:url" content="https://bordur.fr/parcours/">
+  <meta property="og:image" content="https://bordur.fr/og/parcours.webp">
 
   <!-- Twitter -->
   <meta name="twitter:card" content="summary_large_image">
-  <meta name="twitter:title" content="Tutoriel — Bien démarrer sur BORDUR">
-  <meta name="twitter:description" content="Tutoriel vidéo pour bien démarrer sur BORDUR.">
-  <meta name="twitter:image" content="https://bordur.fr/intro/chassepatate.webp">
-
-  <script type="application/ld+json">
-  {
-    "@context": "https://schema.org",
-    "@type": "VideoObject",
-    "name": "BORDUR — Configurer une course (tutoriel complet)",
-    "description": "Tutoriel vidéo pour bien démarrer sur BORDUR : interface, décisions clés et premières courses.",
-    "thumbnailUrl": "https://img.youtube.com/vi/YvWhbvmsW78/maxresdefault.jpg",
-    "uploadDate": "2026-01-27",
-    "embedUrl": "https://www.youtube.com/embed/YvWhbvmsW78",
-    "contentUrl": "https://www.youtube.com/watch?v=YvWhbvmsW78"
-  }
-  </script>
+  <meta name="twitter:title" content="Parcours BORDUR — Choisir sa classique">
+  <meta name="twitter:description" content="Nord, Ardennaise, Lombarde, Riviera : découvre les parcours et les styles de course.">
+  <meta name="twitter:image" content="https://bordur.fr/og/parcours.webp">
 
   <script>
     (function () {
@@ -86,7 +69,7 @@
       --accent: #e9c46a;
       --accent2: #63b3ed;
       --radius: 12px;
-      --max: 960px;
+      --max: 980px;
       --pad: 20px;
       --font-ui: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;
       --font-display: ui-serif, "Iowan Old Style", "Palatino Linotype", Palatino, Georgia, serif;
@@ -116,14 +99,14 @@
 
     header h1 {
       font-family: var(--font-display);
-      font-size: clamp(28px, 5vw, 42px);
+      font-size: clamp(28px, 5vw, 44px);
       margin-bottom: 8px;
     }
 
     header p {
       color: var(--muted);
       font-size: 16px;
-      max-width: 640px;
+      max-width: 660px;
     }
 
     .breadcrumb {
@@ -161,55 +144,64 @@
       padding: 32px 0 48px;
     }
 
-    .video-section {
+    .section {
       background: var(--panel);
       border: 1px solid var(--line);
       border-radius: var(--radius);
       padding: 20px;
-      margin-top: 18px;
-      margin-bottom: 32px;
+      margin-bottom: 28px;
     }
 
-    .video-shell {
-      position: relative;
-      width: 100%;
-      padding-top: 56.25%;
-      border-radius: calc(var(--radius) - 2px);
-      overflow: hidden;
-      background: #000;
-    }
-
-    .video-shell iframe {
-      position: absolute;
-      inset: 0;
-      width: 100%;
-      height: 100%;
-      border: 0;
-    }
-
-    .video-caption {
-      margin-top: 16px;
-      color: var(--muted);
-      font-size: 14px;
-    }
-
-    .coming-soon {
-      background: var(--panel2);
-      border: 1px solid var(--line);
-      border-radius: var(--radius);
-      padding: 20px;
-    }
-
-    .coming-soon h2 {
+    .section h2 {
       font-family: var(--font-display);
       font-size: 24px;
       color: var(--accent);
+      margin-bottom: 10px;
+    }
+
+    .section p {
+      color: var(--muted);
+    }
+
+    .bullets {
+      margin-top: 12px;
+      padding-left: 18px;
+      color: var(--muted);
+    }
+
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+      gap: 16px;
+    }
+
+    .card {
+      background: var(--panel2);
+      border: 1px solid var(--line);
+      border-radius: var(--radius);
+      padding: 18px;
+    }
+
+    .card h3 {
+      font-size: 18px;
       margin-bottom: 8px;
     }
 
-    .coming-soon p {
-      color: var(--muted);
+    .card p { color: var(--muted); }
+
+    .cta {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 10px 16px;
+      border-radius: 999px;
+      background: var(--accent);
+      color: #0b0f14;
+      font-weight: 600;
+      text-decoration: none;
     }
+
+    .cta:hover { filter: brightness(0.95); }
 
     .siteFooter {
       border-top: 1px solid var(--line);
@@ -329,45 +321,75 @@
     <nav class="breadcrumb" aria-label="Fil d'Ariane">
       <a href="/">Accueil</a>
       <span aria-hidden="true">→</span>
-      <span>Tutoriel</span>
+      <span>Parcours</span>
     </nav>
-    <h1>Tutoriel — Bien démarrer sur BORDUR</h1>
+    <h1>Parcours BORDUR — Choisir sa classique</h1>
     <p>
-      Une prise en main rapide pour comprendre l'interface, les décisions clés
-      et les premières courses sur BORDUR.
+      Nord, Ardennaise, Lombarde, Riviera : chaque parcours favorise un style
+      de course différent. Trouve le terrain qui correspond à ta tactique.
     </p>
     <nav class="page-links" aria-label="Liens rapides">
-      <a href="/">Accueil</a>
-      <a href="/app/">Jouer</a>
       <a href="/regles.html">Règles</a>
       <a href="/lexique-cyclisme.html">Lexique</a>
-      <a href="/cgu.html">CGU</a>
-      <a href="/confidentialite.html">Confidentialité</a>
+      <a href="/tutoriel.html">Tutoriels</a>
+      <a href="/app/">Préparer une course</a>
     </nav>
   </header>
 
   <main class="wrap">
-    <section class="video-section" aria-labelledby="video-title">
-      <h2 id="video-title" style="font-size: 18px; margin-bottom: 12px;">Vidéo de démarrage</h2>
-      <div class="video-shell">
-        <iframe
-          src="https://www.youtube.com/embed/YvWhbvmsW78"
-          title="Tutoriel BORDUR — Bien démarrer"
-          allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
-          allowfullscreen
-          loading="lazy"
-        ></iframe>
-      </div>
-      <p class="video-caption">Astuce : mets la vidéo en plein écran sur mobile pour suivre les étapes en direct.</p>
+    <section class="section" aria-labelledby="strategie">
+      <h2 id="strategie">Stratégie</h2>
+      <p>Avant de lancer une course, pense au profil du parcours :</p>
+      <ul class="bullets">
+        <li>Un terrain exigeant récompense la gestion d'énergie et le placement.</li>
+        <li>Les classiques rapides favorisent les attaques bien timées.</li>
+        <li>Les parcours accidentés punissent les erreurs de tempo.</li>
+      </ul>
     </section>
 
-    <section class="coming-soon" aria-labelledby="coming-title">
-      <h2 id="coming-title">D'autres tutoriels arrivent</h2>
+    <section class="section" aria-labelledby="bordur">
+      <h2 id="bordur">Dans BORDUR</h2>
       <p>
-        Nous préparons des formats courts pour les pavés, la gestion de l'énergie
-        et la stratégie d'équipe. Reste à l'écoute !
+        Le choix du parcours influence la longueur, la répartition des terrains,
+        et les moments clés où tu dois protéger tes coureurs ou lancer l'offensive.
       </p>
     </section>
+
+    <section class="section" aria-labelledby="list">
+      <h2 id="list">Choisir un parcours</h2>
+      <div class="grid">
+        <article class="card">
+          <h3>Nord — Pavés et bordures</h3>
+          <p>Course d'usure : placement avant les secteurs et gestion des risques.</p>
+          <p style="margin-top: 10px;">
+            → <a href="/parcours/nord/" style="color: var(--accent); text-decoration: none;">Voir Nord</a>
+          </p>
+        </article>
+        <article class="card">
+          <h3>Ardennaise — Puncheurs en action</h3>
+          <p>Relances courtes, bosses successives, opportunités d'attaque.</p>
+          <p style="margin-top: 10px;">
+            → <a href="/parcours/ardennaise/" style="color: var(--accent); text-decoration: none;">Voir Ardennaise</a>
+          </p>
+        </article>
+        <article class="card">
+          <h3>Lombarde — Climb & tempo</h3>
+          <p>Montagne longue, rythme élevé, gestion fine des ressources.</p>
+          <p style="margin-top: 10px;">
+            → <a href="/parcours/lombarde/" style="color: var(--accent); text-decoration: none;">Voir Lombarde</a>
+          </p>
+        </article>
+        <article class="card">
+          <h3>Riviera — Rapide et nerveuse</h3>
+          <p>Terrain roulant, sprints et bordures à surveiller.</p>
+          <p style="margin-top: 10px;">
+            → <a href="/parcours/riviera/" style="color: var(--accent); text-decoration: none;">Voir Riviera</a>
+          </p>
+        </article>
+      </div>
+    </section>
+
+    <a class="cta" href="/app/">Préparer une course</a>
   </main>
 
   <footer class="siteFooter wrap" aria-label="Pied de page">
@@ -415,9 +437,9 @@
         <nav class="footerLinks" aria-label="Liens légaux">
           <a href="/">Accueil</a>
           <a href="/app/">Jouer</a>
-          <a href="/parcours/">Parcours</a>
           <a href="/regles.html">Règles</a>
           <a href="/lexique-cyclisme.html">Lexique</a>
+          <a href="/tutoriel.html">Tutoriels</a>
           <a href="/cgu.html">CGU</a>
           <a href="/confidentialite.html">Confidentialité</a>
           <a href="https://beabot.fr/contact/" target="_blank">Contact</a>
