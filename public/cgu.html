@@ -231,7 +231,98 @@
             .footerSocial { align-items: center; }
             .footerBrandTitle { justify-content: center; }
         }
-    </style>
+    
+
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 10px;
+      padding: 12px 14px;
+      border-radius: 12px;
+      border: 1px solid var(--line);
+      text-decoration: none;
+      font-weight: 900;
+      cursor: pointer;
+      user-select: none;
+      white-space: nowrap;
+      transition:
+        transform 120ms ease,
+        filter 120ms ease;
+    }
+
+    .btn:focus {
+      outline: none;
+      box-shadow: 0 0 0 2px rgba(233, 196, 106, 0.2);
+    }
+
+    .btn:hover {
+      filter: brightness(1.08);
+      transform: translateY(-1px);
+    }
+
+    .btn--primary {
+      background: rgba(233, 196, 106, 0.16);
+      border-color: rgba(233, 196, 106, 0.42);
+    }
+
+    .btn--link {
+      background: rgba(17, 24, 36, 0.28);
+      border-color: rgba(232, 238, 247, 0.1);
+      font-weight: 800;
+    }
+
+    .stickyCta {
+      position: fixed;
+      left: 50%;
+      transform: translateX(-50%);
+      bottom: 14px;
+      width: min(var(--max), calc(100% - 2 * var(--pad)));
+      z-index: 999;
+      display: none;
+    }
+
+    .stickyCta__inner {
+      display: flex;
+      justify-content: space-between;
+      gap: 12px;
+      align-items: center;
+      padding: 10px;
+      border-radius: 16px;
+      border: 1px solid rgba(232, 238, 247, 0.14);
+      background: rgba(11, 15, 20, 0.72);
+      backdrop-filter: blur(10px);
+      box-shadow: 0 18px 50px rgba(0, 0, 0, 0.45);
+    }
+
+    .stickyCta__text {
+      display: grid;
+      gap: 2px;
+      padding-left: 6px;
+    }
+
+    .stickyCta__text strong {
+      color: rgba(232, 238, 247, 0.92);
+    }
+
+    .stickyCta__text span {
+      color: var(--muted);
+      font-size: 12px;
+    }
+
+    @media (max-width: 768px) {
+      .stickyCta__text span {
+        display: none;
+      }
+      .stickyCta__inner {
+        justify-content: center;
+      }
+      .stickyCta .btn--link {
+        display: none;
+      }
+    }
+
+  </style>
 </head>
 <body>
     <div class="wrap">
@@ -481,5 +572,42 @@
             document.createTextNode(String(new Date().getFullYear()))
         );
     </script>
+
+
+  <div class="stickyCta" id="stickyCta" aria-label="Action rapide">
+    <div class="stickyCta__inner">
+      <div class="stickyCta__text">
+        <strong>Prêt à lancer une course ?</strong>
+        <span>Choisis un profil, compose le peloton, joue tour par tour.</span>
+      </div>
+      <div style="display: flex; gap: 10px; align-items: center">
+        <a class="btn btn--link" href="/regles.html" data-goatcounter-click="sticky_rules">Règles</a>
+        <a class="btn btn--primary" href="/app/" data-goatcounter-click="sticky_play">Préparer une course</a>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    (function () {
+      const hero = document.querySelector("header");
+      const sticky = document.getElementById("stickyCta");
+      if (!sticky) return;
+      if (!hero) {
+        sticky.style.display = "block";
+        return;
+      }
+
+      const io = new IntersectionObserver(
+        (entries) => {
+          const visible = entries[0]?.isIntersecting;
+          sticky.style.display = visible ? "none" : "block";
+        },
+        { root: null, threshold: 0.15 },
+      );
+
+      io.observe(hero);
+    })();
+  </script>
+
 </body>
 </html>
