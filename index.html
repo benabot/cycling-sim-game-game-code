@@ -60,15 +60,28 @@
     />
 
     <script>
-      try {
-        if (localStorage.getItem('analytics_optout') === '1') {
+      (function () {
+        function isOptedOut() {
+          try {
+            return localStorage.getItem('analytics_optout') === '1';
+          } catch (err) {
+            return false;
+          }
+        }
+
+        if (isOptedOut()) {
           window.goatcounter = window.goatcounter || {};
           window.goatcounter.no_onload = true;
+          return;
         }
-      } catch (err) {}
+
+        var script = document.createElement('script');
+        script.dataset.goatcounter = 'https://bordur.goatcounter.com/count';
+        script.async = true;
+        script.src = '//gc.zgo.at/count.js';
+        document.head.appendChild(script);
+      })();
     </script>
-    <script data-goatcounter="https://bordur.goatcounter.com/count"
-            async src="//gc.zgo.at/count.js"></script>
 
     <!-- JSON-LD: VideoGame + FAQPage -->
     <script type="application/ld+json">
