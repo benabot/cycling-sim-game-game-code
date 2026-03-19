@@ -46,6 +46,36 @@
   force = true
 
 [[redirects]]
+  from = "/lexique-cyclisme/"
+  to = "/lexique-cyclisme.html"
+  status = 301
+  force = true
+
+[[redirects]]
+  from = "/tutoriel/"
+  to = "/tutoriel.html"
+  status = 301
+  force = true
+
+[[redirects]]
+  from = "/regles/"
+  to = "/regles.html"
+  status = 301
+  force = true
+
+[[redirects]]
+  from = "/cgu/"
+  to = "/cgu.html"
+  status = 301
+  force = true
+
+[[redirects]]
+  from = "/confidentialite/"
+  to = "/confidentialite.html"
+  status = 301
+  force = true
+
+[[redirects]]
   from = "/*"
   to = "/404.html"
   status = 404
