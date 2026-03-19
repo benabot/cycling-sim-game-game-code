@@ -193,6 +193,50 @@
       font-size: 14px;
     }
 
+    .lede {
+      margin-top: 18px;
+      margin-bottom: 24px;
+      color: var(--muted);
+      max-width: 760px;
+      font-size: 16px;
+    }
+
+    .video-meta {
+      display: grid;
+      gap: 18px;
+      margin-bottom: 32px;
+    }
+
+    .video-card {
+      background: var(--panel2);
+      border: 1px solid var(--line);
+      border-radius: var(--radius);
+      padding: 18px;
+    }
+
+    .video-card h2 {
+      font-family: var(--font-display);
+      font-size: 24px;
+      color: var(--accent);
+      margin-bottom: 10px;
+    }
+
+    .video-card p,
+    .video-card li {
+      color: var(--muted);
+    }
+
+    .video-card ul,
+    .video-card ol {
+      padding-left: 20px;
+      display: grid;
+      gap: 8px;
+    }
+
+    .video-card strong {
+      color: var(--text);
+    }
+
     .coming-soon {
       background: var(--panel2);
       border: 1px solid var(--line);
@@ -438,18 +482,58 @@
   </header>
 
   <main class="wrap">
+    <p class="lede">
+      Cette vidéo est la ressource principale de cette page. Elle montre comment configurer une
+      première partie sur BORDUR, comprendre les écrans de préparation et partir sur des bases
+      propres avant le début de la course.
+    </p>
+
     <section class="video-section" aria-labelledby="video-title">
-      <h2 id="video-title" style="font-size: 18px; margin-bottom: 12px;">Vidéo de démarrage</h2>
+      <h2 id="video-title" style="font-size: 18px; margin-bottom: 12px;">Vidéo complète — Bien démarrer sur BORDUR</h2>
       <div class="video-shell">
         <iframe
           src="https://www.youtube.com/embed/YvWhbvmsW78"
           title="Tutoriel BORDUR — Bien démarrer"
           allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
           allowfullscreen
-          loading="lazy"
+          loading="eager"
         ></iframe>
       </div>
-      <p class="video-caption">Astuce : mets la vidéo en plein écran sur mobile pour suivre les étapes en direct.</p>
+      <p class="video-caption">
+        Regarde cette vidéo en priorité : elle présente l'interface, les réglages de départ,
+        la composition de la partie et les points à vérifier avant de lancer la course.
+      </p>
+    </section>
+
+    <section class="video-meta" aria-label="Informations sur la vidéo">
+      <article class="video-card" aria-labelledby="learn-title">
+        <h2 id="learn-title">Ce que tu vas apprendre</h2>
+        <ul>
+          <li>comment configurer une première partie sans te perdre dans les options ;</li>
+          <li>comment lire l'interface de préparation et repérer les informations utiles ;</li>
+          <li>comment composer le peloton et choisir les bons paramètres de départ ;</li>
+          <li>quels contrôles faire avant de lancer la course.</li>
+        </ul>
+      </article>
+
+      <article class="video-card" aria-labelledby="plan-title">
+        <h2 id="plan-title">Plan de la vidéo</h2>
+        <ol>
+          <li><strong>Introduction</strong> — objectif du tutoriel et rôle de cette première vidéo.</li>
+          <li><strong>Interface</strong> — lecture des écrans et repères utiles pour se préparer.</li>
+          <li><strong>Configuration</strong> — composition de la partie, paramètres et mise en place.</li>
+          <li><strong>Vérification finale</strong> — derniers points à contrôler avant le départ.</li>
+        </ol>
+      </article>
+
+      <article class="video-card" aria-labelledby="summary-title">
+        <h2 id="summary-title">Résumé</h2>
+        <p>
+          Cette page sert avant tout à regarder la première vidéo de prise en main de BORDUR. Le
+          tutoriel est centré sur la configuration de la partie, la lecture des écrans de préparation
+          et les bases à vérifier avant de lancer la course.
+        </p>
+      </article>
     </section>
 
     <section class="coming-soon" aria-labelledby="coming-title">
