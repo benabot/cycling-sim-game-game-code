@@ -1,0 +1,218 @@
+{
+  "version": "1.0.0",
+  "lastScanned": 1774088948302,
+  "projectRoot": "/Users/benoitabot/Documents/PERSO/projets/cycling-sim-game/GAME_CODE",
+  "techStack": {
+    "languages": [
+      {
+        "name": "JavaScript/TypeScript",
+        "version": null,
+        "confidence": "high",
+        "markers": [
+          "package.json"
+        ]
+      }
+    ],
+    "frameworks": [
+      {
+        "name": "vue",
+        "version": "3.4.0",
+        "category": "frontend"
+      },
+      {
+        "name": "vite",
+        "version": "5.0.0",
+        "category": "build"
+      },
+      {
+        "name": "vitest",
+        "version": "1.0.0",
+        "category": "testing"
+      }
+    ],
+    "packageManager": "npm",
+    "runtime": null
+  },
+  "build": {
+    "buildCommand": "npm run build",
+    "testCommand": "npm test",
+    "lintCommand": null,
+    "devCommand": "npm run dev",
+    "scripts": {
+      "dev": "vite",
+      "build": "vite build",
+      "preview": "vite preview",
+      "test": "vitest",
+      "test:ui": "vitest --ui"
+    }
+  },
+  "conventions": {
+    "namingStyle": null,
+    "importStyle": null,
+    "testPattern": null,
+    "fileOrganization": "type-based"
+  },
+  "structure": {
+    "isMonorepo": false,
+    "workspaces": [],
+    "mainDirectories": [
+      "app",
+      "docs",
+      "public",
+      "src",
+      "tests"
+    ],
+    "gitBranches": null
+  },
+  "customNotes": [],
+  "directoryMap": {
+    "app": {
+      "path": "app",
+      "purpose": "Application code",
+      "fileCount": 1,
+      "lastAccessed": 1774088948091,
+      "keyFiles": [
+        "index.html"
+      ]
+    },
+    "dist": {
+      "path": "dist",
+      "purpose": "Distribution/build output",
+      "fileCount": 15,
+      "lastAccessed": 1774088948093,
+      "keyFiles": [
+        "404.html",
+        "apple-touch-icon.png",
+        "cgu.html",
+        "confidentialite.html",
+        "favicon-16x16.png"
+      ]
+    },
+    "docs": {
+      "path": "docs",
+      "purpose": "Documentation",
+      "fileCount": 3,
+      "lastAccessed": 1774088948274,
+      "keyFiles": [
+        "API.md",
+        "ARCHITECTURE.md",
+        "tracking.md"
+      ]
+    },
+    "public": {
+      "path": "public",
+      "purpose": "Public files",
+      "fileCount": 14,
+      "lastAccessed": 1774088948283,
+      "keyFiles": [
+        "404.html",
+        "apple-touch-icon.png",
+        "cgu.html",
+        "confidentialite.html",
+        "favicon-16x16.png"
+      ]
+    },
+    "src": {
+      "path": "src",
+      "purpose": "Source code",
+      "fileCount": 2,
+      "lastAccessed": 1774088948284,
+      "keyFiles": [
+        "App.vue",
+        "main.js"
+      ]
+    },
+    "supabase": {
+      "path": "supabase",
+      "purpose": null,
+      "fileCount": 0,
+      "lastAccessed": 1774088948284,
+      "keyFiles": []
+    },
+    "tests": {
+      "path": "tests",
+      "purpose": "Test files",
+      "fileCount": 12,
+      "lastAccessed": 1774088948284,
+      "keyFiles": [
+        "ai_cobbles_strategy.test.js",
+        "ai_risk_decisions.test.js",
+        "ai_tactical_profiles.test.js",
+        "balance.test.js",
+        "cobbles_puncture.test.js"
+      ]
+    },
+    "dist/app": {
+      "path": "dist/app",
+      "purpose": "Application code",
+      "fileCount": 1,
+      "lastAccessed": 1774088948286,
+      "keyFiles": [
+        "index.html"
+      ]
+    },
+    "dist/assets": {
+      "path": "dist/assets",
+      "purpose": "Static assets",
+      "fileCount": 2,
+      "lastAccessed": 1774088948286,
+      "keyFiles": [
+        "app-Bpjcu3zM.js",
+        "app-XMGfo3rJ.css"
+      ]
+    },
+    "src/components": {
+      "path": "src/components",
+      "purpose": "UI components",
+      "fileCount": 43,
+      "lastAccessed": 1774088948287,
+      "keyFiles": [
+        "ActionZone.vue",
+        "AuthModal.vue",
+        "AutoSavePrompt.vue"
+      ]
+    },
+    "src/config": {
+      "path": "src/config",
+      "purpose": "Configuration files",
+      "fileCount": 4,
+      "lastAccessed": 1774088948288,
+      "keyFiles": [
+        "draft.config.js",
+        "game.config.js",
+        "race-presets.js"
+      ]
+    },
+    "src/lib": {
+      "path": "src/lib",
+      "purpose": "Library code",
+      "fileCount": 1,
+      "lastAccessed": 1774088948289,
+      "keyFiles": [
+        "supabase.js"
+      ]
+    },
+    "src/services": {
+      "path": "src/services",
+      "purpose": "Business logic services",
+      "fileCount": 2,
+      "lastAccessed": 1774088948290,
+      "keyFiles": [
+        "games.service.js",
+        "localSave.service.js"
+      ]
+    },
+    "supabase/migrations": {
+      "path": "supabase/migrations",
+      "purpose": "Database migrations",
+      "fileCount": 2,
+      "lastAccessed": 1774088948290,
+      "keyFiles": [
+        "001_create_profiles.sql",
+        "002_profiles_rls_trigger.sql"
+      ]
+    }
+  },
+  "hotPaths": [],
+  "userDirectives": []
+}
