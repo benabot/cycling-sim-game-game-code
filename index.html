@@ -464,6 +464,7 @@
         margin: 34px 0 14px;
         font-size: 22px;
         letter-spacing: -0.01em;
+        color: var(--accent);
       }
 
       h3 {
@@ -741,6 +742,12 @@
         margin: 6px 0;
       }
 
+      .sectionLead {
+        max-width: 70ch;
+        margin: -6px 0 16px;
+        color: var(--muted);
+      }
+
       .faq details {
         background: rgba(17, 24, 36, 0.45);
         border: 1px solid var(--line);
@@ -895,16 +902,22 @@
         display: grid;
         place-items: center;
         border-radius: 999px;
+        border: 1px solid rgba(232, 238, 247, 0.16);
+        background: rgba(232, 238, 247, 0.06);
         text-decoration: none;
         color: var(--text);
         transition:
           opacity 0.15s ease,
-          background-color 0.15s ease;
+          background-color 0.15s ease,
+          border-color 0.15s ease,
+          transform 0.15s ease;
       }
 
       .socialIcon {
+        display: block;
         width: 20px;
         height: 20px;
+        flex: 0 0 auto;
       }
 
       .socialLink--x {
@@ -920,8 +933,10 @@
       }
 
       .socialLink:hover {
-        background: rgba(232, 238, 247, 0.08);
+        background: rgba(232, 238, 247, 0.11);
+        border-color: rgba(232, 238, 247, 0.28);
         opacity: 0.95;
+        transform: translateY(-1px);
       }
 
       .socialLink:focus-visible {
@@ -1027,6 +1042,10 @@
           transition: none;
         }
 
+        .socialLink {
+          transition: none;
+        }
+
         .faq summary::after {
           transition: none;
         }
@@ -1060,14 +1079,12 @@
 
             <div class="ctaRow" aria-label="Actions principales">
               <a class="btn btn--primary" href="/app/">Jouer maintenant</a>
-              <a class="btn btn--link" href="/tutoriel.html"
-                >Voir le tutoriel</a
-              >
+              <a class="btn btn--link" href="/tutoriel.html">Voir le tutoriel</a>
             </div>
 
             <p class="muted" style="margin-top: 10px">
               → <a
-                href="/parcours/index.html"
+                href="/parcours/"
                 class="anchorLink"
                 data-goatcounter-click="hero_parcours"
                 >Choisir un parcours</a
@@ -1123,7 +1140,11 @@
       </section>
 
       <section aria-labelledby="doors">
-        <h2 id="doors">Trois portes d’entrée pour commencer</h2>
+        <h2 id="doors">Bien démarrer</h2>
+        <p class="sectionLead">
+          Trois chemins simples : apprendre les bases, vérifier une règle ou
+          choisir le terrain de ta prochaine course.
+        </p>
         <div class="doorGrid">
           <a class="cardLink" href="/tutoriel.html">
             <article
@@ -1131,10 +1152,10 @@
               aria-labelledby="door-tutorial-title"
             >
               <p class="eyebrow">Découvrir</p>
-              <h3 id="door-tutorial-title">Découvrir le jeu</h3>
+              <h3 id="door-tutorial-title">Suivre le tutoriel</h3>
               <p class="microcopy">
-                Commence par les tutoriels pour voir une partie, comprendre
-                l’interface et partir sur de bonnes bases.
+                Lance-toi par une partie guidée pour comprendre l’interface et
+                les premières décisions.
               </p>
             </article>
           </a>
@@ -1150,7 +1171,7 @@
             </article>
           </a>
 
-          <a class="cardLink" href="/parcours/index.html">
+          <a class="cardLink" href="/parcours/">
             <article class="card card--cta" aria-labelledby="door-routes-title">
               <p class="eyebrow">Choisir</p>
               <h3 id="door-routes-title">Choisir un parcours</h3>
@@ -1383,7 +1404,7 @@
           </ul>
 
           <div class="stepActions">
-            <a class="btn btn--primary" href="/app/">Lancer une course</a>
+            <a class="btn btn--primary" href="/app/">Jouer maintenant</a>
           </div>
         </div>
       </section>
@@ -1552,7 +1573,7 @@
             </p>
             <p class="muted" style="margin-top: 10px">
               → <a
-                href="/parcours/index.html"
+                href="/parcours/"
                 class="anchorLink"
                 data-goatcounter-click="resources_parcours"
                 >Découvrir les parcours</a
@@ -1560,31 +1581,31 @@
             </p>
             <p class="muted" style="margin-top: 6px">
               <a
-                href="/parcours/nord/index.html"
+                href="/parcours/nord/"
                 class="anchorLink"
                 data-goatcounter-click="resources_parcours_nord"
                 >Nord</a
               >
               · <a
-                href="/parcours/ardennaise/index.html"
+                href="/parcours/ardennaise/"
                 class="anchorLink"
                 data-goatcounter-click="resources_parcours_ardennaise"
                 >Ardennaise</a
               >
               · <a
-                href="/parcours/lombarde/index.html"
+                href="/parcours/lombarde/"
                 class="anchorLink"
                 data-goatcounter-click="resources_parcours_lombarde"
                 >Lombarde</a
               >
               · <a
-                href="/parcours/riviera/index.html"
+                href="/parcours/riviera/"
                 class="anchorLink"
                 data-goatcounter-click="resources_parcours_riviera"
                 >Riviera</a
               >
               · <a
-                href="/parcours/flandriennes/index.html"
+                href="/parcours/flandriennes/"
                 class="anchorLink"
                 data-goatcounter-click="resources_parcours_flandriennes"
                 >Flandriennes</a
@@ -1764,21 +1785,21 @@
               Jeu de plateau – course cycliste tactique (tour par tour).
             </div>
             <div class="footerMeta">
-              © <span id="year"></span> —
-              <a href="https://beabot.fr" target="_blank">beAbot</a>
+              © 2026 —
+              <a href="https://beabot.fr" target="_blank" rel="noopener noreferrer">beAbot</a>
             </div>
           </div>
 
           <div class="footerRight">
             <nav class="footerLinks" aria-label="Liens">
               <a href="/app/">Jouer</a>
-              <a href="/parcours/index.html">Parcours</a>
+              <a href="/parcours/">Parcours</a>
               <a href="/regles.html">Règles</a>
               <a href="/lexique-cyclisme.html">Lexique cyclisme</a>
               <a href="/tutoriel.html">Tutoriels</a>
               <a href="/cgu.html">CGU</a>
               <a href="/confidentialite.html">Confidentialité</a>
-              <a href="https://beabot.fr/contact/" target="_blank">Contact</a>
+              <a href="https://beabot.fr/contact/" target="_blank" rel="noopener noreferrer">Contact</a>
             </nav>
 
             <div class="footerSocial" aria-label="Suivre BORDUR">
@@ -1907,12 +1928,6 @@
 
         io.observe(hero);
       })();
-    </script>
-
-    <script>
-      document
-        .getElementById("year")
-        ?.appendChild(document.createTextNode(String(new Date().getFullYear())));
     </script>
 
     <script>

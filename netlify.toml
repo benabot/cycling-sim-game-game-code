@@ -16,6 +16,18 @@
   status = 200
 
 [[redirects]]
+  from = "/parcours/index.html"
+  to = "/parcours/"
+  status = 301
+  force = true
+
+[[redirects]]
+  from = "/parcours/:slug/index.html"
+  to = "/parcours/:slug/"
+  status = 301
+  force = true
+
+[[redirects]]
   from = "/lexique-cyclisme"
   to = "/lexique-cyclisme.html"
   status = 301
