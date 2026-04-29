@@ -803,183 +803,8 @@
         border-bottom-color: rgba(232, 238, 247, 0.7);
       }
 
-      .siteFooter {
-        margin-top: 34px;
-        padding: 18px 0 26px;
-        border-top: 1px solid var(--line);
-        color: var(--muted);
-      }
 
-      .footerInner {
-        display: flex;
-        align-items: flex-start;
-        justify-content: space-between;
-        gap: 24px;
-      }
-
-      .footerBrand {
-        display: grid;
-        gap: 6px;
-        max-width: 62ch;
-      }
-
-      .footerBrandTitle {
-        display: flex;
-        align-items: center;
-        gap: 12px;
-      }
-
-      .footerBrandIcon {
-        width: clamp(28px, 3vw, 34px);
-        height: clamp(28px, 3vw, 34px);
-        display: inline-block;
-        flex: 0 0 auto;
-        color: var(--accent, #eab308);
-      }
-
-      .footerBrand strong {
-        color: rgba(232, 238, 247, 0.92);
-      }
-
-      .footerRight {
-        display: flex;
-        flex-direction: column;
-        align-items: flex-end;
-        gap: 12px;
-      }
-
-      .footerLinks {
-        display: flex;
-        flex-wrap: nowrap;
-        gap: 20px;
-        align-items: center;
-        justify-content: flex-end;
-        white-space: nowrap;
-      }
-
-      .footerLinks a {
-        text-decoration: none;
-        border-bottom: 1px dashed rgba(232, 238, 247, 0.25);
-      }
-
-      .footerLinks a:hover {
-        border-bottom-color: rgba(232, 238, 247, 0.6);
-      }
-
-      .footerMeta {
-        margin-top: 10px;
-        font-size: 12px;
-        opacity: 0.9;
-      }
-
-      .footerSocial {
-        display: flex;
-        align-items: center;
-        gap: 12px;
-      }
-
-      .footerSocialLabel {
-        font-size: 12px;
-        text-transform: uppercase;
-        letter-spacing: 0.12em;
-        color: var(--muted);
-        opacity: 0.7;
-      }
-
-      .footerSocialIcons {
-        display: flex;
-        align-items: center;
-        gap: 12px;
-        flex-wrap: nowrap;
-        white-space: nowrap;
-      }
-
-      .socialLink {
-        width: 40px;
-        height: 40px;
-        display: grid;
-        place-items: center;
-        border-radius: 999px;
-        border: 1px solid rgba(232, 238, 247, 0.16);
-        background: rgba(232, 238, 247, 0.06);
-        text-decoration: none;
-        color: var(--text);
-        transition:
-          opacity 0.15s ease,
-          background-color 0.15s ease,
-          border-color 0.15s ease,
-          transform 0.15s ease;
-      }
-
-      .socialIcon {
-        display: block;
-        width: 20px;
-        height: 20px;
-        flex: 0 0 auto;
-      }
-
-      .socialLink--x {
-        color: var(--text);
-      }
-
-      .socialLink--yt {
-        color: #ff0000;
-      }
-
-      .socialLink--ig {
-        color: #e1306c;
-      }
-
-      .socialLink:hover {
-        background: rgba(232, 238, 247, 0.11);
-        border-color: rgba(232, 238, 247, 0.28);
-        opacity: 0.95;
-        transform: translateY(-1px);
-      }
-
-      .socialLink:focus-visible {
-        outline: 2px solid rgba(233, 196, 106, 0.7);
-        outline-offset: 2px;
-        background: rgba(233, 196, 106, 0.12);
-      }
-
-      @media (max-width: 900px) {
-        .footerInner {
-          flex-direction: column;
-          align-items: center;
-          text-align: center;
-        }
-
-        .footerRight {
-          align-items: center;
-        }
-
-        .footerLinks {
-          justify-content: center;
-          flex-wrap: wrap;
-          white-space: normal;
-        }
-
-        .footerSocial {
-          flex-direction: column;
-          align-items: center;
-        }
-
-        .footerSocialIcons {
-          justify-content: center;
-        }
-
-        .footerBrandTitle {
-          justify-content: center;
-        }
-
-        .socialIcon {
-          width: 22px;
-          height: 22px;
-        }
-      }
-
-      .stickyCta {
+.stickyCta {
         position: fixed;
         left: 50%;
         transform: translateX(-50%);
@@ -1040,15 +865,14 @@
           transition: none;
         }
 
-        .socialLink {
-          transition: none;
-        }
 
         .faq summary::after {
           transition: none;
         }
       }
     </style>
+  <link rel="stylesheet" href="/footer.css">
+
   </head>
 
   <body>
@@ -1923,7 +1747,6 @@
           <a
             class="btn btn--primary"
             href="/app/"
-            data-goatcounter-click="sticky_play"
             >Jouer maintenant</a
           >
         </div>
@@ -1948,32 +1771,6 @@
       })();
     </script>
 
-    <script>
-      (function () {
-        function shouldSkip() {
-          try {
-            return localStorage.getItem("analytics_optout") === "1";
-          } catch (err) {
-            return false;
-          }
-        }
-
-        document.addEventListener("click", (event) => {
-          const link = event.target.closest('a[href^="/app/"]');
-          if (!link || shouldSkip()) return;
-          try {
-            if (
-              window.goatcounter &&
-              typeof window.goatcounter.count === "function"
-            ) {
-              window.goatcounter.count({
-                event: true,
-                path: "landing_prepare_click"
-              });
-            }
-          } catch (err) {}
-        });
-      })();
-    </script>
+    <script src="/tracking-app-clicks.js" data-app-click-event="home_app_click" defer></script>
   </body>
 </html>
