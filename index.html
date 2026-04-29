@@ -12,15 +12,14 @@
       content="BORDUR : jeu de plateau de course cycliste tactique à jouer en ligne. Placement, aspiration, énergie, pavés, vent, attaques. Lance une course et joue tour par tour."
     />
     <meta name="robots" content="index,follow" />
-   <link rel="icon" href="/favicon.ico" sizes="any">
-<link rel="icon" type="image/png" href="/favicon-32x32.png" sizes="32x32">
-<link rel="icon" type="image/svg+xml" href="/favicon-bib-B-outline.svg">
+    <link rel="icon" href="/favicon.ico" sizes="any" />
+    <link rel="icon" type="image/png" href="/favicon-32x32.png" sizes="32x32" />
+    <link rel="icon" type="image/svg+xml" href="/favicon-bib-B-outline.svg" />
 
-<link rel="apple-touch-icon" href="/apple-touch-icon.png" sizes="180x180">
-<link rel="mask-icon" href="/safari-pinned-tab-bib-B.svg" color="#000000">
-    <!-- Canonical: mets une URL absolue en production -->
+    <link rel="apple-touch-icon" href="/apple-touch-icon.png" sizes="180x180" />
+    <link rel="mask-icon" href="/safari-pinned-tab-bib-B.svg" color="#000000" />
     <link rel="canonical" href="https://bordur.fr" />
-    <meta name="theme-color" content="#0b0f14">
+    <meta name="theme-color" content="#0b0f14" />
 
     <!-- Open Graph -->
     <meta property="og:type" content="website" />
@@ -63,7 +62,7 @@
       (function () {
         function isOptedOut() {
           try {
-            return localStorage.getItem('analytics_optout') === '1';
+            return localStorage.getItem("analytics_optout") === "1";
           } catch (err) {
             return false;
           }
@@ -75,10 +74,10 @@
           return;
         }
 
-        var script = document.createElement('script');
-        script.dataset.goatcounter = 'https://bordur.goatcounter.com/count';
+        var script = document.createElement("script");
+        script.dataset.goatcounter = "https://bordur.goatcounter.com/count";
         script.async = true;
-        script.src = '//gc.zgo.at/count.js';
+        script.src = "//gc.zgo.at/count.js";
         document.head.appendChild(script);
       })();
     </script>
@@ -186,8 +185,8 @@
         --text: #e8eef7;
         --muted: #b7c2d3;
         --line: rgba(232, 238, 247, 0.12);
-        --accent: #e9c46a; /* “Tour” */
-        --accent2: #63b3ed; /* “info” */
+        --accent: #e9c46a;
+        --accent2: #63b3ed;
         --shadow: 0 12px 40px rgba(0, 0, 0, 0.35);
         --radius: 16px;
         --max: 1080px;
@@ -201,9 +200,9 @@
           serif;
 
         --focus: 0 0 0 3px rgba(233, 196, 106, 0.35);
-        /* réserve pour éviter que la sticky recouvre le bas de page */
         --sticky-safe: 128px;
       }
+
       @media (max-width: 768px) {
         :root {
           --sticky-safe: 112px;
@@ -213,9 +212,11 @@
       * {
         box-sizing: border-box;
       }
+
       html {
         scroll-behavior: smooth;
       }
+
       body {
         margin: 0;
         font-family: var(--font-ui);
@@ -239,17 +240,21 @@
       a {
         color: inherit;
       }
+
+      .or {
+        color: var(--accent);
+      }
+
       .wrap {
         max-width: var(--max);
         margin: 0 auto;
         padding: 0 var(--pad);
-         /* padding-bottom: var(--sticky-safe);  */
       }
-      main.wrap {
-  padding-bottom: var(--sticky-safe, 72px);
-}
 
-      /* Accessibilité: lien d’évitement */
+      main.wrap {
+        padding-bottom: var(--sticky-safe, 72px);
+      }
+
       .skip {
         position: absolute;
         left: -9999px;
@@ -262,6 +267,7 @@
         text-decoration: none;
         z-index: 1000;
       }
+
       .skip:focus {
         left: 12px;
         outline: none;
@@ -285,7 +291,6 @@
         position: relative;
       }
 
-      /* Trame légère */
       .hero::after {
         content: "";
         position: absolute;
@@ -318,7 +323,7 @@
         z-index: 1;
         padding: 26px 22px;
         display: grid;
-        grid-template-columns: 1.1fr 0.9fr; /* texte + affiche */
+        grid-template-columns: 1.1fr 0.9fr;
         gap: 18px;
         align-items: stretch;
       }
@@ -338,6 +343,7 @@
         letter-spacing: 0.12em;
         font-size: 12px;
       }
+
       .kicker::before {
         content: "";
         width: 26px;
@@ -360,12 +366,24 @@
         color: var(--muted);
       }
 
-      /* Définition tôt: explicite “de quoi il s’agit” */
+      .proofline {
+        margin: 0 0 12px;
+        font-size: 14px;
+        color: rgba(232, 238, 247, 0.86);
+        font-weight: 800;
+        letter-spacing: 0.01em;
+      }
+
+      .proofline span {
+        color: var(--accent);
+      }
+
       .definition {
         margin: 0 0 14px;
         font-size: 13px;
         color: rgba(232, 238, 247, 0.78);
       }
+
       .definition strong {
         color: rgba(233, 196, 106, 0.95);
         font-weight: 900;
@@ -378,12 +396,12 @@
         max-width: 66ch;
         margin: 0 0 2px;
       }
+
       .hero__pitch strong {
         color: rgba(233, 196, 106, 0.92);
         font-weight: 900;
       }
 
-      /* Header: 2 CTA max */
       .ctaRow {
         display: flex;
         flex-wrap: wrap;
@@ -409,10 +427,12 @@
           transform 120ms ease,
           filter 120ms ease;
       }
+
       .btn:focus {
         outline: none;
         box-shadow: var(--focus);
       }
+
       .btn:hover {
         filter: brightness(1.08);
         transform: translateY(-1px);
@@ -423,7 +443,6 @@
         border-color: rgba(233, 196, 106, 0.42);
       }
 
-      /* “Secondaire” moins bouton: lien/ghost */
       .btn--link {
         background: rgba(17, 24, 36, 0.28);
         border-color: rgba(232, 238, 247, 0.1);
@@ -431,11 +450,9 @@
       }
 
       main {
-         padding: 22px 0 72px;              /* fallback */
-  /* padding-bottom: var(--sticky-safe);  */
+        padding: 22px 0 72px;
       }
 
-      /* Smooth scroll: éviter que les ancres soient collées */
       #principle,
       #comment,
       #keys,
@@ -453,6 +470,7 @@
         margin: 0 0 8px;
         font-size: 16px;
       }
+
       .muted {
         color: var(--muted);
       }
@@ -462,8 +480,23 @@
         grid-template-columns: repeat(3, minmax(0, 1fr));
         gap: 14px;
       }
+
+      .grid4 {
+        display: grid;
+        grid-template-columns: repeat(4, minmax(0, 1fr));
+        gap: 14px;
+      }
+
+      .doorGrid {
+        display: grid;
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+        gap: 14px;
+      }
+
       @media (max-width: 920px) {
-        .grid3 {
+        .grid3,
+        .grid4,
+        .doorGrid {
           grid-template-columns: 1fr;
         }
       }
@@ -475,13 +508,48 @@
         padding: 18px;
       }
 
-      /* Cartes: icône + titre */
+      .card--cta {
+        display: grid;
+        gap: 10px;
+      }
+
+      .card--compact p {
+        margin: 0;
+      }
+
+      .cardLink {
+        text-decoration: none;
+        color: inherit;
+      }
+
+      .cardLink:hover .card,
+      .cardLink:focus-visible .card {
+        border-color: rgba(233, 196, 106, 0.35);
+        box-shadow: 0 10px 28px rgba(0, 0, 0, 0.22);
+      }
+
+      .microcopy {
+        margin: 0;
+        color: var(--muted);
+        font-size: 14px;
+      }
+
+      .eyebrow {
+        margin: 0 0 8px;
+        color: var(--accent);
+        font-size: 12px;
+        font-weight: 900;
+        text-transform: uppercase;
+        letter-spacing: 0.12em;
+      }
+
       .cardHead {
         display: flex;
         align-items: center;
         gap: 10px;
         margin-bottom: 6px;
       }
+
       .ico {
         width: 22px;
         height: 22px;
@@ -491,13 +559,13 @@
         border: 1px solid rgba(232, 238, 247, 0.12);
         background: rgba(17, 24, 36, 0.35);
       }
+
       .ico svg {
         width: 14px;
         height: 14px;
         opacity: 0.95;
       }
 
-      /* Comment ça marche: steps scannables */
       .steps {
         display: grid;
         gap: 12px;
@@ -505,6 +573,7 @@
         padding: 0;
         list-style: none;
       }
+
       .step {
         display: grid;
         grid-template-columns: 34px 1fr;
@@ -515,6 +584,7 @@
         border: 1px solid rgba(232, 238, 247, 0.1);
         background: rgba(15, 22, 34, 0.35);
       }
+
       .stepNum {
         width: 34px;
         height: 34px;
@@ -526,13 +596,20 @@
         border: 1px solid rgba(233, 196, 106, 0.3);
         color: rgba(233, 196, 106, 0.96);
       }
+
       .stepTitle {
         font-weight: 900;
         margin: 0;
       }
+
       .stepText {
         margin: 2px 0 0;
         color: var(--muted);
+      }
+
+      .stepActions {
+        margin-top: 14px;
+        text-align: center;
       }
 
       .ruleline {
@@ -540,7 +617,6 @@
         margin: 16px 0;
       }
 
-      /* Callout jargon */
       .callout {
         display: grid;
         gap: 6px;
@@ -549,27 +625,41 @@
         border: 1px solid rgba(99, 179, 237, 0.22);
         background: rgba(99, 179, 237, 0.08);
       }
+
+      .tutorialList {
+        margin: 0;
+        padding-left: 18px;
+        color: var(--muted);
+      }
+
+      .tutorialList li {
+        margin: 8px 0;
+      }
+
       .callout strong {
         color: rgba(232, 238, 247, 0.92);
       }
+
       .callout .sub {
         color: rgba(232, 238, 247, 0.78);
         font-weight: 800;
         font-size: 13px;
       }
+
       .jargonList {
         margin: 6px 0 0;
         padding-left: 18px;
         color: var(--muted);
       }
+
       .jargonList li {
         margin: 6px 0;
       }
+
       .jargonList strong {
         color: rgba(232, 238, 247, 0.92);
       }
 
-      /* Affiche vintage: image réelle */
       figure.poster {
         border-radius: 14px;
         border: 1px solid rgba(232, 238, 247, 0.14);
@@ -581,6 +671,7 @@
         align-content: end;
         position: relative;
       }
+
       .poster img {
         position: absolute;
         inset: 0;
@@ -590,6 +681,7 @@
         opacity: 0.95;
         transform: scale(1.01);
       }
+
       .poster__overlay {
         position: relative;
         z-index: 1;
@@ -597,6 +689,7 @@
         background: linear-gradient(180deg, transparent, rgba(0, 0, 0, 0.45));
         border-top: 1px solid rgba(232, 238, 247, 0.1);
       }
+
       .poster__title {
         font-family: var(--font-display);
         letter-spacing: 0.02em;
@@ -604,12 +697,48 @@
         font-size: 12px;
         color: rgba(232, 238, 247, 0.88);
       }
+
       .poster__cta {
         margin-top: 6px;
         font-size: 18px;
         font-weight: 900;
         color: rgba(233, 196, 106, 0.95);
         text-transform: lowercase;
+      }
+
+      .proofVisual {
+        margin-top: 18px;
+      }
+
+      .proofVisual__card {
+        background: rgba(17, 24, 36, 0.55);
+        border: 1px solid var(--line);
+        border-radius: var(--radius);
+        padding: 18px;
+      }
+
+      .proofVisual__media {
+        border-radius: 14px;
+        overflow: hidden;
+        border: 1px solid rgba(232, 238, 247, 0.1);
+        background: rgba(15, 22, 34, 0.45);
+        min-height: 220px;
+      }
+
+      .proofVisual__media img {
+        display: block;
+        width: 100%;
+        height: auto;
+      }
+
+      .proofVisual__list {
+        margin: 14px 0 0;
+        padding-left: 18px;
+        color: var(--muted);
+      }
+
+      .proofVisual__list li {
+        margin: 6px 0;
       }
 
       .faq details {
@@ -629,9 +758,11 @@
         justify-content: space-between;
         gap: 12px;
       }
+
       .faq summary::-webkit-details-marker {
         display: none;
       }
+
       .faq summary:focus {
         outline: none;
         box-shadow: var(--focus);
@@ -639,7 +770,6 @@
         padding: 2px 4px;
       }
 
-      /* Chevron FAQ */
       .faq summary::after {
         content: "▾";
         opacity: 0.75;
@@ -648,6 +778,7 @@
           transform 160ms ease,
           opacity 160ms ease;
       }
+
       .faq details[open] summary::after {
         transform: rotate(180deg);
         opacity: 1;
@@ -662,174 +793,179 @@
         text-decoration: none;
         border-bottom: 1px dashed rgba(232, 238, 247, 0.35);
       }
+
       .anchorLink:hover {
         border-bottom-color: rgba(232, 238, 247, 0.7);
       }
 
-     
+      .siteFooter {
+        margin-top: 34px;
+        padding: 18px 0 26px;
+        border-top: 1px solid var(--line);
+        color: var(--muted);
+      }
 
+      .footerInner {
+        display: flex;
+        align-items: flex-start;
+        justify-content: space-between;
+        gap: 24px;
+      }
 
-      /* Footer */
-.siteFooter {
-  margin-top: 34px;
-  padding: 18px 0 26px;
-  border-top: 1px solid var(--line);
-  color: var(--muted);
-}
+      .footerBrand {
+        display: grid;
+        gap: 6px;
+        max-width: 62ch;
+      }
 
-.footerInner {
-  display: flex;
-  align-items: flex-start;
-  justify-content: space-between;
-  gap: 24px;
-}
+      .footerBrandTitle {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+      }
 
-.footerBrand {
-  display: grid;
-  gap: 6px;
-  max-width: 62ch;
-}
+      .footerBrandIcon {
+        width: clamp(28px, 3vw, 34px);
+        height: clamp(28px, 3vw, 34px);
+        display: inline-block;
+        flex: 0 0 auto;
+        color: var(--accent, #eab308);
+      }
 
-.footerBrandTitle {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-}
+      .footerBrand strong {
+        color: rgba(232, 238, 247, 0.92);
+      }
 
-.footerBrandIcon {
-  width: clamp(28px, 3vw, 34px);
-  height: clamp(28px, 3vw, 34px);
-  display: inline-block;
-  flex: 0 0 auto;
-  color: var(--accent, #eab308);
-}
+      .footerRight {
+        display: flex;
+        flex-direction: column;
+        align-items: flex-end;
+        gap: 12px;
+      }
 
-.footerBrand strong {
-  color: rgba(232, 238, 247, 0.92);
-}
+      .footerLinks {
+        display: flex;
+        flex-wrap: nowrap;
+        gap: 20px;
+        align-items: center;
+        justify-content: flex-end;
+        white-space: nowrap;
+      }
 
-.footerRight {
-  display: flex;
-  flex-direction: column;
-  align-items: flex-end;
-  gap: 12px;
-}
+      .footerLinks a {
+        text-decoration: none;
+        border-bottom: 1px dashed rgba(232, 238, 247, 0.25);
+      }
 
-.footerLinks {
-  display: flex;
-  flex-wrap: nowrap;
-  gap: 20px;
-  align-items: center;
-  justify-content: flex-end;
-  white-space: nowrap;
-}
+      .footerLinks a:hover {
+        border-bottom-color: rgba(232, 238, 247, 0.6);
+      }
 
-.footerLinks a {
-  text-decoration: none;
-  border-bottom: 1px dashed rgba(232, 238, 247, 0.25);
-}
-.footerLinks a:hover {
-  border-bottom-color: rgba(232, 238, 247, 0.6);
-}
+      .footerMeta {
+        margin-top: 10px;
+        font-size: 12px;
+        opacity: 0.9;
+      }
 
-.footerMeta {
-  margin-top: 10px;
-  font-size: 12px;
-  opacity: 0.9;
-}
+      .footerSocial {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+      }
 
-.footerSocial {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-}
+      .footerSocialLabel {
+        font-size: 12px;
+        text-transform: uppercase;
+        letter-spacing: 0.12em;
+        color: var(--muted);
+        opacity: 0.7;
+      }
 
-.footerSocialLabel {
-  font-size: 12px;
-  text-transform: uppercase;
-  letter-spacing: 0.12em;
-  color: var(--muted);
-  opacity: 0.7;
-}
+      .footerSocialIcons {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        flex-wrap: nowrap;
+        white-space: nowrap;
+      }
 
-.footerSocialIcons {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-  flex-wrap: nowrap;
-  white-space: nowrap;
-}
+      .socialLink {
+        width: 40px;
+        height: 40px;
+        display: grid;
+        place-items: center;
+        border-radius: 999px;
+        text-decoration: none;
+        color: var(--text);
+        transition:
+          opacity 0.15s ease,
+          background-color 0.15s ease;
+      }
 
-.socialLink {
-  width: 40px;
-  height: 40px;
-  display: grid;
-  place-items: center;
-  border-radius: 999px;
-  text-decoration: none;
-  color: var(--text);
-  transition: opacity 0.15s ease, background-color 0.15s ease;
-}
+      .socialIcon {
+        width: 20px;
+        height: 20px;
+      }
 
-.socialIcon {
-  width: 20px;
-  height: 20px;
-}
+      .socialLink--x {
+        color: var(--text);
+      }
 
-.socialLink--x {
-  color: var(--text);
-}
+      .socialLink--yt {
+        color: #ff0000;
+      }
 
-.socialLink--yt {
-  color: #ff0000;
-}
+      .socialLink--ig {
+        color: #e1306c;
+      }
 
-.socialLink--ig {
-  color: #e1306c;
-}
+      .socialLink:hover {
+        background: rgba(232, 238, 247, 0.08);
+        opacity: 0.95;
+      }
 
-.socialLink:hover {
-  background: rgba(232, 238, 247, 0.08);
-  opacity: 0.95;
-}
+      .socialLink:focus-visible {
+        outline: 2px solid rgba(233, 196, 106, 0.7);
+        outline-offset: 2px;
+        background: rgba(233, 196, 106, 0.12);
+      }
 
-.socialLink:focus-visible {
-  outline: 2px solid rgba(233, 196, 106, 0.7);
-  outline-offset: 2px;
-  background: rgba(233, 196, 106, 0.12);
-}
+      @media (max-width: 900px) {
+        .footerInner {
+          flex-direction: column;
+          align-items: center;
+          text-align: center;
+        }
 
-@media (max-width: 900px) {
-  .footerInner {
-    flex-direction: column;
-    align-items: center;
-    text-align: center;
-  }
-  .footerRight {
-    align-items: center;
-  }
-  .footerLinks {
-    justify-content: center;
-    flex-wrap: wrap;
-    white-space: normal;
-  }
-  .footerSocial {
-    flex-direction: column;
-    align-items: center;
-  }
-  .footerSocialIcons {
-    justify-content: center;
-  }
-  .footerBrandTitle {
-    justify-content: center;
-  }
-  .socialIcon {
-    width: 22px;
-    height: 22px;
-  }
-}
+        .footerRight {
+          align-items: center;
+        }
 
-      /* Sticky CTA: apparaît une fois le hero sorti */
+        .footerLinks {
+          justify-content: center;
+          flex-wrap: wrap;
+          white-space: normal;
+        }
+
+        .footerSocial {
+          flex-direction: column;
+          align-items: center;
+        }
+
+        .footerSocialIcons {
+          justify-content: center;
+        }
+
+        .footerBrandTitle {
+          justify-content: center;
+        }
+
+        .socialIcon {
+          width: 22px;
+          height: 22px;
+        }
+      }
+
       .stickyCta {
         position: fixed;
         left: 50%;
@@ -839,6 +975,7 @@
         z-index: 999;
         display: none;
       }
+
       .stickyCta__inner {
         display: flex;
         justify-content: space-between;
@@ -851,27 +988,31 @@
         backdrop-filter: blur(10px);
         box-shadow: 0 18px 50px rgba(0, 0, 0, 0.45);
       }
+
       .stickyCta__text {
         display: grid;
         gap: 2px;
         padding-left: 6px;
       }
+
       .stickyCta__text strong {
         color: rgba(232, 238, 247, 0.92);
       }
+
       .stickyCta__text span {
         color: var(--muted);
         font-size: 12px;
       }
 
-      /* Mobile: sticky simplifié (1 bouton) */
       @media (max-width: 768px) {
         .stickyCta__text span {
           display: none;
         }
+
         .stickyCta__inner {
           justify-content: center;
         }
+
         .stickyCta .btn--link {
           display: none;
         }
@@ -881,9 +1022,11 @@
         html {
           scroll-behavior: auto;
         }
+
         .btn {
           transition: none;
         }
+
         .faq summary::after {
           transition: none;
         }
@@ -897,41 +1040,45 @@
     <header class="wrap" id="top">
       <div class="hero" id="hero">
         <div class="hero__inner">
-          <!-- Colonne texte -->
           <div>
             <div class="kicker">AVANT-COURSE</div>
-            <h1>BORDUR — Jeu de course cycliste tactique</h1>
+            <h1><span class="or">BORDUR</span> — Le jeu tactique de course cycliste, tour par tour</h1>
             <p class="subtitle">
-              Simulation de peloton en tour par tour
+              Compose ton équipe, lis le vent, gère l’énergie, attaque au bon
+              moment.
             </p>
 
-            <!-- Définition haute: explicite immédiatement -->
-            <p class="definition">
-              <strong>Une bordure</strong> : un groupe de coureurs séparés des autres à cause d'une soudaine accélération en tête de peloton.
+            <p class="proofline">
+              Gratuit <span>•</span> navigateur <span>•</span> solo
+              <span>•</span> mobile
             </p>
 
-            <!-- Pitch A -->
             <p class="hero__pitch">
-              <strong>Une course cycliste = un tour = une décision.</strong>
-              Tu gagnes en lisant la route, pas en roulant plus vite.
+              Tu gagnes par le placement, le tempo et les bonnes décisions au
+              bon moment.
             </p>
 
-            <!-- 2 CTA max -->
             <div class="ctaRow" aria-label="Actions principales">
-              <a class="btn btn--primary" href="/app/">Préparer une course</a>
-              <a class="btn btn--link" href="#comment">Comment ça marche</a>
+              <a class="btn btn--primary" href="/app/">Jouer maintenant</a>
+              <a class="btn btn--link" href="/tutoriel.html"
+                >Voir le tutoriel</a
+              >
             </div>
-            <p class="muted" style="margin-top: 10px;">
-              → <a href="/parcours/index.html" class="anchorLink" data-goatcounter-click="hero_parcours">Voir les parcours</a>
+
+            <p class="muted" style="margin-top: 10px">
+              → <a
+                href="/parcours/index.html"
+                class="anchorLink"
+                data-goatcounter-click="hero_parcours"
+                >Choisir un parcours</a
+              >
             </p>
           </div>
 
-          <!-- Affiche vintage: image fournie -->
           <figure
             class="poster"
             aria-label="Affiche vintage de lancement de course"
           >
-            <!-- Chemin: adapte si besoin (ex: /img/chassepatate.webp) -->
             <img
               src="/intro/chassepatate.webp"
               alt="Affiche vintage BORDUR : cyclistes en file, départ de course"
@@ -950,16 +1097,76 @@
     </header>
 
     <main class="wrap" id="main">
-      <section aria-labelledby="principle">
-        <h2 id="principle">Le principe</h2>
-        <p class="muted">
-          <strong>Un tour = une décision.</strong> Placement, énergie, terrain :
-          c’est ça qui compte. Le peloton t’aide… jusqu’au moment où il te
-          piège.
-        </p>
+      <section class="proofVisual" aria-labelledby="proof-visual-title">
+        <h2 id="proof-visual-title">Ce que tu fais dans le jeu</h2>
+        <div class="proofVisual__card">
+          <div class="proofVisual__media">
+            <img
+              src="/intro/bordur-plateau.webp"
+              alt="Aperçu BORDUR : cartes, positions, énergie et terrain dans une course tactique"
+              width="1200"
+              height="675"
+              loading="eager"
+              decoding="async"
+            />
+          </div>
+          <ul class="proofVisual__list">
+            <li>jouer des cartes au bon moment ;</li>
+            <li>tenir la bonne position dans le groupe ;</li>
+            <li>gérer l’énergie avant les moments chauds ;</li>
+            <li>
+              adapter ta tactique au terrain, au vent et au profil de tes
+              coureurs.
+            </li>
+          </ul>
+        </div>
+      </section>
 
-        <div class="grid3">
-          <div class="card">
+      <section aria-labelledby="doors">
+        <h2 id="doors">Trois portes d’entrée pour commencer</h2>
+        <div class="doorGrid">
+          <a class="cardLink" href="/tutoriel.html">
+            <article
+              class="card card--cta"
+              aria-labelledby="door-tutorial-title"
+            >
+              <p class="eyebrow">Découvrir</p>
+              <h3 id="door-tutorial-title">Découvrir le jeu</h3>
+              <p class="microcopy">
+                Commence par les tutoriels pour voir une partie, comprendre
+                l’interface et partir sur de bonnes bases.
+              </p>
+            </article>
+          </a>
+
+          <a class="cardLink" href="/regles.html">
+            <article class="card card--cta" aria-labelledby="door-rules-title">
+              <p class="eyebrow">Comprendre</p>
+              <h3 id="door-rules-title">Comprendre les règles</h3>
+              <p class="microcopy">
+                Lis la version courte des règles pour maîtriser les tours,
+                l’énergie, l’aspiration et les situations clés.
+              </p>
+            </article>
+          </a>
+
+          <a class="cardLink" href="/parcours/index.html">
+            <article class="card card--cta" aria-labelledby="door-routes-title">
+              <p class="eyebrow">Choisir</p>
+              <h3 id="door-routes-title">Choisir un parcours</h3>
+              <p class="microcopy">
+                Compare les profils de course et sélectionne le terrain qui
+                correspond à ton style de jeu.
+              </p>
+            </article>
+          </a>
+        </div>
+      </section>
+
+      <section aria-labelledby="principle">
+        <h2 id="principle">Les 4 piliers tactiques</h2>
+        <div class="grid4">
+          <article class="card card--compact">
             <div class="cardHead">
               <span class="ico" aria-hidden="true">
                 <svg
@@ -972,15 +1179,15 @@
                   <path d="M4 10c3-2 5-2 8 0s5 2 8 0" />
                 </svg>
               </span>
-              <h3>Placement & abri</h3>
+              <h3>Placement et abri</h3>
             </div>
             <p class="muted">
-              “Prendre la roue” compte. Être au mauvais endroit au mauvais
-              moment, c’est payer l’effort… ou sortir du coup.
+              Être bien placé te fait économiser l’effort. Être mal placé te
+              sort du bon coup.
             </p>
-          </div>
+          </article>
 
-          <div class="card">
+          <article class="card card--compact">
             <div class="cardHead">
               <span class="ico" aria-hidden="true">
                 <svg
@@ -997,15 +1204,15 @@
                   <path d="M17 17l-4-4" />
                 </svg>
               </span>
-              <h3>Énergie & timing</h3>
+              <h3>Énergie et timing</h3>
             </div>
             <p class="muted">
-              Un gros effort trop tôt, c’est souvent une fringale plus tard.
-              Temporiser peut être un bon coup.
+              Un effort de trop au mauvais moment se paie plus tard. Le bon
+              tempo vaut autant que la puissance.
             </p>
-          </div>
+          </article>
 
-          <div class="card">
+          <article class="card card--compact">
             <div class="cardHead">
               <span class="ico" aria-hidden="true">
                 <svg
@@ -1018,136 +1225,15 @@
                   <path d="M3 18h18" />
                 </svg>
               </span>
-              <h3>Terrain & risques</h3>
+              <h3>Terrain et risques</h3>
             </div>
             <p class="muted">
-              Pavés, bosses, météo : ça tape, ça secoue, et parfois ça casse. Tu
-              limites le risque sans devenir spectateur.
+              Pavés, bosses, vent et météo changent la course. Il faut anticiper
+              avant que le terrain décide pour toi.
             </p>
-          </div>
-        </div>
-      </section>
+          </article>
 
-      <section aria-labelledby="riders">
-        <h2 id="riders">Les profils de coureurs</h2>
-        <p class="muted">
-          Chaque coureur a sa spécialité. Tu composes ton équipe comme un
-          <strong>directeur sportif</strong> : équilibre entre profils pour
-          couvrir tous les terrains.
-        </p>
-
-        <div class="grid3">
-          <div class="card">
-            <div class="cardHead">
-              <span class="ico" aria-hidden="true">
-                <svg
-                  viewBox="0 0 24 24"
-                  fill="none"
-                  stroke="currentColor"
-                  stroke-width="2"
-                >
-                  <path d="M4 18l4-4 4 2 4-6 4 4" />
-                  <path d="M20 6l-4 4" />
-                  <path d="M20 6v4h-4" />
-                </svg>
-              </span>
-              <h3>Grimpeur</h3>
-            </div>
-            <p class="muted">
-              Roi des cols. Léger, endurant en montée, il souffre sur le plat
-              et dans le vent.
-            </p>
-          </div>
-
-          <div class="card">
-            <div class="cardHead">
-              <span class="ico" aria-hidden="true">
-                <svg
-                  viewBox="0 0 24 24"
-                  fill="none"
-                  stroke="currentColor"
-                  stroke-width="2"
-                >
-                  <path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z" />
-                </svg>
-              </span>
-              <h3>Sprinteur</h3>
-            </div>
-            <p class="muted">
-              Explosif sur les derniers mètres. Puissance brute, mais il doit
-              survivre jusqu'à l'arrivée.
-            </p>
-          </div>
-
-          <div class="card">
-            <div class="cardHead">
-              <span class="ico" aria-hidden="true">
-                <svg
-                  viewBox="0 0 24 24"
-                  fill="none"
-                  stroke="currentColor"
-                  stroke-width="2"
-                >
-                  <circle cx="12" cy="12" r="9" />
-                  <path d="M12 7v5l3 3" />
-                </svg>
-              </span>
-              <h3>Rouleur</h3>
-            </div>
-            <p class="muted">
-              Machine sur le plat. Il tire le peloton, protège le leader, et
-              excelle dans le vent.
-            </p>
-          </div>
-
-          <div class="card">
-            <div class="cardHead">
-              <span class="ico" aria-hidden="true">
-                <svg
-                  viewBox="0 0 24 24"
-                  fill="none"
-                  stroke="currentColor"
-                  stroke-width="2"
-                >
-                  <path d="M12 2v4" />
-                  <path d="M12 18v4" />
-                  <path d="M4.93 4.93l2.83 2.83" />
-                  <path d="M16.24 16.24l2.83 2.83" />
-                  <path d="M2 12h4" />
-                  <path d="M18 12h4" />
-                  <path d="M4.93 19.07l2.83-2.83" />
-                  <path d="M16.24 7.76l2.83-2.83" />
-                </svg>
-              </span>
-              <h3>Puncheur</h3>
-            </div>
-            <p class="muted">
-              Spécialiste des côtes courtes et des murs. Accélération violente,
-              idéal pour les classiques ardennaises.
-            </p>
-          </div>
-
-          <div class="card">
-            <div class="cardHead">
-              <span class="ico" aria-hidden="true">
-                <svg
-                  viewBox="0 0 24 24"
-                  fill="none"
-                  stroke="currentColor"
-                  stroke-width="2"
-                >
-                  <path d="M12 2l2 7h7l-5.5 4 2 7-5.5-4-5.5 4 2-7L3 9h7z" />
-                </svg>
-              </span>
-              <h3>Baroudeur</h3>
-            </div>
-            <p class="muted">
-              L'aventurier des échappées. Polyvalent, endurant, il tente sa
-              chance loin de l'arrivée.
-            </p>
-          </div>
-
-          <div class="card">
+          <article class="card card--compact">
             <div class="cardHead">
               <span class="ico" aria-hidden="true">
                 <svg
@@ -1162,13 +1248,101 @@
                   <path d="M16 3.13a4 4 0 0 1 0 7.75" />
                 </svg>
               </span>
-              <h3>Équipier</h3>
+              <h3>Profils de coureurs</h3>
             </div>
             <p class="muted">
-              Il roule pour les autres. Ravitaillement, abri, tempo : sans lui,
-              pas de victoire pour le leader.
+              Chaque coureur a un rôle. Une équipe équilibrée couvre mieux la
+              course qu’un groupe construit au hasard.
             </p>
-          </div>
+          </article>
+        </div>
+      </section>
+
+      <section aria-labelledby="riders">
+        <h2 id="riders">Les profils de coureurs</h2>
+        <p class="muted">
+          Chaque coureur a sa spécialité. Tu composes ton équipe comme un
+          <strong>directeur sportif</strong> : équilibre entre profils pour
+          couvrir tous les terrains.
+        </p>
+
+        <div class="grid3">
+          <article class="card card--compact">
+            <h3>Grimpeur</h3>
+            <p class="muted"><strong>Rôle :</strong> dominer les cols.</p>
+            <p class="muted">
+              <strong>Point fort :</strong> excellent en montée.
+            </p>
+            <p class="muted">
+              <strong>Point faible :</strong> souffre sur le plat et dans le
+              vent.
+            </p>
+          </article>
+
+          <article class="card card--compact">
+            <h3>Sprinteur</h3>
+            <p class="muted"><strong>Rôle :</strong> finir vite.</p>
+            <p class="muted">
+              <strong>Point fort :</strong> explosif dans le final.
+            </p>
+            <p class="muted">
+              <strong>Point faible :</strong> doit survivre jusque-là.
+            </p>
+          </article>
+
+          <article class="card card--compact">
+            <h3>Rouleur</h3>
+            <p class="muted">
+              <strong>Rôle :</strong> contrôler la course sur le plat.
+            </p>
+            <p class="muted">
+              <strong>Point fort :</strong> puissant dans le vent.
+            </p>
+            <p class="muted">
+              <strong>Point faible :</strong> moins à l’aise dans les forts
+              pourcentages.
+            </p>
+          </article>
+
+          <article class="card card--compact">
+            <h3>Puncheur</h3>
+            <p class="muted">
+              <strong>Rôle :</strong> faire la différence sur les bosses
+              courtes.
+            </p>
+            <p class="muted">
+              <strong>Point fort :</strong> accélération violente.
+            </p>
+            <p class="muted">
+              <strong>Point faible :</strong> moins régulier sur la durée.
+            </p>
+          </article>
+
+          <article class="card card--compact">
+            <h3>Baroudeur</h3>
+            <p class="muted"><strong>Rôle :</strong> partir de loin.</p>
+            <p class="muted">
+              <strong>Point fort :</strong> polyvalent et endurant.
+            </p>
+            <p class="muted">
+              <strong>Point faible :</strong> rarement le meilleur dans un
+              domaine précis.
+            </p>
+          </article>
+
+          <article class="card card--compact">
+            <h3>Équipier</h3>
+            <p class="muted">
+              <strong>Rôle :</strong> travailler pour le leader.
+            </p>
+            <p class="muted">
+              <strong>Point fort :</strong> protège et ravitaille l’équipe.
+            </p>
+            <p class="muted">
+              <strong>Point faible :</strong> n’est pas là pour finir en
+              vedette.
+            </p>
+          </article>
         </div>
       </section>
 
@@ -1180,7 +1354,7 @@
             <li class="step">
               <div class="stepNum" aria-hidden="true">1</div>
               <div>
-                <p class="stepTitle">Choisis un profil d’étape</p>
+                <p class="stepTitle">Choisis un parcours</p>
                 <p class="stepText">
                   Terrain, longueur, ambiance : tu définis le contexte tactique.
                 </p>
@@ -1189,7 +1363,7 @@
             <li class="step">
               <div class="stepNum" aria-hidden="true">2</div>
               <div>
-                <p class="stepTitle">Compose le peloton</p>
+                <p class="stepTitle">Compose ton équipe</p>
                 <p class="stepText">
                   Équipes, coureurs, budget (si applicable). Tu prépares la
                   bataille.
@@ -1208,39 +1382,14 @@
             </li>
           </ul>
 
-          <p class="muted" style="margin-top: 14px; text-align: center;">
-            → <a href="/regles.html" class="anchorLink">Lire les règles complètes</a>
-          </p>
-
-          <div class="ruleline"></div>
-
-          <div class="callout" role="note" aria-label="Jargon du peloton">
-            <strong>Le jargon du peloton (traduction incluse)</strong>
-            <div class="sub">Tu peux jouer sans connaître le cyclisme.</div>
-
-            <ul class="jargonList">
-              <li>
-                <strong>Prendre le vent</strong> = tu t’exposes → tu dépenses
-                plus → tu t’uses.
-              </li>
-              <li>
-                <strong>Prendre la roue</strong> = tu restes abrité → tu
-                économises.
-              </li>
-              <li>
-                <strong>Sauter le verrou</strong> = tu accélères au bon moment →
-                tu fais céder le groupe.
-              </li>
-            </ul>
-            <p class="muted" style="margin-top: 10px; font-size: 14px;">
-              → <a href="/lexique-cyclisme.html" class="anchorLink">Consulter le lexique complet</a>
-            </p>
+          <div class="stepActions">
+            <a class="btn btn--primary" href="/app/">Lancer une course</a>
           </div>
         </div>
       </section>
 
       <section aria-labelledby="keys">
-        <h2 id="keys">Mécaniques clés</h2>
+        <h2 id="keys">Mécaniques clés à connaître</h2>
 
         <div class="grid3">
           <div class="card">
@@ -1303,8 +1452,8 @@
               <h3>Pavés : survivre à l'Enfer du Nord</h3>
             </div>
             <p class="muted">
-              Les secteurs pavés, "ça frotte". Crevaisons, chutes : le
-              placement avant le secteur vaut plus que l'action pendant.
+              Les secteurs pavés, "ça frotte". Crevaisons, chutes : le placement
+              avant le secteur vaut plus que l'action pendant.
             </p>
           </div>
 
@@ -1376,113 +1525,88 @@
       </section>
 
       <section aria-labelledby="resources">
-        <h2 id="resources">Ressources</h2>
+        <h2 id="resources">Bien démarrer sur BORDUR</h2>
 
         <div class="grid3">
-          <div class="card">
-            <div class="cardHead">
-              <span class="ico" aria-hidden="true">
-                <svg
-                  viewBox="0 0 24 24"
-                  fill="none"
-                  stroke="currentColor"
-                  stroke-width="2"
-                >
-                  <path d="M6 4h12v16H6z" />
-                  <path d="M9 8h6" />
-                  <path d="M9 12h6" />
-                </svg>
-              </span>
-              <h3>Règles du jeu</h3>
+          <article class="card card--cta">
+            <p class="eyebrow">Tutoriels</p>
+            <h3>Bien démarrer sur BORDUR</h3>
+            <ul class="tutorialList">
+              <li>Vidéo 1 : Configurer une partie</li>
+              <li>Vidéo 2 : Comment jouer une partie</li>
+            </ul>
+            <div class="ctaRow">
+              <a class="btn btn--primary" href="/tutoriel.html"
+                >Voir les tutoriels</a
+              >
+              <a class="btn btn--link" href="/regles.html">Lire les règles</a>
             </div>
-            <p class="muted">
-              Une lecture rapide pour maîtriser les tours, l'énergie et les
-              effets de course.
-            </p>
-            <p class="muted" style="margin-top: 10px;">
-              → <a href="/regles.html" class="anchorLink">Lire les règles</a>
-            </p>
-          </div>
+          </article>
 
-          <div class="card">
-            <div class="cardHead">
-              <span class="ico" aria-hidden="true">
-                <svg
-                  viewBox="0 0 24 24"
-                  fill="none"
-                  stroke="currentColor"
-                  stroke-width="2"
-                >
-                  <path d="M4 6h10v12H4z" />
-                  <path d="M14 6h6v12h-6z" />
-                  <path d="M7 9h4" />
-                  <path d="M7 12h4" />
-                </svg>
-              </span>
-              <h3>Lexique cyclisme</h3>
-            </div>
-            <p class="muted">
-              Tous les termes expliqués simplement pour jouer sans jargon.
+          <article class="card card--cta">
+            <p class="eyebrow">Parcours</p>
+            <h3>Choisir un terrain de jeu</h3>
+            <p class="microcopy">
+              Compare les profils de course et va directement vers le parcours
+              qui t’intéresse.
             </p>
-            <p class="muted" style="margin-top: 10px;">
-              → <a href="/lexique-cyclisme.html" class="anchorLink">Ouvrir le lexique</a>
+            <p class="muted" style="margin-top: 10px">
+              → <a
+                href="/parcours/index.html"
+                class="anchorLink"
+                data-goatcounter-click="resources_parcours"
+                >Découvrir les parcours</a
+              >
             </p>
-          </div>
+            <p class="muted" style="margin-top: 6px">
+              <a
+                href="/parcours/nord/index.html"
+                class="anchorLink"
+                data-goatcounter-click="resources_parcours_nord"
+                >Nord</a
+              >
+              · <a
+                href="/parcours/ardennaise/index.html"
+                class="anchorLink"
+                data-goatcounter-click="resources_parcours_ardennaise"
+                >Ardennaise</a
+              >
+              · <a
+                href="/parcours/lombarde/index.html"
+                class="anchorLink"
+                data-goatcounter-click="resources_parcours_lombarde"
+                >Lombarde</a
+              >
+              · <a
+                href="/parcours/riviera/index.html"
+                class="anchorLink"
+                data-goatcounter-click="resources_parcours_riviera"
+                >Riviera</a
+              >
+              · <a
+                href="/parcours/flandriennes/index.html"
+                class="anchorLink"
+                data-goatcounter-click="resources_parcours_flandriennes"
+                >Flandriennes</a
+              >
+            </p>
+          </article>
 
-          <div class="card">
-            <div class="cardHead">
-              <span class="ico" aria-hidden="true">
-                <svg
-                  viewBox="0 0 24 24"
-                  fill="none"
-                  stroke="currentColor"
-                  stroke-width="2"
-                >
-                  <path d="M4 6h16v12H4z" />
-                  <path d="M10 9l5 3-5 3z" />
-                </svg>
-              </span>
-              <h3>Tutoriels vidéo</h3>
-            </div>
-            <p class="muted">
-              Une prise en main guidée pour lancer ta première course.
+          <article class="card card--cta">
+            <p class="eyebrow">Ressources</p>
+            <h3>Approfondir ensuite</h3>
+            <p class="microcopy">
+              Retrouve les règles complètes, le lexique cyclisme et les
+              ressources utiles quand tu veux aller plus loin.
             </p>
-            <p class="muted" style="margin-top: 10px;">
-              → <a href="/tutoriel.html" class="anchorLink">Voir le tutoriel</a>
+            <p class="muted" style="margin-top: 10px">
+              → <a href="/regles.html" class="anchorLink">Lire les règles</a
+              ><br />
+              → <a href="/lexique-cyclisme.html" class="anchorLink"
+                >Ouvrir le lexique</a
+              >
             </p>
-          </div>
-
-          <div class="card">
-            <div class="cardHead">
-              <span class="ico" aria-hidden="true">
-                <svg
-                  viewBox="0 0 24 24"
-                  fill="none"
-                  stroke="currentColor"
-                  stroke-width="2"
-                >
-                  <path d="M4 6h6v12H4z" />
-                  <path d="M14 6h6v12h-6z" />
-                  <path d="M10 10h4" />
-                  <path d="M10 14h4" />
-                </svg>
-              </span>
-              <h3>Parcours & profils</h3>
-            </div>
-            <p class="muted">
-              Compare les tracés et choisis le terrain qui correspond à ton style.
-            </p>
-            <p class="muted" style="margin-top: 10px;">
-              → <a href="/parcours/index.html" class="anchorLink" data-goatcounter-click="resources_parcours">Découvrir les parcours</a>
-            </p>
-            <p class="muted" style="margin-top: 6px;">
-              <a href="/parcours/nord/index.html" class="anchorLink" data-goatcounter-click="resources_parcours_nord">Nord</a>
-              · <a href="/parcours/ardennaise/index.html" class="anchorLink" data-goatcounter-click="resources_parcours_ardennaise">Ardennaise</a>
-              · <a href="/parcours/lombarde/index.html" class="anchorLink" data-goatcounter-click="resources_parcours_lombarde">Lombarde</a>
-              · <a href="/parcours/riviera/index.html" class="anchorLink" data-goatcounter-click="resources_parcours_riviera">Riviera</a>
-              · <a href="/parcours/flandriennes/index.html" class="anchorLink" data-goatcounter-click="resources_parcours_flandriennes">Flandriennes</a>
-            </p>
-          </div>
+          </article>
         </div>
       </section>
 
@@ -1579,20 +1703,59 @@
                 focusable="false"
               >
                 <g clip-path="url(#clip0_31_49)">
-                  <line x1="123.868" y1="52.0197" x2="106.227" y2="55.5991" stroke="currentColor" stroke-width="5" stroke-linecap="round"/>
-                  <line x1="124.111" y1="73.9868" x2="106.471" y2="77.5661" stroke="currentColor" stroke-width="5" stroke-linecap="round"/>
-                  <path d="M26 40C26 29 33 23 44 23H84C95 23 102 29 102 40V88C102 102 93 111 80 111H48C35 111 26 102 26 88V40Z" stroke="currentColor" stroke-width="6" stroke-linecap="round" stroke-linejoin="round"/>
-                  <path d="M44 43.5999C48.1974 43.5999 51.6 40.1973 51.6 35.9999C51.6 31.8025 48.1974 28.3999 44 28.3999C39.8027 28.3999 36.4 31.8025 36.4 35.9999C36.4 40.1973 39.8027 43.5999 44 43.5999Z" stroke="currentColor" stroke-width="5"/>
-                  <path d="M84 43.5999C88.1974 43.5999 91.6 40.1973 91.6 35.9999C91.6 31.8025 88.1974 28.3999 84 28.3999C79.8027 28.3999 76.4 31.8025 76.4 35.9999C76.4 40.1973 79.8027 43.5999 84 43.5999Z" stroke="currentColor" stroke-width="5"/>
+                  <line
+                    x1="123.868"
+                    y1="52.0197"
+                    x2="106.227"
+                    y2="55.5991"
+                    stroke="currentColor"
+                    stroke-width="5"
+                    stroke-linecap="round"
+                  />
+                  <line
+                    x1="124.111"
+                    y1="73.9868"
+                    x2="106.471"
+                    y2="77.5661"
+                    stroke="currentColor"
+                    stroke-width="5"
+                    stroke-linecap="round"
+                  />
+                  <path
+                    d="M26 40C26 29 33 23 44 23H84C95 23 102 29 102 40V88C102 102 93 111 80 111H48C35 111 26 102 26 88V40Z"
+                    stroke="currentColor"
+                    stroke-width="6"
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                  />
+                  <path
+                    d="M44 43.5999C48.1974 43.5999 51.6 40.1973 51.6 35.9999C51.6 31.8025 48.1974 28.3999 44 28.3999C39.8027 28.3999 36.4 31.8025 36.4 35.9999C36.4 40.1973 39.8027 43.5999 44 43.5999Z"
+                    stroke="currentColor"
+                    stroke-width="5"
+                  />
+                  <path
+                    d="M84 43.5999C88.1974 43.5999 91.6 40.1973 91.6 35.9999C91.6 31.8025 88.1974 28.3999 84 28.3999C79.8027 28.3999 76.4 31.8025 76.4 35.9999C76.4 40.1973 79.8027 43.5999 84 43.5999Z"
+                    stroke="currentColor"
+                    stroke-width="5"
+                  />
                   <mask id="path-6-inside-1_31_49" fill="currentColor">
-                    <path d="M46.8892 98V51.4545H65.5256C68.9498 51.4545 71.8059 51.9621 74.0938 52.9773C76.3816 53.9924 78.1013 55.4015 79.2528 57.2045C80.4044 58.9924 80.9801 61.053 80.9801 63.3864C80.9801 65.2045 80.6165 66.803 79.8892 68.1818C79.1619 69.5455 78.1619 70.6667 76.8892 71.5455C75.6316 72.4091 74.1922 73.0227 72.571 73.3864V73.8409C74.3438 73.9167 76.0028 74.4167 77.5483 75.3409C79.1089 76.2652 80.3741 77.5606 81.3438 79.2273C82.3134 80.8788 82.7983 82.8485 82.7983 85.1364C82.7983 87.6061 82.1847 89.8106 80.9574 91.75C79.7453 93.6742 77.9498 95.197 75.571 96.3182C73.1922 97.4394 70.2604 98 66.7756 98H46.8892ZM56.7301 89.9545H64.7528C67.4953 89.9545 69.4953 89.4318 70.7528 88.3864C72.0104 87.3258 72.6392 85.9167 72.6392 84.1591C72.6392 82.8712 72.3286 81.7348 71.7074 80.75C71.0862 79.7652 70.1998 78.9924 69.0483 78.4318C67.9119 77.8712 66.5559 77.5909 64.9801 77.5909H56.7301V89.9545ZM56.7301 70.9318H64.0256C65.3741 70.9318 66.571 70.697 67.6165 70.2273C68.6771 69.7424 69.5104 69.0606 70.1165 68.1818C70.7377 67.303 71.0483 66.25 71.0483 65.0227C71.0483 63.3409 70.4498 61.9848 69.2528 60.9545C68.071 59.9242 66.3892 59.4091 64.2074 59.4091H56.7301V70.9318Z"/>
+                    <path
+                      d="M46.8892 98V51.4545H65.5256C68.9498 51.4545 71.8059 51.9621 74.0938 52.9773C76.3816 53.9924 78.1013 55.4015 79.2528 57.2045C80.4044 58.9924 80.9801 61.053 80.9801 63.3864C80.9801 65.2045 80.6165 66.803 79.8892 68.1818C79.1619 69.5455 78.1619 70.6667 76.8892 71.5455C75.6316 72.4091 74.1922 73.0227 72.571 73.3864V73.8409C74.3438 73.9167 76.0028 74.4167 77.5483 75.3409C79.1089 76.2652 80.3741 77.5606 81.3438 79.2273C82.3134 80.8788 82.7983 82.8485 82.7983 85.1364C82.7983 87.6061 82.1847 89.8106 80.9574 91.75C79.7453 93.6742 77.9498 95.197 75.571 96.3182C73.1922 97.4394 70.2604 98 66.7756 98H46.8892ZM56.7301 89.9545H64.7528C67.4953 89.9545 69.4953 89.4318 70.7528 88.3864C72.0104 87.3258 72.6392 85.9167 72.6392 84.1591C72.6392 82.8712 72.3286 81.7348 71.7074 80.75C71.0862 79.7652 70.1998 78.9924 69.0483 78.4318C67.9119 77.8712 66.5559 77.5909 64.9801 77.5909H56.7301V89.9545ZM56.7301 70.9318H64.0256C65.3741 70.9318 66.571 70.697 67.6165 70.2273C68.6771 69.7424 69.5104 69.0606 70.1165 68.1818C70.7377 67.303 71.0483 66.25 71.0483 65.0227C71.0483 63.3409 70.4498 61.9848 69.2528 60.9545C68.071 59.9242 66.3892 59.4091 64.2074 59.4091H56.7301V70.9318Z"
+                    />
                   </mask>
-                  <path d="M46.8892 98V51.4545H65.5256C68.9498 51.4545 71.8059 51.9621 74.0938 52.9773C76.3816 53.9924 78.1013 55.4015 79.2528 57.2045C80.4044 58.9924 80.9801 61.053 80.9801 63.3864C80.9801 65.2045 80.6165 66.803 79.8892 68.1818C79.1619 69.5455 78.1619 70.6667 76.8892 71.5455C75.6316 72.4091 74.1922 73.0227 72.571 73.3864V73.8409C74.3438 73.9167 76.0028 74.4167 77.5483 75.3409C79.1089 76.2652 80.3741 77.5606 81.3438 79.2273C82.3134 80.8788 82.7983 82.8485 82.7983 85.1364C82.7983 87.6061 82.1847 89.8106 80.9574 91.75C79.7453 93.6742 77.9498 95.197 75.571 96.3182C73.1922 97.4394 70.2604 98 66.7756 98H46.8892ZM56.7301 89.9545H64.7528C67.4953 89.9545 69.4953 89.4318 70.7528 88.3864C72.0104 87.3258 72.6392 85.9167 72.6392 84.1591C72.6392 82.8712 72.3286 81.7348 71.7074 80.75C71.0862 79.7652 70.1998 78.9924 69.0483 78.4318C67.9119 77.8712 66.5559 77.5909 64.9801 77.5909H56.7301V89.9545ZM56.7301 70.9318H64.0256C65.3741 70.9318 66.571 70.697 67.6165 70.2273C68.6771 69.7424 69.5104 69.0606 70.1165 68.1818C70.7377 67.303 71.0483 66.25 71.0483 65.0227C71.0483 63.3409 70.4498 61.9848 69.2528 60.9545C68.071 59.9242 66.3892 59.4091 64.2074 59.4091H56.7301V70.9318Z" fill="currentColor"/>
-                  <path d="M46.8892 98H45.8892V99H46.8892V98ZM46.8892 51.4545V50.4545H45.8892V51.4545H46.8892ZM74.0938 52.9773L73.6882 53.8913V53.8913L74.0938 52.9773ZM79.2528 57.2045L78.41 57.7428L78.4121 57.746L79.2528 57.2045ZM79.8892 68.1818L80.7716 68.6524L80.7737 68.6484L79.8892 68.1818ZM76.8892 71.5455L77.4553 72.3698L77.4574 72.3684L76.8892 71.5455ZM72.571 73.3864L72.3522 72.4106L71.571 72.5858V73.3864H72.571ZM72.571 73.8409H71.571V74.7991L72.5283 74.84L72.571 73.8409ZM77.5483 75.3409L77.035 76.1992L77.0387 76.2013L77.5483 75.3409ZM81.3438 79.2273L80.4794 79.7302L80.4814 79.7336L81.3438 79.2273ZM80.9574 91.75L80.1124 91.2153L80.1113 91.217L80.9574 91.75ZM75.571 96.3182L75.1447 95.4136V95.4136L75.571 96.3182ZM56.7301 89.9545H55.7301V90.9545H56.7301V89.9545ZM70.7528 88.3864L71.3921 89.1554L71.3975 89.1508L70.7528 88.3864ZM71.7074 80.75L70.8616 81.2835V81.2835L71.7074 80.75ZM69.0483 78.4318L68.6059 79.3286L68.6106 79.3309L69.0483 78.4318ZM56.7301 77.5909V76.5909H55.7301V77.5909H56.7301ZM56.7301 70.9318H55.7301V71.9318H56.7301V70.9318ZM67.6165 70.2273L68.0263 71.1395L68.0322 71.1367L67.6165 70.2273ZM70.1165 68.1818L69.2998 67.6045L69.2933 67.6141L70.1165 68.1818ZM69.2528 60.9545L68.5957 61.7083L68.6005 61.7124L69.2528 60.9545ZM56.7301 59.4091V58.4091H55.7301V59.4091H56.7301ZM46.8892 98H47.8892V51.4545H46.8892H45.8892V98H46.8892ZM46.8892 51.4545V52.4545H65.5256V51.4545V50.4545H46.8892V51.4545ZM65.5256 51.4545V52.4545C68.8584 52.4545 71.5658 52.9496 73.6882 53.8913L74.0938 52.9773L74.4993 52.0632C72.0459 50.9746 69.0412 50.4545 65.5256 50.4545V51.4545ZM74.0938 52.9773L73.6882 53.8913C75.8278 54.8407 77.3812 56.1318 78.4101 57.7428L79.2528 57.2045L80.0956 56.6663C78.8215 54.6712 76.9355 53.1442 74.4993 52.0632L74.0938 52.9773ZM79.2528 57.2045L78.4121 57.746C79.4496 59.3569 79.9801 61.2257 79.9801 63.3864H80.9801H81.9801C81.9801 60.8804 81.3591 58.628 80.0936 56.6631L79.2528 57.2045ZM80.9801 63.3864H79.9801C79.9801 65.0691 79.6444 66.5025 79.0047 67.7153L79.8892 68.1818L80.7737 68.6484C81.5885 67.1036 81.9801 65.34 81.9801 63.3864H80.9801ZM79.8892 68.1818L79.0069 67.7112C78.3547 68.9339 77.4625 69.9344 76.321 70.7226L76.8892 71.5455L77.4574 72.3684C78.8614 71.399 79.9691 70.157 80.7716 68.6524L79.8892 68.1818ZM76.8892 71.5455L76.3231 70.7211C75.1796 71.5064 73.8602 72.0724 72.3522 72.4106L72.571 73.3864L72.7899 74.3621C74.5243 73.9731 76.0837 73.3117 77.4553 72.3698L76.8892 71.5455ZM72.571 73.3864H71.571V73.8409H72.571H73.571V73.3864H72.571ZM72.571 73.8409L72.5283 74.84C74.1324 74.9085 75.6301 75.3589 77.035 76.1991L77.5483 75.3409L78.0616 74.4827C76.3756 73.4744 74.5551 72.9248 72.6137 72.8418L72.571 73.8409ZM77.5483 75.3409L77.0387 76.2013C78.4432 77.0331 79.5899 78.2014 80.4794 79.7302L81.3438 79.2273L82.2081 78.7244C81.1582 76.9198 79.7746 75.4972 78.0579 74.4805L77.5483 75.3409ZM81.3438 79.2273L80.4814 79.7336C81.3449 81.2042 81.7983 82.9917 81.7983 85.1364H82.7983H83.7983C83.7983 82.7052 83.282 80.5534 82.2061 78.7209L81.3438 79.2273ZM82.7983 85.1364H81.7983C81.7983 87.4318 81.2307 89.4481 80.1124 91.2153L80.9574 91.75L81.8024 92.2847C83.1387 90.1731 83.7983 87.7804 83.7983 85.1364H82.7983ZM80.9574 91.75L80.1113 91.217C79.0159 92.9559 77.3785 94.3607 75.1447 95.4136L75.571 96.3182L75.9974 97.2227C78.5211 96.0332 80.4746 94.3926 81.8035 92.283L80.9574 91.75ZM75.571 96.3182L75.1447 95.4136C72.9352 96.455 70.1587 97 66.7756 97V98V99C70.3621 99 73.4493 98.4238 75.9974 97.2227L75.571 96.3182ZM66.7756 98V97H46.8892V98V99H66.7756V98ZM56.7301 89.9545V90.9545H64.7528V89.9545V88.9545H56.7301V89.9545ZM64.7528 89.9545V90.9545C67.5835 90.9545 69.8683 90.4222 71.3921 89.1553L70.7528 88.3864L70.1136 87.6174C69.1223 88.4415 67.407 88.9545 64.7528 88.9545V89.9545ZM70.7528 88.3864L71.3975 89.1508C72.8974 87.8859 73.6392 86.1884 73.6392 84.1591H72.6392H71.6392C71.6392 85.6449 71.1234 86.7656 70.1081 87.6219L70.7528 88.3864ZM72.6392 84.1591H73.6392C73.6392 82.7031 73.2856 81.3777 72.5532 80.2165L71.7074 80.75L70.8616 81.2835C71.3716 82.092 71.6392 83.0393 71.6392 84.1591H72.6392ZM71.7074 80.75L72.5532 80.2165C71.8229 79.0587 70.7877 78.1664 69.486 77.5327L69.0483 78.4318L68.6106 79.3309C69.612 79.8185 70.3495 80.4716 70.8616 81.2835L71.7074 80.75ZM69.0483 78.4318L69.4907 77.535C68.1874 76.892 66.6728 76.5909 64.9801 76.5909V77.5909V78.5909C66.439 78.5909 67.6365 78.8504 68.6059 79.3286L69.0483 78.4318ZM64.9801 77.5909V76.5909H56.7301V77.5909V78.5909H64.9801V77.5909ZM56.7301 77.5909H55.7301V89.9545H56.7301H57.7301V77.5909H56.7301ZM56.7301 70.9318V71.9318H64.0256V70.9318V69.9318H56.7301V70.9318ZM64.0256 70.9318V71.9318C65.4907 71.9318 66.8312 71.6764 68.0263 71.1394L67.6165 70.2273L67.2067 69.3151C66.3108 69.7176 65.2574 69.9318 64.0256 69.9318V70.9318ZM67.6165 70.2273L68.0322 71.1367C69.2414 70.584 70.2218 69.7905 70.9397 68.7495L70.1165 68.1818L69.2933 67.6141C68.799 68.3307 68.1128 68.9008 67.2007 69.3178L67.6165 70.2273ZM70.1165 68.1818L70.9331 68.7591C71.6899 67.6884 72.0483 66.4266 72.0483 65.0227H71.0483H70.0483C70.0483 66.0734 69.7855 66.9176 69.2999 67.6046L70.1165 68.1818ZM71.0483 65.0227H72.0483C72.0483 63.0712 71.3387 61.4305 69.9052 60.1966L69.2528 60.9545L68.6005 61.7124C69.561 62.5392 70.0483 63.6106 70.0483 65.0227H71.0483ZM69.2528 60.9545L69.91 60.2008C68.4857 58.9591 66.5365 58.4091 64.2074 58.4091V59.4091V60.4091C66.2419 60.4091 67.6563 60.8894 68.5957 61.7083L69.2528 60.9545ZM64.2074 59.4091V58.4091H56.7301V59.4091V60.4091H64.2074V59.4091ZM56.7301 59.4091H55.7301V70.9318H56.7301H57.7301V59.4091H56.7301Z" fill="currentColor" mask="url(#path-6-inside-1_31_49)"/>
+                  <path
+                    d="M46.8892 98V51.4545H65.5256C68.9498 51.4545 71.8059 51.9621 74.0938 52.9773C76.3816 53.9924 78.1013 55.4015 79.2528 57.2045C80.4044 58.9924 80.9801 61.053 80.9801 63.3864C80.9801 65.2045 80.6165 66.803 79.8892 68.1818C79.1619 69.5455 78.1619 70.6667 76.8892 71.5455C75.6316 72.4091 74.1922 73.0227 72.571 73.3864V73.8409C74.3438 73.9167 76.0028 74.4167 77.5483 75.3409C79.1089 76.2652 80.3741 77.5606 81.3438 79.2273C82.3134 80.8788 82.7983 82.8485 82.7983 85.1364C82.7983 87.6061 82.1847 89.8106 80.9574 91.75C79.7453 93.6742 77.9498 95.197 75.571 96.3182C73.1922 97.4394 70.2604 98 66.7756 98H46.8892ZM56.7301 89.9545H64.7528C67.4953 89.9545 69.4953 89.4318 70.7528 88.3864C72.0104 87.3258 72.6392 85.9167 72.6392 84.1591C72.6392 82.8712 72.3286 81.7348 71.7074 80.75C71.0862 79.7652 70.1998 78.9924 69.0483 78.4318C67.9119 77.8712 66.5559 77.5909 64.9801 77.5909H56.7301V89.9545ZM56.7301 70.9318H64.0256C65.3741 70.9318 66.571 70.697 67.6165 70.2273C68.6771 69.7424 69.5104 69.0606 70.1165 68.1818C70.7377 67.303 71.0483 66.25 71.0483 65.0227C71.0483 63.3409 70.4498 61.9848 69.2528 60.9545C68.071 59.9242 66.3892 59.4091 64.2074 59.4091H56.7301V70.9318Z"
+                    fill="currentColor"
+                  />
+                  <path
+                    d="M46.8892 98H45.8892V99H46.8892V98ZM46.8892 51.4545V50.4545H45.8892V51.4545H46.8892ZM74.0938 52.9773L73.6882 53.8913V53.8913L74.0938 52.9773ZM79.2528 57.2045L78.41 57.7428L78.4121 57.746L79.2528 57.2045ZM79.8892 68.1818L80.7716 68.6524L80.7737 68.6484L79.8892 68.1818ZM76.8892 71.5455L77.4553 72.3698L77.4574 72.3684L76.8892 71.5455ZM72.571 73.3864L72.3522 72.4106L71.571 72.5858V73.3864H72.571ZM72.571 73.8409H71.571V74.7991L72.5283 74.84L72.571 73.8409ZM77.5483 75.3409L77.035 76.1992L77.0387 76.2013L77.5483 75.3409ZM81.3438 79.2273L80.4794 79.7302L80.4814 79.7336L81.3438 79.2273ZM80.9574 91.75L80.1124 91.2153L80.1113 91.217L80.9574 91.75ZM75.571 96.3182L75.1447 95.4136V95.4136L75.571 96.3182ZM56.7301 89.9545H55.7301V90.9545H56.7301V89.9545ZM70.7528 88.3864L71.3921 89.1554L71.3975 89.1508L70.7528 88.3864ZM71.7074 80.75L70.8616 81.2835V81.2835L71.7074 80.75ZM69.0483 78.4318L68.6059 79.3286L68.6106 79.3309L69.0483 78.4318ZM56.7301 77.5909V76.5909H55.7301V77.5909H56.7301ZM56.7301 70.9318H55.7301V71.9318H56.7301V70.9318ZM67.6165 70.2273L68.0263 71.1395L68.0322 71.1367L67.6165 70.2273ZM70.1165 68.1818L69.2998 67.6045L69.2933 67.6141L70.1165 68.1818ZM69.2528 60.9545L68.5957 61.7083L68.6005 61.7124L69.2528 60.9545ZM56.7301 59.4091V58.4091H55.7301V59.4091H56.7301ZM46.8892 98H47.8892V51.4545H46.8892H45.8892V98H46.8892ZM46.8892 51.4545V52.4545H65.5256V51.4545V50.4545H46.8892V51.4545ZM65.5256 51.4545V52.4545C68.8584 52.4545 71.5658 52.9496 73.6882 53.8913L74.0938 52.9773L74.4993 52.0632C72.0459 50.9746 69.0412 50.4545 65.5256 50.4545V51.4545ZM74.0938 52.9773L73.6882 53.8913C75.8278 54.8407 77.3812 56.1318 78.4101 57.7428L79.2528 57.2045L80.0956 56.6663C78.8215 54.6712 76.9355 53.1442 74.4993 52.0632L74.0938 52.9773ZM79.2528 57.2045L78.4121 57.746C79.4496 59.3569 79.9801 61.2257 79.9801 63.3864H80.9801H81.9801C81.9801 60.8804 81.3591 58.628 80.0936 56.6631L79.2528 57.2045ZM80.9801 63.3864H79.9801C79.9801 65.0691 79.6444 66.5025 79.0047 67.7153L79.8892 68.1818L80.7737 68.6484C81.5885 67.1036 81.9801 65.34 81.9801 63.3864H80.9801ZM79.8892 68.1818L79.0069 67.7112C78.3547 68.9339 77.4625 69.9344 76.321 70.7226L76.8892 71.5455L77.4574 72.3684C78.8614 71.399 79.9691 70.157 80.7716 68.6524L79.8892 68.1818ZM76.8892 71.5455L76.3231 70.7211C75.1796 71.5064 73.8602 72.0724 72.3522 72.4106L72.571 73.3864L72.7899 74.3621C74.5243 73.9731 76.0837 73.3117 77.4553 72.3698L76.8892 71.5455ZM72.571 73.3864H71.571V73.8409H72.571H73.571V73.3864H72.571ZM72.571 73.8409L72.5283 74.84C74.1324 74.9085 75.6301 75.3589 77.035 76.1991L77.5483 75.3409L78.0616 74.4827C76.3756 73.4744 74.5551 72.9248 72.6137 72.8418L72.571 73.8409ZM77.5483 75.3409L77.0387 76.2013C78.4432 77.0331 79.5899 78.2014 80.4794 79.7302L81.3438 79.2273L82.2081 78.7244C81.1582 76.9198 79.7746 75.4972 78.0579 74.4805L77.5483 75.3409ZM81.3438 79.2273L80.4814 79.7336C81.3449 81.2042 81.7983 82.9917 81.7983 85.1364H82.7983H83.7983C83.7983 82.7052 83.282 80.5534 82.2061 78.7209L81.3438 79.2273ZM82.7983 85.1364H81.7983C81.7983 87.4318 81.2307 89.4481 80.1124 91.2153L80.9574 91.75L81.8024 92.2847C83.1387 90.1731 83.7983 87.7804 83.7983 85.1364H82.7983ZM80.9574 91.75L80.1113 91.217C79.0159 92.9559 77.3785 94.3607 75.1447 95.4136L75.571 96.3182L75.9974 97.2227C78.5211 96.0332 80.4746 94.3926 81.8035 92.283L80.9574 91.75ZM75.571 96.3182L75.1447 95.4136C72.9352 96.455 70.1587 97 66.7756 97V98V99C70.3621 99 73.4493 98.4238 75.9974 97.2227L75.571 96.3182ZM66.7756 98V97H46.8892V98V99H66.7756V98ZM56.7301 89.9545V90.9545H64.7528V89.9545V88.9545H56.7301V89.9545ZM64.7528 89.9545V90.9545C67.5835 90.9545 69.8683 90.4222 71.3921 89.1553L70.7528 88.3864L70.1136 87.6174C69.1223 88.4415 67.407 88.9545 64.7528 88.9545V89.9545ZM70.7528 88.3864L71.3975 89.1508C72.8974 87.8859 73.6392 86.1884 73.6392 84.1591H72.6392H71.6392C71.6392 85.6449 71.1234 86.7656 70.1081 87.6219L70.7528 88.3864ZM72.6392 84.1591H73.6392C73.6392 82.7031 73.2856 81.3777 72.5532 80.2165L71.7074 80.75L70.8616 81.2835C71.3716 82.092 71.6392 83.0393 71.6392 84.1591H72.6392ZM71.7074 80.75L72.5532 80.2165C71.8229 79.0587 70.7877 78.1664 69.486 77.5327L69.0483 78.4318L68.6106 79.3309C69.612 79.8185 70.3495 80.4716 70.8616 81.2835L71.7074 80.75ZM69.0483 78.4318L69.4907 77.535C68.1874 76.892 66.6728 76.5909 64.9801 76.5909V77.5909V78.5909C66.439 78.5909 67.6365 78.8504 68.6059 79.3286L69.0483 78.4318ZM64.9801 77.5909V76.5909H56.7301V77.5909V78.5909H64.9801V77.5909ZM56.7301 77.5909H55.7301V89.9545H56.7301H57.7301V77.5909H56.7301ZM56.7301 70.9318V71.9318H64.0256V70.9318V69.9318H56.7301V70.9318ZM64.0256 70.9318V71.9318C65.4907 71.9318 66.8312 71.6764 68.0263 71.1394L67.6165 70.2273L67.2067 69.3151C66.3108 69.7176 65.2574 69.9318 64.0256 69.9318V70.9318ZM67.6165 70.2273L68.0322 71.1367C69.2414 70.584 70.2218 69.7905 70.9397 68.7495L70.1165 68.1818L69.2933 67.6141C68.799 68.3307 68.1128 68.9008 67.2007 69.3178L67.6165 70.2273ZM70.1165 68.1818L70.9331 68.7591C71.6899 67.6884 72.0483 66.4266 72.0483 65.0227H71.0483H70.0483C70.0483 66.0734 69.7855 66.9176 69.2999 67.6046L70.1165 68.1818ZM71.0483 65.0227H72.0483C72.0483 63.0712 71.3387 61.4305 69.9052 60.1966L69.2528 60.9545L68.6005 61.7124C69.561 62.5392 70.0483 63.6106 70.0483 65.0227H71.0483ZM69.2528 60.9545L69.91 60.2008C68.4857 58.9591 66.5365 58.4091 64.2074 58.4091V59.4091V60.4091C66.2419 60.4091 67.6563 60.8894 68.5957 61.7083L69.2528 60.9545ZM64.2074 59.4091V58.4091H56.7301V59.4091V60.4091H64.2074V59.4091ZM56.7301 59.4091H55.7301V70.9318H56.7301H57.7301V59.4091H56.7301Z"
+                    fill="currentColor"
+                    mask="url(#path-6-inside-1_31_49)"
+                  />
                 </g>
                 <defs>
                   <clipPath id="clip0_31_49">
-                    <rect width="128" height="128" fill="currentColor"/>
+                    <rect width="128" height="128" fill="currentColor" />
                   </clipPath>
                 </defs>
               </svg>
@@ -1628,7 +1791,12 @@
                   rel="noopener noreferrer"
                   aria-label="BORDUR sur X"
                 >
-                  <svg class="socialIcon" viewBox="0 0 24 24" aria-hidden="true" focusable="false">
+                  <svg
+                    class="socialIcon"
+                    viewBox="0 0 24 24"
+                    aria-hidden="true"
+                    focusable="false"
+                  >
                     <path
                       fill="currentColor"
                       d="M18.244 2.25h3.308l-7.227 8.26L22.5 21.75h-6.7l-5.25-6.86-6.01 6.86H1.23l7.73-8.84L1.5 2.25h6.86l4.75 6.23 5.134-6.23z"
@@ -1642,7 +1810,12 @@
                   rel="noopener noreferrer"
                   aria-label="BORDUR sur YouTube"
                 >
-                  <svg class="socialIcon" viewBox="0 0 24 24" aria-hidden="true" focusable="false">
+                  <svg
+                    class="socialIcon"
+                    viewBox="0 0 24 24"
+                    aria-hidden="true"
+                    focusable="false"
+                  >
                     <path
                       fill="currentColor"
                       d="M21.6 7.2a2.7 2.7 0 0 0-1.9-1.9C18.1 5 12 5 12 5s-6.1 0-7.7.3a2.7 2.7 0 0 0-1.9 1.9A28.6 28.6 0 0 0 2 12a28.6 28.6 0 0 0 .4 4.8 2.7 2.7 0 0 0 1.9 1.9C5.9 19 12 19 12 19s6.1 0 7.7-.3a2.7 2.7 0 0 0 1.9-1.9A28.6 28.6 0 0 0 22 12a28.6 28.6 0 0 0-.4-4.8zM10 15V9l5 3-5 3z"
@@ -1656,7 +1829,12 @@
                   rel="noopener noreferrer"
                   aria-label="BORDUR sur Instagram"
                 >
-                  <svg class="socialIcon" viewBox="0 0 24 24" aria-hidden="true" focusable="false">
+                  <svg
+                    class="socialIcon"
+                    viewBox="0 0 24 24"
+                    aria-hidden="true"
+                    focusable="false"
+                  >
                     <rect
                       x="3"
                       y="3"
@@ -1690,18 +1868,25 @@
       </footer>
     </main>
 
-    <!-- Sticky CTA: apparaît une fois le hero sorti -->
     <div class="stickyCta" id="stickyCta" aria-label="Action rapide">
       <div class="stickyCta__inner">
         <div class="stickyCta__text">
           <strong>Prêt à lancer une course ?</strong>
-          <span
-            >Choisis un profil, compose le peloton, joue tour par tour.</span
-          >
+          <span>Choisis un profil, compose le peloton, joue tour par tour.</span>
         </div>
         <div style="display: flex; gap: 10px; align-items: center">
-          <a class="btn btn--link" href="#comment" data-goatcounter-click="sticky_how">Comment ça marche</a>
-          <a class="btn btn--primary" href="/app/" data-goatcounter-click="sticky_play">Préparer une course</a>
+          <a
+            class="btn btn--link"
+            href="#comment"
+            data-goatcounter-click="sticky_how"
+            >Comment ça marche</a
+          >
+          <a
+            class="btn btn--primary"
+            href="/app/"
+            data-goatcounter-click="sticky_play"
+            >Jouer maintenant</a
+          >
         </div>
       </div>
     </div>
@@ -1717,35 +1902,41 @@
             const visible = entries[0]?.isIntersecting;
             sticky.style.display = visible ? "none" : "block";
           },
-          { root: null, threshold: 0.15 },
+          { root: null, threshold: 0.15 }
         );
 
         io.observe(hero);
       })();
     </script>
+
     <script>
       document
         .getElementById("year")
-        ?.appendChild(
-          document.createTextNode(String(new Date().getFullYear())),
-        );
+        ?.appendChild(document.createTextNode(String(new Date().getFullYear())));
     </script>
+
     <script>
       (function () {
         function shouldSkip() {
           try {
-            return localStorage.getItem('analytics_optout') === '1';
+            return localStorage.getItem("analytics_optout") === "1";
           } catch (err) {
             return false;
           }
         }
 
-        document.addEventListener('click', (event) => {
+        document.addEventListener("click", (event) => {
           const link = event.target.closest('a[href^="/app/"]');
           if (!link || shouldSkip()) return;
           try {
-            if (window.goatcounter && typeof window.goatcounter.count === 'function') {
-              window.goatcounter.count({ event: true, path: 'landing_prepare_click' });
+            if (
+              window.goatcounter &&
+              typeof window.goatcounter.count === "function"
+            ) {
+              window.goatcounter.count({
+                event: true,
+                path: "landing_prepare_click"
+              });
             }
           } catch (err) {}
         });
