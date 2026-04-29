@@ -4,10 +4,10 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
 
-  <title>Tutoriel — Bien démarrer sur BORDUR</title>
+  <title>Tutoriels vidéo BORDUR — configuration de partie et comment jouer</title>
   <meta
     name="description"
-    content="Tutoriel vidéo pour bien démarrer sur BORDUR : principes, interface et premières décisions de course."
+    content="Tutoriels vidéo BORDUR : configurer une partie, comprendre l'interface et apprendre à jouer une course tour par tour."
   >
   <meta name="robots" content="index,follow">
 
@@ -23,8 +23,8 @@
   <meta property="og:type" content="website">
   <meta property="og:locale" content="fr_FR">
   <meta property="og:site_name" content="BORDUR">
-  <meta property="og:title" content="Tutoriel — Bien démarrer sur BORDUR">
-  <meta property="og:description" content="Tutoriel vidéo pour bien démarrer sur BORDUR.">
+  <meta property="og:title" content="Tutoriels vidéo BORDUR — configuration de partie et comment jouer">
+  <meta property="og:description" content="Deux tutoriels vidéo pour prendre en main BORDUR : configurer une partie et apprendre à jouer une course.">
   <meta property="og:url" content="https://bordur.fr/tutoriel.html">
   <meta property="og:image" content="https://bordur.fr/intro/chassepatate.webp">
   <meta property="og:video:url" content="https://www.youtube.com/watch?v=YvWhbvmsW78">
@@ -34,20 +34,40 @@
 
   <!-- Twitter -->
   <meta name="twitter:card" content="summary_large_image">
-  <meta name="twitter:title" content="Tutoriel — Bien démarrer sur BORDUR">
-  <meta name="twitter:description" content="Tutoriel vidéo pour bien démarrer sur BORDUR.">
+  <meta name="twitter:title" content="Tutoriels vidéo BORDUR — configuration de partie et comment jouer">
+  <meta name="twitter:description" content="Deux tutoriels vidéo pour prendre en main BORDUR : configurer une partie et apprendre à jouer une course.">
   <meta name="twitter:image" content="https://bordur.fr/intro/chassepatate.webp">
 
   <script type="application/ld+json">
   {
     "@context": "https://schema.org",
-    "@type": "VideoObject",
-    "name": "BORDUR — Configurer une course (tutoriel complet)",
-    "description": "Tutoriel vidéo pour bien démarrer sur BORDUR : interface, décisions clés et premières courses.",
-    "thumbnailUrl": "https://img.youtube.com/vi/YvWhbvmsW78/maxresdefault.jpg",
-    "uploadDate": "2026-01-27T00:00:00+01:00",
-    "duration": "PT6M",
-    "embedUrl": "https://www.youtube.com/embed/YvWhbvmsW78"
+    "@graph": [
+      {
+        "@type": "WebPage",
+        "@id": "https://bordur.fr/tutoriel.html#webpage",
+        "url": "https://bordur.fr/tutoriel.html",
+        "name": "Tutoriels vidéo BORDUR — configuration de partie et comment jouer",
+        "description": "Tutoriels vidéo BORDUR : configurer une partie, comprendre l'interface et apprendre à jouer une course tour par tour.",
+        "mainEntity": [
+          { "@id": "https://bordur.fr/tutoriel.html#video-config" }
+        ]
+      },
+      {
+        "@type": "VideoObject",
+        "@id": "https://bordur.fr/tutoriel.html#video-config",
+        "name": "BORDUR — Configurer une partie",
+        "description": "Tutoriel vidéo pour configurer une première partie sur BORDUR, lire l'interface de préparation et vérifier les paramètres avant le départ.",
+        "thumbnailUrl": ["https://img.youtube.com/vi/YvWhbvmsW78/maxresdefault.jpg"],
+        "uploadDate": "2026-01-27T00:00:00+01:00",
+        "duration": "PT6M",
+        "embedUrl": "https://www.youtube-nocookie.com/embed/YvWhbvmsW78",
+        "contentUrl": "https://www.youtube.com/watch?v=YvWhbvmsW78",
+        "publisher": {
+          "@type": "Organization",
+          "name": "BORDUR"
+        }
+      }
+    ]
   }
   </script>
 
@@ -168,6 +188,14 @@
       padding: 20px;
       margin-top: 18px;
       margin-bottom: 32px;
+      display: grid;
+    }
+
+    .video-section > h2 {
+      font-family: var(--font-display);
+      font-size: 28px;
+      color: var(--accent);
+      margin-bottom: 12px;
     }
 
     .video-shell {
@@ -193,6 +221,23 @@
       font-size: 14px;
     }
 
+    .video-actions {
+      margin-top: 14px;
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+    }
+
+    .video-actions a {
+      color: var(--accent);
+      text-decoration: none;
+      font-weight: 700;
+    }
+
+    .video-actions a:hover {
+      text-decoration: underline;
+    }
+
     .lede {
       margin-top: 18px;
       margin-bottom: 24px;
@@ -214,7 +259,7 @@
       padding: 18px;
     }
 
-    .video-card h2 {
+    .video-card h3 {
       font-family: var(--font-display);
       font-size: 24px;
       color: var(--accent);
@@ -258,7 +303,7 @@
     .siteFooter {
       border-top: 1px solid var(--line);
       margin-top: 48px;
-      padding: 40px 0 56px;
+      padding: 40px 0 110px;
     }
 
     .footerInner {
@@ -483,64 +528,122 @@
 
   <main class="wrap">
     <p class="lede">
-      Cette vidéo est la ressource principale de cette page. Elle montre comment configurer une
-      première partie sur BORDUR, comprendre les écrans de préparation et partir sur des bases
-      propres avant le début de la course.
+      Cette page regroupe le tutoriel vidéo officiel actuellement disponible pour BORDUR. Il montre
+      comment configurer une partie, lire l'interface de préparation et partir sur des bases propres
+      avant le début de la course.
     </p>
 
-    <section class="video-section" aria-labelledby="video-title">
-      <h2 id="video-title" style="font-size: 18px; margin-bottom: 12px;">Vidéo complète — Bien démarrer sur BORDUR</h2>
+    <section class="video-section" aria-labelledby="video-config-title">
+      <h2 id="video-config-title">Vidéo 1 — Configurer une partie sur BORDUR</h2>
       <div class="video-shell">
         <iframe
-          src="https://www.youtube.com/embed/YvWhbvmsW78"
-          title="Tutoriel BORDUR — Bien démarrer"
+          src="https://www.youtube-nocookie.com/embed/YvWhbvmsW78"
+          title="Tutoriel BORDUR — Configurer une partie"
           allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
           allowfullscreen
           loading="eager"
+          referrerpolicy="strict-origin-when-cross-origin"
         ></iframe>
       </div>
       <p class="video-caption">
-        Regarde cette vidéo en priorité : elle présente l'interface, les réglages de départ,
+        Commence par cette vidéo : elle présente l'interface, les réglages de départ,
         la composition de la partie et les points à vérifier avant de lancer la course.
       </p>
+      <div class="video-actions" aria-label="Actions vidéo 1">
+        <a href="https://www.youtube.com/watch?v=YvWhbvmsW78" target="_blank" rel="noopener noreferrer">Voir sur YouTube</a>
+      </div>
+
+      <div class="video-meta">
+        <article class="video-card" aria-labelledby="video-config-learn-title">
+          <h3 id="video-config-learn-title">Ce que tu vas apprendre</h3>
+          <ul>
+            <li>comment configurer une première partie sans te perdre dans les options ;</li>
+            <li>comment lire l'interface de préparation et repérer les informations utiles ;</li>
+            <li>comment composer la partie et vérifier les paramètres avant le départ ;</li>
+            <li>quels contrôles faire avant de lancer la course.</li>
+          </ul>
+        </article>
+
+        <article class="video-card" aria-labelledby="video-config-chapters-title">
+          <h3 id="video-config-chapters-title">Chapitres de la vidéo</h3>
+          <ol>
+            <li><a href="https://www.youtube.com/watch?v=YvWhbvmsW78&t=0s" target="_blank" rel="noopener noreferrer"><strong>00:00 — Introduction</strong></a></li>
+            <li><a href="https://www.youtube.com/watch?v=YvWhbvmsW78&t=25s" target="_blank" rel="noopener noreferrer"><strong>00:25 — Présentation de l’interface</strong></a></li>
+            <li><a href="https://www.youtube.com/watch?v=YvWhbvmsW78&t=70s" target="_blank" rel="noopener noreferrer"><strong>01:10 — Choix du profil d’étape</strong></a></li>
+            <li><a href="https://www.youtube.com/watch?v=YvWhbvmsW78&t=125s" target="_blank" rel="noopener noreferrer"><strong>02:05 — Composition de la partie</strong></a></li>
+            <li><a href="https://www.youtube.com/watch?v=YvWhbvmsW78&t=200s" target="_blank" rel="noopener noreferrer"><strong>03:20 — Paramètres de départ</strong></a></li>
+            <li><a href="https://www.youtube.com/watch?v=YvWhbvmsW78&t=310s" target="_blank" rel="noopener noreferrer"><strong>05:10 — Vérifications avant le lancement</strong></a></li>
+            <li><a href="https://www.youtube.com/watch?v=YvWhbvmsW78&t=390s" target="_blank" rel="noopener noreferrer"><strong>06:30 — Lancer la course</strong></a></li>
+            <li><a href="https://www.youtube.com/watch?v=YvWhbvmsW78&t=430s" target="_blank" rel="noopener noreferrer"><strong>07:10 — Conclusion</strong></a></li>
+          </ol>
+        </article>
+
+        <article class="video-card" aria-labelledby="video-config-summary-title">
+          <h3 id="video-config-summary-title">Résumé</h3>
+          <p>
+            Cette première vidéo sert à mettre la partie en place. Elle est centrée sur la configuration,
+            la lecture de l'interface et les vérifications utiles avant le départ.
+          </p>
+        </article>
+      </div>
     </section>
 
-    <section class="video-meta" aria-label="Informations sur la vidéo">
-      <article class="video-card" aria-labelledby="learn-title">
-        <h2 id="learn-title">Ce que tu vas apprendre</h2>
-        <ul>
-          <li>comment configurer une première partie sans te perdre dans les options ;</li>
-          <li>comment lire l'interface de préparation et repérer les informations utiles ;</li>
-          <li>comment composer le peloton et choisir les bons paramètres de départ ;</li>
-          <li>quels contrôles faire avant de lancer la course.</li>
-        </ul>
-      </article>
+    <!--
+    <section class="video-section" aria-labelledby="video-gameplay-title">
+      <h2 id="video-gameplay-title">Vidéo 2 — Comment jouer une partie</h2>
+      <div class="video-shell">
+        <iframe
+          src="https://www.youtube-nocookie.com/embed/VIDEO_ID_2"
+          title="Tutoriel BORDUR — Comment jouer une partie"
+          allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+          allowfullscreen
+          loading="lazy"
+          referrerpolicy="strict-origin-when-cross-origin"
+        ></iframe>
+      </div>
+      <p class="video-caption">
+        Cette seconde vidéo montre le déroulé d'un tour, le placement, l'aspiration,
+        l'énergie et les choix tactiques pendant la course.
+      </p>
+      <div class="video-actions" aria-label="Actions vidéo 2">
+        <a href="https://www.youtube.com/watch?v=VIDEO_ID_2" target="_blank" rel="noopener noreferrer">Voir sur YouTube</a>
+      </div>
 
-      <article class="video-card" aria-labelledby="plan-title">
-        <h2 id="plan-title">Plan de la vidéo</h2>
-        <ol>
-          <li><strong>Introduction</strong> — objectif du tutoriel et rôle de cette première vidéo.</li>
-          <li><strong>Interface</strong> — lecture des écrans et repères utiles pour se préparer.</li>
-          <li><strong>Configuration</strong> — composition de la partie, paramètres et mise en place.</li>
-          <li><strong>Vérification finale</strong> — derniers points à contrôler avant le départ.</li>
-        </ol>
-      </article>
+      <div class="video-meta">
+        <article class="video-card" aria-labelledby="video-gameplay-learn-title">
+          <h3 id="video-gameplay-learn-title">Ce que tu vas apprendre</h3>
+          <ul>
+            <li>comment se déroule un tour de jeu du choix de carte jusqu'à la fin du tour ;</li>
+            <li>comment gérer le placement, l'abri et l'aspiration pendant la course ;</li>
+            <li>comment surveiller l'énergie et éviter de te griller trop tôt ;</li>
+            <li>comment choisir entre temporiser, suivre et attaquer selon la situation.</li>
+          </ul>
+        </article>
 
-      <article class="video-card" aria-labelledby="summary-title">
-        <h2 id="summary-title">Résumé</h2>
-        <p>
-          Cette page sert avant tout à regarder la première vidéo de prise en main de BORDUR. Le
-          tutoriel est centré sur la configuration de la partie, la lecture des écrans de préparation
-          et les bases à vérifier avant de lancer la course.
-        </p>
-      </article>
+        <article class="video-card" aria-labelledby="video-gameplay-chapters-title">
+          <h3 id="video-gameplay-chapters-title">Chapitres de la vidéo</h3>
+          <ol>
+            <li><strong>À compléter</strong> — les chapitres seront ajoutés après publication de la vidéo.</li>
+          </ol>
+        </article>
+
+        <article class="video-card" aria-labelledby="video-gameplay-summary-title">
+          <h3 id="video-gameplay-summary-title">Résumé</h3>
+          <p>
+            Cette seconde vidéo sera centrée sur le gameplay réel : déroulé d'un tour, lecture de course,
+            énergie, aspiration, placement et décisions tactiques pendant la partie.
+          </p>
+        </article>
+      </div>
     </section>
+    -->
+
 
     <section class="coming-soon" aria-labelledby="coming-title">
-      <h2 id="coming-title">D'autres tutoriels arrivent</h2>
+      <h2 id="coming-title">Tutoriels à venir</h2>
       <p>
-        Nous préparons des formats courts pour les pavés, la gestion de l'énergie
-        et la stratégie d'équipe. Reste à l'écoute !
+        Une seconde vidéo sera ajoutée prochainement pour expliquer le déroulé d'un tour, le placement,
+        l'aspiration, l'énergie et les choix tactiques pendant la course. D'autres formats courts suivront.
       </p>
     </section>
   </main>
