@@ -4,12 +4,10 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
 
-    <title>
-      BORDUR — Jeu en ligne de course cycliste tactique (tour par tour)
-    </title>
+    <title>BORDUR | Jeu de cyclisme tactique tour par tour</title>
     <meta
       name="description"
-      content="BORDUR : jeu de plateau de course cycliste tactique à jouer en ligne. Placement, aspiration, énergie, pavés, vent, attaques. Lance une course et joue tour par tour."
+      content="Joue une course cycliste tactique dans ton navigateur : compose ton équipe, gère l’énergie, lis le vent et attaque au bon moment."
     />
     <meta name="robots" content="index,follow" />
     <link rel="icon" href="/favicon.ico" sizes="any" />
@@ -27,11 +25,11 @@
     <meta property="og:site_name" content="BORDUR" />
     <meta
       property="og:title"
-      content="BORDUR — Course cycliste tactique (jeu de plateau)"
+      content="BORDUR | Jeu de cyclisme tactique tour par tour"
     />
     <meta
       property="og:description"
-      content="Jeu de plateau à jouer en ligne : placement, aspiration, énergie, pavés, vent, attaques. Lance une course et joue tour par tour."
+      content="Compose ton équipe, gère l’énergie et joue une course cycliste tactique tour par tour dans le navigateur."
     />
     <meta property="og:url" content="https://bordur.fr" />
     <meta
@@ -47,11 +45,11 @@
     <meta name="twitter:card" content="summary_large_image" />
     <meta
       name="twitter:title"
-      content="BORDUR — Course cycliste tactique (tour par tour)"
+      content="BORDUR | Jeu de cyclisme tactique tour par tour"
     />
     <meta
       name="twitter:description"
-      content="Jeu de plateau à jouer en ligne : placement, aspiration, énergie, pavés, vent, attaques."
+      content="Un jeu de course cycliste tactique à jouer dans le navigateur : énergie, vent, pavés, attaques."
     />
     <meta
       name="twitter:image"
@@ -464,6 +462,7 @@
         margin: 34px 0 14px;
         font-size: 22px;
         letter-spacing: -0.01em;
+        color: var(--accent);
       }
 
       h3 {
@@ -741,6 +740,12 @@
         margin: 6px 0;
       }
 
+      .sectionLead {
+        max-width: 70ch;
+        margin: -6px 0 16px;
+        color: var(--muted);
+      }
+
       .faq details {
         background: rgba(17, 24, 36, 0.45);
         border: 1px solid var(--line);
@@ -798,175 +803,8 @@
         border-bottom-color: rgba(232, 238, 247, 0.7);
       }
 
-      .siteFooter {
-        margin-top: 34px;
-        padding: 18px 0 26px;
-        border-top: 1px solid var(--line);
-        color: var(--muted);
-      }
 
-      .footerInner {
-        display: flex;
-        align-items: flex-start;
-        justify-content: space-between;
-        gap: 24px;
-      }
-
-      .footerBrand {
-        display: grid;
-        gap: 6px;
-        max-width: 62ch;
-      }
-
-      .footerBrandTitle {
-        display: flex;
-        align-items: center;
-        gap: 12px;
-      }
-
-      .footerBrandIcon {
-        width: clamp(28px, 3vw, 34px);
-        height: clamp(28px, 3vw, 34px);
-        display: inline-block;
-        flex: 0 0 auto;
-        color: var(--accent, #eab308);
-      }
-
-      .footerBrand strong {
-        color: rgba(232, 238, 247, 0.92);
-      }
-
-      .footerRight {
-        display: flex;
-        flex-direction: column;
-        align-items: flex-end;
-        gap: 12px;
-      }
-
-      .footerLinks {
-        display: flex;
-        flex-wrap: nowrap;
-        gap: 20px;
-        align-items: center;
-        justify-content: flex-end;
-        white-space: nowrap;
-      }
-
-      .footerLinks a {
-        text-decoration: none;
-        border-bottom: 1px dashed rgba(232, 238, 247, 0.25);
-      }
-
-      .footerLinks a:hover {
-        border-bottom-color: rgba(232, 238, 247, 0.6);
-      }
-
-      .footerMeta {
-        margin-top: 10px;
-        font-size: 12px;
-        opacity: 0.9;
-      }
-
-      .footerSocial {
-        display: flex;
-        align-items: center;
-        gap: 12px;
-      }
-
-      .footerSocialLabel {
-        font-size: 12px;
-        text-transform: uppercase;
-        letter-spacing: 0.12em;
-        color: var(--muted);
-        opacity: 0.7;
-      }
-
-      .footerSocialIcons {
-        display: flex;
-        align-items: center;
-        gap: 12px;
-        flex-wrap: nowrap;
-        white-space: nowrap;
-      }
-
-      .socialLink {
-        width: 40px;
-        height: 40px;
-        display: grid;
-        place-items: center;
-        border-radius: 999px;
-        text-decoration: none;
-        color: var(--text);
-        transition:
-          opacity 0.15s ease,
-          background-color 0.15s ease;
-      }
-
-      .socialIcon {
-        width: 20px;
-        height: 20px;
-      }
-
-      .socialLink--x {
-        color: var(--text);
-      }
-
-      .socialLink--yt {
-        color: #ff0000;
-      }
-
-      .socialLink--ig {
-        color: #e1306c;
-      }
-
-      .socialLink:hover {
-        background: rgba(232, 238, 247, 0.08);
-        opacity: 0.95;
-      }
-
-      .socialLink:focus-visible {
-        outline: 2px solid rgba(233, 196, 106, 0.7);
-        outline-offset: 2px;
-        background: rgba(233, 196, 106, 0.12);
-      }
-
-      @media (max-width: 900px) {
-        .footerInner {
-          flex-direction: column;
-          align-items: center;
-          text-align: center;
-        }
-
-        .footerRight {
-          align-items: center;
-        }
-
-        .footerLinks {
-          justify-content: center;
-          flex-wrap: wrap;
-          white-space: normal;
-        }
-
-        .footerSocial {
-          flex-direction: column;
-          align-items: center;
-        }
-
-        .footerSocialIcons {
-          justify-content: center;
-        }
-
-        .footerBrandTitle {
-          justify-content: center;
-        }
-
-        .socialIcon {
-          width: 22px;
-          height: 22px;
-        }
-      }
-
-      .stickyCta {
+.stickyCta {
         position: fixed;
         left: 50%;
         transform: translateX(-50%);
@@ -1027,14 +865,17 @@
           transition: none;
         }
 
+
         .faq summary::after {
           transition: none;
         }
       }
     </style>
+  <link rel="stylesheet" href="/footer.css">
+
   </head>
 
-  <body>
+  <body class="has-sticky-cta">
     <a class="skip" href="#main">Aller au contenu</a>
 
     <header class="wrap" id="top">
@@ -1060,14 +901,12 @@
 
             <div class="ctaRow" aria-label="Actions principales">
               <a class="btn btn--primary" href="/app/">Jouer maintenant</a>
-              <a class="btn btn--link" href="/tutoriel.html"
-                >Voir le tutoriel</a
-              >
+              <a class="btn btn--link" href="/tutoriel.html">Voir le tutoriel</a>
             </div>
 
             <p class="muted" style="margin-top: 10px">
               → <a
-                href="/parcours/index.html"
+                href="/parcours/"
                 class="anchorLink"
                 data-goatcounter-click="hero_parcours"
                 >Choisir un parcours</a
@@ -1123,7 +962,11 @@
       </section>
 
       <section aria-labelledby="doors">
-        <h2 id="doors">Trois portes d’entrée pour commencer</h2>
+        <h2 id="doors">Bien démarrer</h2>
+        <p class="sectionLead">
+          Trois chemins simples : apprendre les bases, vérifier une règle ou
+          choisir le terrain de ta prochaine course.
+        </p>
         <div class="doorGrid">
           <a class="cardLink" href="/tutoriel.html">
             <article
@@ -1131,10 +974,10 @@
               aria-labelledby="door-tutorial-title"
             >
               <p class="eyebrow">Découvrir</p>
-              <h3 id="door-tutorial-title">Découvrir le jeu</h3>
+              <h3 id="door-tutorial-title">Suivre le tutoriel</h3>
               <p class="microcopy">
-                Commence par les tutoriels pour voir une partie, comprendre
-                l’interface et partir sur de bonnes bases.
+                Lance-toi par une partie guidée pour comprendre l’interface et
+                les premières décisions.
               </p>
             </article>
           </a>
@@ -1150,7 +993,7 @@
             </article>
           </a>
 
-          <a class="cardLink" href="/parcours/index.html">
+          <a class="cardLink" href="/parcours/">
             <article class="card card--cta" aria-labelledby="door-routes-title">
               <p class="eyebrow">Choisir</p>
               <h3 id="door-routes-title">Choisir un parcours</h3>
@@ -1383,7 +1226,7 @@
           </ul>
 
           <div class="stepActions">
-            <a class="btn btn--primary" href="/app/">Lancer une course</a>
+            <a class="btn btn--primary" href="/app/">Jouer maintenant</a>
           </div>
         </div>
       </section>
@@ -1552,7 +1395,7 @@
             </p>
             <p class="muted" style="margin-top: 10px">
               → <a
-                href="/parcours/index.html"
+                href="/parcours/"
                 class="anchorLink"
                 data-goatcounter-click="resources_parcours"
                 >Découvrir les parcours</a
@@ -1560,31 +1403,31 @@
             </p>
             <p class="muted" style="margin-top: 6px">
               <a
-                href="/parcours/nord/index.html"
+                href="/parcours/nord/"
                 class="anchorLink"
                 data-goatcounter-click="resources_parcours_nord"
                 >Nord</a
               >
               · <a
-                href="/parcours/ardennaise/index.html"
+                href="/parcours/ardennaise/"
                 class="anchorLink"
                 data-goatcounter-click="resources_parcours_ardennaise"
                 >Ardennaise</a
               >
               · <a
-                href="/parcours/lombarde/index.html"
+                href="/parcours/lombarde/"
                 class="anchorLink"
                 data-goatcounter-click="resources_parcours_lombarde"
                 >Lombarde</a
               >
               · <a
-                href="/parcours/riviera/index.html"
+                href="/parcours/riviera/"
                 class="anchorLink"
                 data-goatcounter-click="resources_parcours_riviera"
                 >Riviera</a
               >
               · <a
-                href="/parcours/flandriennes/index.html"
+                href="/parcours/flandriennes/"
                 class="anchorLink"
                 data-goatcounter-click="resources_parcours_flandriennes"
                 >Flandriennes</a
@@ -1596,14 +1439,34 @@
             <p class="eyebrow">Ressources</p>
             <h3>Approfondir ensuite</h3>
             <p class="microcopy">
-              Retrouve les règles complètes, le lexique cyclisme et les
-              ressources utiles quand tu veux aller plus loin.
+              Retrouve les règles complètes, le lexique cyclisme et les guides
+              tactiques quand tu veux aller plus loin.
             </p>
             <p class="muted" style="margin-top: 10px">
               → <a href="/regles.html" class="anchorLink">Lire les règles</a
               ><br />
               → <a href="/lexique-cyclisme.html" class="anchorLink"
                 >Ouvrir le lexique</a
+              ><br />
+              → <a
+                href="/guides/aspiration-vent-bordures/"
+                class="anchorLink"
+                >Lire le guide aspiration et bordures</a
+              ><br />
+              → <a
+                href="/guides/choisir-bon-profil-coureur/"
+                class="anchorLink"
+                >Choisir le bon profil de coureur</a
+              ><br />
+              → <a
+                href="/guides/gerer-energie-eviter-fringale/"
+                class="anchorLink"
+                >Gérer l'énergie et éviter la fringale</a
+              ><br />
+              → <a
+                href="/guides/gagner-classique-pavee/"
+                class="anchorLink"
+                >Gagner une classique pavée</a
               >
             </p>
           </article>
@@ -1764,21 +1627,21 @@
               Jeu de plateau – course cycliste tactique (tour par tour).
             </div>
             <div class="footerMeta">
-              © <span id="year"></span> —
-              <a href="https://beabot.fr" target="_blank">beAbot</a>
+              © 2026 —
+              <a href="https://beabot.fr" target="_blank" rel="noopener noreferrer">beAbot</a>
             </div>
           </div>
 
           <div class="footerRight">
             <nav class="footerLinks" aria-label="Liens">
               <a href="/app/">Jouer</a>
-              <a href="/parcours/index.html">Parcours</a>
+              <a href="/parcours/">Parcours</a>
               <a href="/regles.html">Règles</a>
               <a href="/lexique-cyclisme.html">Lexique cyclisme</a>
               <a href="/tutoriel.html">Tutoriels</a>
               <a href="/cgu.html">CGU</a>
               <a href="/confidentialite.html">Confidentialité</a>
-              <a href="https://beabot.fr/contact/" target="_blank">Contact</a>
+              <a href="https://beabot.fr/contact/" target="_blank" rel="noopener noreferrer">Contact</a>
             </nav>
 
             <div class="footerSocial" aria-label="Suivre BORDUR">
@@ -1884,7 +1747,6 @@
           <a
             class="btn btn--primary"
             href="/app/"
-            data-goatcounter-click="sticky_play"
             >Jouer maintenant</a
           >
         </div>
@@ -1909,38 +1771,6 @@
       })();
     </script>
 
-    <script>
-      document
-        .getElementById("year")
-        ?.appendChild(document.createTextNode(String(new Date().getFullYear())));
-    </script>
-
-    <script>
-      (function () {
-        function shouldSkip() {
-          try {
-            return localStorage.getItem("analytics_optout") === "1";
-          } catch (err) {
-            return false;
-          }
-        }
-
-        document.addEventListener("click", (event) => {
-          const link = event.target.closest('a[href^="/app/"]');
-          if (!link || shouldSkip()) return;
-          try {
-            if (
-              window.goatcounter &&
-              typeof window.goatcounter.count === "function"
-            ) {
-              window.goatcounter.count({
-                event: true,
-                path: "landing_prepare_click"
-              });
-            }
-          } catch (err) {}
-        });
-      })();
-    </script>
+    <script src="/tracking-app-clicks.js" data-app-click-event="home_app_click" defer></script>
   </body>
 </html>

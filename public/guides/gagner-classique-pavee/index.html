@@ -4,14 +4,14 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
 
-  <title>Parcours Ardennaise BORDUR | Bosses et puncheurs</title>
+  <title>Gagner une classique pavée dans BORDUR | Guide tactique</title>
   <meta
     name="description"
-    content="Joue un parcours Ardennaise dans BORDUR : bosses courtes, relances et attaques placées pour puncheurs et coureurs opportunistes."
+    content="Pavés, vent, placement, usure et timing : prépare une équipe solide et un plan de course clair pour gagner une classique pavée dans BORDUR."
   >
-  <meta name="robots" content="index,follow">
+  <meta name="robots" content="index,follow,max-image-preview:large,max-snippet:-1,max-video-preview:-1">
+  <link rel="canonical" href="https://bordur.fr/guides/gagner-classique-pavee/">
 
-  <link rel="canonical" href="https://bordur.fr/parcours/ardennaise/">
   <link rel="icon" href="/favicon.ico" sizes="any">
   <link rel="icon" type="image/png" href="/favicon-32x32.png" sizes="32x32">
   <link rel="icon" type="image/svg+xml" href="/favicon-bib-B-outline.svg">
@@ -19,43 +19,41 @@
   <link rel="mask-icon" href="/safari-pinned-tab-bib-B.svg" color="#000000">
   <meta name="theme-color" content="#0b0f14">
 
-  <!-- Open Graph -->
-  <meta property="og:type" content="website">
+  <meta property="og:type" content="article">
   <meta property="og:locale" content="fr_FR">
   <meta property="og:site_name" content="BORDUR">
-  <meta property="og:title" content="Parcours Ardennaise BORDUR | Bosses et puncheurs">
-  <meta property="og:description" content="Bosses courtes et relances : le terrain idéal pour les puncheurs et les attaques au bon moment.">
-  <meta property="og:url" content="https://bordur.fr/parcours/ardennaise/">
-  <meta property="og:image" content="https://bordur.fr/og/parcours-ardennaise.webp">
+  <meta property="og:title" content="Gagner une classique pavée dans BORDUR">
+  <meta property="og:description" content="Pavés, vent, placement et timing : prépare un plan solide pour les classiques du Nord.">
+  <meta property="og:url" content="https://bordur.fr/guides/gagner-classique-pavee/">
+  <meta property="og:image" content="https://bordur.fr/og/parcours-nord.webp">
+  <meta property="og:image:alt" content="Parcours du Nord BORDUR, terrain de pavés et de bordures">
 
-  <!-- Twitter -->
   <meta name="twitter:card" content="summary_large_image">
-  <meta name="twitter:title" content="Parcours Ardennaise BORDUR | Bosses et puncheurs">
-  <meta name="twitter:description" content="Un parcours nerveux pour jouer les relances, les bosses courtes et le timing d’attaque.">
-  <meta name="twitter:image" content="https://bordur.fr/og/parcours-ardennaise.webp">
+  <meta name="twitter:title" content="Gagner une classique pavée dans BORDUR">
+  <meta name="twitter:description" content="Construis ton plan de course pour survivre aux pavés, au vent et aux cassures.">
+  <meta name="twitter:image" content="https://bordur.fr/og/parcours-nord.webp">
 
-  <script>
-    (function () {
-      function isOptedOut() {
-        try {
-          return localStorage.getItem('analytics_optout') === '1';
-        } catch (err) {
-          return false;
-        }
+  <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@type": "Article",
+      "headline": "Comment gagner une classique pavée dans BORDUR",
+      "description": "Pavés, vent, placement, usure, timing : découvre comment gagner une classique pavée dans BORDUR avec une équipe bien construite et un plan de course solide.",
+      "url": "https://bordur.fr/guides/gagner-classique-pavee/",
+      "inLanguage": "fr-FR",
+      "datePublished": "2026-04-29",
+      "dateModified": "2026-04-29",
+      "isPartOf": {
+        "@type": "WebSite",
+        "name": "BORDUR",
+        "url": "https://bordur.fr/"
+      },
+      "publisher": {
+        "@type": "Organization",
+        "name": "beAbot",
+        "url": "https://beabot.fr"
       }
-
-      if (isOptedOut()) {
-        window.goatcounter = window.goatcounter || {};
-        window.goatcounter.no_onload = true;
-        return;
-      }
-
-      var script = document.createElement('script');
-      script.dataset.goatcounter = 'https://bordur.goatcounter.com/count';
-      script.async = true;
-      script.src = '//gc.zgo.at/count.js';
-      document.head.appendChild(script);
-    })();
+    }
   </script>
 
   <style>
@@ -68,23 +66,31 @@
       --line: rgba(232, 238, 247, 0.12);
       --accent: #e9c46a;
       --accent2: #63b3ed;
-      --radius: 12px;
-      --max: 960px;
+      --radius: 14px;
+      --max: 1040px;
       --pad: 20px;
       --font-ui: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;
       --font-display: ui-serif, "Iowan Old Style", "Palatino Linotype", Palatino, Georgia, serif;
+      --focus: 0 0 0 3px rgba(233, 196, 106, 0.35);
     }
 
-    * { box-sizing: border-box; margin: 0; padding: 0; }
+    * { box-sizing: border-box; }
+
+    html { scroll-behavior: smooth; }
 
     body {
+      margin: 0;
       font-family: var(--font-ui);
-      background: var(--bg);
+      background:
+        radial-gradient(900px 520px at 20% 0%, rgba(99, 179, 237, 0.12), transparent 60%),
+        radial-gradient(700px 420px at 85% 8%, rgba(233, 196, 106, 0.08), transparent 58%),
+        var(--bg);
       color: var(--text);
-      line-height: 1.6;
+      line-height: 1.68;
     }
 
     a { color: inherit; }
+    a:focus-visible { outline: none; box-shadow: var(--focus); border-radius: 8px; }
 
     .wrap {
       max-width: var(--max);
@@ -92,271 +98,323 @@
       padding: 0 var(--pad);
     }
 
-    header {
-      padding: 48px 0 28px;
+    .hero {
+      padding: 44px 0 30px;
       border-bottom: 1px solid var(--line);
     }
 
-    header h1 {
-      font-family: var(--font-display);
-      font-size: clamp(28px, 5vw, 42px);
-      margin-bottom: 8px;
-    }
-
-    header p {
-      color: var(--muted);
-      font-size: 16px;
-      max-width: 660px;
-    }
-
     .breadcrumb {
-      display: inline-flex;
-      gap: 8px;
-      align-items: center;
-      font-size: 14px;
-      color: var(--muted);
-      margin-bottom: 16px;
-    }
-
-    .breadcrumb a {
-      color: var(--accent);
-      text-decoration: none;
-    }
-
-    .breadcrumb a:hover { text-decoration: underline; }
-
-    .page-links {
-      margin-top: 18px;
-      margin-bottom: 26px;
       display: flex;
       flex-wrap: wrap;
-      gap: 10px 16px;
+      gap: 8px;
+      align-items: center;
+      margin-bottom: 18px;
+      color: var(--muted);
       font-size: 14px;
     }
 
-    .page-links a {
+    .breadcrumb a,
+    .textLink { color: var(--accent); text-decoration: none; }
+    .breadcrumb a:hover,
+    .textLink:hover { text-decoration: underline; }
+
+    .kicker {
+      margin: 0 0 10px;
       color: var(--accent);
-      text-decoration: none;
+      font-size: 12px;
+      font-weight: 900;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
     }
 
-    .page-links a:hover { text-decoration: underline; }
-
-    main {
-      padding: 32px 0 48px;
-    }
-
-    .section {
-      background: var(--panel);
-      border: 1px solid var(--line);
-      border-radius: var(--radius);
-      padding: 20px;
-      margin-bottom: 28px;
-    }
-
-    .section h2 {
+    h1 {
+      max-width: 900px;
+      margin: 0 0 12px;
       font-family: var(--font-display);
-      font-size: 24px;
-      color: var(--accent);
-      margin-bottom: 10px;
+      font-size: clamp(34px, 5vw, 56px);
+      line-height: 1.04;
     }
 
-    .section p { color: var(--muted); }
-
-    .bullets {
-      margin-top: 12px;
-      padding-left: 18px;
+    .lead {
+      max-width: 760px;
+      margin: 0;
       color: var(--muted);
+      font-size: 18px;
     }
 
-    .cta {
-      display: inline-flex;
-      align-items: center;
-      gap: 8px;
-      padding: 10px 16px;
-      border-radius: 999px;
-      background: var(--accent);
-      color: #0b0f14;
-      font-weight: 600;
-      text-decoration: none;
+    .heroActions,
+    .linkGrid {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 12px;
+      margin-top: 18px;
     }
 
-    .cta:hover { filter: brightness(0.95); }
-
-
-.btn {
+    .btn {
       display: inline-flex;
       align-items: center;
       justify-content: center;
-      gap: 10px;
-      padding: 12px 14px;
-      border-radius: 12px;
+      min-height: 42px;
+      padding: 10px 14px;
       border: 1px solid var(--line);
+      border-radius: 12px;
       text-decoration: none;
       font-weight: 900;
-      cursor: pointer;
-      user-select: none;
-      white-space: nowrap;
-      transition:
-        transform 120ms ease,
-        filter 120ms ease;
-    }
-
-    .btn:focus {
-      outline: none;
-      box-shadow: 0 0 0 2px rgba(233, 196, 106, 0.2);
-    }
-
-    .btn:hover {
-      filter: brightness(1.08);
-      transform: translateY(-1px);
     }
 
     .btn--primary {
+      color: var(--text);
       background: rgba(233, 196, 106, 0.16);
       border-color: rgba(233, 196, 106, 0.42);
     }
 
     .btn--link {
-      background: rgba(17, 24, 36, 0.28);
-      border-color: rgba(232, 238, 247, 0.1);
-      font-weight: 800;
+      color: var(--text);
+      background: rgba(17, 24, 36, 0.45);
     }
 
-    .stickyCta {
-      position: fixed;
-      left: 50%;
-      transform: translateX(-50%);
-      bottom: 14px;
-      width: min(var(--max), calc(100% - 2 * var(--pad)));
-      z-index: 999;
-      display: none;
-    }
-
-    .stickyCta__inner {
-      display: flex;
-      justify-content: space-between;
-      gap: 12px;
-      align-items: center;
-      padding: 10px;
-      border-radius: 16px;
-      border: 1px solid rgba(232, 238, 247, 0.14);
-      background: rgba(11, 15, 20, 0.72);
-      backdrop-filter: blur(10px);
-      box-shadow: 0 18px 50px rgba(0, 0, 0, 0.45);
-    }
-
-    .stickyCta__text {
+    main {
       display: grid;
-      gap: 2px;
-      padding-left: 6px;
+      grid-template-columns: minmax(0, 1fr) 260px;
+      gap: 30px;
+      padding-top: 28px;
+      padding-bottom: 54px;
     }
 
-    .stickyCta__text strong {
+    article { min-width: 0; }
+
+    .toc {
+      position: sticky;
+      top: 18px;
+      align-self: start;
+      padding: 16px;
+      border: 1px solid var(--line);
+      border-radius: var(--radius);
+      background: rgba(17, 24, 36, 0.58);
+    }
+
+    .toc strong {
+      display: block;
+      margin-bottom: 10px;
       color: rgba(232, 238, 247, 0.92);
     }
 
-    .stickyCta__text span {
+    .toc a {
+      display: block;
+      padding: 7px 0;
       color: var(--muted);
-      font-size: 12px;
+      text-decoration: none;
+      border-top: 1px solid rgba(232, 238, 247, 0.08);
     }
 
-    @media (max-width: 768px) {
-      .stickyCta__text span {
-        display: none;
-      }
-      .stickyCta__inner {
-        justify-content: center;
-      }
-      .stickyCta .btn--link {
-        display: none;
+    .toc a:hover { color: var(--accent); }
+
+    section {
+      padding: 24px 0;
+      border-bottom: 1px solid var(--line);
+    }
+
+    h2 {
+      margin: 0 0 12px;
+      color: var(--accent);
+      font-size: 24px;
+      line-height: 1.2;
+    }
+
+    h3 {
+      margin: 18px 0 8px;
+      font-size: 18px;
+    }
+
+    p,
+    ul,
+    ol { margin: 0 0 14px; }
+
+    ul,
+    ol { padding-left: 22px; color: var(--muted); }
+
+    li { margin: 7px 0; }
+
+    .introBox,
+    .note,
+    .finalCta {
+      padding: 18px;
+      border: 1px solid var(--line);
+      border-radius: var(--radius);
+      background: rgba(17, 24, 36, 0.55);
+    }
+
+    .note {
+      border-color: rgba(99, 179, 237, 0.24);
+      background: rgba(99, 179, 237, 0.08);
+    }
+
+    .finalCta {
+      margin-top: 28px;
+      border-color: rgba(233, 196, 106, 0.28);
+      background: rgba(233, 196, 106, 0.08);
+    }
+
+
+    @media (max-width: 860px) {
+      main { display: block; }
+
+      .toc {
+        position: static;
+        margin-bottom: 12px;
       }
     }
 
+    @media (max-width: 520px) {
+      .hero { padding-top: 28px; }
+      .lead { font-size: 16px; }
+      .btn { width: 100%; }
+    }
   </style>
   <link rel="stylesheet" href="/footer.css">
 
 </head>
-<body class="has-sticky-cta">
-  <header class="wrap" id="top">
-    <nav class="breadcrumb" aria-label="Fil d'Ariane">
-      <a href="/">Accueil</a>
-      <span aria-hidden="true">→</span>
-      <a href="/parcours/">Parcours</a>
-      <span aria-hidden="true">→</span>
-      <span>Ardennaise</span>
-    </nav>
-    <h1>Parcours Ardennaise — Relances et puncheurs</h1>
-    <p>
-      Un parcours rythmé par des bosses courtes, parfait pour les attaques
-      explosives et les changements de tempo.
-    </p>
-    <nav class="page-links" aria-label="Liens rapides">
-      <a href="/parcours/">Tous les parcours</a>
-      <a href="/regles.html">Règles</a>
-      <a href="/lexique-cyclisme.html">Lexique</a>
-      <a href="/app/">Préparer une course</a>
-    </nav>
+<body>
+  <header class="hero">
+    <div class="wrap">
+      <nav class="breadcrumb" aria-label="Fil d'Ariane">
+        <a href="/">Accueil</a>
+        <span aria-hidden="true">→</span>
+        <span>Guides tactiques</span>
+      </nav>
+      <p class="kicker">Guide tactique</p>
+      <h1>Comment gagner une classique pavée dans BORDUR</h1>
+      <p class="lead">
+        Une classique pavée se gagne rarement sur un seul coup. Il faut une équipe robuste, une position propre avant les secteurs clés, de l'énergie pour encaisser l'usure et le bon timing pour faire la différence.
+      </p>
+      <div class="heroActions" aria-label="Actions principales">
+        <a class="btn btn--primary" href="/app/">Jouer maintenant</a>
+        <a class="btn btn--link" href="/parcours/nord/">Voir le parcours Nord</a>
+      </div>
+    </div>
   </header>
 
   <main class="wrap">
-    <section class="section" aria-labelledby="strategie">
-      <h2 id="strategie">Stratégie</h2>
-      <ul class="bullets">
-        <li>Conserve des cartes fortes pour les dernières bosses.</li>
-        <li>Alterner tempo et attaques pour isoler un rival.</li>
-        <li>Utiliser les puncheurs pour créer des écarts courts mais décisifs.</li>
-        <li>Éviter les relances inutiles qui épuisent l'équipe.</li>
-      </ul>
-    </section>
+    <article>
+      <section aria-labelledby="intro">
+        <h2 id="intro">Ce que ce guide va t'aider à décider</h2>
+        <div class="introBox">
+          <p>
+            Les pavés transforment une course en suite de choix sous pression : faut-il remonter avant le secteur, protéger le leader, suivre une attaque ou garder des cartouches pour plus tard ? Ce guide t'aide à construire un plan simple pour survivre aux moments exposés et attaquer quand les autres commencent à payer leurs efforts.
+          </p>
+        </div>
+      </section>
 
-    <section class="section" aria-labelledby="bordur">
-      <h2 id="bordur">Dans BORDUR</h2>
-      <p>
-        Les sections vallonnées favorisent les attaques ponctuelles. La gestion
-        des cartes et l'ordre de jeu deviennent cruciaux pour préserver le leader.
-        Avant de lancer ce profil, relis le guide
-        <a href="/guides/choisir-bon-profil-coureur/" style="color: var(--accent); text-decoration: none;">choisir le bon profil de coureur</a>
-        et le guide
-        <a href="/guides/gerer-energie-eviter-fringale/" style="color: var(--accent); text-decoration: none;">gérer l'énergie</a>.
-      </p>
-    </section>
+      <section aria-labelledby="specific">
+        <h2 id="specific">1. Pourquoi une classique pavée est une course à part</h2>
+        <p>
+          Sur une classique pavée, le terrain ne laisse pas beaucoup de répit. Les secteurs difficiles, le vent et le placement créent de petites cassures qui deviennent vite de gros problèmes. Tu ne peux pas seulement attendre le final : il faut être au bon endroit avant que la course ne se durcisse.
+        </p>
+        <h3>La bonne question</h3>
+        <p>
+          Avant chaque secteur, demande-toi si ton coureur important est assez bien placé pour traverser la zone sans gaspiller toute son énergie ensuite. Revenir après coup coûte souvent plus cher que se placer avant.
+        </p>
+        <div class="note">
+          <p>
+            Repère pratique : une classique pavée récompense les décisions prises une action plus tôt. Si tu attends que la cassure soit visible, tu es déjà en train de la subir.
+          </p>
+        </div>
+      </section>
 
-    <section class="section" aria-labelledby="seo">
-      <h2 id="seo">Pourquoi ce parcours ?</h2>
-      <p>Le parcours Ardennaise privilégie les bosses courtes et les relances explosives. Ce profil convient aux joueurs qui aiment les attaques de puncheurs et les changements de rythme, comme sur les classiques ardennaises.</p>
-      <p style="margin-top: 12px;">
-        Dans ce <strong>jeu de course cycliste</strong>, les côtes successives épuisent progressivement le peloton.
-        Chaque bosse est une opportunité d'attaque : place tes <strong>puncheurs</strong> au bon moment et décroche
-        tes adversaires avant le final. Une <strong>simulation tactique</strong> fidèle aux classiques comme la Flèche Wallonne.
-      </p>
-    </section>
+      <section aria-labelledby="team">
+        <h2 id="team">2. Composer une équipe pour les pavés</h2>
+        <p>
+          Une équipe de pavés doit protéger, rouler et rester utile quand la course devient nerveuse. Le rouleur apporte de la stabilité sur le plat et dans le vent, l'équipier aide à garder le plan en place, et le leader doit être choisi selon le moment où tu veux faire la différence.
+        </p>
+        <h3>Les rôles utiles</h3>
+        <ul>
+          <li><strong>Rouleur :</strong> précieux pour contrôler, rester exposé au vent et garder le groupe organisé.</li>
+          <li><strong>Équipier :</strong> utile pour protéger le leader et absorber les efforts de replacement.</li>
+          <li><strong>Puncheur :</strong> intéressant si la course se joue sur des relances et des bosses courtes.</li>
+          <li><strong>Baroudeur :</strong> dangereux si tu veux forcer les autres à rouler avant le final.</li>
+        </ul>
+        <p>
+          Si tu hésites sur la construction d'équipe, complète avec le guide <a class="textLink" href="/guides/choisir-bon-profil-coureur/">choisir le bon profil de coureur</a>.
+        </p>
+      </section>
 
-    <section class="section" aria-labelledby="seo-extra">
-      <h2 id="seo-extra">Parcours pour puncheurs et relances</h2>
-      <p>Ce profil est pensé pour les attaques explosives et les changements de rythme. Si tu cherches un parcours cycliste vallonné, inspiré des classiques ardennaises, tu es au bon endroit.</p>
-      <p style="margin-top: 12px;">
-        BORDUR est un <strong>jeu vélo</strong> et <strong>jeu cyclisme</strong> : un <strong>jeu de plateau tour par tour</strong>
-        qui propose une <strong>simulation course</strong> et une <strong>simulation tactique</strong> du cyclisme professionnel.
-        Le parcours Ardennaise capture l'essence des classiques wallonnes dans un format accessible et stratégique.
-      </p>
-      <p style="margin-top: 12px;">
-        Les <strong>puncheurs</strong> brillent sur ce terrain vallonné grâce à leur capacité d'accélération dans les côtes.
-        Mais attention à ne pas attaquer trop tôt : l'énergie est précieuse et les bosses s'enchaînent. Les <strong>grimpeurs</strong>
-        trouvent aussi leur compte sur les montées plus longues. Ce <strong>simulateur de course vélo</strong> récompense
-        le timing parfait et la gestion de l'effort.
-      </p>
-      <p style="margin-top: 12px;">
-        Contrairement au parcours Nord, l'Ardennaise offre moins de risques mécaniques mais exige une lecture fine du terrain.
-        Chaque relance coûte de l'énergie : économise tes cartes d'attaque pour les moments décisifs.
-        Un vrai <strong>jeu de cyclisme tactique</strong> où l'anticipation fait la différence entre victoire et défaite.
-      </p>
-    </section>
+      <section aria-labelledby="placement">
+        <h2 id="placement">3. Gérer le vent, le placement et les secteurs exposés</h2>
+        <p>
+          Les pavés punissent les coureurs mal placés. Le vent amplifie ce problème : un coureur isolé ou trop loin dans le groupe doit souvent payer deux fois, d'abord pour subir le secteur, puis pour revenir.
+        </p>
+        <h3>Avant, pendant, après</h3>
+        <ul>
+          <li><strong>Avant le secteur :</strong> remonte les coureurs importants et place les équipiers utiles.</li>
+          <li><strong>Pendant le secteur :</strong> évite les efforts sans objectif clair, surtout si le groupe est encore contrôlable.</li>
+          <li><strong>Après le secteur :</strong> regarde qui est encore bien placé avant de lancer une chasse ou une attaque.</li>
+        </ul>
+        <p>
+          Pour approfondir cette lecture, lis le guide <a class="textLink" href="/guides/aspiration-vent-bordures/">aspiration, vent latéral et bordures</a>.
+        </p>
+      </section>
 
-    <section class="section" aria-labelledby="cta">
-      <h2 id="cta">Prêt pour les relances ?</h2>
-      <p>Prépare une course et teste tes puncheurs.</p>
-      <a class="cta" href="/app/">Préparer une course</a>
-    </section>
+      <section aria-labelledby="timing">
+        <h2 id="timing">4. Faire la différence au bon moment</h2>
+        <p>
+          Le bon moment n'est pas forcément le premier secteur pavé. C'est celui où ton coureur a encore assez d'énergie, où les adversaires sont déjà sous pression, et où le terrain qui suit ne condamne pas immédiatement l'attaque.
+        </p>
+        <h3>Trois signaux à surveiller</h3>
+        <ol>
+          <li>Ton leader est placé sans avoir tout dépensé.</li>
+          <li>Les adversaires importants sont isolés, fatigués ou en retard.</li>
+          <li>Le prochain terrain permet de prolonger l'effort ou de forcer les autres à réagir.</li>
+        </ol>
+        <p>
+          Une attaque réussie sur pavés vient souvent après une accumulation. Si tu as gaspillé trop tôt, tu risques la fringale au moment où il faudrait accélérer. Le guide <a class="textLink" href="/guides/gerer-energie-eviter-fringale/">gérer son énergie</a> détaille ce dosage.
+        </p>
+      </section>
+
+      <section aria-labelledby="mistakes">
+        <h2 id="mistakes">Erreurs fréquentes</h2>
+        <ul>
+          <li><strong>Attendre le secteur pavé</strong> pour se replacer, alors que la décision devait être prise avant.</li>
+          <li><strong>Tout miser sur un seul leader</strong> sans équipier capable de l'aider dans les moments exposés.</li>
+          <li><strong>Attaquer dès le premier moment dur</strong> sans garder de réponse pour les secteurs suivants.</li>
+          <li><strong>Ignorer le vent</strong> alors qu'il peut transformer une portion plate en vrai piège tactique.</li>
+        </ul>
+      </section>
+
+      <section aria-labelledby="next">
+        <h2 id="next">Aller plus loin</h2>
+        <p>
+          Pour préparer une vraie classique du Nord, compare le parcours, relis les règles et travaille les trois piliers : profils, placement, énergie.
+        </p>
+        <div class="linkGrid">
+          <a class="btn btn--link" href="/regles.html">Lire les règles</a>
+          <a class="btn btn--link" href="/tutoriel.html">Voir les tutoriels</a>
+          <a class="btn btn--link" href="/parcours/">Choisir un parcours</a>
+          <a class="btn btn--link" href="/parcours/nord/">Parcours Nord</a>
+          <a class="btn btn--link" href="/guides/aspiration-vent-bordures/">Lire le guide aspiration</a>
+          <a class="btn btn--link" href="/guides/choisir-bon-profil-coureur/">Choisir le bon profil</a>
+          <a class="btn btn--link" href="/guides/gerer-energie-eviter-fringale/">Gérer l'énergie</a>
+        </div>
+      </section>
+
+      <section class="finalCta" aria-labelledby="cta-title">
+        <h2 id="cta-title">Lance ta classique pavée</h2>
+        <p>
+          Choisis un parcours du Nord, protège tes coureurs avant les secteurs clés et garde assez d'énergie pour attaquer quand la course commence vraiment à casser.
+        </p>
+        <a class="btn btn--primary" href="/app/">Jouer maintenant</a>
+      </section>
+    </article>
+
+    <aside class="toc" aria-label="Sommaire">
+      <strong>Dans ce guide</strong>
+      <a href="#intro">Décider vite</a>
+      <a href="#specific">Course à part</a>
+      <a href="#team">Équipe pavée</a>
+      <a href="#placement">Vent et placement</a>
+      <a href="#timing">Bon timing</a>
+      <a href="#mistakes">Erreurs fréquentes</a>
+      <a href="#next">Aller plus loin</a>
+    </aside>
   </main>
   <footer class="siteFooter" aria-label="Pied de page">
       <div class="footerInner">
@@ -537,48 +595,6 @@
         </div>
       </div>
     </footer>
-
-  <script>
-    document.getElementById("year")?.appendChild(
-      document.createTextNode(String(new Date().getFullYear()))
-    );
-  </script>
-
-
-  <div class="stickyCta" id="stickyCta" aria-label="Action rapide">
-    <div class="stickyCta__inner">
-      <div class="stickyCta__text">
-        <strong>Prêt à lancer une course ?</strong>
-        <span>Choisis un profil, compose le peloton, joue tour par tour.</span>
-      </div>
-      <div style="display: flex; gap: 10px; align-items: center">
-        <a class="btn btn--link" href="/regles.html" data-goatcounter-click="sticky_rules">Règles</a>
-        <a class="btn btn--primary" href="/app/">Préparer une course</a>
-      </div>
-    </div>
-  </div>
-
-  <script>
-    (function () {
-      const hero = document.querySelector("header");
-      const sticky = document.getElementById("stickyCta");
-      if (!sticky) return;
-      if (!hero) {
-        sticky.style.display = "block";
-        return;
-      }
-
-      const io = new IntersectionObserver(
-        (entries) => {
-          const visible = entries[0]?.isIntersecting;
-          sticky.style.display = visible ? "none" : "block";
-        },
-        { root: null, threshold: 0.15 },
-      );
-
-      io.observe(hero);
-    })();
-  </script>
-  <script src="/tracking-app-clicks.js" data-app-click-event="parcours_app_click" defer></script>
+  <script src="/tracking-app-clicks.js" data-app-click-event="guide_app_click" defer></script>
 </body>
 </html>
