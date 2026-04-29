@@ -1,0 +1,455 @@
+<!doctype html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+
+  <title>Choisir le bon profil de coureur dans BORDUR | Guide tactique</title>
+  <meta
+    name="description"
+    content="Grimpeur, sprinteur, rouleur, puncheur, baroudeur, équipier : apprends à choisir le bon profil de coureur selon le terrain, le vent et le plan de course dans BORDUR."
+  >
+  <meta name="robots" content="index,follow,max-image-preview:large,max-snippet:-1,max-video-preview:-1">
+  <link rel="canonical" href="https://bordur.fr/guides/choisir-bon-profil-coureur/">
+
+  <link rel="icon" href="/favicon.ico" sizes="any">
+  <link rel="icon" type="image/png" href="/favicon-32x32.png" sizes="32x32">
+  <link rel="icon" type="image/svg+xml" href="/favicon-bib-B-outline.svg">
+  <link rel="apple-touch-icon" href="/apple-touch-icon.png" sizes="180x180">
+  <link rel="mask-icon" href="/safari-pinned-tab-bib-B.svg" color="#000000">
+  <meta name="theme-color" content="#0b0f14">
+
+  <meta property="og:type" content="article">
+  <meta property="og:locale" content="fr_FR">
+  <meta property="og:site_name" content="BORDUR">
+  <meta property="og:title" content="Choisir le bon profil de coureur dans BORDUR">
+  <meta property="og:description" content="Grimpeur, sprinteur, rouleur, puncheur, baroudeur, équipier : choisis le profil adapté au terrain et au plan de course.">
+  <meta property="og:url" content="https://bordur.fr/guides/choisir-bon-profil-coureur/">
+  <meta property="og:image" content="https://bordur.fr/intro/bordur-plateau.webp">
+  <meta property="og:image:alt" content="Plateau BORDUR avec coureurs, cartes, terrain et énergie">
+
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="twitter:title" content="Choisir le bon profil de coureur dans BORDUR">
+  <meta name="twitter:description" content="Comprendre les rôles des profils de coureurs pour composer une équipe cohérente.">
+  <meta name="twitter:image" content="https://bordur.fr/intro/bordur-plateau.webp">
+
+  <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@type": "Article",
+      "headline": "Choisir le bon profil de coureur dans BORDUR",
+      "description": "Grimpeur, sprinteur, rouleur, puncheur, baroudeur, équipier : apprends à choisir le bon profil de coureur selon le terrain, le vent et le plan de course dans BORDUR.",
+      "url": "https://bordur.fr/guides/choisir-bon-profil-coureur/",
+      "inLanguage": "fr-FR",
+      "datePublished": "2026-04-29",
+      "dateModified": "2026-04-29",
+      "isPartOf": {
+        "@type": "WebSite",
+        "name": "BORDUR",
+        "url": "https://bordur.fr/"
+      },
+      "publisher": {
+        "@type": "Organization",
+        "name": "beAbot",
+        "url": "https://beabot.fr"
+      }
+    }
+  </script>
+
+  <style>
+    :root {
+      --bg: #0b0f14;
+      --panel: #111824;
+      --panel2: #0f1622;
+      --text: #e8eef7;
+      --muted: #b7c2d3;
+      --line: rgba(232, 238, 247, 0.12);
+      --accent: #e9c46a;
+      --accent2: #63b3ed;
+      --radius: 14px;
+      --max: 1040px;
+      --pad: 20px;
+      --font-ui: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;
+      --font-display: ui-serif, "Iowan Old Style", "Palatino Linotype", Palatino, Georgia, serif;
+      --focus: 0 0 0 3px rgba(233, 196, 106, 0.35);
+    }
+
+    * { box-sizing: border-box; }
+
+    html { scroll-behavior: smooth; }
+
+    body {
+      margin: 0;
+      font-family: var(--font-ui);
+      background:
+        radial-gradient(900px 520px at 20% 0%, rgba(99, 179, 237, 0.12), transparent 60%),
+        radial-gradient(700px 420px at 85% 8%, rgba(233, 196, 106, 0.08), transparent 58%),
+        var(--bg);
+      color: var(--text);
+      line-height: 1.68;
+    }
+
+    a { color: inherit; }
+    a:focus-visible { outline: none; box-shadow: var(--focus); border-radius: 8px; }
+
+    .wrap {
+      max-width: var(--max);
+      margin: 0 auto;
+      padding: 0 var(--pad);
+    }
+
+    .hero {
+      padding: 44px 0 30px;
+      border-bottom: 1px solid var(--line);
+    }
+
+    .breadcrumb {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      align-items: center;
+      margin-bottom: 18px;
+      color: var(--muted);
+      font-size: 14px;
+    }
+
+    .breadcrumb a,
+    .textLink { color: var(--accent); text-decoration: none; }
+    .breadcrumb a:hover,
+    .textLink:hover { text-decoration: underline; }
+
+    .kicker {
+      margin: 0 0 10px;
+      color: var(--accent);
+      font-size: 12px;
+      font-weight: 900;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+    }
+
+    h1 {
+      max-width: 900px;
+      margin: 0 0 12px;
+      font-family: var(--font-display);
+      font-size: clamp(34px, 5vw, 56px);
+      line-height: 1.04;
+    }
+
+    .lead {
+      max-width: 760px;
+      margin: 0;
+      color: var(--muted);
+      font-size: 18px;
+    }
+
+    .heroActions,
+    .linkGrid {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 12px;
+      margin-top: 18px;
+    }
+
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      min-height: 42px;
+      padding: 10px 14px;
+      border: 1px solid var(--line);
+      border-radius: 12px;
+      text-decoration: none;
+      font-weight: 900;
+    }
+
+    .btn--primary {
+      color: var(--text);
+      background: rgba(233, 196, 106, 0.16);
+      border-color: rgba(233, 196, 106, 0.42);
+    }
+
+    .btn--link {
+      color: var(--text);
+      background: rgba(17, 24, 36, 0.45);
+    }
+
+    main {
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) 260px;
+      gap: 30px;
+      padding-top: 28px;
+      padding-bottom: 54px;
+    }
+
+    article { min-width: 0; }
+
+    .toc {
+      position: sticky;
+      top: 18px;
+      align-self: start;
+      padding: 16px;
+      border: 1px solid var(--line);
+      border-radius: var(--radius);
+      background: rgba(17, 24, 36, 0.58);
+    }
+
+    .toc strong {
+      display: block;
+      margin-bottom: 10px;
+      color: rgba(232, 238, 247, 0.92);
+    }
+
+    .toc a {
+      display: block;
+      padding: 7px 0;
+      color: var(--muted);
+      text-decoration: none;
+      border-top: 1px solid rgba(232, 238, 247, 0.08);
+    }
+
+    .toc a:hover { color: var(--accent); }
+
+    section {
+      padding: 24px 0;
+      border-bottom: 1px solid var(--line);
+    }
+
+    h2 {
+      margin: 0 0 12px;
+      color: var(--accent);
+      font-size: 24px;
+      line-height: 1.2;
+    }
+
+    h3 {
+      margin: 18px 0 8px;
+      font-size: 18px;
+    }
+
+    p,
+    ul,
+    ol { margin: 0 0 14px; }
+
+    ul,
+    ol { padding-left: 22px; color: var(--muted); }
+
+    li { margin: 7px 0; }
+
+    .introBox,
+    .note,
+    .finalCta {
+      padding: 18px;
+      border: 1px solid var(--line);
+      border-radius: var(--radius);
+      background: rgba(17, 24, 36, 0.55);
+    }
+
+    .note {
+      border-color: rgba(99, 179, 237, 0.24);
+      background: rgba(99, 179, 237, 0.08);
+    }
+
+    .finalCta {
+      margin-top: 28px;
+      border-color: rgba(233, 196, 106, 0.28);
+      background: rgba(233, 196, 106, 0.08);
+    }
+
+    .siteFooter {
+      padding: 24px 0 34px;
+      border-top: 1px solid var(--line);
+      color: var(--muted);
+    }
+
+    .footerLinks {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 14px;
+      margin-top: 10px;
+      font-size: 14px;
+    }
+
+    .footerLinks a {
+      text-decoration: none;
+      border-bottom: 1px dashed rgba(232, 238, 247, 0.25);
+    }
+
+    @media (max-width: 860px) {
+      main { display: block; }
+
+      .toc {
+        position: static;
+        margin-bottom: 12px;
+      }
+    }
+
+    @media (max-width: 520px) {
+      .hero { padding-top: 28px; }
+      .lead { font-size: 16px; }
+      .btn { width: 100%; }
+    }
+  </style>
+</head>
+<body>
+  <header class="hero">
+    <div class="wrap">
+      <nav class="breadcrumb" aria-label="Fil d'Ariane">
+        <a href="/">Accueil</a>
+        <span aria-hidden="true">→</span>
+        <span>Guides tactiques</span>
+      </nav>
+      <p class="kicker">Guide tactique</p>
+      <h1>Choisir le bon profil de coureur dans BORDUR</h1>
+      <p class="lead">
+        Une équipe cohérente ne se résume pas à empiler les meilleurs noms. Dans BORDUR, chaque profil sert une situation : terrain, vent, effort demandé et rôle dans la course.
+      </p>
+      <div class="heroActions" aria-label="Actions principales">
+        <a class="btn btn--primary" href="/app/">Jouer maintenant</a>
+        <a class="btn btn--link" href="/tutoriel.html">Voir le tutoriel</a>
+      </div>
+    </div>
+  </header>
+
+  <main class="wrap">
+    <article>
+      <section aria-labelledby="intro">
+        <h2 id="intro">Ce que ce guide va t'aider à décider</h2>
+        <div class="introBox">
+          <p>
+            Le bon profil n'est pas toujours celui qui semble le plus spectaculaire. Il dépend du parcours, du moment où tu veux faire la différence et de la protection dont ton leader aura besoin. Ce guide t'aide à choisir un coureur pour une tâche précise, puis à construire une équipe qui ne se retrouve pas sans solution quand le terrain change.
+          </p>
+        </div>
+      </section>
+
+      <section aria-labelledby="impact">
+        <h2 id="impact">1. Pourquoi le choix du profil change la course</h2>
+        <p>
+          Dans BORDUR, les profils donnent une identité à ton équipe. Un grimpeur n'a pas la même valeur sur un col que sur des pavés, un sprinteur doit être amené au bon moment, et un rouleur devient précieux quand il faut contrôler la course ou survivre au vent.
+        </p>
+        <h3>La bonne question</h3>
+        <p>
+          Avant de choisir, demande-toi quel problème le parcours va poser : tenir les bosses, passer les pavés, rouler dans le vent, économiser l'énergie ou préparer un final rapide. Le profil doit répondre à ce problème, pas seulement remplir une case.
+        </p>
+        <div class="note">
+          <p>
+            Repère pratique : commence par identifier le moment décisif probable du parcours. Ensuite seulement, choisis les coureurs capables d'y arriver encore utiles.
+          </p>
+        </div>
+      </section>
+
+      <section aria-labelledby="profiles">
+        <h2 id="profiles">2. Ce qu'apporte chaque profil de coureur</h2>
+        <p>
+          Chaque profil donne une façon différente de lire la course. L'objectif n'est pas d'avoir “le meilleur” profil, mais de donner à chaque coureur une mission claire.
+        </p>
+        <h3>Les rôles à retenir</h3>
+        <ul>
+          <li><strong>Grimpeur :</strong> utile quand le parcours grimpe longtemps ou quand la montagne impose le tri.</li>
+          <li><strong>Sprinteur :</strong> dangereux si tu peux le protéger jusqu'au final.</li>
+          <li><strong>Rouleur :</strong> solide sur le plat, le tempo et les situations de vent.</li>
+          <li><strong>Puncheur :</strong> fort quand la course se joue sur des bosses courtes et des relances.</li>
+          <li><strong>Baroudeur :</strong> intéressant pour tenter de loin ou occuper les adversaires.</li>
+          <li><strong>Équipier :</strong> précieux pour travailler, protéger et garder l'équipe organisée.</li>
+        </ul>
+        <p>
+          Un profil mal utilisé devient vite coûteux. Un sprinteur isolé trop tôt subit la course. Un grimpeur engagé sur un terrain plat et exposé n'apporte pas la même sécurité qu'un rouleur.
+        </p>
+      </section>
+
+      <section aria-labelledby="terrain">
+        <h2 id="terrain">3. Quel profil choisir selon le terrain et la situation</h2>
+        <p>
+          Le terrain donne la première indication. Le scénario de course donne la seconde. Les deux doivent se croiser : un parcours plat peut devenir nerveux avec le vent, et une étape accidentée peut se jouer sur une relance plutôt que sur une longue montée.
+        </p>
+        <h3>Quelques choix simples</h3>
+        <ul>
+          <li><strong>Plat et vent :</strong> privilégie un rouleur et garde un équipier proche de ton leader.</li>
+          <li><strong>Bosses courtes :</strong> donne de la place au puncheur, surtout si les attaques se répètent.</li>
+          <li><strong>Montagne :</strong> protège le grimpeur avant les secteurs décisifs pour éviter de devoir revenir trop tard.</li>
+          <li><strong>Final rapide :</strong> pense au sprinteur, mais seulement si ton équipe peut l'amener jusque-là.</li>
+          <li><strong>Course ouverte :</strong> un baroudeur peut forcer les autres à rouler et créer une décision plus tôt.</li>
+        </ul>
+        <p>
+          Si le vent et les bordures deviennent centraux, complète cette lecture avec le guide <a class="textLink" href="/guides/aspiration-vent-bordures/">aspiration, vent latéral et bordures</a>.
+        </p>
+      </section>
+
+      <section aria-labelledby="team">
+        <h2 id="team">4. Composer une équipe cohérente sans te piéger</h2>
+        <p>
+          Une équipe cohérente couvre plusieurs scénarios. Elle a un plan principal, mais aussi une réponse si la course ne se déroule pas comme prévu. Trop spécialiser ton effectif peut te rendre brillant sur une situation et fragile partout ailleurs.
+        </p>
+        <h3>Une méthode sobre</h3>
+        <ol>
+          <li>Choisis d'abord ton plan de course : contrôler, attaquer, survivre au terrain ou préparer un final.</li>
+          <li>Identifie le profil qui porte ce plan.</li>
+          <li>Ajoute les coureurs qui protègent ce plan : équipier, rouleur, ou profil complémentaire.</li>
+          <li>Garde une option de secours si le terrain ou le vent casse le scénario prévu.</li>
+        </ol>
+        <p>
+          La bonne équipe n'est pas forcément celle qui paraît la plus offensive. C'est celle qui peut encore prendre une décision propre quand la course devient désordonnée.
+        </p>
+      </section>
+
+      <section aria-labelledby="mistakes">
+        <h2 id="mistakes">Erreurs fréquentes</h2>
+        <ul>
+          <li><strong>Choisir seulement pour le final</strong> sans regarder comment y amener le bon coureur.</li>
+          <li><strong>Empiler les profils identiques</strong> et se retrouver sans réponse dès que le terrain change.</li>
+          <li><strong>Oublier les équipiers</strong> alors que la protection et le tempo décident souvent de la course.</li>
+          <li><strong>Confondre polyvalence et flou tactique</strong> : chaque coureur doit avoir une mission identifiable.</li>
+        </ul>
+      </section>
+
+      <section aria-labelledby="next">
+        <h2 id="next">Aller plus loin</h2>
+        <p>
+          Pour choisir plus vite, commence par comparer les parcours, relis les règles de spécialité et vérifie les bases du placement avant de lancer une course.
+        </p>
+        <div class="linkGrid">
+          <a class="btn btn--link" href="/regles.html">Lire les règles</a>
+          <a class="btn btn--link" href="/tutoriel.html">Voir les tutoriels</a>
+          <a class="btn btn--link" href="/parcours/">Choisir un parcours</a>
+          <a class="btn btn--link" href="/guides/aspiration-vent-bordures/">Lire le guide aspiration</a>
+        </div>
+      </section>
+
+      <section class="finalCta" aria-labelledby="cta-title">
+        <h2 id="cta-title">Teste ta composition en course</h2>
+        <p>
+          Choisis un parcours, donne une mission à chaque coureur, puis vérifie si ton équipe tient quand le terrain, le vent et le rythme changent.
+        </p>
+        <a class="btn btn--primary" href="/app/">Jouer maintenant</a>
+      </section>
+    </article>
+
+    <aside class="toc" aria-label="Sommaire">
+      <strong>Dans ce guide</strong>
+      <a href="#intro">Décider vite</a>
+      <a href="#impact">Pourquoi le profil compte</a>
+      <a href="#profiles">Rôle de chaque profil</a>
+      <a href="#terrain">Terrain et situation</a>
+      <a href="#team">Composer l'équipe</a>
+      <a href="#mistakes">Erreurs fréquentes</a>
+      <a href="#next">Aller plus loin</a>
+    </aside>
+  </main>
+
+  <footer class="siteFooter">
+    <div class="wrap">
+      <strong>BORDUR</strong>
+      <div>Jeu de plateau de course cycliste tactique, tour par tour.</div>
+      <nav class="footerLinks" aria-label="Liens">
+        <a href="/">Accueil</a>
+        <a href="/app/">Jouer</a>
+        <a href="/parcours/">Parcours</a>
+        <a href="/regles.html">Règles</a>
+        <a href="/lexique-cyclisme.html">Lexique cyclisme</a>
+        <a href="/tutoriel.html">Tutoriels</a>
+        <a href="/cgu.html">CGU</a>
+        <a href="/confidentialite.html">Confidentialité</a>
+      </nav>
+    </div>
+  </footer>
+</body>
+</html>

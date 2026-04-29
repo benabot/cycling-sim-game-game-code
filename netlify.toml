@@ -28,6 +28,12 @@
   force = true
 
 [[redirects]]
+  from = "/guides/:slug/index.html"
+  to = "/guides/:slug/"
+  status = 301
+  force = true
+
+[[redirects]]
   from = "/lexique-cyclisme"
   to = "/lexique-cyclisme.html"
   status = 301

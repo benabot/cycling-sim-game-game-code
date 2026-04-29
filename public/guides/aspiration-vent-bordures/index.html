@@ -1,0 +1,451 @@
+<!doctype html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+
+  <title>Aspiration, vent latéral et bordures : guide tactique | BORDUR</title>
+  <meta
+    name="description"
+    content="Guide tactique BORDUR : comprendre l'aspiration, le vent latéral et les bordures pour mieux se placer, économiser l'énergie et choisir le bon moment pour attaquer."
+  >
+  <meta name="robots" content="index,follow,max-image-preview:large,max-snippet:-1,max-video-preview:-1">
+  <link rel="canonical" href="https://bordur.fr/guides/aspiration-vent-bordures/">
+
+  <link rel="icon" href="/favicon.ico" sizes="any">
+  <link rel="icon" type="image/png" href="/favicon-32x32.png" sizes="32x32">
+  <link rel="icon" type="image/svg+xml" href="/favicon-bib-B-outline.svg">
+  <link rel="apple-touch-icon" href="/apple-touch-icon.png" sizes="180x180">
+  <link rel="mask-icon" href="/safari-pinned-tab-bib-B.svg" color="#000000">
+  <meta name="theme-color" content="#0b0f14">
+
+  <meta property="og:type" content="article">
+  <meta property="og:locale" content="fr_FR">
+  <meta property="og:site_name" content="BORDUR">
+  <meta property="og:title" content="Aspiration, vent latéral et bordures : guide tactique BORDUR">
+  <meta property="og:description" content="Apprends à lire l'abri, le vent et les cassures pour prendre de meilleures décisions dans BORDUR.">
+  <meta property="og:url" content="https://bordur.fr/guides/aspiration-vent-bordures/">
+  <meta property="og:image" content="https://bordur.fr/og/parcours-nord.webp">
+  <meta property="og:image:alt" content="Peloton sur un parcours du Nord, terrain propice au vent et aux bordures">
+
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="twitter:title" content="Aspiration, vent latéral et bordures : guide tactique BORDUR">
+  <meta name="twitter:description" content="Lire l'abri, le vent et les cassures pour mieux jouer une course tactique.">
+  <meta name="twitter:image" content="https://bordur.fr/og/parcours-nord.webp">
+
+  <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@type": "Article",
+      "headline": "Aspiration, vent latéral et bordures : guide tactique BORDUR",
+      "description": "Guide tactique BORDUR : comprendre l'aspiration, le vent latéral et les bordures pour mieux se placer, économiser l'énergie et choisir le bon moment pour attaquer.",
+      "url": "https://bordur.fr/guides/aspiration-vent-bordures/",
+      "inLanguage": "fr-FR",
+      "datePublished": "2026-04-29",
+      "dateModified": "2026-04-29",
+      "isPartOf": {
+        "@type": "WebSite",
+        "name": "BORDUR",
+        "url": "https://bordur.fr/"
+      },
+      "publisher": {
+        "@type": "Organization",
+        "name": "beAbot",
+        "url": "https://beabot.fr"
+      }
+    }
+  </script>
+
+  <style>
+    :root {
+      --bg: #0b0f14;
+      --panel: #111824;
+      --panel2: #0f1622;
+      --text: #e8eef7;
+      --muted: #b7c2d3;
+      --line: rgba(232, 238, 247, 0.12);
+      --accent: #e9c46a;
+      --accent2: #63b3ed;
+      --radius: 14px;
+      --max: 1040px;
+      --pad: 20px;
+      --font-ui: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;
+      --font-display: ui-serif, "Iowan Old Style", "Palatino Linotype", Palatino, Georgia, serif;
+      --focus: 0 0 0 3px rgba(233, 196, 106, 0.35);
+    }
+
+    * { box-sizing: border-box; }
+
+    html { scroll-behavior: smooth; }
+
+    body {
+      margin: 0;
+      font-family: var(--font-ui);
+      background:
+        radial-gradient(900px 520px at 20% 0%, rgba(99, 179, 237, 0.12), transparent 60%),
+        radial-gradient(700px 420px at 85% 8%, rgba(233, 196, 106, 0.08), transparent 58%),
+        var(--bg);
+      color: var(--text);
+      line-height: 1.68;
+    }
+
+    a { color: inherit; }
+    a:focus-visible { outline: none; box-shadow: var(--focus); border-radius: 8px; }
+
+    .wrap {
+      max-width: var(--max);
+      margin: 0 auto;
+      padding: 0 var(--pad);
+    }
+
+    .hero {
+      padding: 44px 0 30px;
+      border-bottom: 1px solid var(--line);
+    }
+
+    .breadcrumb {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      align-items: center;
+      margin-bottom: 18px;
+      color: var(--muted);
+      font-size: 14px;
+    }
+
+    .breadcrumb a,
+    .textLink { color: var(--accent); text-decoration: none; }
+    .breadcrumb a:hover,
+    .textLink:hover { text-decoration: underline; }
+
+    .kicker {
+      margin: 0 0 10px;
+      color: var(--accent);
+      font-size: 12px;
+      font-weight: 900;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+    }
+
+    h1 {
+      max-width: 900px;
+      margin: 0 0 12px;
+      font-family: var(--font-display);
+      font-size: clamp(34px, 5vw, 56px);
+      line-height: 1.04;
+    }
+
+    .lead {
+      max-width: 760px;
+      margin: 0;
+      color: var(--muted);
+      font-size: 18px;
+    }
+
+    .heroActions,
+    .linkGrid {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 12px;
+      margin-top: 18px;
+    }
+
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      min-height: 42px;
+      padding: 10px 14px;
+      border: 1px solid var(--line);
+      border-radius: 12px;
+      text-decoration: none;
+      font-weight: 900;
+    }
+
+    .btn--primary {
+      color: var(--text);
+      background: rgba(233, 196, 106, 0.16);
+      border-color: rgba(233, 196, 106, 0.42);
+    }
+
+    .btn--link {
+      color: var(--text);
+      background: rgba(17, 24, 36, 0.45);
+    }
+
+    main {
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) 260px;
+      gap: 30px;
+      padding-top: 28px;
+      padding-bottom: 54px;
+    }
+
+    article { min-width: 0; }
+
+    .toc {
+      position: sticky;
+      top: 18px;
+      align-self: start;
+      padding: 16px;
+      border: 1px solid var(--line);
+      border-radius: var(--radius);
+      background: rgba(17, 24, 36, 0.58);
+    }
+
+    .toc strong {
+      display: block;
+      margin-bottom: 10px;
+      color: rgba(232, 238, 247, 0.92);
+    }
+
+    .toc a {
+      display: block;
+      padding: 7px 0;
+      color: var(--muted);
+      text-decoration: none;
+      border-top: 1px solid rgba(232, 238, 247, 0.08);
+    }
+
+    .toc a:hover { color: var(--accent); }
+
+    section {
+      padding: 24px 0;
+      border-bottom: 1px solid var(--line);
+    }
+
+    h2 {
+      margin: 0 0 12px;
+      color: var(--accent);
+      font-size: 24px;
+      line-height: 1.2;
+    }
+
+    h3 {
+      margin: 18px 0 8px;
+      font-size: 18px;
+    }
+
+    p,
+    ul,
+    ol { margin: 0 0 14px; }
+
+    ul,
+    ol { padding-left: 22px; color: var(--muted); }
+
+    li { margin: 7px 0; }
+
+    .introBox,
+    .note,
+    .finalCta {
+      padding: 18px;
+      border: 1px solid var(--line);
+      border-radius: var(--radius);
+      background: rgba(17, 24, 36, 0.55);
+    }
+
+    .note {
+      border-color: rgba(99, 179, 237, 0.24);
+      background: rgba(99, 179, 237, 0.08);
+    }
+
+    .finalCta {
+      margin-top: 28px;
+      border-color: rgba(233, 196, 106, 0.28);
+      background: rgba(233, 196, 106, 0.08);
+    }
+
+    .siteFooter {
+      padding: 24px 0 34px;
+      border-top: 1px solid var(--line);
+      color: var(--muted);
+    }
+
+    .footerLinks {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 14px;
+      margin-top: 10px;
+      font-size: 14px;
+    }
+
+    .footerLinks a {
+      text-decoration: none;
+      border-bottom: 1px dashed rgba(232, 238, 247, 0.25);
+    }
+
+    @media (max-width: 860px) {
+      main { display: block; }
+
+      .toc {
+        position: static;
+        margin-bottom: 12px;
+      }
+    }
+
+    @media (max-width: 520px) {
+      .hero { padding-top: 28px; }
+      .lead { font-size: 16px; }
+      .btn { width: 100%; }
+    }
+  </style>
+</head>
+<body>
+  <header class="hero">
+    <div class="wrap">
+      <nav class="breadcrumb" aria-label="Fil d'Ariane">
+        <a href="/">Accueil</a>
+        <span aria-hidden="true">→</span>
+        <span>Guides tactiques</span>
+      </nav>
+      <p class="kicker">Guide tactique</p>
+      <h1>Aspiration, vent latéral et bordures : lire la course avant de subir</h1>
+      <p class="lead">
+        Dans BORDUR, l'abri et le placement transforment une bonne carte en vrai coup tactique. Ce guide aide à décider quand rester dans la roue, quand remonter et quand accepter de faire l'effort.
+      </p>
+      <div class="heroActions" aria-label="Actions principales">
+        <a class="btn btn--primary" href="/app/">Jouer maintenant</a>
+        <a class="btn btn--link" href="/tutoriel.html">Voir le tutoriel</a>
+      </div>
+    </div>
+  </header>
+
+  <main class="wrap">
+    <article>
+      <section aria-labelledby="intro">
+        <h2 id="intro">Ce que ce guide va t'aider à décider</h2>
+        <div class="introBox">
+          <p>
+            Une course ne se gagne pas seulement avec le plus gros mouvement. Elle se gagne souvent avant : dans la position que tu choisis, dans le risque que tu refuses, et dans le moment où tu fais sortir un coureur de l'abri. L'objectif ici est simple : mieux lire les situations de vent, d'aspiration et de bordure pour perdre moins d'énergie inutile.
+          </p>
+        </div>
+      </section>
+
+      <section aria-labelledby="aspiration">
+        <h2 id="aspiration">1. L'aspiration : économiser sans s'endormir</h2>
+        <p>
+          L'aspiration représente l'abri offert par les coureurs placés devant. Dans une course tactique, c'est une ressource aussi importante que l'énergie : elle permet de rester dans le match sans brûler ses meilleures options trop tôt.
+        </p>
+        <h3>La bonne question</h3>
+        <p>
+          Ne te demande pas seulement “jusqu'où puis-je avancer ?”. Demande-toi aussi : “où vais-je me retrouver après le mouvement ?”. Une position légèrement moins avancée mais protégée peut valoir plus qu'un gros saut isolé.
+        </p>
+        <div class="note">
+          <p>
+            Repère pratique : si ton coureur se retrouve seul, il devient plus exposé aux réactions du groupe. Si tu restes accroché au bon paquet, tu gardes plus d'options pour le prochain tour.
+          </p>
+        </div>
+      </section>
+
+      <section aria-labelledby="vent">
+        <h2 id="vent">2. Vent latéral : le placement devient prioritaire</h2>
+        <p>
+          Le vent latéral change la valeur du placement. Dans l'esprit d'une bordure, les coureurs mal placés ne perdent pas seulement du terrain : ils perdent le contact avec la bonne dynamique de course.
+        </p>
+        <h3>Ce que tu dois anticiper</h3>
+        <ul>
+          <li>Les zones où le groupe risque de s'étirer.</li>
+          <li>Les coureurs que tu veux protéger avant un secteur exposé.</li>
+          <li>Le moment où il vaut mieux suivre qu'attaquer.</li>
+        </ul>
+        <p>
+          Sur un parcours nerveux, un rouleur ou un équipier bien placé peut valoir très cher. Il garde le tempo, protège le leader et évite de transformer chaque relance en urgence.
+        </p>
+      </section>
+
+      <section aria-labelledby="bordure">
+        <h2 id="bordure">3. Bordures : être devant avant que ça casse</h2>
+        <p>
+          Une bordure est une cassure de course provoquée par le vent et le placement. Dans BORDUR, le bon réflexe est d'agir avant la cassure, pas après. Revenir coûte souvent plus cher que rester placé.
+        </p>
+        <h3>La décision clé</h3>
+        <p>
+          Si tu sens que la course approche d'un moment exposé, utilise tes coureurs pour stabiliser la position du groupe important. Attaquer peut être fort, mais laisser ton leader derrière au mauvais moment est rarement rentable.
+        </p>
+        <ul>
+          <li>Avant la zone exposée : remonter et protéger.</li>
+          <li>Pendant la cassure : limiter les écarts.</li>
+          <li>Après la cassure : choisir entre organiser la chasse ou économiser.</li>
+        </ul>
+      </section>
+
+      <section aria-labelledby="attaque">
+        <h2 id="attaque">4. Attaquer dans le vent : seulement avec une raison</h2>
+        <p>
+          Attaquer dans une zone exposée peut faire très mal aux autres, mais cela peut aussi isoler ton coureur. Le bon coup n'est pas forcément le plus spectaculaire : c'est celui qui oblige les autres à réagir au mauvais moment.
+        </p>
+        <h3>Trois bons signaux</h3>
+        <ol>
+          <li>Ton coureur a encore assez d'énergie pour assumer l'effort.</li>
+          <li>Les favoris adverses sont mal placés ou déjà sous pression.</li>
+          <li>Le terrain qui suit ne condamne pas immédiatement l'initiative.</li>
+        </ol>
+        <p>
+          À l'inverse, si l'attaque t'envoie seul dans le vent sans relais ni objectif clair, tu risques surtout de lancer une chasse-patate coûteuse.
+        </p>
+      </section>
+
+      <section aria-labelledby="mistakes">
+        <h2 id="mistakes">Erreurs fréquentes</h2>
+        <ul>
+          <li><strong>Jouer le plus gros mouvement disponible</strong> sans regarder la position finale.</li>
+          <li><strong>Attendre la cassure</strong> pour réagir, alors que le placement devait être fait avant.</li>
+          <li><strong>Isoler son leader</strong> dans une zone exposée au lieu d'utiliser un équipier ou un rouleur.</li>
+          <li><strong>Confondre attaque et panique</strong> : un vrai coup met les autres sous pression, une panique te vide.</li>
+        </ul>
+      </section>
+
+      <section aria-labelledby="next">
+        <h2 id="next">Aller plus loin</h2>
+        <p>
+          Pour approfondir, lis les règles complètes, vérifie le vocabulaire cycliste, puis choisis un parcours qui met vraiment le placement à l'épreuve.
+        </p>
+        <div class="linkGrid">
+          <a class="btn btn--link" href="/regles.html">Lire les règles</a>
+          <a class="btn btn--link" href="/tutoriel.html">Voir les tutoriels</a>
+          <a class="btn btn--link" href="/lexique-cyclisme.html">Ouvrir le lexique</a>
+          <a class="btn btn--link" href="/parcours/">Choisir un parcours</a>
+          <a class="btn btn--link" href="/parcours/nord/">Tester le parcours Nord</a>
+          <a class="btn btn--link" href="/guides/choisir-bon-profil-coureur/">Choisir le bon profil</a>
+        </div>
+      </section>
+
+      <section class="finalCta" aria-labelledby="cta-title">
+        <h2 id="cta-title">Mets le guide en pratique</h2>
+        <p>
+          Lance une course, surveille les groupes, protège ton leader et choisis le moment où le vent devient une arme plutôt qu'une menace.
+        </p>
+        <a class="btn btn--primary" href="/app/">Jouer maintenant</a>
+      </section>
+    </article>
+
+    <aside class="toc" aria-label="Sommaire">
+      <strong>Dans ce guide</strong>
+      <a href="#intro">Décider vite</a>
+      <a href="#aspiration">Aspiration</a>
+      <a href="#vent">Vent latéral</a>
+      <a href="#bordure">Bordures</a>
+      <a href="#attaque">Attaquer dans le vent</a>
+      <a href="#mistakes">Erreurs fréquentes</a>
+      <a href="#next">Aller plus loin</a>
+    </aside>
+  </main>
+
+  <footer class="siteFooter">
+    <div class="wrap">
+      <strong>BORDUR</strong>
+      <div>Jeu de plateau de course cycliste tactique, tour par tour.</div>
+      <nav class="footerLinks" aria-label="Liens">
+        <a href="/">Accueil</a>
+        <a href="/app/">Jouer</a>
+        <a href="/parcours/">Parcours</a>
+        <a href="/regles.html">Règles</a>
+        <a href="/lexique-cyclisme.html">Lexique cyclisme</a>
+        <a href="/tutoriel.html">Tutoriels</a>
+        <a href="/cgu.html">CGU</a>
+        <a href="/confidentialite.html">Confidentialité</a>
+      </nav>
+    </div>
+  </footer>
+</body>
+</html>
