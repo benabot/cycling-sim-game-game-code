@@ -199,6 +199,14 @@
 
     .page-links a:hover { text-decoration: underline; }
 
+    .hero-actions {
+      margin-top: 18px;
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      align-items: center;
+    }
+
     main {
       padding: 32px 0 48px;
     }
@@ -436,9 +444,13 @@
       Une prise en main rapide pour comprendre l'interface, les décisions clés
       et les premières courses sur BORDUR.
     </p>
-    <nav class="page-links" aria-label="Liens rapides">
+    <div class="hero-actions" aria-label="Actions principales">
+      <a class="btn btn--primary" href="/app/">Lancer ma première course sur BORDUR</a>
+      <a class="btn btn--link" href="/regles.html">Lire les règles</a>
+      <a class="btn btn--link" href="/parcours/">Choisir un parcours</a>
+    </div>
+    <nav class="page-links" aria-label="Ressources utiles">
       <a href="/">Accueil</a>
-      <a href="/app/">Jouer une première course</a>
       <a href="/regles.html">Règles</a>
       <a href="/lexique-cyclisme.html">Lexique</a>
       <a href="/parcours/">Parcours</a>
