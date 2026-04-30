@@ -200,6 +200,15 @@
 
     .page-links a:hover { text-decoration: underline; }
 
+    .hero-actions {
+      margin-top: 16px;
+      margin-bottom: 4px;
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      align-items: center;
+    }
+
     main {
       padding: 32px 0 48px;
     }
@@ -383,8 +392,10 @@
       Vent, routes étroites, <strong>monts flamands</strong> et secteurs en pavés imposent une lecture de course exigeante.
       Cette page résume l'histoire de chaque épreuve et ses caractéristiques clés, avec un angle tactique utile pour jouer sur <a href="/app/" style="color: var(--accent);">BORDUR</a>.
     </p>
+    <div class="hero-actions" aria-label="Action principale">
+      <a class="btn btn--primary" href="/app/">Jouer ce parcours dans BORDUR</a>
+    </div>
     <nav class="page-links" aria-label="Liens rapides">
-      <a href="/app/">Jouer sur l'app</a>
       <a href="/parcours/nord/">Parcours Nord</a>
       <a href="/parcours/">Tous les parcours</a>
       <a href="/regles.html">Règles du jeu</a>
