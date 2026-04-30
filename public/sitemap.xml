@@ -3,103 +3,73 @@
   <url>
     <loc>https://bordur.fr</loc>
     <lastmod>2026-01-27</lastmod>
-    <changefreq>weekly</changefreq>
-    <priority>1.0</priority>
   </url>
   <url>
     <loc>https://bordur.fr/app/</loc>
     <lastmod>2026-01-22</lastmod>
-    <changefreq>weekly</changefreq>
-    <priority>0.9</priority>
   </url>
   <url>
     <loc>https://bordur.fr/cgu.html</loc>
     <lastmod>2026-01-17</lastmod>
-    <changefreq>yearly</changefreq>
-    <priority>0.3</priority>
   </url>
   <url>
     <loc>https://bordur.fr/confidentialite.html</loc>
     <lastmod>2026-01-17</lastmod>
-    <changefreq>yearly</changefreq>
-    <priority>0.3</priority>
   </url>
   <url>
     <loc>https://bordur.fr/lexique-cyclisme.html</loc>
     <lastmod>2026-01-27</lastmod>
-    <changefreq>monthly</changefreq>
-    <priority>0.7</priority>
   </url>
   <url>
     <loc>https://bordur.fr/regles.html</loc>
     <lastmod>2026-01-27</lastmod>
-    <changefreq>monthly</changefreq>
-    <priority>0.8</priority>
   </url>
   <url>
     <loc>https://bordur.fr/tutoriel.html</loc>
     <lastmod>2026-01-27</lastmod>
-    <changefreq>monthly</changefreq>
-    <priority>0.6</priority>
   </url>
   <url>
     <loc>https://bordur.fr/parcours/</loc>
     <lastmod>2026-01-28</lastmod>
-    <changefreq>monthly</changefreq>
-    <priority>0.7</priority>
   </url>
   <url>
     <loc>https://bordur.fr/parcours/flandriennes/</loc>
     <lastmod>2026-03-16</lastmod>
-    <changefreq>monthly</changefreq>
-    <priority>0.7</priority>
   </url>
   <url>
     <loc>https://bordur.fr/parcours/nord/</loc>
     <lastmod>2026-01-28</lastmod>
-    <changefreq>monthly</changefreq>
-    <priority>0.7</priority>
   </url>
   <url>
     <loc>https://bordur.fr/parcours/ardennaise/</loc>
     <lastmod>2026-01-28</lastmod>
-    <changefreq>monthly</changefreq>
-    <priority>0.7</priority>
   </url>
   <url>
     <loc>https://bordur.fr/parcours/lombarde/</loc>
     <lastmod>2026-01-28</lastmod>
-    <changefreq>monthly</changefreq>
-    <priority>0.7</priority>
   </url>
   <url>
     <loc>https://bordur.fr/parcours/riviera/</loc>
     <lastmod>2026-01-28</lastmod>
-    <changefreq>monthly</changefreq>
-    <priority>0.7</priority>
+  </url>
+  <url>
+    <loc>https://bordur.fr/guides/</loc>
+    <lastmod>2026-04-30</lastmod>
   </url>
   <url>
     <loc>https://bordur.fr/guides/aspiration-vent-bordures/</loc>
     <lastmod>2026-04-29</lastmod>
-    <changefreq>monthly</changefreq>
-    <priority>0.7</priority>
   </url>
   <url>
     <loc>https://bordur.fr/guides/choisir-bon-profil-coureur/</loc>
     <lastmod>2026-04-29</lastmod>
-    <changefreq>monthly</changefreq>
-    <priority>0.7</priority>
   </url>
   <url>
     <loc>https://bordur.fr/guides/gerer-energie-eviter-fringale/</loc>
     <lastmod>2026-04-29</lastmod>
-    <changefreq>monthly</changefreq>
-    <priority>0.7</priority>
   </url>
   <url>
     <loc>https://bordur.fr/guides/gagner-classique-pavee/</loc>
     <lastmod>2026-04-29</lastmod>
-    <changefreq>monthly</changefreq>
-    <priority>0.7</priority>
   </url>
 </urlset>
