@@ -41,6 +41,12 @@
       "description": "Apprends à gérer ton énergie dans BORDUR, à éviter la fringale et à garder des ressources pour les moments décisifs : attaques, vent, pavés et final.",
       "url": "https://bordur.fr/guides/gerer-energie-eviter-fringale/",
       "inLanguage": "fr-FR",
+      "author": {
+        "@type": "Organization",
+        "name": "BORDUR",
+        "url": "https://bordur.fr/"
+      },
+      "image": "https://bordur.fr/intro/bordur-plateau.webp",
       "datePublished": "2026-04-29",
       "dateModified": "2026-04-29",
       "isPartOf": {
@@ -51,7 +57,11 @@
       "publisher": {
         "@type": "Organization",
         "name": "beAbot",
-        "url": "https://beabot.fr"
+        "url": "https://beabot.fr",
+        "logo": {
+          "@type": "ImageObject",
+          "url": "https://bordur.fr/apple-touch-icon.png"
+        }
       }
     }
   </script>
@@ -168,6 +178,12 @@
       margin: 0;
       color: var(--muted);
       font-size: 18px;
+    }
+
+    .meta {
+      margin-top: 10px;
+      color: var(--muted);
+      font-size: 14px;
     }
 
     .heroActions,
@@ -315,6 +331,7 @@
       <p class="lead">
         Dans BORDUR, l'énergie n'est pas une jauge à vider le plus vite possible. C'est ta marge de manoeuvre pour rester placé, répondre aux attaques et garder une vraie option dans le final.
       </p>
+      <p class="meta">Publié le <time datetime="2026-04-29">29 avril 2026</time></p>
       <div class="heroActions" aria-label="Actions principales">
         <a class="btn btn--primary" href="/app/">Jouer maintenant</a>
         <a class="btn btn--link" href="/tutoriel.html">Voir le tutoriel</a>

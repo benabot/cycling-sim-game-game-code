@@ -41,6 +41,12 @@
       "description": "Grimpeur, sprinteur, rouleur, puncheur, baroudeur, équipier : apprends à choisir le bon profil de coureur selon le terrain, le vent et le plan de course dans BORDUR.",
       "url": "https://bordur.fr/guides/choisir-bon-profil-coureur/",
       "inLanguage": "fr-FR",
+      "author": {
+        "@type": "Organization",
+        "name": "BORDUR",
+        "url": "https://bordur.fr/"
+      },
+      "image": "https://bordur.fr/intro/bordur-plateau.webp",
       "datePublished": "2026-04-29",
       "dateModified": "2026-04-29",
       "isPartOf": {
@@ -51,7 +57,11 @@
       "publisher": {
         "@type": "Organization",
         "name": "beAbot",
-        "url": "https://beabot.fr"
+        "url": "https://beabot.fr",
+        "logo": {
+          "@type": "ImageObject",
+          "url": "https://bordur.fr/apple-touch-icon.png"
+        }
       }
     }
   </script>
@@ -168,6 +178,12 @@
       margin: 0;
       color: var(--muted);
       font-size: 18px;
+    }
+
+    .meta {
+      margin-top: 10px;
+      color: var(--muted);
+      font-size: 14px;
     }
 
     .heroActions,
@@ -315,6 +331,7 @@
       <p class="lead">
         Une équipe cohérente ne se résume pas à empiler les meilleurs noms. Dans BORDUR, chaque profil sert une situation : terrain, vent, effort demandé et rôle dans la course.
       </p>
+      <p class="meta">Publié le <time datetime="2026-04-29">29 avril 2026</time></p>
       <div class="heroActions" aria-label="Actions principales">
         <a class="btn btn--primary" href="/app/">Jouer maintenant</a>
         <a class="btn btn--link" href="/tutoriel.html">Voir le tutoriel</a>
