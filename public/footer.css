@@ -44,6 +44,16 @@ body > .siteFooter {
   gap: 12px;
 }
 
+.footerBrandLink {
+  text-decoration: none;
+}
+
+.footerBrandLink:focus-visible {
+  outline: 2px solid rgba(233, 196, 106, 0.7);
+  outline-offset: 2px;
+  border-radius: 8px;
+}
+
 .footerBrandIcon {
   width: clamp(28px, 3vw, 34px);
   height: clamp(28px, 3vw, 34px);
