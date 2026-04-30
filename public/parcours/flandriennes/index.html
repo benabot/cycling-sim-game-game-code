@@ -4,10 +4,10 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
 
-  <title>Courses flandriennes | Pavés, monts et classiques du Nord</title>
+  <title>Courses flandriennes BORDUR | Pavés, vent et classique tactique</title>
   <meta
     name="description"
-    content="Découvre les courses flandriennes : Tour des Flandres, Paris-Roubaix, pavés, monts, vent et lecture tactique pour mieux jouer BORDUR."
+    content="Découvre les repères clés des courses flandriennes (pavés, vent, placement), puis lance ce parcours dans BORDUR avec un plan tactique simple."
   >
   <meta
     name="keywords"
@@ -30,13 +30,13 @@
   <meta property="og:title" content="Courses flandriennes | Pavés, monts et classiques du Nord">
   <meta property="og:description" content="Tour des Flandres, Paris-Roubaix, pavés et monts : comprendre les classiques du Nord avec un angle tactique.">
   <meta property="og:url" content="https://bordur.fr/parcours/flandriennes/">
-  <meta property="og:image" content="https://bordur.fr/og/parcours-nord.webp">
+  <meta property="og:image" content="https://bordur.fr/og/parcours-flandriennes.webp">
   <meta property="og:image:alt" content="Peloton sur pavés lors d'une classique flandrienne">
 
   <meta name="twitter:card" content="summary_large_image">
   <meta name="twitter:title" content="Courses flandriennes | Pavés, monts et classiques du Nord">
   <meta name="twitter:description" content="Histoire, pavés, monts et lecture tactique des grandes classiques flandriennes.">
-  <meta name="twitter:image" content="https://bordur.fr/og/parcours-nord.webp">
+  <meta name="twitter:image" content="https://bordur.fr/og/parcours-flandriennes.webp">
 
   <script type="application/ld+json">
     {
@@ -62,6 +62,34 @@
           { "@type": "ListItem", "position": 6, "name": "À Travers la Flandre" }
         ]
       }
+    }
+  </script>
+
+  <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@type": "BreadcrumbList",
+      "@id": "https://bordur.fr/parcours/flandriennes/#breadcrumb",
+      "itemListElement": [
+        {
+          "@type": "ListItem",
+          "position": 1,
+          "name": "Accueil",
+          "item": "https://bordur.fr/"
+        },
+        {
+          "@type": "ListItem",
+          "position": 2,
+          "name": "Parcours",
+          "item": "https://bordur.fr/parcours/"
+        },
+        {
+          "@type": "ListItem",
+          "position": 3,
+          "name": "Courses flandriennes",
+          "item": "https://bordur.fr/parcours/flandriennes/"
+        }
+      ]
     }
   </script>
 
@@ -171,6 +199,15 @@
     }
 
     .page-links a:hover { text-decoration: underline; }
+
+    .hero-actions {
+      margin-top: 16px;
+      margin-bottom: 4px;
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      align-items: center;
+    }
 
     main {
       padding: 32px 0 48px;
@@ -355,8 +392,10 @@
       Vent, routes étroites, <strong>monts flamands</strong> et secteurs en pavés imposent une lecture de course exigeante.
       Cette page résume l'histoire de chaque épreuve et ses caractéristiques clés, avec un angle tactique utile pour jouer sur <a href="/app/" style="color: var(--accent);">BORDUR</a>.
     </p>
+    <div class="hero-actions" aria-label="Action principale">
+      <a class="btn btn--primary" href="/app/">Jouer ce parcours dans BORDUR</a>
+    </div>
     <nav class="page-links" aria-label="Liens rapides">
-      <a href="/app/">Jouer sur l'app</a>
       <a href="/parcours/nord/">Parcours Nord</a>
       <a href="/parcours/">Tous les parcours</a>
       <a href="/regles.html">Règles du jeu</a>
@@ -502,6 +541,19 @@
     </section>
 
     <section class="section" aria-labelledby="seo-game">
+      <h2 id="tips">Conseils pour gagner sur ce parcours</h2>
+      <ul>
+        <li>Replace ton leader avant les secteurs clés : revenir après coup coûte souvent plus cher.</li>
+        <li>Utilise rouleur et équipier pour protéger le plan dans le vent et les portions exposées.</li>
+        <li>N'attaque pas au premier moment dur : garde des ressources pour les cassures décisives.</li>
+        <li>Avant d'accélérer, vérifie que ton leader est placé et que les adversaires importants sont déjà sous pression.</li>
+      </ul>
+      <p class="chapter-link">
+        <a href="/guides/gagner-classique-pavee/">Guide complet : gagner une classique pavée dans BORDUR</a>
+      </p>
+    </section>
+
+    <section class="section" aria-labelledby="seo-game">
       <h2 id="seo-game">Courses flandriennes et jeu de cyclisme tactique</h2>
       <p>
         Si tu cherches un <strong>jeu de course cycliste</strong> qui reproduit les logiques des classiques du Nord,
@@ -522,7 +574,7 @@
   <footer class="siteFooter" aria-label="Pied de page">
       <div class="footerInner">
         <div class="footerBrand">
-          <div class="footerBrandTitle">
+          <a class="footerBrandTitle footerBrandLink" href="/" aria-label="Retour à l’accueil BORDUR">
             <strong>BORDUR</strong>
             <svg
               class="footerBrandIcon"
@@ -591,7 +643,7 @@
                 </clipPath>
               </defs>
             </svg>
-          </div>
+          </a>
           <div>
             Jeu de plateau – course cycliste tactique (tour par tour).
           </div>

@@ -25,13 +25,13 @@
   <meta property="og:title" content="Gérer l’énergie dans BORDUR | Éviter la fringale">
   <meta property="og:description" content="Économiser, dépenser au bon moment et garder des ressources pour les moments décisifs.">
   <meta property="og:url" content="https://bordur.fr/guides/gerer-energie-eviter-fringale/">
-  <meta property="og:image" content="https://bordur.fr/intro/bordur-plateau.webp">
+  <meta property="og:image" content="https://bordur.fr/og/guide-gerer-energie-fringale.webp">
   <meta property="og:image:alt" content="Plateau BORDUR avec cartes, positions, terrain et jauge d'énergie">
 
   <meta name="twitter:card" content="summary_large_image">
   <meta name="twitter:title" content="Gérer l’énergie dans BORDUR | Éviter la fringale">
   <meta name="twitter:description" content="Le guide pour doser tes efforts et garder des ressources dans BORDUR.">
-  <meta name="twitter:image" content="https://bordur.fr/intro/bordur-plateau.webp">
+  <meta name="twitter:image" content="https://bordur.fr/og/guide-gerer-energie-fringale.webp">
 
   <script type="application/ld+json">
     {
@@ -41,6 +41,12 @@
       "description": "Apprends à gérer ton énergie dans BORDUR, à éviter la fringale et à garder des ressources pour les moments décisifs : attaques, vent, pavés et final.",
       "url": "https://bordur.fr/guides/gerer-energie-eviter-fringale/",
       "inLanguage": "fr-FR",
+      "author": {
+        "@type": "Organization",
+        "name": "BORDUR",
+        "url": "https://bordur.fr/"
+      },
+      "image": "https://bordur.fr/og/guide-gerer-energie-fringale.webp",
       "datePublished": "2026-04-29",
       "dateModified": "2026-04-29",
       "isPartOf": {
@@ -51,8 +57,40 @@
       "publisher": {
         "@type": "Organization",
         "name": "beAbot",
-        "url": "https://beabot.fr"
+        "url": "https://beabot.fr",
+        "logo": {
+          "@type": "ImageObject",
+          "url": "https://bordur.fr/apple-touch-icon.png"
+        }
       }
+    }
+  </script>
+
+  <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@type": "BreadcrumbList",
+      "@id": "https://bordur.fr/guides/gerer-energie-eviter-fringale/#breadcrumb",
+      "itemListElement": [
+        {
+          "@type": "ListItem",
+          "position": 1,
+          "name": "Accueil",
+          "item": "https://bordur.fr/"
+        },
+        {
+          "@type": "ListItem",
+          "position": 2,
+          "name": "Guides tactiques",
+          "item": "https://bordur.fr/guides/"
+        },
+        {
+          "@type": "ListItem",
+          "position": 3,
+          "name": "Gérer l'énergie, éviter la fringale",
+          "item": "https://bordur.fr/guides/gerer-energie-eviter-fringale/"
+        }
+      ]
     }
   </script>
 
@@ -140,6 +178,12 @@
       margin: 0;
       color: var(--muted);
       font-size: 18px;
+    }
+
+    .meta {
+      margin-top: 10px;
+      color: var(--muted);
+      font-size: 14px;
     }
 
     .heroActions,
@@ -280,13 +324,16 @@
       <nav class="breadcrumb" aria-label="Fil d'Ariane">
         <a href="/">Accueil</a>
         <span aria-hidden="true">→</span>
-        <span>Guides tactiques</span>
+        <a href="/guides/">Guides tactiques</a>
+        <span aria-hidden="true">→</span>
+        <span>Gérer l'énergie et éviter la fringale</span>
       </nav>
       <p class="kicker">Guide tactique</p>
       <h1>Gérer son énergie et éviter la fringale dans BORDUR</h1>
       <p class="lead">
         Dans BORDUR, l'énergie n'est pas une jauge à vider le plus vite possible. C'est ta marge de manoeuvre pour rester placé, répondre aux attaques et garder une vraie option dans le final.
       </p>
+      <p class="meta">Publié le <time datetime="2026-04-29">29 avril 2026</time></p>
       <div class="heroActions" aria-label="Actions principales">
         <a class="btn btn--primary" href="/app/">Jouer maintenant</a>
         <a class="btn btn--link" href="/tutoriel.html">Voir le tutoriel</a>
@@ -420,7 +467,7 @@
   <footer class="siteFooter" aria-label="Pied de page">
       <div class="footerInner">
         <div class="footerBrand">
-          <div class="footerBrandTitle">
+          <a class="footerBrandTitle footerBrandLink" href="/" aria-label="Retour à l’accueil BORDUR">
             <strong>BORDUR</strong>
             <svg
               class="footerBrandIcon"
@@ -489,7 +536,7 @@
                 </clipPath>
               </defs>
             </svg>
-          </div>
+          </a>
           <div>
             Jeu de plateau – course cycliste tactique (tour par tour).
           </div>

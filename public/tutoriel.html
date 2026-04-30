@@ -26,7 +26,7 @@
   <meta property="og:title" content="Tutoriels BORDUR | Bien démarrer et jouer une partie">
   <meta property="og:description" content="Deux vidéos pour prendre en main BORDUR : configuration, interface et premiers tours de course.">
   <meta property="og:url" content="https://bordur.fr/tutoriel.html">
-  <meta property="og:image" content="https://bordur.fr/intro/chassepatate.webp">
+  <meta property="og:image" content="https://bordur.fr/og/tutoriel.webp">
   <meta property="og:video:url" content="https://www.youtube.com/watch?v=YvWhbvmsW78">
   <meta property="og:video:type" content="text/html">
   <meta property="og:video:width" content="1280">
@@ -36,7 +36,7 @@
   <meta name="twitter:card" content="summary_large_image">
   <meta name="twitter:title" content="Tutoriels BORDUR | Bien démarrer et jouer une partie">
   <meta name="twitter:description" content="Configure une partie, lis l’interface et apprends à jouer une course BORDUR tour par tour.">
-  <meta name="twitter:image" content="https://bordur.fr/intro/chassepatate.webp">
+  <meta name="twitter:image" content="https://bordur.fr/og/tutoriel.webp">
 
   <script type="application/ld+json">
   {
@@ -59,13 +59,35 @@
         "description": "Tutoriel vidéo pour configurer une première partie sur BORDUR, lire l'interface de préparation et vérifier les paramètres avant le départ.",
         "thumbnailUrl": ["https://img.youtube.com/vi/YvWhbvmsW78/maxresdefault.jpg"],
         "uploadDate": "2026-01-27T00:00:00+01:00",
-        "duration": "PT6M",
+        "duration": "PT7M10S",
         "embedUrl": "https://www.youtube-nocookie.com/embed/YvWhbvmsW78",
         "contentUrl": "https://www.youtube.com/watch?v=YvWhbvmsW78",
         "publisher": {
           "@type": "Organization",
           "name": "BORDUR"
         }
+      }
+    ]
+  }
+  </script>
+
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "BreadcrumbList",
+    "@id": "https://bordur.fr/tutoriel.html#breadcrumb",
+    "itemListElement": [
+      {
+        "@type": "ListItem",
+        "position": 1,
+        "name": "Accueil",
+        "item": "https://bordur.fr/"
+      },
+      {
+        "@type": "ListItem",
+        "position": 2,
+        "name": "Tutoriel",
+        "item": "https://bordur.fr/tutoriel.html"
       }
     ]
   }
@@ -176,6 +198,14 @@
     }
 
     .page-links a:hover { text-decoration: underline; }
+
+    .hero-actions {
+      margin-top: 18px;
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      align-items: center;
+    }
 
     main {
       padding: 32px 0 48px;
@@ -300,6 +330,14 @@
       color: var(--muted);
     }
 
+    .coming-soon ol {
+      margin: 12px 0;
+      padding-left: 20px;
+      color: var(--muted);
+      display: grid;
+      gap: 8px;
+    }
+
 
 .btn {
       display: inline-flex;
@@ -406,9 +444,13 @@
       Une prise en main rapide pour comprendre l'interface, les décisions clés
       et les premières courses sur BORDUR.
     </p>
-    <nav class="page-links" aria-label="Liens rapides">
+    <div class="hero-actions" aria-label="Actions principales">
+      <a class="btn btn--primary" href="/app/">Lancer ma première course sur BORDUR</a>
+      <a class="btn btn--link" href="/regles.html">Lire les règles</a>
+      <a class="btn btn--link" href="/parcours/">Choisir un parcours</a>
+    </div>
+    <nav class="page-links" aria-label="Ressources utiles">
       <a href="/">Accueil</a>
-      <a href="/app/">Jouer</a>
       <a href="/regles.html">Règles</a>
       <a href="/lexique-cyclisme.html">Lexique</a>
       <a href="/parcours/">Parcours</a>
@@ -423,6 +465,18 @@
       comment configurer une partie, lire l'interface de préparation et partir sur des bases propres
       avant le début de la course.
     </p>
+
+    <section class="coming-soon" aria-labelledby="quickstart-title">
+      <h2 id="quickstart-title">Démarrage rapide en 3 étapes</h2>
+      <ol>
+        <li>Regarder la vidéo pour configurer une partie sans erreur de départ.</li>
+        <li>Vérifier les bases avec les <a href="/regles.html">règles complètes</a>.</li>
+        <li>Lancer une partie sur <a href="/app/">l'app BORDUR</a> et tester un premier parcours.</li>
+      </ol>
+      <p>
+        Si tu hésites sur le terrain, commence par <a href="/parcours/">la page parcours</a> pour choisir un profil d'étape adapté.
+      </p>
+    </section>
 
     <section class="video-section" aria-labelledby="video-config-title">
       <h2 id="video-config-title">Vidéo 1 — Configurer une partie sur BORDUR</h2>
@@ -473,61 +527,12 @@
           <h3 id="video-config-summary-title">Résumé</h3>
           <p>
             Cette première vidéo sert à mettre la partie en place. Elle est centrée sur la configuration,
-            la lecture de l'interface et les vérifications utiles avant le départ.
+            la lecture de l'interface et les vérifications utiles avant le départ. Regarde-la avant
+            de lancer ta première course pour éviter les hésitations dans l'écran de préparation.
           </p>
         </article>
       </div>
     </section>
-
-    <!--
-    <section class="video-section" aria-labelledby="video-gameplay-title">
-      <h2 id="video-gameplay-title">Vidéo 2 — Comment jouer une partie</h2>
-      <div class="video-shell">
-        <iframe
-          src="https://www.youtube-nocookie.com/embed/VIDEO_ID_2"
-          title="Tutoriel BORDUR — Comment jouer une partie"
-          allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
-          allowfullscreen
-          loading="lazy"
-          referrerpolicy="strict-origin-when-cross-origin"
-        ></iframe>
-      </div>
-      <p class="video-caption">
-        Cette seconde vidéo montre le déroulé d'un tour, le placement, l'aspiration,
-        l'énergie et les choix tactiques pendant la course.
-      </p>
-      <div class="video-actions" aria-label="Actions vidéo 2">
-        <a href="https://www.youtube.com/watch?v=VIDEO_ID_2" target="_blank" rel="noopener noreferrer">Voir sur YouTube</a>
-      </div>
-
-      <div class="video-meta">
-        <article class="video-card" aria-labelledby="video-gameplay-learn-title">
-          <h3 id="video-gameplay-learn-title">Ce que tu vas apprendre</h3>
-          <ul>
-            <li>comment se déroule un tour de jeu du choix de carte jusqu'à la fin du tour ;</li>
-            <li>comment gérer le placement, l'abri et l'aspiration pendant la course ;</li>
-            <li>comment surveiller l'énergie et éviter de te griller trop tôt ;</li>
-            <li>comment choisir entre temporiser, suivre et attaquer selon la situation.</li>
-          </ul>
-        </article>
-
-        <article class="video-card" aria-labelledby="video-gameplay-chapters-title">
-          <h3 id="video-gameplay-chapters-title">Chapitres de la vidéo</h3>
-          <ol>
-            <li><strong>À compléter</strong> — les chapitres seront ajoutés après publication de la vidéo.</li>
-          </ol>
-        </article>
-
-        <article class="video-card" aria-labelledby="video-gameplay-summary-title">
-          <h3 id="video-gameplay-summary-title">Résumé</h3>
-          <p>
-            Cette seconde vidéo sera centrée sur le gameplay réel : déroulé d'un tour, lecture de course,
-            énergie, aspiration, placement et décisions tactiques pendant la partie.
-          </p>
-        </article>
-      </div>
-    </section>
-    -->
 
 
     <section class="coming-soon" aria-labelledby="coming-title">
@@ -548,14 +553,14 @@
         <a href="/guides/gerer-energie-eviter-fringale/">gestion de l'énergie</a>.
       </p>
       <p>
-        Quand tu es prêt, <a href="/app/">lance une course dans l'app BORDUR</a>.
+        Quand tu es prêt, <a href="/app/">lance ta première course dans l'app BORDUR</a>.
       </p>
     </section>
   </main>
   <footer class="siteFooter" aria-label="Pied de page">
       <div class="footerInner">
         <div class="footerBrand">
-          <div class="footerBrandTitle">
+          <a class="footerBrandTitle footerBrandLink" href="/" aria-label="Retour à l’accueil BORDUR">
             <strong>BORDUR</strong>
             <svg
               class="footerBrandIcon"
@@ -624,7 +629,7 @@
                 </clipPath>
               </defs>
             </svg>
-          </div>
+          </a>
           <div>
             Jeu de plateau – course cycliste tactique (tour par tour).
           </div>

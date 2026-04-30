@@ -25,13 +25,13 @@
   <meta property="og:title" content="Aspiration, vent et bordures dans BORDUR">
   <meta property="og:description" content="Lire l’abri, le vent et les cassures pour prendre de meilleures décisions dans BORDUR.">
   <meta property="og:url" content="https://bordur.fr/guides/aspiration-vent-bordures/">
-  <meta property="og:image" content="https://bordur.fr/og/parcours-nord.webp">
+  <meta property="og:image" content="https://bordur.fr/og/guide-aspiration-vent-bordures.webp">
   <meta property="og:image:alt" content="Peloton sur un parcours du Nord, terrain propice au vent et aux bordures">
 
   <meta name="twitter:card" content="summary_large_image">
   <meta name="twitter:title" content="Aspiration, vent et bordures dans BORDUR">
   <meta name="twitter:description" content="Placement, abri et vent latéral : le guide pour mieux jouer les bordures dans BORDUR.">
-  <meta name="twitter:image" content="https://bordur.fr/og/parcours-nord.webp">
+  <meta name="twitter:image" content="https://bordur.fr/og/guide-aspiration-vent-bordures.webp">
 
   <script type="application/ld+json">
     {
@@ -41,6 +41,12 @@
       "description": "Guide tactique BORDUR : comprendre l'aspiration, le vent latéral et les bordures pour mieux se placer, économiser l'énergie et choisir le bon moment pour attaquer.",
       "url": "https://bordur.fr/guides/aspiration-vent-bordures/",
       "inLanguage": "fr-FR",
+      "author": {
+        "@type": "Organization",
+        "name": "BORDUR",
+        "url": "https://bordur.fr/"
+      },
+      "image": "https://bordur.fr/og/guide-aspiration-vent-bordures.webp",
       "datePublished": "2026-04-29",
       "dateModified": "2026-04-29",
       "isPartOf": {
@@ -51,8 +57,40 @@
       "publisher": {
         "@type": "Organization",
         "name": "beAbot",
-        "url": "https://beabot.fr"
+        "url": "https://beabot.fr",
+        "logo": {
+          "@type": "ImageObject",
+          "url": "https://bordur.fr/apple-touch-icon.png"
+        }
       }
+    }
+  </script>
+
+  <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@type": "BreadcrumbList",
+      "@id": "https://bordur.fr/guides/aspiration-vent-bordures/#breadcrumb",
+      "itemListElement": [
+        {
+          "@type": "ListItem",
+          "position": 1,
+          "name": "Accueil",
+          "item": "https://bordur.fr/"
+        },
+        {
+          "@type": "ListItem",
+          "position": 2,
+          "name": "Guides tactiques",
+          "item": "https://bordur.fr/guides/"
+        },
+        {
+          "@type": "ListItem",
+          "position": 3,
+          "name": "Aspiration, vent et bordures",
+          "item": "https://bordur.fr/guides/aspiration-vent-bordures/"
+        }
+      ]
     }
   </script>
 
@@ -140,6 +178,12 @@
       margin: 0;
       color: var(--muted);
       font-size: 18px;
+    }
+
+    .meta {
+      margin-top: 10px;
+      color: var(--muted);
+      font-size: 14px;
     }
 
     .heroActions,
@@ -280,13 +324,16 @@
       <nav class="breadcrumb" aria-label="Fil d'Ariane">
         <a href="/">Accueil</a>
         <span aria-hidden="true">→</span>
-        <span>Guides tactiques</span>
+        <a href="/guides/">Guides tactiques</a>
+        <span aria-hidden="true">→</span>
+        <span>Aspiration, vent et bordures</span>
       </nav>
       <p class="kicker">Guide tactique</p>
       <h1>Aspiration, vent latéral et bordures : lire la course avant de subir</h1>
       <p class="lead">
         Dans BORDUR, l'abri et le placement transforment une bonne carte en vrai coup tactique. Ce guide aide à décider quand rester dans la roue, quand remonter et quand accepter de faire l'effort.
       </p>
+      <p class="meta">Publié le <time datetime="2026-04-29">29 avril 2026</time></p>
       <div class="heroActions" aria-label="Actions principales">
         <a class="btn btn--primary" href="/app/">Jouer maintenant</a>
         <a class="btn btn--link" href="/tutoriel.html">Voir le tutoriel</a>
@@ -419,7 +466,7 @@
   <footer class="siteFooter" aria-label="Pied de page">
       <div class="footerInner">
         <div class="footerBrand">
-          <div class="footerBrandTitle">
+          <a class="footerBrandTitle footerBrandLink" href="/" aria-label="Retour à l’accueil BORDUR">
             <strong>BORDUR</strong>
             <svg
               class="footerBrandIcon"
@@ -488,7 +535,7 @@
                 </clipPath>
               </defs>
             </svg>
-          </div>
+          </a>
           <div>
             Jeu de plateau – course cycliste tactique (tour par tour).
           </div>

@@ -25,13 +25,13 @@
   <meta property="og:title" content="Gagner une classique pavée dans BORDUR">
   <meta property="og:description" content="Pavés, vent, placement et timing : prépare un plan solide pour les classiques du Nord.">
   <meta property="og:url" content="https://bordur.fr/guides/gagner-classique-pavee/">
-  <meta property="og:image" content="https://bordur.fr/og/parcours-nord.webp">
+  <meta property="og:image" content="https://bordur.fr/og/guide-gagner-classique-pavee.webp">
   <meta property="og:image:alt" content="Parcours du Nord BORDUR, terrain de pavés et de bordures">
 
   <meta name="twitter:card" content="summary_large_image">
   <meta name="twitter:title" content="Gagner une classique pavée dans BORDUR">
   <meta name="twitter:description" content="Construis ton plan de course pour survivre aux pavés, au vent et aux cassures.">
-  <meta name="twitter:image" content="https://bordur.fr/og/parcours-nord.webp">
+  <meta name="twitter:image" content="https://bordur.fr/og/guide-gagner-classique-pavee.webp">
 
   <script type="application/ld+json">
     {
@@ -41,6 +41,12 @@
       "description": "Pavés, vent, placement, usure, timing : découvre comment gagner une classique pavée dans BORDUR avec une équipe bien construite et un plan de course solide.",
       "url": "https://bordur.fr/guides/gagner-classique-pavee/",
       "inLanguage": "fr-FR",
+      "author": {
+        "@type": "Organization",
+        "name": "BORDUR",
+        "url": "https://bordur.fr/"
+      },
+      "image": "https://bordur.fr/og/guide-gagner-classique-pavee.webp",
       "datePublished": "2026-04-29",
       "dateModified": "2026-04-29",
       "isPartOf": {
@@ -51,8 +57,40 @@
       "publisher": {
         "@type": "Organization",
         "name": "beAbot",
-        "url": "https://beabot.fr"
+        "url": "https://beabot.fr",
+        "logo": {
+          "@type": "ImageObject",
+          "url": "https://bordur.fr/apple-touch-icon.png"
+        }
       }
+    }
+  </script>
+
+  <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@type": "BreadcrumbList",
+      "@id": "https://bordur.fr/guides/gagner-classique-pavee/#breadcrumb",
+      "itemListElement": [
+        {
+          "@type": "ListItem",
+          "position": 1,
+          "name": "Accueil",
+          "item": "https://bordur.fr/"
+        },
+        {
+          "@type": "ListItem",
+          "position": 2,
+          "name": "Guides tactiques",
+          "item": "https://bordur.fr/guides/"
+        },
+        {
+          "@type": "ListItem",
+          "position": 3,
+          "name": "Gagner une classique pavée",
+          "item": "https://bordur.fr/guides/gagner-classique-pavee/"
+        }
+      ]
     }
   </script>
 
@@ -140,6 +178,12 @@
       margin: 0;
       color: var(--muted);
       font-size: 18px;
+    }
+
+    .meta {
+      margin-top: 10px;
+      color: var(--muted);
+      font-size: 14px;
     }
 
     .heroActions,
@@ -280,13 +324,16 @@
       <nav class="breadcrumb" aria-label="Fil d'Ariane">
         <a href="/">Accueil</a>
         <span aria-hidden="true">→</span>
-        <span>Guides tactiques</span>
+        <a href="/guides/">Guides tactiques</a>
+        <span aria-hidden="true">→</span>
+        <span>Gagner une classique pavée</span>
       </nav>
       <p class="kicker">Guide tactique</p>
       <h1>Comment gagner une classique pavée dans BORDUR</h1>
       <p class="lead">
         Une classique pavée se gagne rarement sur un seul coup. Il faut une équipe robuste, une position propre avant les secteurs clés, de l'énergie pour encaisser l'usure et le bon timing pour faire la différence.
       </p>
+      <p class="meta">Publié le <time datetime="2026-04-29">29 avril 2026</time></p>
       <div class="heroActions" aria-label="Actions principales">
         <a class="btn btn--primary" href="/app/">Jouer maintenant</a>
         <a class="btn btn--link" href="/parcours/nord/">Voir le parcours Nord</a>
@@ -419,7 +466,7 @@
   <footer class="siteFooter" aria-label="Pied de page">
       <div class="footerInner">
         <div class="footerBrand">
-          <div class="footerBrandTitle">
+          <a class="footerBrandTitle footerBrandLink" href="/" aria-label="Retour à l’accueil BORDUR">
             <strong>BORDUR</strong>
             <svg
               class="footerBrandIcon"
@@ -488,7 +535,7 @@
                 </clipPath>
               </defs>
             </svg>
-          </div>
+          </a>
           <div>
             Jeu de plateau – course cycliste tactique (tour par tour).
           </div>

@@ -25,13 +25,13 @@
   <meta property="og:title" content="Choisir son profil de coureur dans BORDUR">
   <meta property="og:description" content="Comprends le rôle des profils de coureurs pour composer une équipe cohérente dans BORDUR.">
   <meta property="og:url" content="https://bordur.fr/guides/choisir-bon-profil-coureur/">
-  <meta property="og:image" content="https://bordur.fr/intro/bordur-plateau.webp">
+  <meta property="og:image" content="https://bordur.fr/og/guide-choisir-bon-profil-coureur.webp">
   <meta property="og:image:alt" content="Plateau BORDUR avec coureurs, cartes, terrain et énergie">
 
   <meta name="twitter:card" content="summary_large_image">
   <meta name="twitter:title" content="Choisir son profil de coureur dans BORDUR">
   <meta name="twitter:description" content="Grimpeur, sprinteur, rouleur, puncheur : choisis le bon profil pour ton plan de course.">
-  <meta name="twitter:image" content="https://bordur.fr/intro/bordur-plateau.webp">
+  <meta name="twitter:image" content="https://bordur.fr/og/guide-choisir-bon-profil-coureur.webp">
 
   <script type="application/ld+json">
     {
@@ -41,6 +41,12 @@
       "description": "Grimpeur, sprinteur, rouleur, puncheur, baroudeur, équipier : apprends à choisir le bon profil de coureur selon le terrain, le vent et le plan de course dans BORDUR.",
       "url": "https://bordur.fr/guides/choisir-bon-profil-coureur/",
       "inLanguage": "fr-FR",
+      "author": {
+        "@type": "Organization",
+        "name": "BORDUR",
+        "url": "https://bordur.fr/"
+      },
+      "image": "https://bordur.fr/og/guide-choisir-bon-profil-coureur.webp",
       "datePublished": "2026-04-29",
       "dateModified": "2026-04-29",
       "isPartOf": {
@@ -51,8 +57,40 @@
       "publisher": {
         "@type": "Organization",
         "name": "beAbot",
-        "url": "https://beabot.fr"
+        "url": "https://beabot.fr",
+        "logo": {
+          "@type": "ImageObject",
+          "url": "https://bordur.fr/apple-touch-icon.png"
+        }
       }
+    }
+  </script>
+
+  <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@type": "BreadcrumbList",
+      "@id": "https://bordur.fr/guides/choisir-bon-profil-coureur/#breadcrumb",
+      "itemListElement": [
+        {
+          "@type": "ListItem",
+          "position": 1,
+          "name": "Accueil",
+          "item": "https://bordur.fr/"
+        },
+        {
+          "@type": "ListItem",
+          "position": 2,
+          "name": "Guides tactiques",
+          "item": "https://bordur.fr/guides/"
+        },
+        {
+          "@type": "ListItem",
+          "position": 3,
+          "name": "Choisir son profil de coureur",
+          "item": "https://bordur.fr/guides/choisir-bon-profil-coureur/"
+        }
+      ]
     }
   </script>
 
@@ -140,6 +178,12 @@
       margin: 0;
       color: var(--muted);
       font-size: 18px;
+    }
+
+    .meta {
+      margin-top: 10px;
+      color: var(--muted);
+      font-size: 14px;
     }
 
     .heroActions,
@@ -280,13 +324,16 @@
       <nav class="breadcrumb" aria-label="Fil d'Ariane">
         <a href="/">Accueil</a>
         <span aria-hidden="true">→</span>
-        <span>Guides tactiques</span>
+        <a href="/guides/">Guides tactiques</a>
+        <span aria-hidden="true">→</span>
+        <span>Choisir le bon profil de coureur</span>
       </nav>
       <p class="kicker">Guide tactique</p>
       <h1>Choisir le bon profil de coureur dans BORDUR</h1>
       <p class="lead">
         Une équipe cohérente ne se résume pas à empiler les meilleurs noms. Dans BORDUR, chaque profil sert une situation : terrain, vent, effort demandé et rôle dans la course.
       </p>
+      <p class="meta">Publié le <time datetime="2026-04-29">29 avril 2026</time></p>
       <div class="heroActions" aria-label="Actions principales">
         <a class="btn btn--primary" href="/app/">Jouer maintenant</a>
         <a class="btn btn--link" href="/tutoriel.html">Voir le tutoriel</a>
@@ -423,7 +470,7 @@
   <footer class="siteFooter" aria-label="Pied de page">
       <div class="footerInner">
         <div class="footerBrand">
-          <div class="footerBrandTitle">
+          <a class="footerBrandTitle footerBrandLink" href="/" aria-label="Retour à l’accueil BORDUR">
             <strong>BORDUR</strong>
             <svg
               class="footerBrandIcon"
@@ -492,7 +539,7 @@
                 </clipPath>
               </defs>
             </svg>
-          </div>
+          </a>
           <div>
             Jeu de plateau – course cycliste tactique (tour par tour).
           </div>

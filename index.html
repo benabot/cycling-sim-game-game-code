@@ -34,7 +34,7 @@
     <meta property="og:url" content="https://bordur.fr" />
     <meta
       property="og:image"
-      content="https://bordur.fr/intro/chassepatate.webp"
+      content="https://bordur.fr/og/home.webp"
     />
     <meta
       property="og:image:alt"
@@ -53,7 +53,7 @@
     />
     <meta
       name="twitter:image"
-      content="https://bordur.fr/intro/chassepatate.webp"
+      content="https://bordur.fr/og/home.webp"
     />
 
     <script>
@@ -80,16 +80,42 @@
       })();
     </script>
 
-    <!-- JSON-LD: VideoGame + FAQPage -->
+    <!-- JSON-LD: WebSite + Organization + VideoGame + FAQPage -->
     <script type="application/ld+json">
       {
         "@context": "https://schema.org",
         "@graph": [
           {
+            "@type": "WebSite",
+            "@id": "https://bordur.fr/#website",
+            "url": "https://bordur.fr/",
+            "name": "BORDUR",
+            "inLanguage": "fr-FR",
+            "publisher": {
+              "@id": "https://bordur.fr/#organization"
+            }
+          },
+          {
+            "@type": "Organization",
+            "@id": "https://bordur.fr/#organization",
+            "name": "BORDUR",
+            "url": "https://bordur.fr/",
+            "parentOrganization": {
+              "@type": "Organization",
+              "name": "beAbot",
+              "url": "https://beabot.fr"
+            },
+            "sameAs": [
+              "https://x.com/bordur_game",
+              "https://www.youtube.com/@bordur_game",
+              "https://www.instagram.com/bordur_game/"
+            ]
+          },
+          {
             "@type": "VideoGame",
             "name": "BORDUR",
             "url": "https://bordur.fr",
-            "image": "https://bordur.fr/intro/chassepatate.webp",
+            "image": "https://bordur.fr/og/home.webp",
             "inLanguage": "fr",
             "genre": ["Strategy", "Sports"],
             "description": "Jeu de plateau de course cycliste tactique à jouer en ligne, en tour par tour : placement, aspiration, gestion d'énergie, pavés, vent et attaques.",
@@ -1553,8 +1579,8 @@
       <footer class="siteFooter" aria-label="Pied de page">
         <div class="footerInner">
           <div class="footerBrand">
-            <div class="footerBrandTitle">
-              <strong>BORDUR</strong>
+            <a class="footerBrandTitle footerBrandLink" href="/" aria-label="Retour à l’accueil BORDUR">
+            <strong>BORDUR</strong>
               <svg
                 class="footerBrandIcon"
                 width="128"
@@ -1622,7 +1648,7 @@
                   </clipPath>
                 </defs>
               </svg>
-            </div>
+            </a>
             <div>
               Jeu de plateau – course cycliste tactique (tour par tour).
             </div>
