@@ -1,0 +1,309 @@
+<!doctype html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+
+  <title>Guides tactiques BORDUR — Maîtriser la simulation cycliste</title>
+  <meta
+    name="description"
+    content="Retrouve les guides tactiques BORDUR pour mieux gérer l'énergie, le placement, le vent, les profils et les classiques pavées."
+  >
+  <meta name="robots" content="index,follow">
+
+  <link rel="canonical" href="https://bordur.fr/guides/">
+  <link rel="icon" href="/favicon.ico" sizes="any">
+  <link rel="icon" type="image/png" href="/favicon-32x32.png" sizes="32x32">
+  <link rel="icon" type="image/svg+xml" href="/favicon-bib-B-outline.svg">
+  <link rel="apple-touch-icon" href="/apple-touch-icon.png" sizes="180x180">
+  <link rel="mask-icon" href="/safari-pinned-tab-bib-B.svg" color="#000000">
+  <meta name="theme-color" content="#0b0f14">
+
+  <meta property="og:type" content="website">
+  <meta property="og:locale" content="fr_FR">
+  <meta property="og:site_name" content="BORDUR">
+  <meta property="og:title" content="Guides tactiques BORDUR — Maîtriser la simulation cycliste">
+  <meta property="og:description" content="Quatre guides pour progresser sur BORDUR : profils de coureurs, énergie, vent et classiques pavées.">
+  <meta property="og:url" content="https://bordur.fr/guides/">
+  <meta property="og:image" content="https://bordur.fr/intro/bordur-plateau.webp">
+
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="twitter:title" content="Guides tactiques BORDUR — Maîtriser la simulation cycliste">
+  <meta name="twitter:description" content="Les guides tactiques essentiels pour mieux jouer BORDUR.">
+  <meta name="twitter:image" content="https://bordur.fr/intro/bordur-plateau.webp">
+
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "CollectionPage",
+    "@id": "https://bordur.fr/guides/#collectionpage",
+    "url": "https://bordur.fr/guides/",
+    "name": "Guides tactiques BORDUR — Maîtriser la simulation cycliste",
+    "description": "Collection de guides tactiques pour progresser sur BORDUR.",
+    "inLanguage": "fr-FR",
+    "hasPart": [
+      {
+        "@type": "Article",
+        "name": "Choisir le bon profil de coureur dans BORDUR",
+        "url": "https://bordur.fr/guides/choisir-bon-profil-coureur/"
+      },
+      {
+        "@type": "Article",
+        "name": "Gérer son énergie et éviter la fringale dans BORDUR",
+        "url": "https://bordur.fr/guides/gerer-energie-eviter-fringale/"
+      },
+      {
+        "@type": "Article",
+        "name": "Aspiration, vent latéral et bordures : guide tactique BORDUR",
+        "url": "https://bordur.fr/guides/aspiration-vent-bordures/"
+      },
+      {
+        "@type": "Article",
+        "name": "Comment gagner une classique pavée dans BORDUR",
+        "url": "https://bordur.fr/guides/gagner-classique-pavee/"
+      }
+    ]
+  }
+  </script>
+
+  <script>
+    (function () {
+      function isOptedOut() {
+        try {
+          return localStorage.getItem('analytics_optout') === '1';
+        } catch (err) {
+          return false;
+        }
+      }
+
+      if (isOptedOut()) {
+        window.goatcounter = window.goatcounter || {};
+        window.goatcounter.no_onload = true;
+        return;
+      }
+
+      var script = document.createElement('script');
+      script.dataset.goatcounter = 'https://bordur.goatcounter.com/count';
+      script.async = true;
+      script.src = '//gc.zgo.at/count.js';
+      document.head.appendChild(script);
+    })();
+  </script>
+
+  <style>
+    :root {
+      --bg: #0b0f14;
+      --panel: #111824;
+      --text: #e8eef7;
+      --muted: #b7c2d3;
+      --line: rgba(232, 238, 247, 0.12);
+      --accent: #e9c46a;
+      --radius: 12px;
+      --max: 920px;
+      --pad: 20px;
+      --font-ui: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;
+      --font-display: ui-serif, "Iowan Old Style", "Palatino Linotype", Palatino, Georgia, serif;
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: var(--font-ui);
+      background: var(--bg);
+      color: var(--text);
+      line-height: 1.6;
+    }
+
+    a { color: inherit; }
+
+    .wrap {
+      max-width: var(--max);
+      margin: 0 auto;
+      padding: 0 var(--pad);
+    }
+
+    header {
+      padding: 46px 0 26px;
+      border-bottom: 1px solid var(--line);
+    }
+
+    .breadcrumb {
+      display: inline-flex;
+      gap: 8px;
+      align-items: center;
+      font-size: 14px;
+      color: var(--muted);
+      margin-bottom: 14px;
+    }
+
+    .breadcrumb a {
+      color: var(--accent);
+      text-decoration: none;
+    }
+
+    .breadcrumb a:hover { text-decoration: underline; }
+
+    h1 {
+      font-family: var(--font-display);
+      font-size: clamp(30px, 5vw, 46px);
+      margin-bottom: 8px;
+    }
+
+    .lede {
+      color: var(--muted);
+      max-width: 760px;
+      font-size: 17px;
+    }
+
+    main {
+      padding: 28px 0 46px;
+    }
+
+    .guides {
+      list-style: none;
+      display: grid;
+      gap: 14px;
+      margin: 0 0 28px;
+    }
+
+    .guides li {
+      background: var(--panel);
+      border: 1px solid var(--line);
+      border-radius: var(--radius);
+      padding: 16px;
+    }
+
+    .guides h2 {
+      font-size: 22px;
+      margin-bottom: 8px;
+      color: var(--accent);
+      font-family: var(--font-display);
+    }
+
+    .guides p {
+      color: var(--muted);
+    }
+
+    .guides a {
+      text-decoration: none;
+      color: inherit;
+      display: block;
+    }
+
+    .guides a:hover h2 {
+      text-decoration: underline;
+    }
+
+    .quick-links {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px 16px;
+      font-size: 14px;
+    }
+
+    .quick-links a {
+      color: var(--accent);
+      text-decoration: none;
+    }
+
+    .quick-links a:hover { text-decoration: underline; }
+  </style>
+  <link rel="stylesheet" href="/footer.css">
+</head>
+<body>
+  <header class="wrap">
+    <nav class="breadcrumb" aria-label="Fil d'Ariane">
+      <a href="/">Accueil</a>
+      <span aria-hidden="true">→</span>
+      <span>Guides tactiques</span>
+    </nav>
+    <h1>Guides tactiques BORDUR — Maîtriser la simulation cycliste</h1>
+    <p class="lede">
+      Une sélection de guides pratiques pour prendre de meilleures décisions de placement, d'effort et de timing sur BORDUR.
+    </p>
+  </header>
+
+  <main class="wrap">
+    <ul class="guides">
+      <li>
+        <a href="/guides/choisir-bon-profil-coureur/">
+          <h2>Choisir le bon profil de coureur</h2>
+          <p>Composer une équipe cohérente selon le terrain, le vent et le rôle de chaque coureur.</p>
+        </a>
+      </li>
+      <li>
+        <a href="/guides/gerer-energie-eviter-fringale/">
+          <h2>Gérer l'énergie et éviter la fringale</h2>
+          <p>Économiser quand il faut, accélérer au bon moment, et garder des ressources pour le final.</p>
+        </a>
+      </li>
+      <li>
+        <a href="/guides/aspiration-vent-bordures/">
+          <h2>Aspiration, vent et bordures</h2>
+          <p>Lire les zones exposées, protéger le leader et éviter les cassures coûteuses.</p>
+        </a>
+      </li>
+      <li>
+        <a href="/guides/gagner-classique-pavee/">
+          <h2>Gagner une classique pavée</h2>
+          <p>Anticiper les secteurs clés, absorber l'usure des pavés et choisir le bon timing d'attaque.</p>
+        </a>
+      </li>
+    </ul>
+
+    <nav class="quick-links" aria-label="Liens utiles">
+      <a href="/app/">Jouer sur l'app</a>
+      <a href="/regles.html">Lire les règles</a>
+    </nav>
+  </main>
+
+  <footer class="siteFooter" aria-label="Pied de page">
+    <div class="footerInner">
+      <div class="footerGrid">
+        <div class="footerBrand">
+          <a class="footerLogo" href="/" aria-label="Accueil BORDUR">
+            <img src="/favicon-bib-B-outline.svg" alt="Logo BORDUR" loading="lazy" decoding="async" />
+            <strong>BORDUR</strong>
+          </a>
+          <p>Jeu de course cycliste tactique dans le navigateur.</p>
+        </div>
+
+        <nav class="footerCol" aria-label="Navigation principale">
+          <h2>Navigation</h2>
+          <ul>
+            <li><a href="/">Accueil</a></li>
+            <li><a href="/app/">Jouer</a></li>
+            <li><a href="/parcours/">Parcours</a></li>
+            <li><a href="/guides/">Guides</a></li>
+          </ul>
+        </nav>
+
+        <nav class="footerCol" aria-label="Ressources">
+          <h2>Ressources</h2>
+          <ul>
+            <li><a href="/regles.html">Règles</a></li>
+            <li><a href="/tutoriel.html">Tutoriel</a></li>
+            <li><a href="/lexique-cyclisme.html">Lexique</a></li>
+          </ul>
+        </nav>
+
+        <nav class="footerCol" aria-label="Informations légales">
+          <h2>Légal</h2>
+          <ul>
+            <li><a href="/confidentialite.html">Confidentialité</a></li>
+            <li><a href="/cgu.html">CGU</a></li>
+          </ul>
+        </nav>
+      </div>
+
+      <div class="footerBottom">
+        <p>© <span id="current-year"></span> BORDUR</p>
+      </div>
+    </div>
+  </footer>
+
+  <script>
+    document.getElementById('current-year').textContent = new Date().getFullYear();
+  </script>
+</body>
+</html>
