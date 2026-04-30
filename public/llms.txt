@@ -1,0 +1,13 @@
+# BORDUR — Jeu de course cycliste tactique
+
+BORDUR est un jeu de cyclisme tactique jouable dans le navigateur. Le contenu éditorial ci-dessous explique les règles, le vocabulaire et les décisions clés pour bien débuter.
+
+Pages principales :
+- Accueil : https://bordur.fr/
+- Règles : https://bordur.fr/regles.html
+- Lexique cyclisme : https://bordur.fr/lexique-cyclisme.html
+- Tutoriel : https://bordur.fr/tutoriel.html
+- Parcours : https://bordur.fr/parcours/
+- Guides tactiques : https://bordur.fr/guides/
+
+Note : https://bordur.fr/app/ est l'interface de jeu (SPA). Le contenu éditorial principal est sur les pages statiques listées ci-dessus.
