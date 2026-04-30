@@ -80,11 +80,37 @@
       })();
     </script>
 
-    <!-- JSON-LD: VideoGame + FAQPage -->
+    <!-- JSON-LD: WebSite + Organization + VideoGame + FAQPage -->
     <script type="application/ld+json">
       {
         "@context": "https://schema.org",
         "@graph": [
+          {
+            "@type": "WebSite",
+            "@id": "https://bordur.fr/#website",
+            "url": "https://bordur.fr/",
+            "name": "BORDUR",
+            "inLanguage": "fr-FR",
+            "publisher": {
+              "@id": "https://bordur.fr/#organization"
+            }
+          },
+          {
+            "@type": "Organization",
+            "@id": "https://bordur.fr/#organization",
+            "name": "BORDUR",
+            "url": "https://bordur.fr/",
+            "parentOrganization": {
+              "@type": "Organization",
+              "name": "beAbot",
+              "url": "https://beabot.fr"
+            },
+            "sameAs": [
+              "https://x.com/bordur_game",
+              "https://www.youtube.com/@bordur_game",
+              "https://www.instagram.com/bordur_game/"
+            ]
+          },
           {
             "@type": "VideoGame",
             "name": "BORDUR",
