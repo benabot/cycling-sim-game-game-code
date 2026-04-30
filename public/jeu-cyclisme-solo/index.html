@@ -1,0 +1,241 @@
+<!doctype html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+
+  <title>Jeu cyclisme solo - Jouer seul contre l'IA dans BORDUR</title>
+  <meta name="description" content="Tu veux un jeu de cyclisme solo dans le navigateur ? BORDUR se joue gratuitement contre l'IA, avec des décisions tactiques de course tour par tour.">
+  <meta name="robots" content="index,follow">
+  <link rel="canonical" href="https://bordur.fr/jeu-cyclisme-solo/">
+
+  <link rel="icon" href="/favicon.ico" sizes="any">
+  <link rel="icon" type="image/png" href="/favicon-32x32.png" sizes="32x32">
+  <link rel="icon" type="image/svg+xml" href="/favicon-bib-B-outline.svg">
+  <link rel="apple-touch-icon" href="/apple-touch-icon.png" sizes="180x180">
+  <link rel="mask-icon" href="/safari-pinned-tab-bib-B.svg" color="#000000">
+  <meta name="theme-color" content="#0b0f14">
+
+  <meta property="og:type" content="article">
+  <meta property="og:locale" content="fr_FR">
+  <meta property="og:site_name" content="BORDUR">
+  <meta property="og:title" content="Jeu cyclisme solo - Jouer seul contre l'IA dans BORDUR">
+  <meta property="og:description" content="Une option concrète pour jouer seul à une course cycliste tactique dans le navigateur.">
+  <meta property="og:url" content="https://bordur.fr/jeu-cyclisme-solo/">
+  <meta property="og:image" content="https://bordur.fr/og/app.webp">
+
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="twitter:title" content="Jeu cyclisme solo - Jouer seul contre l'IA dans BORDUR">
+  <meta name="twitter:description" content="Joue seul contre l'IA, lis la course et enchaîne les parties dans ton navigateur.">
+  <meta name="twitter:image" content="https://bordur.fr/og/app.webp">
+
+  <style>
+    :root {
+      --bg: #0b0f14;
+      --panel: #111824;
+      --text: #e8eef7;
+      --muted: #b7c2d3;
+      --line: rgba(232, 238, 247, 0.12);
+      --accent: #e9c46a;
+      --max: 860px;
+      --pad: 20px;
+      --radius: 12px;
+      --font-ui: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;
+      --font-display: ui-serif, "Iowan Old Style", "Palatino Linotype", Palatino, Georgia, serif;
+    }
+
+    * { box-sizing: border-box; }
+
+    body {
+      margin: 0;
+      background: var(--bg);
+      color: var(--text);
+      font-family: var(--font-ui);
+      line-height: 1.65;
+    }
+
+    a { color: inherit; }
+
+    .wrap {
+      max-width: var(--max);
+      margin: 0 auto;
+      padding: 0 var(--pad);
+    }
+
+    header {
+      padding: 42px 0 28px;
+      border-bottom: 1px solid var(--line);
+    }
+
+    .breadcrumb {
+      margin-bottom: 14px;
+      color: var(--muted);
+      font-size: 14px;
+    }
+
+    .breadcrumb a { color: var(--accent); text-decoration: none; }
+    .breadcrumb a:hover { text-decoration: underline; }
+
+    h1 {
+      margin: 0 0 12px;
+      font-family: var(--font-display);
+      font-size: clamp(30px, 5vw, 42px);
+      line-height: 1.1;
+    }
+
+    .lead {
+      margin: 0 0 12px;
+      color: var(--muted);
+    }
+
+    main {
+      padding: 28px 0 52px;
+    }
+
+    section {
+      border-bottom: 1px solid var(--line);
+      padding: 24px 0;
+    }
+
+    h2 {
+      margin: 0 0 12px;
+      color: var(--accent);
+      font-family: var(--font-display);
+      font-size: 25px;
+    }
+
+    p { margin: 0 0 12px; }
+
+    ul {
+      margin: 0;
+      padding-left: 20px;
+      color: var(--muted);
+    }
+
+    li { margin: 8px 0; }
+
+    .panel {
+      border: 1px solid var(--line);
+      border-radius: var(--radius);
+      background: var(--panel);
+      padding: 16px;
+    }
+
+    .links {
+      margin-top: 14px;
+      display: flex;
+      flex-wrap: wrap;
+      gap: 12px;
+    }
+
+    .links a {
+      color: var(--accent);
+      text-decoration: none;
+      font-size: 14px;
+    }
+
+    .links a:hover { text-decoration: underline; }
+
+    .cta {
+      margin-top: 22px;
+      padding: 20px;
+      border: 1px solid rgba(233, 196, 106, 0.35);
+      border-radius: var(--radius);
+      background: rgba(233, 196, 106, 0.08);
+    }
+
+    .btn {
+      display: inline-block;
+      margin-top: 8px;
+      padding: 12px 16px;
+      border-radius: 10px;
+      border: 1px solid rgba(233, 196, 106, 0.5);
+      background: rgba(233, 196, 106, 0.18);
+      text-decoration: none;
+      font-weight: 700;
+    }
+
+    footer {
+      padding: 24px 0 40px;
+      color: var(--muted);
+      font-size: 14px;
+    }
+
+    @media (max-width: 680px) {
+      h2 { font-size: 22px; }
+      .btn { width: 100%; text-align: center; }
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <div class="wrap">
+      <nav class="breadcrumb" aria-label="Fil d'Ariane">
+        <a href="/">Accueil</a> → <span>Jeu cyclisme solo</span>
+      </nav>
+      <h1>Jeu cyclisme solo - Jouer seul contre l'IA dans BORDUR</h1>
+      <p class="lead">
+        Oui, jouer solo à un jeu cycliste tactique a du sens: tu peux lire la course à ton rythme et progresser sans dépendre d'un horaire de groupe.
+      </p>
+      <p class="lead">
+        BORDUR te permet de le faire directement dans le navigateur, contre l'IA, avec un accès simple et immédiat.
+      </p>
+    </div>
+  </header>
+
+  <main class="wrap">
+    <section id="pourquoi-solo">
+      <h2>Pourquoi jouer solo à un jeu de cyclisme</h2>
+      <ul>
+        <li><strong>Apprentissage:</strong> tu comprends mieux les erreurs de placement et de gestion d'énergie.</li>
+        <li><strong>Liberté:</strong> tu lances une partie quand tu veux, sans organisation préalable.</li>
+        <li><strong>Tactique:</strong> tu testes plusieurs plans de course sur des profils différents.</li>
+      </ul>
+    </section>
+
+    <section id="bordur-solo">
+      <h2>Ce que BORDUR permet en solo</h2>
+      <div class="panel">
+        <ul>
+          <li>Jeu dans le navigateur, sans installation complexe.</li>
+          <li>Parties contre IA pour garder une opposition active.</li>
+          <li>Décisions tactiques tour par tour: rythme, relances, timing.</li>
+          <li>Accès gratuit pour enchaîner des parties de test.</li>
+        </ul>
+      </div>
+    </section>
+
+    <section id="a-quoi-sattendre">
+      <h2>À quoi t'attendre en partie</h2>
+      <p>
+        Une partie repose surtout sur la lecture de course: terrain, énergie disponible, placement dans les groupes et choix du bon profil au bon moment.
+      </p>
+      <p>
+        Tu vas gérer des situations variées: secteurs exigeants, besoin de protéger un leader, arbitrage entre suivre et attaquer. L'objectif est de prendre des décisions propres, pas de forcer chaque tour.
+      </p>
+      <div class="links" aria-label="Liens utiles">
+        <a href="/regles.html">Lire les règles</a>
+        <a href="/tutoriel.html">Voir le tutoriel</a>
+        <a href="/parcours/">Explorer les parcours</a>
+      </div>
+    </section>
+
+    <section class="cta" id="jouer">
+      <h2>Commencer une course solo</h2>
+      <p>
+        Le moyen le plus simple de savoir si le format te plaît: lancer une partie, jouer quelques tours, puis ajuster ton plan sur la suivante.
+      </p>
+      <a class="btn" href="/app/">Lancer une partie contre l'IA</a>
+    </section>
+  </main>
+
+  <footer class="wrap">
+    <p>
+      Pour progresser plus vite: <a href="/lexique-cyclisme.html" style="color: var(--accent);">lexique</a> ·
+      <a href="/regles.html" style="color: var(--accent);">règles</a> ·
+      <a href="/tutoriel.html" style="color: var(--accent);">tutoriel</a>
+    </p>
+  </footer>
+  <script src="/tracking-app-clicks.js" data-app-click-event="solo_app_click" defer></script>
+</body>
+</html>
