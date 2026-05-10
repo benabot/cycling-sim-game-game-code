@@ -1,4 +1,7 @@
 (function () {
+  if (window.__bordurAppClickTrackingInitialized) return;
+  window.__bordurAppClickTrackingInitialized = true;
+
   var currentScript = document.currentScript;
   var eventName =
     (currentScript && currentScript.dataset.appClickEvent) || "static_app_click";
@@ -29,9 +32,39 @@
 
   ensureGoatCounter();
 
+  function isTrackedAppHref(href, absoluteHref) {
+    if (typeof href === "string") {
+      if (
+        href === "/app" ||
+        href.indexOf("/app/") === 0 ||
+        href.indexOf("/app?") === 0 ||
+        href.indexOf("/app#") === 0
+      ) {
+        return true;
+      }
+    }
+
+    if (!absoluteHref) return false;
+
+    try {
+      var parsedUrl = new URL(absoluteHref, window.location.origin);
+      var pathname = parsedUrl.pathname;
+      return (
+        parsedUrl.origin === window.location.origin &&
+        (pathname === "/app" || pathname.indexOf("/app/") === 0)
+      );
+    } catch (err) {
+      return false;
+    }
+  }
+
   document.addEventListener("click", function (event) {
-    var link = event.target.closest('a[href^="/app/"]');
+    var link = event.target.closest("a[href]");
     if (!link || isOptedOut()) return;
+    if (!isTrackedAppHref(link.getAttribute("href"), link.href)) return;
+
+    // Prevent future double counting if a per-link GoatCounter event is added.
+    if (link.hasAttribute("data-goatcounter-click")) return;
 
     try {
       if (window.goatcounter && typeof window.goatcounter.count === "function") {

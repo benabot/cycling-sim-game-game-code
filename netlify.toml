@@ -16,6 +16,11 @@
   status = 200
 
 [[redirects]]
+  from = "/og/*"
+  to = "/og/chassepatate.webp"
+  status = 200
+
+[[redirects]]
   from = "/parcours/index.html"
   to = "/parcours/"
   status = 301
