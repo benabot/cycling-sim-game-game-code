@@ -50,7 +50,7 @@ export function useGameEngine() {
   
   // v3.2.2: Track aspiration animations with position info
   const aspirationAnimations = ref([]);
-  
+   
   // View-only mode: allows viewing rider info without playing them
   const isViewOnlySelection = ref(false);
 
